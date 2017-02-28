@@ -1,0 +1,40 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Skyline Cottages in Estes Park</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+  <link rel="stylesheet" href="https://gadgets.securetravelpayments.com/_shared/css/all.cssz" type="text/css" />
+  <script src="../../js/util/Util.js"></script>
+</head>
+<body class="body">
+
+<div id="bookGrid"     >&nbsp;</div>
+<div id="bookBody"     >&nbsp;</div>
+<!-- id="bookRoomTypes">&nbsp;</div-->
+
+<!-- place this script area at the bottom of your web page -->
+<script src="//gadgets.securetravelpayments.com/_shared/base.jsz"          type="text/javascript"></script>
+<script src="//gadgets.securetravelpayments.com/room-types/room-types.jsz" type="text/javascript"></script>
+
+<!--script id="jsonIDBCA64E225F64429DA959E5481EE602EB" type="text/javascript" async="" defer=""
+  src="http://sjp.resonline.com.au/api/hotel-details?q=545189&webid=27281&_=1486606252433-421"></script-->
+  <!--&callback=jsonIDBCA64E225F64429DA959E5481EE602EB" -->
+<script type="text/javascript">
+  $w('#bookGrid').roomTypesGadget({
+ // hotelID: 545189
+    hotelID: 34604
+    , autoTickedNights: false
+    , defaultCurrency: 'USD'
+    , defaultGridColumns: 14
+    , gridLabel: 'Room'
+    , layout: 'horz'
+  //, showRoomTypeDetails: '#bookRoomTypes'
+    , showRoomImages: false
+    , showPromotionCode:false
+    , defaultPromotionCode:''
+  });
+</script>
+</body>
+</html>

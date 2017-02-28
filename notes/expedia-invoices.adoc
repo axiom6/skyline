@@ -1,0 +1,20 @@
+Type	Number	PDF	Date	Amount	Status	Actions
+Invoice	164239459
+	Nov 5, 2016	USD  213.30	Outstanding
+USD 213.30
+Invoice	164216401
+	Oct 5, 2016	USD  725.98	Outstanding
+USD 725.98
+Invoice	164192543
+	Sep 5, 2016	USD  2,282.26	Outstanding
+USD 2,282.26
+Payment			Aug 24, 2016	USD  (3,237.36)	Applied
+Invoice	164169299
+	Aug 5, 2016	USD  5,067.86	Outstanding
+USD 5,067.86
+Invoice	164144971
+	Jul 5, 2016	USD  3,237.36	Paid
+Payment			Jul 5, 2016	USD  (328.75)	Applied
+Invoice	164123206
+	Jun 5, 2016	USD  410.04	Outstanding
+USD 81.29

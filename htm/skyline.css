@@ -1,0 +1,20 @@
+body {
+  color: black;
+}
+.init-font {
+  font-size: 12px;
+}
+.room-price {
+  background-color: lightgrey;
+  color: black;
+  text-align: right;
+  width: 35px;
+}
+.room-block {
+  background-color: black;
+  color: white;
+}
+.room-book {
+  background-color: blue;
+  color: yellow;
+}
