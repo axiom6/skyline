@@ -7,7 +7,7 @@ module.exports = {
   entry: '../js/res/Res.js',
   output: {
     path: './',
-    filename: 'Pack.js' },
+    filename: 'js/Pack.js' },
   resolve: {
     root: [
       path.resolve('../') ] },

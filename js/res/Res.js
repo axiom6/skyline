@@ -9,14 +9,18 @@
 
     Res.init = function() {
       return Util.ready(function() {
-        var Book, Cust, Room, Store, book, cust, room;
+        var Book, Cust, Room, Store, Stream, book, cust, room, store, stream, subjects;
+        Stream = require('js/store/Stream');
+        Store = require('js/store/Store');
         Room = require('js/res/Room');
         Cust = require('js/res/Cust');
         Book = require('js/res/Book');
-        Store = require('js/store/Store');
+        subjects = ["book", "alloc"];
+        stream = new Stream(subjects);
+        store = new Store(stream, "skytest", "Firebase");
         room = new Room();
         cust = new Cust();
-        book = new Book(room, cust);
+        book = new Book(stream, store, room, cust);
         return book.ready();
       });
     };

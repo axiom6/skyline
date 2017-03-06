@@ -7,14 +7,18 @@ class Res
 
     Util.ready ->
 
-      Room   = require( 'js/res/Room' )
-      Cust   = require( 'js/res/Cust' )
-      Book   = require( 'js/res/Book' )
-      Store  = require( 'js/store/Store')
+      Stream = require( 'js/store/Stream' )
+      Store  = require( 'js/store/Store'  )
+      Room   = require( 'js/res/Room'     )
+      Cust   = require( 'js/res/Cust'     )
+      Book   = require( 'js/res/Book'     )
 
-      room   = new Room()
-      cust   = new Cust()
-      book   = new Book( room, cust )
+      subjects = ["book","alloc"]
+      stream   = new Stream( subjects )
+      store    = new Store( stream, "skytest", "Firebase")
+      room     = new Room()
+      cust     = new Cust()
+      book     = new Book( stream, store, room, cust )
 
       book.ready()
 

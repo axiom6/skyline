@@ -7,7 +7,7 @@ class Book
   Book.Room      = require( 'data/Room.json' )
   Book.Book      = require( 'data/Book.json' )
 
-  constructor:( @room, @cust ) ->
+  constructor:( @stream, @store, @room, @cust ) ->
     @numDayMonth = [            31,30,31,31,30,31]
     @allDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
     @months      = [                                     "May","June","July","August","September","October"]
@@ -27,6 +27,7 @@ class Book
     @begDay      =  1
     @weekdayIdx  = new Date( 2017, @monthIdx, 1 ).getDay()
     @numDays     = 14
+    Util.log('Book Constructor' )
 
   ready:() ->
     $('#Inits').append( @initsHtml( ) )
@@ -62,15 +63,18 @@ class Book
       for day in [1..@numDays]
         date = @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day))
         htm += @createCell( room, Book.Book[id], date )
-      htm += """<td class="room-book">Book</td></tr>"""
+      htm += """<td class="btn-book">Book</td></tr>"""
     htm += "</tbody></table>"
     htm
 
   createCell:( room, book, date ) ->
-    if @dayBooked( book, date )
-      """<td id="#{room.id+date}" class="room-block"></td>"""
-    else
-      """<td id="#{room.id+date}" class="room-price"></td>"""
+    status = @dayBooked( book, date )
+    Util.log( 'createCell status', book, date )
+    switch status
+      when 'f' then """<td id="#{room.id+date}" class="room-free"></td>""" # free
+      when 'h' then """<td id="#{room.id+date}" class="room-hold"></td>""" # hold
+      when 'b' then """<td id="#{room.id+date}" class="room-book"></td>""" # book
+      else          """<td id="#{room.id+date}" class="room-free"></td>""" # free
 
   updatePrice:(  room, book, date ) ->
     if @guests > room.max
@@ -93,9 +97,9 @@ class Book
 
   dayBooked:( book, day ) ->
     for key, bdays of book
-      for bday in bdays
-        return true if bday is day
-    false
+      for bday in bdays when bday.substr(0,8) is day
+        return bday.substr(8,1)
+    'f'
 
   htmlSelect:( array, prop  ) ->
     htm  = """<select id="#{prop}">"""
@@ -105,7 +109,7 @@ class Book
 
   onGuests:( event ) =>
     @guests = event.target.value
-    Util.log('Book.guests', @guests )
+    # Util.log('Book.guests', @guests )
     $('#NumGuests').text(@guests)
     @updatePrices()
     return

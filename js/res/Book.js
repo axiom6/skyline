@@ -12,7 +12,9 @@
 
     Book.Book = require('data/Book.json');
 
-    function Book(room1, cust) {
+    function Book(stream, store, room1, cust) {
+      this.stream = stream;
+      this.store = store;
       this.room = room1;
       this.cust = cust;
       this.onPets = bind(this.onPets, this);
@@ -38,6 +40,7 @@
       this.begDay = 1;
       this.weekdayIdx = new Date(2017, this.monthIdx, 1).getDay();
       this.numDays = 14;
+      Util.log('Book Constructor');
     }
 
     Book.prototype.ready = function() {
@@ -89,17 +92,25 @@
           date = this.year + Util.pad(this.monthIdx + 5) + Util.pad(this.dayMonth(day));
           htm += this.createCell(room, Book.Book[id], date);
         }
-        htm += "<td class=\"room-book\">Book</td></tr>";
+        htm += "<td class=\"btn-book\">Book</td></tr>";
       }
       htm += "</tbody></table>";
       return htm;
     };
 
     Book.prototype.createCell = function(room, book, date) {
-      if (this.dayBooked(book, date)) {
-        return "<td id=\"" + (room.id + date) + "\" class=\"room-block\"></td>";
-      } else {
-        return "<td id=\"" + (room.id + date) + "\" class=\"room-price\"></td>";
+      var status;
+      status = this.dayBooked(book, date);
+      Util.log('createCell status', book, date);
+      switch (status) {
+        case 'f':
+          return "<td id=\"" + (room.id + date) + "\" class=\"room-free\"></td>";
+        case 'h':
+          return "<td id=\"" + (room.id + date) + "\" class=\"room-hold\"></td>";
+        case 'b':
+          return "<td id=\"" + (room.id + date) + "\" class=\"room-book\"></td>";
+        default:
+          return "<td id=\"" + (room.id + date) + "\" class=\"room-free\"></td>";
       }
     };
 
@@ -149,12 +160,12 @@
         bdays = book[key];
         for (i = 0, len = bdays.length; i < len; i++) {
           bday = bdays[i];
-          if (bday === day) {
-            return true;
+          if (bday.substr(0, 8) === day) {
+            return bday.substr(8, 1);
           }
         }
       }
-      return false;
+      return 'f';
     };
 
     Book.prototype.htmlSelect = function(array, prop) {
@@ -169,7 +180,6 @@
 
     Book.prototype.onGuests = function(event) {
       this.guests = event.target.value;
-      Util.log('Book.guests', this.guests);
       $('#NumGuests').text(this.guests);
       this.updatePrices();
     };
