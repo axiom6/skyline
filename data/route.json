@@ -1,0 +1,5 @@
+{
+  "book":{ "method":"get", "require":"data/Book.json", "CouchDBMac":"" },
+  "room":{ "method":"get", "require":"data/Room.json", "CouchDBMac":"" },
+  "cust":{ "method":"get", "require":"data/Cust.json", "CouchDBMac":"" }
+}

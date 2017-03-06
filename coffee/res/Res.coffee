@@ -7,9 +7,9 @@ class Res
 
     Util.ready ->
 
-      Room   = require( 'js/Room' )
-      Cust   = require( 'js/Cust' )
-      Book   = require( 'js/Book' )
+      Room   = require( 'js/res/Room' )
+      Cust   = require( 'js/res/Cust' )
+      Book   = require( 'js/res/Book' )
 
       room   = new Room()
       cust   = new Cust()

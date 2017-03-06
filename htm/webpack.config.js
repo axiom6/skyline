@@ -4,7 +4,7 @@ var path  = require( "path"  );
 
 module.exports = {
   context: __dirname,
-  entry: '../js/Res.js',
+  entry: '../js/res/Res.js',
   output: {
     path: './',
     filename: 'Pack.js' },

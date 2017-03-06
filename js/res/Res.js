@@ -10,9 +10,9 @@
     Res.init = function() {
       return Util.ready(function() {
         var Book, Cust, Room, book, cust, room;
-        Room = require('js/Room');
-        Cust = require('js/Cust');
-        Book = require('js/Book');
+        Room = require('js/res/Room');
+        Cust = require('js/res/Cust');
+        Book = require('js/res/Book');
         room = new Room();
         cust = new Cust();
         book = new Book(room, cust);
