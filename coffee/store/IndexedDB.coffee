@@ -3,7 +3,7 @@ Store = require( 'js/store/Store' )
 
 class IndexedDB extends Store
 
-  module.exports = IndexedDB # Util.Export( IndexedDB, 'store/IndexedDB' )
+  module.exports = IndexedDB
 
   constructor:( stream, uri, @dbVersion=1, @tableNames=[] ) ->
     super( stream, uri, 'IndexedDB' )

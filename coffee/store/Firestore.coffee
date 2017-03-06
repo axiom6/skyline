@@ -1,21 +1,34 @@
 
-Store      = require( 'js/store/Store' )
-FirebaseDB = require( 'firebase' )
 
-class Firebase extends Store
+Store          = require( 'js/store/Store' )
+Store.Firebase = require( 'firebase' )
 
-  module.exports   = Firebase # Util.Export( Firebase, 'store/Firebase' )
-  FireBaseURL      = 'axiom6.firebaseIO.com'
-  FireBasePassword = 'Athena66' # I know this is stupid
-  FireBaseApiKey   = ''
+class Firestore extends Store
+
+  module.exports   = Firestore
 
   constructor:( stream, uri ) ->
-    super( stream, uri, 'Firebase' )
-    @fb = @openFireBaseDB( uri )
+    super( stream, uri, 'Firestore' )
+    @fb = @init( uri )
 
+  init:( uri ) ->
+    Util.noop( uri )
+    config = {
+      apiKey:       "AIzaSyBjMGVzZ6JgZBs8O7mBQfH6clHYDmjTsGU",
+      authDomain:   "skyline-fed2b.firebaseapp.com",
+      databaseURL:  "https://skyline-fed2b.firebaseio.com",
+      storageBucket: "",
+      messagingSenderId: "279547846849" }
+    Store.Firebase .initializeApp(config)
+    Store.Firebase
+    return
+
+  ###
   openFireBaseDB:( uri ) ->
-    FirebaseDB.initializeApp( { apiKey:FireBaseApiKey, databaseURL:uri } )
-    FirebaseDB.database().ref()
+    FirestoreDB.initializeApp( { apiKey:FireBaseApiKey, databaseURL:uri } )
+    FirestoreDB.database().ref()
+  ###
+
 
   add:( t, id, object  ) ->
     tableName = @tableName(t)
@@ -33,7 +46,7 @@ class Firebase extends Store
       if snapshot.val()?
         @publish( tableName, id, 'get', snapshot.val() )
       else
-        @onerror( tableName, id, 'get', {}, { msg:'Firebase get error' } ) )
+        @onerror( tableName, id, 'get', {}, { msg:'Firestore get error' } ) )
     return
 
   put:( t, id,  object ) ->

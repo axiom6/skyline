@@ -8,6 +8,14 @@
 
     module.exports = Store;
 
+    Store.Memory = require('js/store/Memory');
+
+    Store.IndexedDB = require('js/store/IndexedDB');
+
+    Store.Rest = require('js/store/Rest');
+
+    Store.Firestore = require('js/store/Firestore');
+
     Store.memories = {};
 
     Store.databases = {};

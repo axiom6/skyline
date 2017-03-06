@@ -3,7 +3,7 @@ Store = require( 'js/store/Store' )
 
 class Memory extends Store
 
-  module.exports = Memory # Util.Export( Memory, 'store/Memory' )
+  module.exports = Memory
 
   constructor:( stream, uri ) ->
     super( stream, uri, 'Memory' )

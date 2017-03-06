@@ -2,11 +2,11 @@
 class Store
 
   module.exports  = Store
-  #Store.Memory    = require( 'js/store/Memory'    )
-  #Store.IndexedDB = require( 'js/store/IndexedDB' )
-  #Store.Rest      = require( 'js/store/Rest'      )
-  #Store.Firebase  = require( 'js/store/Firebase'  )
-  #Store.PouchDB   = require( 'js/store/PouchDB'   )
+  Store.Memory    = require( 'js/store/Memory'     )
+  Store.IndexedDB = require( 'js/store/IndexedDB'  )
+  Store.Rest      = require( 'js/store/Rest'       )
+  Store.Firestore = require( 'js/store/Firestore'  )
+  #Store.PouchDB  = require( 'js/store/PouchDB'    )
 
   @memories  = {} # Store.Memory instances create by getMemory() for in memory dbName
   @databases = {} # Set by Store.Memory as Store.databases[dbName].tables for 
