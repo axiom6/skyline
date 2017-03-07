@@ -49,5 +49,5 @@ class Menus
   view:() ->
     { label: 'View', submenu: [
       { label: 'Close', accelerator:'Command+W', click: () => @action.close() }
-      { label: 'Skyline',  click: () => @action.view( 'Skyline',  '/htm/skyline.html'  ) }
+      { label: 'Skyline',  click: () => @action.view( 'Skyline',  '/public/index.html'  ) }
       { label: 'Toggle Dev Tools', accelerator: 'Command+T', click: () => @action.toggleDevTools() } ] }

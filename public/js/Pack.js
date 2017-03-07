@@ -61,7 +61,7 @@
 	        Room = __webpack_require__(355);
 	        Cust = __webpack_require__(357);
 	        Book = __webpack_require__(359);
-	        subjects = ["book", "alloc"];
+	        subjects = ["Book", "Alloc"];
 	        stream = new Stream(subjects);
 	        store = new Store(stream, "skytest", "Firebase");
 	        room = new Room();
@@ -32410,15 +32410,25 @@
 
 	    Book.Book = __webpack_require__(360);
 
+	    Book.Alloc = __webpack_require__(361);
+
+	    Book.StatusLookup = {
+	      "f": "free",
+	      "h": "hold",
+	      "b": "book"
+	    };
+
 	    function Book(stream, store, room1, cust) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.room = room1;
 	      this.cust = cust;
+	      this.onTest = bind(this.onTest, this);
 	      this.onPets = bind(this.onPets, this);
 	      this.onDay = bind(this.onDay, this);
 	      this.onMonth = bind(this.onMonth, this);
 	      this.onGuests = bind(this.onGuests, this);
+	      this.onAlloc = bind(this.onAlloc, this);
 	      this.numDayMonth = [31, 30, 31, 31, 30, 31];
 	      this.allDayMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 	      this.months = ["May", "June", "July", "August", "September", "October"];
@@ -32442,7 +32452,7 @@
 	    }
 
 	    Book.prototype.ready = function() {
-	      var id, ref, results, room;
+	      var id, ref, room;
 	      $('#Inits').append(this.initsHtml());
 	      $('#Rooms').append(this.roomsHtml());
 	      $('#Guests').change(this.onGuests);
@@ -32451,13 +32461,21 @@
 	      $('#Pets').change(this.onPets);
 	      $('#Months').val(this.month);
 	      $('#Days').val(this.day);
+	      $('#Test').click(this.onTest);
 	      ref = Book.Room;
-	      results = [];
 	      for (id in ref) {
 	        room = ref[id];
-	        results.push(room.$ = $('#' + id));
+	        room.$ = $('#' + id);
 	      }
-	      return results;
+	      return this.subscribe();
+	    };
+
+	    Book.prototype.subscribe = function() {
+	      this.stream.subscribe('Alloc', (function(_this) {
+	        return function(alloc) {
+	          return _this.onAlloc(alloc);
+	        };
+	      })(this));
 	    };
 
 	    Book.prototype.initsHtml = function() {
@@ -32465,6 +32483,7 @@
 	      htm = "<label class=\"init-font\">  Guests:" + (this.htmlSelect(this.persons, "Guests")) + "</label>";
 	      htm += "<label class=\"init-font\">  Pets:" + (this.htmlSelect(this.pets, "Pets")) + "</label>";
 	      htm += "<label class=\"init-font\">Arrive:" + (this.htmlSelect(this.months, "Months") + this.htmlSelect(this.days, "Days") + this.year) + "</label>";
+	      html += "<span  class=\"init-test\" id=\"Test\">Test</span>";
 	      return htm;
 	    };
 
@@ -32499,17 +32518,35 @@
 	    Book.prototype.createCell = function(room, book, date) {
 	      var status;
 	      status = this.dayBooked(book, date);
-	      Util.log('createCell status', book, date);
 	      switch (status) {
-	        case 'f':
+	        case 'free':
 	          return "<td id=\"" + (room.id + date) + "\" class=\"room-free\"></td>";
-	        case 'h':
+	        case 'hold':
 	          return "<td id=\"" + (room.id + date) + "\" class=\"room-hold\"></td>";
-	        case 'b':
+	        case 'book':
 	          return "<td id=\"" + (room.id + date) + "\" class=\"room-book\"></td>";
 	        default:
 	          return "<td id=\"" + (room.id + date) + "\" class=\"room-free\"></td>";
 	      }
+	    };
+
+	    Book.prototype.onAlloc = function(alloc) {
+	      var date, day, i, id, ref, ref1, room;
+	      ref = Book.Room;
+	      for (id in ref) {
+	        room = ref[id];
+	        room.id = id;
+	        for (day = i = 1, ref1 = this.numDays; 1 <= ref1 ? i <= ref1 : i >= ref1; day = 1 <= ref1 ? ++i : --i) {
+	          date = this.year + Util.pad(this.monthIdx + 5) + Util.pad(this.dayMonth(day));
+	          this.allocCell(room, alloc, date);
+	        }
+	      }
+	    };
+
+	    Book.prototype.allocCell = function(room, book, date) {
+	      var status;
+	      status = this.dayBooked(book, date);
+	      return $('#' + room.id + date).removeClass().addClass("room-" + status);
 	    };
 
 	    Book.prototype.updatePrice = function(room, book, date) {
@@ -32553,17 +32590,23 @@
 	    };
 
 	    Book.prototype.dayBooked = function(book, day) {
-	      var bday, bdays, i, key, len;
+	      var bday, bdays, i, key, len, lookup;
 	      for (key in book) {
 	        bdays = book[key];
 	        for (i = 0, len = bdays.length; i < len; i++) {
 	          bday = bdays[i];
-	          if (bday.substr(0, 8) === day) {
-	            return bday.substr(8, 1);
+	          if (!(bday.substr(0, 8) === day)) {
+	            continue;
+	          }
+	          lookup = Book.StatusLookup[bday.substr(8, 1)];
+	          if (lookup != null) {
+	            return lookup;
+	          } else {
+	            return 'free';
 	          }
 	        }
 	      }
-	      return 'f';
+	      return 'free';
 	    };
 
 	    Book.prototype.htmlSelect = function(array, prop) {
@@ -32599,6 +32642,10 @@
 	    Book.prototype.onPets = function(event) {
 	      this.pet = event.target.value;
 	      this.updatePrices();
+	    };
+
+	    Book.prototype.onTest = function() {
+	      return this.stream.publish("Alloc", Book.Alloc);
 	    };
 
 	    Book.prototype.dayMonth = function(iday) {
@@ -32685,6 +32732,77 @@
 			"06": [
 				"20170724b",
 				"20170725b"
+			]
+		}
+	};
+
+/***/ },
+/* 361 */
+/***/ function(module, exports) {
+
+	module.exports = {
+		"1": {
+			"11": [
+				"20170709f",
+				"20170710b"
+			],
+			"01": [
+				"20170709f",
+				"20170710b"
+			]
+		},
+		"2": {
+			"03": [
+				"20170710h",
+				"20170713h"
+			]
+		},
+		"3": {
+			"09": [
+				"20170711f",
+				"20170712f"
+			]
+		},
+		"4": {
+			"01": [
+				"20170715h",
+				"20170716h"
+			]
+		},
+		"5": {
+			"10": [
+				"20170721f",
+				"20170722f"
+			]
+		},
+		"6": {
+			"02": [
+				"20170714h",
+				"20170715h"
+			]
+		},
+		"7": {
+			"05": [
+				"20170720f",
+				"20170722f"
+			]
+		},
+		"8": {
+			"04": [
+				"20170719h",
+				"20170720h"
+			]
+		},
+		"N": {
+			"07": [
+				"20170721f",
+				"20170722f"
+			]
+		},
+		"S": {
+			"06": [
+				"20170724h",
+				"20170725h"
 			]
 		}
 	};

@@ -3,9 +3,11 @@ $ = require( 'jquery' )
 
 class Book
 
-  module.exports = Book
-  Book.Room      = require( 'data/Room.json' )
-  Book.Book      = require( 'data/Book.json' )
+  module.exports    = Book
+  Book.Room         = require( 'data/Room.json'  )
+  Book.Book         = require( 'data/Book.json'  )
+  Book.Alloc        = require( 'data/Alloc.json' )
+  Book.StatusLookup = { "f":"free", "h":"hold", "b":"book" }
 
   constructor:( @stream, @store, @room, @cust ) ->
     @numDayMonth = [            31,30,31,31,30,31]
@@ -38,13 +40,20 @@ class Book
     $('#Pets'  ).change( @onPets   )
     $('#Months').val(@month)
     $('#Days'  ).val(@day)
+    $('#Test'  ).click( @onTest )
     for id, room of Book.Room
       room.$ = $('#'+id)
+    @subscribe()
+
+  subscribe:() ->
+    @stream.subscribe( 'Alloc', (alloc) => @onAlloc( alloc ) )
+    return
 
   initsHtml:() ->
     htm     = """<label class="init-font">  Guests:#{@htmlSelect(@persons,"Guests")}</label>"""
     htm    += """<label class="init-font">  Pets:#{@htmlSelect(@pets,"Pets")}</label>"""
     htm    += """<label class="init-font">Arrive:#{@htmlSelect(@months,"Months")+@htmlSelect(@days,"Days")+@year}</label>"""
+    htm    += """<span  class="init-test" id="Test">Test</span>"""
     htm
 
   roomsHtml:( ) ->
@@ -69,12 +78,15 @@ class Book
 
   createCell:( room, book, date ) ->
     status = @dayBooked( book, date )
-    Util.log( 'createCell status', book, date )
     switch status
-      when 'f' then """<td id="#{room.id+date}" class="room-free"></td>""" # free
-      when 'h' then """<td id="#{room.id+date}" class="room-hold"></td>""" # hold
-      when 'b' then """<td id="#{room.id+date}" class="room-book"></td>""" # book
+      when 'free' then """<td id="#{room.id+date}" class="room-free"></td>""" # free
+      when 'hold' then """<td id="#{room.id+date}" class="room-hold"></td>""" # hold
+      when 'book' then """<td id="#{room.id+date}" class="room-book"></td>""" # book
       else          """<td id="#{room.id+date}" class="room-free"></td>""" # free
+
+  allocCell:( room, book, date ) ->
+    status = @dayBooked( book, date )
+    $('#'+room.id+date).removeClass().addClass("room-"+status)
 
   updatePrice:(  room, book, date ) ->
     if @guests > room.max
@@ -98,8 +110,9 @@ class Book
   dayBooked:( book, day ) ->
     for key, bdays of book
       for bday in bdays when bday.substr(0,8) is day
-        return bday.substr(8,1)
-    'f'
+        lookup = Book.StatusLookup[bday.substr(8,1)]
+        return if lookup? then lookup else 'free'
+    'free'
 
   htmlSelect:( array, prop  ) ->
     htm  = """<select id="#{prop}">"""
@@ -131,6 +144,19 @@ class Book
   onPets:( event ) =>
     @pet = event.target.value
     @updatePrices()
+    return
+
+  onTest:() =>
+    Util.log( "OnTest" )
+    @stream.publish( "Alloc", Book.Alloc )
+
+  onAlloc:( alloc ) =>
+    Util.log( "onAlloc", alloc )
+    for id, room of Book.Room
+      room.id = id
+      for day in [1..@numDays]
+        date = @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day))
+        @allocCell( room, alloc, date )
     return
 
   dayMonth:( iday ) ->

@@ -199,7 +199,7 @@
             label: 'Skyline',
             click: (function(_this) {
               return function() {
-                return _this.action.view('Skyline', '/htm/skyline.html');
+                return _this.action.view('Skyline', '/public/index.html');
               };
             })(this)
           }, {

@@ -13,7 +13,7 @@ class Res
       Cust   = require( 'js/res/Cust'     )
       Book   = require( 'js/res/Book'     )
 
-      subjects = ["book","alloc"]
+      subjects = ["Book","Alloc"]
       stream   = new Stream( subjects )
       store    = new Store( stream, "skytest", "Firebase")
       room     = new Room()
