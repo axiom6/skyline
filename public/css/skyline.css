@@ -28,6 +28,12 @@ body {
   text-align: right;
   width: 35px;
 }
+.room-mine {
+  background-color: blue;
+  color: white;
+  text-align: right;
+  width: 35px;
+}
 .btn-book {
   background-color: blue;
   color: yellow;

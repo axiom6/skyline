@@ -15,7 +15,7 @@
         Room = require('js/res/Room');
         Cust = require('js/res/Cust');
         Book = require('js/res/Book');
-        subjects = ["Book", "Alloc"];
+        subjects = ["Book", "Alloc", "Debug"];
         stream = new Stream(subjects);
         store = new Store(stream, "skytest", "Firebase");
         room = new Room();
@@ -23,6 +23,10 @@
         book = new Book(stream, store, room, cust);
         return book.ready();
       });
+    };
+
+    Res.onDebug = function(debug) {
+      return Util.log("Res.onDebug()", debug);
     };
 
     return Res;

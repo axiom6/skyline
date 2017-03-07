@@ -69,7 +69,7 @@ Util = (function() {
     Util.resetModuleExports();
     Util.fixTestGlobals();
     if (Util.isCommonJS && (moduleCommonJS != null)) {
-      Util.log("Util.init()", moduleCommonJS);
+      //Util.log("Util.init()", moduleCommonJS);
       require(moduleCommonJS);
     } else if (Util.isWebPack && (moduleWebPack != null)) {
       Util.skipReady = true;

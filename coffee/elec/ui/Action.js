@@ -116,10 +116,10 @@
     Action.prototype.view = function(name, htm, width, height) {
       var fontPrefs, options, url, viewn;
       if (width == null) {
-        width = 1200;
+        width = 1800;
       }
       if (height == null) {
-        height = 1000;
+        height = 1200;
       }
       url = 'file:///Users/ax/Documents/prj/skyline';
       if (!this.views[name]) {
@@ -146,6 +146,9 @@
         viewn.window = new BrowserWindow(options);
         this.views[name] = viewn;
         this.current = name;
+        if (name !== 'Main') {
+          this.toggleDevTools();
+        }
         viewn.window.loadURL(url + htm);
         viewn.window.on('closed', (function(_this) {
           return function() {

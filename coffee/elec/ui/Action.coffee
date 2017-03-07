@@ -55,7 +55,7 @@ class Action
   createView:() ->
     { window:{}, hasFocus:false, devTools:false }
 
-  view:( name, htm, width=1200, height=1000 ) ->
+  view:( name, htm, width=1800, height=1200 ) ->
     url = 'file:///Users/ax/Documents/prj/skyline'
     if not @views[name]
       fontPrefs =  { defaultFontFamily:{standard:"FontAwesome",serif:"FontAwesome",sansSerif:"FontAwesome",monospace:"FontAwesome"} }
@@ -68,7 +68,8 @@ class Action
       viewn.window = new BrowserWindow( options )
       @views[name] = viewn
       @current     = name
-      #@toggleDevTools() # Need to toggleDevTools() before loading URL to obtain accurate measuerment - still not working
+      # Need to toggleDevTools() before loading URL to obtain accurate measuerment - still not working
+      @toggleDevTools() if name isnt 'Main'
       viewn.window.loadURL( url + htm )
       viewn.window.on( 'closed', () => @closeView( @views[name] ) )
       viewn.focus = true
