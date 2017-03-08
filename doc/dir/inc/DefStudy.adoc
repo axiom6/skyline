@@ -1,0 +1,10 @@
+
+ifndef::dirs[]
+:stem:
+:source-highlighter: highlight.js
+:icon: font
+:linkcss:
+:stylesheet: ../../dir/css/axbook.css
+:imagesdir:  ../../img
+:dirs: true
+endif::[]

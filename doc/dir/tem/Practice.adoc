@@ -1,0 +1,12 @@
+
+include::../dir/inc/DefPractice.adoc[]
+
+= [.black]#N. Practice#
+
+include::Study.adoc[]
+
+include::Study.adoc[]
+
+include::Study.adoc[]
+
+include::Study.adoc[]

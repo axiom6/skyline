@@ -1,0 +1,10 @@
+
+include::../dir/inc/DefStudy.adoc[]
+
+'''
+=== [.black]#Topic#
+
+* One
+* Two
+
+// image::LogisticRegress.png[alt="LogisticRegress",align="center"]

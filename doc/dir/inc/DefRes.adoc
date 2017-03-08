@@ -1,0 +1,18 @@
+
+
+:author: Tom Flaherty
+:revnumber: 0.0
+:revdate:   November 28, 2016
+:doctype: book
+:icons:
+:lang: en
+:language: javascript
+:icons: font
+:icon-set: fa
+:imagesdir:  ../dir/img
+:iconsdir:   ../dir/ico
+:stylesdir:  ../dir/css
+:scriptsdir: ../dir/js
+:stylesheet: axbook.css
+:pdf-style: ../dir/yml/default-theme.yml
+:dirs: true

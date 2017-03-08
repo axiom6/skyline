@@ -1,0 +1,104 @@
+
+:linkcss:
+include::../dir/inc/DefBook.adoc[]
+
+# [.black]#Plan#
+
+## [.black]#Guest Site#
+
+### [.black]#Book Engine#
+
+[horizontal]
+User Experience::     x
+Guest Pets per Room:: x
+
+### [.black]#Payment Engine#
+
+[horizontal]
+Terms and Conditions:: x
+
+
+### [.black]#Gallerys#
+
+#### [.black]#Scenic#
+
+#### [.black]#Rooms#
+
+[horizontal]
+Amentities:: x
+
+### [.black]#Style#
+
+[horizontal]
+Print:: x
+
+## [.black]#Owner Site#
+
+### [.black]#Master Calendar#
+
+#### [.black]#Arrivals#
+
+#### [.black]#Departures#
+
+### [.black]#Work Schedule#
+
+[horizontal]
+Maid:: x
+Handyman:: x
+Reservationist:: x
+
+### [.black]#Email Processing#
+
+### [.black]#Payments Tracking#
+
+#### [.black]#Owner Secured#
+
+#### [.black]#Tax Accounts#
+
+[horizontal]
+Pillow  Tax:: x
+Larimer Tax:: x
+State   Tax:: x
+
+
+## [.black]#Firebase (Google)#
+
+### [.black]#JSON#
+room::    x
+route::   x
+
+### [.black]#Data Model#
+[horizontal]
+Book::    PSIUD
+Cust::    PSIU
+Alloc::   N
+Partner:: PSIUD
+Log::     PSIUD
+Pay::     PSIU
+Tax::     PSIU
+Work::    PSIUD
+
+## [.black]#Payments#
+
+### [.black]#Authorize.Net#
+
+### [.black]#Bank Deposits#
+
+## [.black]#Partners#
+
+### [.black]#Bookings.com#
+
+### [.black]#Expedia#
+
+## [.black]#Marketing#
+
+### [.black]#Google Search#
+
+
+
+### [.black]#Visit Estes Park#
+
+### [.black]#EstesPark.com#
+
+### [.black]#Trips With Pets#
+
