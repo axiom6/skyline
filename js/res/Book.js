@@ -21,7 +21,7 @@
       this.room = room1;
       this.cust = cust1;
       this.onAlloc = bind(this.onAlloc, this);
-      this.onCell = bind(this.onCell, this);
+      this.onCellBook = bind(this.onCellBook, this);
       this.onTest = bind(this.onTest, this);
       this.onPets = bind(this.onPets, this);
       this.onDay = bind(this.onDay, this);
@@ -48,6 +48,7 @@
       this.weekdayIdx = new Date(2017, this.monthIdx, 1).getDay();
       this.numDays = 14;
       this.$cells = [];
+      this.myCustId = "12";
       Util.log('Book Constructor');
     }
 
@@ -83,29 +84,34 @@
     };
 
     Book.prototype.roomsHtml = function() {
-      var date, day, htm, i, j, k, ref, ref1, ref2, ref3, room, roomId, weekday;
+      var date, day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday;
       htm = "<table><thead>";
       htm += "<tr><th></th><th id=\"NumGuests\">" + this.guests + "&nbsp;Guests</th>";
       for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
         weekday = this.weekdays[(this.weekdayIdx + day - 1) % 7];
         htm += "<th>" + weekday + "</th>";
       }
-      htm += "<th></th></tr><tr><th>Cottage</th><th>" + this.pet + "&nbsp;Pets</th>";
+      htm += "<th>Room</th></tr><tr><th>Cottage</th><th>" + this.pet + "&nbsp;Pets</th>";
       for (day = j = 1, ref1 = this.numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
         htm += "<th>" + (this.dayMonth(day)) + "</th>";
       }
-      htm += "<th></th></tr></thead><tbody>";
+      htm += "<th>Total</th></tr></thead><tbody>";
       ref2 = Book.Room;
       for (roomId in ref2) {
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
-        htm += "<tr id=\"" + roomId + "\"><td>" + room.name + "</td><td id=\"P" + roomId + "\" class=\"room-price\">" + ('$' + this.calcPrice(room)) + "</td>";
+        htm += "<tr id=\"" + roomId + "\"><td>" + room.name + "</td><td id=\"" + roomId + "Price\" class=\"room-price\">" + ('$' + this.calcPrice(room)) + "</td>";
         for (day = k = 1, ref3 = this.numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
           date = this.toDateStr(day);
           htm += this.createCell(roomId, Book.Book[roomId], date);
         }
-        htm += "<td class=\"btn-book\">Book</td></tr>";
+        htm += "<td class=\"room-total\" id=\"" + roomId + "Total\"></td></tr>";
       }
+      htm += "<tr><td></td><td></td>";
+      for (day = l = 1, ref4 = this.numDays; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
+        htm += "<td></td>";
+      }
+      htm += "<td class=\"room-total\" id=\"Totals\">&nbsp;</td></tr>";
       htm += "</tbody></table>";
       return htm;
     };
@@ -127,7 +133,7 @@
           $cell = $('#' + roomId + date);
           $cell.click((function(_this) {
             return function(event) {
-              return _this.onCell(event);
+              return _this.onCellBook(event);
             };
           })(this));
           this.$cells.push($cell);
@@ -138,11 +144,14 @@
     Book.prototype.createCell = function(roomId, book, date) {
       var status;
       status = this.dayBooked(book, date);
-      return "<td id=\"" + (roomId + date) + "\" class=\"room-" + status + "\"></td>";
+      return "<td id=\"" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
     };
 
     Book.prototype.calcPrice = function(room) {
-      return room[this.guests] + this.pet * this.petPrice;
+      var price;
+      price = room[this.guests] + this.pet * this.petPrice;
+      room.price = price;
+      return price;
     };
 
     Book.prototype.updatePrice = function(roomId, room) {
@@ -164,6 +173,46 @@
         results.push(this.updatePrice(roomId, room));
       }
       return results;
+    };
+
+    Book.prototype.updateTotal = function(roomId, date, status) {
+      var cust, price, text;
+      price = Book.Room[roomId].price;
+      cust = Book.Book[roomId][this.myCustId];
+      if (cust == null) {
+        cust = this.newCust();
+        Book.Book[roomId][this.myCustId] = cust;
+      }
+      cust.status = status;
+      cust.days.push(date);
+      cust.total += status === 'mine' ? price : -price;
+      text = cust.total === 0 ? '' : '$' + cust.total;
+      $('#' + roomId + 'Total').text(text);
+      this.updateTotals();
+    };
+
+    Book.prototype.newCust = function() {
+      return {
+        status: 'mine',
+        days: [],
+        total: 0
+      };
+    };
+
+    Book.prototype.updateTotals = function() {
+      var book, cust, ref, roomId, text, totals;
+      totals = 0;
+      ref = Book.Book;
+      for (roomId in ref) {
+        if (!hasProp.call(ref, roomId)) continue;
+        book = ref[roomId];
+        cust = book[this.myCustId];
+        if (cust != null) {
+          totals += book[this.myCustId].total;
+        }
+      }
+      text = totals === 0 ? '' : '$' + totals;
+      $('#Totals').text(text);
     };
 
     Book.prototype.toDay = function(date) {
@@ -234,11 +283,19 @@
       return this.stream.publish("Alloc", Book.Alloc);
     };
 
-    Book.prototype.onCell = function(event) {
-      var $cell;
+    Book.prototype.onCellBook = function(event) {
+      var $cell, date, roomId, status;
       $cell = $(event.target);
-      $cell.removeClass().addClass("room-mine");
-      return Util.log("Book.onCell", $cell.attr('id'));
+      status = $cell.attr('data-status');
+      if (status === 'free') {
+        status = 'mine';
+      } else if (status === 'mine') {
+        status = 'free';
+      }
+      this.cellStatus($cell, status);
+      roomId = $cell.attr('id').substr(0, 1);
+      date = $cell.attr('id').substr(1, 8);
+      return this.updateTotal(roomId, date, status);
     };
 
     Book.prototype.onAlloc = function(alloc) {
@@ -262,8 +319,12 @@
       }
     };
 
-    Book.prototype.allocCell = function(roomId, day, lookup) {
-      return $('#' + roomId + day).removeClass().addClass("room-" + lookup);
+    Book.prototype.allocCell = function(roomId, day, status) {
+      return this.cellStatus($('#' + roomId + day), status);
+    };
+
+    Book.prototype.cellStatus = function($cell, status) {
+      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
     Book.prototype.dayMonth = function(iday) {
