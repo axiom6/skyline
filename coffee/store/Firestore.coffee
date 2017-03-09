@@ -10,6 +10,7 @@ class Firestore extends Store
   constructor:( stream, uri ) ->
     super( stream, uri, 'Firestore' )
     @fb = @init( uri )
+    @fd = Store.Firebase.database()
 
   init:( uri ) ->
     Util.noop( uri )
@@ -19,7 +20,7 @@ class Firestore extends Store
       databaseURL:  "https://skyline-fed2b.firebaseio.com",
       storageBucket: "",
       messagingSenderId: "279547846849" }
-    Store.Firebase .initializeApp(config)
+    Store.Firebase.initializeApp(config)
     Store.Firebase
     return
 
@@ -37,12 +38,12 @@ class Firestore extends Store
         @publish( tableName, id, 'add', object )
       else
         @onerror( tableName, id, 'add', object, { error:error } )
-    @fb.child(tableName+'/'+id).set( object, onComplete )
+    @fd.ref(tableName+'/'+id).set( object, onComplete )
     return
 
   get:( t, id ) ->
     tableName = @tableName(t)
-    @fb.child(tableName+'/'+id).once('value', (snapshot) =>
+    @fd.ref(tableName+'/'+id).once('value', (snapshot) =>
       if snapshot.val()?
         @publish( tableName, id, 'get', snapshot.val() )
       else
@@ -56,7 +57,11 @@ class Firestore extends Store
         @publish( tableName, id, 'put', object )
       else
         @onerror( tableName, id, 'put', object, { error:error } )
-    @fb.child(tableName+'/'+id).update( object, onComplete )
+    putKey  = @fd.ref().child('tableName').push().key
+    updates = {}
+    updates[tableName+'/'+id+putKey] = object # Not Sure
+    #fb.ref().update( updates, onComplete )
+    @fb.ref().update( updates )
     return
 
   del:( t, id ) ->
@@ -66,7 +71,7 @@ class Firestore extends Store
         @publish( tableName, id, 'del', {} )
       else
         @onerror( tableName, id, 'del', {}, { error:error } )
-    @fb.child(tableName).remove( id, onComplete )
+    @fd.ref(tableName).remove( id, onComplete )
     return
 
   insert:( t, objects ) ->
@@ -76,12 +81,13 @@ class Firestore extends Store
         @publish( tableName, 'none', 'insert', objects )
       else
         @onerror( tableName, 'none', 'insert', { error:error }   )
-    @fb.child(tableName).set( objects, onComplete )
+    @fd.ref(tableName).set( objects, onComplete )
     return
 
+  # Review
   select:( t, where=Store.where ) ->
     tableName = @tableName(t)
-    @fb.child(tableName).once('value', (snapshot) =>
+    @fd.ref(tableName).once('value', (snapshot) =>
       if snapshot.val()?
         objects = Util.toObjects( snapshot.val(), where, @key )
         @publish( tableName, 'none', 'select', objects, { where:where.toString() } )
@@ -89,6 +95,7 @@ class Firestore extends Store
         @onerror( tableName = @tableName(t), 'none', 'select', objects, { where:where.toString() } ) )
     return
 
+  # Review
   update:( t, objects ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -96,21 +103,23 @@ class Firestore extends Store
         @publish( tableName, 'none', 'insert', objects )
       else
         @onerror( tableName, 'none', 'insert', { error:error } )
-    @fb.child(tableName).update( objects, onComplete )
+    @fd.ref(tableName).update( objects, onComplete )
     return
 
+  # Review
   remove:( t, where=Store.where ) ->
     tableName = @tableName(t)
-    @fb.child(t).once('value', (snapshot) =>
+    @fd.ref(t).once('value', (snapshot) =>
       if snapshot.val()?
         objects = Util.toObjects( snapshot.val(), where, @key )
         for key, object of objects when where(val)
-          @fb.child(t).remove( key ) # Need to see if onComplete is needed
+          @fb.ref(t).remove( key ) # Need to see if onComplete is needed
         @publish( tableName, 'none', 'remove', objects, { where:where.toString() } )
       else
         @onerror( tableName, 'none', 'remove', objects, { where:where.toString() } ) )
     return
 
+  # Supported?
   open:( t, schema ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -121,21 +130,24 @@ class Firestore extends Store
     fb.set( tableName, onComplete )
     return
 
+  # Supported?
   # Need to show a table schema for one table t
   show:( t ) ->
     tableName = @tableName(t)
     keys  = []
-    @fb.once('value', (snapshot) =>
+    @fd.once('value', (snapshot) =>
       snapshot.forEach( (table) =>
         keys.push( table.key() )
       @publish( tableName, 'none', 'show', keys ) ) )
     return
 
+  # Supported? Obscure
   make:( t, alters ) ->
     tableName = @tableName(t)
     @publish( tableName = @tableName(t), 'none', 'make', {}, { alters:alters } )
     return
 
+  # Supported?
   drop:( t ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -143,14 +155,15 @@ class Firestore extends Store
         @publish( tableName = @tableName(t), 'none', 'drop' )
       else
         @onerror( tableName = @tableName(t), 'none', 'drop', {}, { error:error } )
-    @fb.remove( tableName = @tableName(t), onComplete )
+    @fd.ref(t).remove( tableName, onComplete )
     return
 
+  # Needs Work
   onChange:( t, id ) ->
     tableName = @tableName(t)
     path    = if id eq '' then tableName else tableName+'/'+id
     onEvt   = 'value'
-    @fb.child(path).on( onEvt, (snapshot) =>
+    @fd.ref(path).on( onEvt, (snapshot) =>
       key = snapshot.name()
       val = snapshot.val()
       if key? and val?
@@ -166,6 +179,7 @@ class Firestore extends Store
       when 'value','child_added','child_changed','child_removed','child_moved' then false
       else                                                                          true
 
+  # Supported? Check
   auth:( tok ) ->
     @fb.auth( tok,  ( error, result ) =>
       if not error?

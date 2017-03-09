@@ -16,6 +16,7 @@
     function Firestore(stream, uri) {
       Firestore.__super__.constructor.call(this, stream, uri, 'Firestore');
       this.fb = this.init(uri);
+      this.fd = Store.Firebase.database();
     }
 
     Firestore.prototype.init = function(uri) {
@@ -53,13 +54,13 @@
           }
         };
       })(this);
-      this.fb.child(tableName + '/' + id).set(object, onComplete);
+      this.fd.ref(tableName + '/' + id).set(object, onComplete);
     };
 
     Firestore.prototype.get = function(t, id) {
       var tableName;
       tableName = this.tableName(t);
-      this.fb.child(tableName + '/' + id).once('value', (function(_this) {
+      this.fd.ref(tableName + '/' + id).once('value', (function(_this) {
         return function(snapshot) {
           if (snapshot.val() != null) {
             return _this.publish(tableName, id, 'get', snapshot.val());
@@ -73,7 +74,7 @@
     };
 
     Firestore.prototype.put = function(t, id, object) {
-      var onComplete, tableName;
+      var onComplete, putKey, tableName, updates;
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(error) {
@@ -86,7 +87,10 @@
           }
         };
       })(this);
-      this.fb.child(tableName + '/' + id).update(object, onComplete);
+      putKey = this.fd.ref().child('tableName').push().key;
+      updates = {};
+      updates[tableName + '/' + id + putKey] = object;
+      this.fb.ref().update(updates);
     };
 
     Firestore.prototype.del = function(t, id) {
@@ -103,7 +107,7 @@
           }
         };
       })(this);
-      this.fb.child(tableName).remove(id, onComplete);
+      this.fd.ref(tableName).remove(id, onComplete);
     };
 
     Firestore.prototype.insert = function(t, objects) {
@@ -120,7 +124,7 @@
           }
         };
       })(this);
-      this.fb.child(tableName).set(objects, onComplete);
+      this.fd.ref(tableName).set(objects, onComplete);
     };
 
     Firestore.prototype.select = function(t, where) {
@@ -129,7 +133,7 @@
         where = Store.where;
       }
       tableName = this.tableName(t);
-      this.fb.child(tableName).once('value', (function(_this) {
+      this.fd.ref(tableName).once('value', (function(_this) {
         return function(snapshot) {
           var objects;
           if (snapshot.val() != null) {
@@ -160,7 +164,7 @@
           }
         };
       })(this);
-      this.fb.child(tableName).update(objects, onComplete);
+      this.fd.ref(tableName).update(objects, onComplete);
     };
 
     Firestore.prototype.remove = function(t, where) {
@@ -169,7 +173,7 @@
         where = Store.where;
       }
       tableName = this.tableName(t);
-      this.fb.child(t).once('value', (function(_this) {
+      this.fd.ref(t).once('value', (function(_this) {
         return function(snapshot) {
           var key, object, objects;
           if (snapshot.val() != null) {
@@ -177,7 +181,7 @@
             for (key in objects) {
               object = objects[key];
               if (where(val)) {
-                _this.fb.child(t).remove(key);
+                _this.fb.ref(t).remove(key);
               }
             }
             return _this.publish(tableName, 'none', 'remove', objects, {
@@ -216,7 +220,7 @@
       var keys, tableName;
       tableName = this.tableName(t);
       keys = [];
-      this.fb.once('value', (function(_this) {
+      this.fd.once('value', (function(_this) {
         return function(snapshot) {
           return snapshot.forEach(function(table) {
             return keys.push(table.key());
@@ -247,7 +251,7 @@
           }
         };
       })(this);
-      this.fb.remove(tableName = this.tableName(t), onComplete);
+      this.fd.ref(t).remove(tableName, onComplete);
     };
 
     Firestore.prototype.onChange = function(t, id) {
@@ -255,7 +259,7 @@
       tableName = this.tableName(t);
       path = id(eq('')) ? tableName : tableName + '/' + id;
       onEvt = 'value';
-      this.fb.child(path).on(onEvt, (function(_this) {
+      this.fd.ref(path).on(onEvt, (function(_this) {
         return function(snapshot) {
           var key, val;
           key = snapshot.name();
