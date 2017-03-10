@@ -10,6 +10,7 @@ class Firestore extends Store
   constructor:( stream, uri ) ->
     super( stream, uri, 'Firestore' )
     @fb = @init( uri )
+    @anon() # Anonomous logins have to enabled
     @fd = Store.Firebase.database()
 
   init:( uri ) ->
@@ -21,16 +22,10 @@ class Firestore extends Store
       storageBucket: "",
       messagingSenderId: "279547846849" }
     Store.Firebase.initializeApp(config)
+    Util.log( 'Firestore.init', config )
     Store.Firebase
-    return
 
-  ###
-  openFireBaseDB:( uri ) ->
-    FirestoreDB.initializeApp( { apiKey:FireBaseApiKey, databaseURL:uri } )
-    FirestoreDB.database().ref()
-  ###
-
-
+  # OK
   add:( t, id, object  ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -41,6 +36,7 @@ class Firestore extends Store
     @fd.ref(tableName+'/'+id).set( object, onComplete )
     return
 
+  # OK
   get:( t, id ) ->
     tableName = @tableName(t)
     @fd.ref(tableName+'/'+id).once('value', (snapshot) =>
@@ -50,6 +46,7 @@ class Firestore extends Store
         @onerror( tableName, id, 'get', {}, { msg:'Firestore get error' } ) )
     return
 
+  # Where to put complete
   put:( t, id,  object ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -60,10 +57,12 @@ class Firestore extends Store
     putKey  = @fd.ref().child('tableName').push().key
     updates = {}
     updates[tableName+'/'+id+putKey] = object # Not Sure
+    Util.noop( onComplete )
     #fb.ref().update( updates, onComplete )
     @fb.ref().update( updates )
     return
 
+  # OK
   del:( t, id ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -74,6 +73,7 @@ class Firestore extends Store
     @fd.ref(tableName).remove( id, onComplete )
     return
 
+  # OK of set takes objects
   insert:( t, objects ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -84,7 +84,7 @@ class Firestore extends Store
     @fd.ref(tableName).set( objects, onComplete )
     return
 
-  # Review
+  # OK if snapshot returns objects
   select:( t, where=Store.where ) ->
     tableName = @tableName(t)
     @fd.ref(tableName).once('value', (snapshot) =>
@@ -92,10 +92,10 @@ class Firestore extends Store
         objects = Util.toObjects( snapshot.val(), where, @key )
         @publish( tableName, 'none', 'select', objects, { where:where.toString() } )
       else
-        @onerror( tableName = @tableName(t), 'none', 'select', objects, { where:where.toString() } ) )
+        @onerror( tableName, 'none', 'select', objects, { where:where.toString() } ) )
     return
 
-  # Review
+  # Review - OK if update takes objects and onComplete
   update:( t, objects ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -106,7 +106,7 @@ class Firestore extends Store
     @fd.ref(tableName).update( objects, onComplete )
     return
 
-  # Review
+  # Review - OK if this is really the right approach
   remove:( t, where=Store.where ) ->
     tableName = @tableName(t)
     @fd.ref(t).once('value', (snapshot) =>
@@ -119,32 +119,43 @@ class Firestore extends Store
         @onerror( tableName, 'none', 'remove', objects, { where:where.toString() } ) )
     return
 
-  # Supported?
-  open:( t, schema ) ->
+  # Supported? are tables just child nodes
+  open:( t, schema={} ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
       if not error?
         @publish( tableName, 'none', 'open', {}, { schema:schema } )
       else
         @onerror( tableName, 'none', 'open', {}, { schema:schema, error:error } )
-    fb.set( tableName, onComplete )
+    @fd.ref().push( tableName, onComplete )
     return
 
-  # Supported?
+  # Supported? can we access child nodes as tables
   # Need to show a table schema for one table t
-  show:( t ) ->
+  show:( t=undefined ) ->
+    if t? then @showKeys(t) else @showTables()
+    return
+
+  showTables:() ->
+    tables  = []
+    @fd.ref().once('value', (snapshot) =>
+      snapshot.forEach( (table) =>
+        tables.push( table.key() )
+        @publish( 'tables', 'none', 'show', tables ) ) )
+    return
+
+  showKeys:( t ) ->
     tableName = @tableName(t)
     keys  = []
-    @fd.once('value', (snapshot) =>
-      snapshot.forEach( (table) =>
-        keys.push( table.key() )
-      @publish( tableName, 'none', 'show', keys ) ) )
+    @fd.ref(t).once('value', (snapshot) =>
+      snapshot.forEach( (key) =>
+        keys.push( key.key() )
+        @publish( tableName, 'none', 'show', keys ) ) )
     return
 
   # Supported? Obscure
-  make:( t, alters ) ->
-    tableName = @tableName(t)
-    @publish( tableName = @tableName(t), 'none', 'make', {}, { alters:alters } )
+  make:( t, alters={} ) ->
+    @onerror( t, 'none', 'make', {}, { error:'Store.make() not supported', alters:alters } )
     return
 
   # Supported?
@@ -152,13 +163,13 @@ class Firestore extends Store
     tableName = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName = @tableName(t), 'none', 'drop' )
+        @publish( tableName, 'none', 'drop' )
       else
-        @onerror( tableName = @tableName(t), 'none', 'drop', {}, { error:error } )
-    @fd.ref(t).remove( tableName, onComplete )
+        @onerror( tableName, 'none', 'drop', {}, { error:error } )
+    @fd.ref().remove( tableName, onComplete )
     return
 
-  # Needs Work
+  # Maybe OK
   onChange:( t, id ) ->
     tableName = @tableName(t)
     path    = if id eq '' then tableName else tableName+'/'+id
@@ -174,10 +185,20 @@ class Firestore extends Store
         @onerror( tableName, id, 'onChange', {}, { error:'error' } ) )
     return
 
+  # Not used for now
   isNotEvt:( evt ) ->
     switch evt
       when 'value','child_added','child_changed','child_removed','child_moved' then false
       else                                                                          true
+
+  # Supported? Check
+  anon:( ) ->
+    @fb.auth().signInAnonymously().catch( (error) =>
+      if not error?
+        @publish( 'none', 'none', 'anon', 'OK' )
+      else
+        @onerror( 'none', 'none', 'anon', {}, { error:error } ) )
+    return
 
   # Supported? Check
   auth:( tok ) ->

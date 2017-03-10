@@ -9,18 +9,19 @@
 
     Res.init = function() {
       return Util.ready(function() {
-        var Book, Cust, Room, Store, Stream, book, cust, room, store, stream, subjects;
+        var Book, Cust, Firestore, Room, Stream, book, cust, room, store, stream, subjects;
         Stream = require('js/store/Stream');
-        Store = require('js/store/Store');
+        Firestore = require('js/store/Firestore');
         Room = require('js/res/Room');
         Cust = require('js/res/Cust');
         Book = require('js/res/Book');
         subjects = ["Book", "Alloc", "Debug"];
         stream = new Stream(subjects);
-        store = new Store(stream, "skytest", "Firebase");
-        room = new Room();
-        cust = new Cust();
+        store = new Firestore(stream, "skytest");
+        room = new Room(stream, store);
+        cust = new Cust(stream, store);
         book = new Book(stream, store, room, cust);
+        room.select();
         return book.ready();
       });
     };

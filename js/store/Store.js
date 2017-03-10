@@ -163,6 +163,11 @@
       name = Util.firstTok(t, '.');
       table = this.table(name);
       Util.noop(table);
+      Util.log("Store.tableName()", {
+        name: name,
+        table: table,
+        t: t
+      });
       return name;
     };
 
@@ -177,7 +182,8 @@
     };
 
     Store.prototype.subscribe = function(table, id, op, onNext) {
-      this.stream.subscribe(this.toSubject(table, op, id), onNext, this.onError, this.onComplete);
+      Util.log('Store.subscribe()', this.toSubject(table, id, op));
+      this.stream.subscribe(this.toSubject(table, id, op), onNext, this.onError, this.onComplete);
     };
 
     Store.prototype.publish = function(table, id, op, data, extras) {
@@ -189,7 +195,7 @@
       if (this.hasMemory) {
         this.toMemory(op, table, id, data, params);
       }
-      this.stream.publish(this.toSubject(table, op, id), data);
+      this.stream.publish(this.toSubject(table, id, op), data);
     };
 
     Store.prototype.onerror = function(table, id, op, result, error) {
@@ -273,25 +279,24 @@
       Util.noop(this.getMemory(this.dbName));
     };
 
-    Store.prototype.toSubject = function(table, op, id) {
+    Store.prototype.toSubject = function(table, id, op) {
       var subject;
       if (table == null) {
         table = 'none';
       }
-      if (op == null) {
-        op = 'none';
-      }
       if (id == null) {
         id = 'none';
       }
-      subject = "" + this.dbName;
+      if (op == null) {
+        op = 'none';
+      }
+      subject = "";
       if (table !== 'none') {
-        subject += "/" + table;
+        subject += "" + table;
       }
       if (id !== 'none') {
         subject += "/" + id;
       }
-      subject += "?module=" + this.module;
       if (op !== 'none') {
         subject += "&op=" + op;
       }

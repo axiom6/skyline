@@ -16,6 +16,7 @@
     function Firestore(stream, uri) {
       Firestore.__super__.constructor.call(this, stream, uri, 'Firestore');
       this.fb = this.init(uri);
+      this.anon();
       this.fd = Store.Firebase.database();
     }
 
@@ -30,15 +31,9 @@
         messagingSenderId: "279547846849"
       };
       Store.Firebase.initializeApp(config);
-      Store.Firebase;
+      Util.log('Firestore.init', config);
+      return Store.Firebase;
     };
-
-
-    /*
-    openFireBaseDB:( uri ) ->
-      FirestoreDB.initializeApp( { apiKey:FireBaseApiKey, databaseURL:uri } )
-      FirestoreDB.database().ref()
-     */
 
     Firestore.prototype.add = function(t, id, object) {
       var onComplete, tableName;
@@ -90,6 +85,7 @@
       putKey = this.fd.ref().child('tableName').push().key;
       updates = {};
       updates[tableName + '/' + id + putKey] = object;
+      Util.noop(onComplete);
       this.fb.ref().update(updates);
     };
 
@@ -142,7 +138,7 @@
               where: where.toString()
             });
           } else {
-            return _this.onerror(tableName = _this.tableName(t), 'none', 'select', objects, {
+            return _this.onerror(tableName, 'none', 'select', objects, {
               where: where.toString()
             });
           }
@@ -198,6 +194,9 @@
 
     Firestore.prototype.open = function(t, schema) {
       var onComplete, tableName;
+      if (schema == null) {
+        schema = {};
+      }
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(error) {
@@ -213,26 +212,53 @@
           }
         };
       })(this);
-      fb.set(tableName, onComplete);
+      this.fd.ref().push(tableName, onComplete);
     };
 
     Firestore.prototype.show = function(t) {
+      if (t == null) {
+        t = void 0;
+      }
+      if (t != null) {
+        this.showKeys(t);
+      } else {
+        this.showTables();
+      }
+    };
+
+    Firestore.prototype.showTables = function() {
+      var tables;
+      tables = [];
+      this.fd.ref().once('value', (function(_this) {
+        return function(snapshot) {
+          return snapshot.forEach(function(table) {
+            tables.push(table.key());
+            return _this.publish('tables', 'none', 'show', tables);
+          });
+        };
+      })(this));
+    };
+
+    Firestore.prototype.showKeys = function(t) {
       var keys, tableName;
       tableName = this.tableName(t);
       keys = [];
-      this.fd.once('value', (function(_this) {
+      this.fd.ref(t).once('value', (function(_this) {
         return function(snapshot) {
-          return snapshot.forEach(function(table) {
-            return keys.push(table.key());
-          }, _this.publish(tableName, 'none', 'show', keys));
+          return snapshot.forEach(function(key) {
+            keys.push(key.key());
+            return _this.publish(tableName, 'none', 'show', keys);
+          });
         };
       })(this));
     };
 
     Firestore.prototype.make = function(t, alters) {
-      var tableName;
-      tableName = this.tableName(t);
-      this.publish(tableName = this.tableName(t), 'none', 'make', {}, {
+      if (alters == null) {
+        alters = {};
+      }
+      this.onerror(t, 'none', 'make', {}, {
+        error: 'Store.make() not supported',
         alters: alters
       });
     };
@@ -243,15 +269,15 @@
       onComplete = (function(_this) {
         return function(error) {
           if (error == null) {
-            return _this.publish(tableName = _this.tableName(t), 'none', 'drop');
+            return _this.publish(tableName, 'none', 'drop');
           } else {
-            return _this.onerror(tableName = _this.tableName(t), 'none', 'drop', {}, {
+            return _this.onerror(tableName, 'none', 'drop', {}, {
               error: error
             });
           }
         };
       })(this);
-      this.fd.ref(t).remove(tableName, onComplete);
+      this.fd.ref().remove(tableName, onComplete);
     };
 
     Firestore.prototype.onChange = function(t, id) {
@@ -293,6 +319,20 @@
         default:
           return true;
       }
+    };
+
+    Firestore.prototype.anon = function() {
+      this.fb.auth().signInAnonymously()["catch"]((function(_this) {
+        return function(error) {
+          if (error == null) {
+            return _this.publish('none', 'none', 'anon', 'OK');
+          } else {
+            return _this.onerror('none', 'none', 'anon', {}, {
+              error: error
+            });
+          }
+        };
+      })(this));
     };
 
     Firestore.prototype.auth = function(tok) {

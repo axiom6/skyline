@@ -7,7 +7,41 @@
 
     Room.Data = require('data/Room.json');
 
-    function Room() {}
+    function Room(stream, store) {
+      this.stream = stream;
+      this.store = store;
+      this.subscribe();
+    }
+
+    Room.prototype.subscribe = function() {
+      this.store.subscribe('Room', 'none', 'open', (function(_this) {
+        return function(open) {
+          return Util.log('Room.open()', open);
+        };
+      })(this));
+      this.store.subscribe('Room', 'none', 'insert', (function(_this) {
+        return function(insert) {
+          return Util.log('Room.insert()', insert);
+        };
+      })(this));
+      return this.store.subscribe('Room', 'none', 'select', (function(_this) {
+        return function(select) {
+          return Util.log('Room.select()', select);
+        };
+      })(this));
+    };
+
+    Room.prototype.open = function() {
+      this.store.open('Room');
+    };
+
+    Room.prototype.insert = function() {
+      this.store.insert('Room', Room.Data);
+    };
+
+    Room.prototype.select = function() {
+      this.store.select('Room');
+    };
 
     return Room;
 

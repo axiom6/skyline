@@ -76,6 +76,7 @@ class Store
      name  = Util.firstTok(t,'.') # Strips off  .json .js .csv file extensions
      table = @table( name )
      Util.noop( table )
+     Util.log( "Store.tableName()", { name:name, table:table, t:t } )
      name
 
   memory:( table, id , op ) ->
@@ -85,14 +86,14 @@ class Store
     return
 
   subscribe:( table, id ,op, onNext  ) ->
-    # Util.log( 'Store.subscribe()', @toSubject(table,op,id) )
-    @stream.subscribe( @toSubject(table,op,id), onNext, @onError, @onComplete )
+    Util.log( 'Store.subscribe()', @toSubject(table,id,op) )
+    @stream.subscribe( @toSubject(table,id,op), onNext, @onError, @onComplete )
     return
 
   publish:( table, id, op, data, extras={} ) ->
     params = @toParams(table,id,op,extras)
     @toMemory( op, table, id, data, params ) if @hasMemory
-    @stream.publish( @toSubject(table,op,id), data )
+    @stream.publish( @toSubject(table,id,op), data )
     return
 
   onerror:( table, id, op, result={}, error={} ) ->
@@ -131,12 +132,12 @@ class Store
     Util.noop( @getMemory(@dbName) )
     return
 
-  toSubject:( table='none', op='none', id='none' ) ->
-    subject  = "#{@dbName}"
-    subject += "/#{table}"     if table isnt 'none'
+  toSubject:( table='none', id='none', op='none' ) ->
+    subject  = "" # #{@dbName}"
+    subject += "#{table}"      if table isnt 'none'
     subject += "/#{id}"        if id    isnt 'none'
-    subject += "?module=#{@module}"
     subject += "&op=#{op}"     if op    isnt 'none'
+    #ubject += "?module=#{@module}"
     # Util.log( 'Store.toSubject', subject )
     subject
 
