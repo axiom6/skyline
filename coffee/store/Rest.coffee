@@ -32,8 +32,8 @@ class Rest extends Store
   drop:( table, resets=@R  )  -> @ajaxTable( 'drop', table, { resets:resets } )
 
   # Subscribe to  a table or object with id
-  onChange:(  t, id='none'   ) ->
-    @onerror( t, id, 'onChange', {}, { msg:"onChange() not implemeted by Store.Rest" } )
+  on:(  t, id='none'   ) ->
+    @onerror( t, id, 'on', {}, { msg:"on() not implemeted by Store.Rest" } )
     return
 
   ajaxRest:( op, t, id, object=null, params="" ) ->

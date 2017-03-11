@@ -171,14 +171,14 @@
       this.publish(tableName, 'none', 'drop');
     };
 
-    IndexedDB.prototype.onChange = function(t, id) {
+    IndexedDB.prototype.on = function(t, id) {
       var tableName;
       if (id == null) {
         id = 'none';
       }
       tableName = this.tableName(t);
       this.onerror(tableName, id, 'onChange', {}, {
-        msg: "onChange() not implemeted by Store.IndexedDb"
+        msg: "on() not implemeted by Store.IndexedDb"
       });
     };
 

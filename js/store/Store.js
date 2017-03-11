@@ -138,7 +138,7 @@
       return Util.noop(table, resets);
     };
 
-    Store.prototype.onChange = function(table, id) {
+    Store.prototype.on = function(table, id) {
       if (id == null) {
         id = '';
       }
@@ -298,7 +298,7 @@
         subject += "/" + id;
       }
       if (op !== 'none') {
-        subject += "&op=" + op;
+        subject += "?op=" + op;
       }
       return subject;
     };

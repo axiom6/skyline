@@ -19,28 +19,96 @@
           return Util.log('Room.open()', open);
         };
       })(this));
+      this.store.subscribe('Room', 'none', 'show', (function(_this) {
+        return function(show) {
+          return Util.log('Room.show()', show);
+        };
+      })(this));
+      this.store.subscribe('Room', 'none', 'drop', (function(_this) {
+        return function(drop) {
+          return Util.log('Room.drop()', drop);
+        };
+      })(this));
       this.store.subscribe('Room', 'none', 'insert', (function(_this) {
         return function(insert) {
           return Util.log('Room.insert()', insert);
         };
       })(this));
-      return this.store.subscribe('Room', 'none', 'select', (function(_this) {
+      this.store.subscribe('Room', 'none', 'select', (function(_this) {
         return function(select) {
           return Util.log('Room.select()', select);
+        };
+      })(this));
+      this.store.subscribe('Room', 'W', 'add', (function(_this) {
+        return function(add) {
+          return Util.log('Room.add()', add);
+        };
+      })(this));
+      this.store.subscribe('Room', 'S', 'get', (function(_this) {
+        return function(get) {
+          return Util.log('Room.get()', get);
+        };
+      })(this));
+      this.store.subscribe('Room', '7', 'put', (function(_this) {
+        return function(put) {
+          return Util.log('Room.put()', put);
+        };
+      })(this));
+      return this.store.subscribe('Room', '8', 'del', (function(_this) {
+        return function(del) {
+          return Util.log('Room.del()', del);
         };
       })(this));
     };
 
     Room.prototype.open = function() {
-      this.store.open('Room');
+      return this.store.open('Room');
+    };
+
+    Room.prototype.show = function() {
+      return this.store.show('Room');
+    };
+
+    Room.prototype.drop = function() {
+      return this.store.drop('Room');
     };
 
     Room.prototype.insert = function() {
-      this.store.insert('Room', Room.Data);
+      return this.store.insert('Room', Room.Data);
     };
 
     Room.prototype.select = function() {
-      this.store.select('Room');
+      return this.store.select('Room');
+    };
+
+    Room.prototype.add = function() {
+      return this.store.add('Room', "W", this.west());
+    };
+
+    Room.prototype.get = function() {
+      return this.store.get('Room', "S");
+    };
+
+    Room.prototype.put = function() {
+      return this.store.put('Room', "7", this.west());
+    };
+
+    Room.prototype.del = function() {
+      return this.store.del('Room', "8");
+    };
+
+    Room.prototype.west = function() {
+      return {
+        "name": "West Skyline",
+        "pet": 12,
+        "spa": 0,
+        "max": 4,
+        "price": 0,
+        "1": 135,
+        "2": 135,
+        "3": 145,
+        "4": 155
+      };
     };
 
     return Room;

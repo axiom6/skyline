@@ -13,23 +13,15 @@
 
     module.exports = Firestore;
 
-    function Firestore(stream, uri) {
+    function Firestore(stream, uri, config1) {
+      this.config = config1;
       Firestore.__super__.constructor.call(this, stream, uri, 'Firestore');
-      this.fb = this.init(uri);
+      this.fb = this.init(this.config);
       this.anon();
       this.fd = Store.Firebase.database();
     }
 
-    Firestore.prototype.init = function(uri) {
-      var config;
-      Util.noop(uri);
-      config = {
-        apiKey: "AIzaSyBjMGVzZ6JgZBs8O7mBQfH6clHYDmjTsGU",
-        authDomain: "skyline-fed2b.firebaseapp.com",
-        databaseURL: "https://skyline-fed2b.firebaseio.com",
-        storageBucket: "",
-        messagingSenderId: "279547846849"
-      };
+    Firestore.prototype.init = function(config) {
       Store.Firebase.initializeApp(config);
       Util.log('Firestore.init', config);
       return Store.Firebase;
@@ -49,13 +41,13 @@
           }
         };
       })(this);
-      this.fd.ref(tableName + '/' + id).set(object, onComplete);
+      return this.fd.ref(tableName + '/' + id).set(object, onComplete);
     };
 
     Firestore.prototype.get = function(t, id) {
       var tableName;
       tableName = this.tableName(t);
-      this.fd.ref(tableName + '/' + id).once('value', (function(_this) {
+      return this.fd.ref(tableName + '/' + id).once('value', (function(_this) {
         return function(snapshot) {
           if (snapshot.val() != null) {
             return _this.publish(tableName, id, 'get', snapshot.val());
@@ -69,7 +61,7 @@
     };
 
     Firestore.prototype.put = function(t, id, object) {
-      var onComplete, putKey, tableName, updates;
+      var onComplete, tableName;
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(error) {
@@ -82,11 +74,7 @@
           }
         };
       })(this);
-      putKey = this.fd.ref().child('tableName').push().key;
-      updates = {};
-      updates[tableName + '/' + id + putKey] = object;
-      Util.noop(onComplete);
-      this.fb.ref().update(updates);
+      return this.fd.ref(tableName + '/' + id).set(object, onComplete);
     };
 
     Firestore.prototype.del = function(t, id) {
@@ -103,7 +91,7 @@
           }
         };
       })(this);
-      this.fd.ref(tableName).remove(id, onComplete);
+      return this.fd.ref(tableName + '/' + id).remove(onComplete);
     };
 
     Firestore.prototype.insert = function(t, objects) {
@@ -120,16 +108,16 @@
           }
         };
       })(this);
-      this.fd.ref(tableName).set(objects, onComplete);
+      return this.fd.ref(tableName).set(objects, onComplete);
     };
 
     Firestore.prototype.select = function(t, where) {
-      var tableName;
+      var onComplete, tableName;
       if (where == null) {
         where = Store.where;
       }
       tableName = this.tableName(t);
-      this.fd.ref(tableName).once('value', (function(_this) {
+      onComplete = (function(_this) {
         return function(snapshot) {
           var objects;
           if (snapshot.val() != null) {
@@ -143,7 +131,8 @@
             });
           }
         };
-      })(this));
+      })(this);
+      return this.fd.ref(tableName).once('value', onComplete);
     };
 
     Firestore.prototype.update = function(t, objects) {
@@ -160,16 +149,16 @@
           }
         };
       })(this);
-      this.fd.ref(tableName).update(objects, onComplete);
+      return this.fd.ref(tableName).update(objects, onComplete);
     };
 
     Firestore.prototype.remove = function(t, where) {
-      var tableName;
+      var onComplete, tableName;
       if (where == null) {
         where = Store.where;
       }
       tableName = this.tableName(t);
-      this.fd.ref(t).once('value', (function(_this) {
+      onComplete = (function(_this) {
         return function(snapshot) {
           var key, object, objects;
           if (snapshot.val() != null) {
@@ -189,7 +178,8 @@
             });
           }
         };
-      })(this));
+      })(this);
+      return this.fd.ref(t).once('value', onComplete);
     };
 
     Firestore.prototype.open = function(t, schema) {
@@ -212,45 +202,29 @@
           }
         };
       })(this);
-      this.fd.ref().push(tableName, onComplete);
+      return this.fd.ref().push(tableName, onComplete);
     };
 
     Firestore.prototype.show = function(t) {
+      var keys, onComplete, tableName;
       if (t == null) {
         t = void 0;
       }
-      if (t != null) {
-        this.showKeys(t);
-      } else {
-        this.showTables();
-      }
-    };
-
-    Firestore.prototype.showTables = function() {
-      var tables;
-      tables = [];
-      this.fd.ref().once('value', (function(_this) {
-        return function(snapshot) {
-          return snapshot.forEach(function(table) {
-            tables.push(table.key());
-            return _this.publish('tables', 'none', 'show', tables);
-          });
-        };
-      })(this));
-    };
-
-    Firestore.prototype.showKeys = function(t) {
-      var keys, tableName;
-      tableName = this.tableName(t);
+      tableName = t != null ? this.tableName(t) : this.dbName;
       keys = [];
-      this.fd.ref(t).once('value', (function(_this) {
+      onComplete = (function(_this) {
         return function(snapshot) {
           return snapshot.forEach(function(key) {
             keys.push(key.key());
             return _this.publish(tableName, 'none', 'show', keys);
           });
         };
-      })(this));
+      })(this);
+      if (t != null) {
+        return this.fd.ref(tableName).once('value', onComplete);
+      } else {
+        return this.fd.ref().once('value', onComplete);
+      }
     };
 
     Firestore.prototype.make = function(t, alters) {
@@ -269,7 +243,7 @@
       onComplete = (function(_this) {
         return function(error) {
           if (error == null) {
-            return _this.publish(tableName, 'none', 'drop');
+            return _this.publish(tableName, 'none', 'drop', "OK");
           } else {
             return _this.onerror(tableName, 'none', 'drop', {}, {
               error: error
@@ -277,10 +251,10 @@
           }
         };
       })(this);
-      this.fd.ref().remove(tableName, onComplete);
+      return this.fd.ref(tableName).remove(onComplete);
     };
 
-    Firestore.prototype.onChange = function(t, id) {
+    Firestore.prototype.on = function(t, id) {
       var onEvt, path, tableName;
       tableName = this.tableName(t);
       path = id(eq('')) ? tableName : tableName + '/' + id;

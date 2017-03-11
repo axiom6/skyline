@@ -100,8 +100,8 @@ class Memory extends Store
     return
 
   # Subscribe to  a table or object with id
-  onChange:(  t, id='none'   ) ->
-    @onerror( t, id, 'onChange', {}, { msg:"onChange() not implemeted by Store.Memory" } )
+  on:(  t, id='none'   ) ->
+    @onerror( t, id, 'on', {}, { msg:"on() not implemeted by Store.Memory" } )
     return
 
   dbTableName:( tableName ) ->

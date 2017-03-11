@@ -94,9 +94,9 @@ class IndexedDB extends Store
     return
 
   # Subscribe to  a table or object with id
-  onChange:(  t, id='none'   ) ->
+  on:(  t, id='none'   ) ->
     tableName = @tableName(t)
-    @onerror( tableName, id, 'onChange', {}, { msg:"onChange() not implemeted by Store.IndexedDb" } )
+    @onerror( tableName, id, 'onChange', {}, { msg:"on() not implemeted by Store.IndexedDb" } )
     return
 
   # IndexedDB Specifics

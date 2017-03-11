@@ -12,25 +12,18 @@ class Res
       Room      = require( 'js/res/Room'        )
       Cust      = require( 'js/res/Cust'        )
       Book      = require( 'js/res/Book'        )
+      Data      = require( 'js/res/Data'        )
+
 
       subjects = ["Book","Alloc","Debug"]
       stream   = new Stream( subjects )
-      store    = new Firestore( stream, "skytest" )
+      store    = new Firestore( stream, "skytest", Data.configSkytest )
       room     = new Room(      stream, store )
       cust     = new Cust(      stream, store )
       book     = new Book(      stream, store, room, cust )
+      data     = new Data(      stream, store, room, cust, book )
 
-      #room.open()     # -KeuSkDgdE8xc0ergdAB
-      #room.insert()
-      room.select()
-
+      data.doRoom()
       book.ready()
 
-  @onDebug:( debug ) =>
-    Util.log( "Res.onDebug()", debug )
-
 Res.init()
-
-#data    = new Data(      stream, store, room, cust, book )
-# stream.subscribe( 'Debug', (debug) => Res.onDebug( debug ) )
-# stream.publish(   "Debug", "Debug String" )

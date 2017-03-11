@@ -61,7 +61,7 @@ class Store
   drop:( table, resets=R ) -> Util.noop( table, resets ) # Drop the entire @table - good for testing
 
   # Subscribe to CRUD changes on a table or an object with id
-  onChange:( table, id='' ) ->
+  on:( table, id='' ) ->
     Util.noop( table, id )
     return
 
@@ -136,7 +136,7 @@ class Store
     subject  = "" # #{@dbName}"
     subject += "#{table}"      if table isnt 'none'
     subject += "/#{id}"        if id    isnt 'none'
-    subject += "&op=#{op}"     if op    isnt 'none'
+    subject += "?op=#{op}"     if op    isnt 'none'
     #ubject += "?module=#{@module}"
     # Util.log( 'Store.toSubject', subject )
     subject

@@ -165,12 +165,12 @@
       }
     };
 
-    Memory.prototype.onChange = function(t, id) {
+    Memory.prototype.on = function(t, id) {
       if (id == null) {
         id = 'none';
       }
-      this.onerror(t, id, 'onChange', {}, {
-        msg: "onChange() not implemeted by Store.Memory"
+      this.onerror(t, id, 'on', {}, {
+        msg: "on() not implemeted by Store.Memory"
       });
     };
 
