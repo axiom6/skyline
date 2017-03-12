@@ -11,15 +11,17 @@ class Data
   dropAllTables:() ->
     return
 
+  # Depends on Firebase promises
   doRoom:() ->
-    @room.open()
-    @room.insert()
-    @room.select()
-    @room.add()
-    @room.get()
-    @room.put()
-    @room.del()
-    @room.drop()
+    @room.make()
+    .then( @room.insert() )
+    .then( @room.select() )
+    .then( @room.on()     )
+    .then( @room.add()    )
+    .then( @room.get()    )
+    .then( @room.put()    )
+    .then( @room.del()    )
+    #then( @room.drop()   )
     return
 
   @configSkytest = {

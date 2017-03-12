@@ -14,7 +14,6 @@ class Res
       Book      = require( 'js/res/Book'        )
       Data      = require( 'js/res/Data'        )
 
-
       subjects = ["Book","Alloc","Debug"]
       stream   = new Stream( subjects )
       store    = new Firestore( stream, "skytest", Data.configSkytest )
@@ -23,7 +22,9 @@ class Res
       book     = new Book(      stream, store, room, cust )
       data     = new Data(      stream, store, room, cust, book )
 
-      data.doRoom()
+      # data.doRoom()
+      Util.noop( data )
+      room.make()
       book.ready()
 
 Res.init()

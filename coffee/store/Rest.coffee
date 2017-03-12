@@ -6,12 +6,9 @@ class Rest extends Store
 
   module.exports = Rest # Util.Export( Rest, 'store/Rest' )
 
-  constructor:( stream, uri, db ) ->
+  constructor:( stream, uri ) ->
     super( stream, uri, 'Rest' )
     @W = Store.where
-    @S = Store.schema
-    @A = Store.alters
-    @R = Store.resets
 
   # Rest
   add:( table, id, object, params="" )  -> @ajaxRest( 'add',  table, id, object, params )
@@ -26,10 +23,9 @@ class Rest extends Store
   remove:( table, where=@W, params="" )  -> @ajaxSql( 'remove', table, where, null,    params )
 
   # Table - only partially implemented
-  open:( table, schema=@S  )  -> @ajaxTable( 'open', table, { schema:schema } )
-  show:( table, format=@F  )  -> @ajaxTable( 'show', table, { format:format } )
-  make:( table, alters=@A  )  -> @ajaxTable( 'make', table, { alters:alters } )
-  drop:( table, resets=@R  )  -> @ajaxTable( 'drop', table, { resets:resets } )
+  make:( table )  -> @ajaxTable( 'open', table )
+  show:( table )  -> @ajaxTable( 'show', table )
+  drop:( table  ) -> @ajaxTable( 'drop', table )
 
   # Subscribe to  a table or object with id
   on:(  t, id='none'   ) ->
@@ -78,7 +74,7 @@ class Rest extends Store
     $.ajax( settings )
     return
 
-  ajaxTable:( op, t, options ) ->
+  ajaxTable:( op, t ) ->
     tableName = @tableName(t)
     url       = @urlRest(op,t,'')
     dataType  = @dataType()
@@ -86,10 +82,10 @@ class Rest extends Store
     settings.success = ( data,  status, jqXHR ) =>
       result = if op is 'show' then @toKeysJson(data) else {}
       extras = @toExtras( status, url, dataType, jqXHR.readyState )
-      @publish( tableName, 'none', op, result, @copyProperties( extras, options ) )
+      @publish( tableName, 'none', op, result, extras )
     settings.error = ( jqXHR, status, error ) =>
       extras = @toExtras( status, url, dataType, jqXHR.readyState, error )
-      @onerror( tableName, 'none', op, {}, @copyProperties( extras, options ) )
+      @onerror( tableName, 'none', op, {}, extras )
     $.ajax( settings )
     return
 

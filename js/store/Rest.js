@@ -13,12 +13,9 @@
 
     module.exports = Rest;
 
-    function Rest(stream, uri, db) {
+    function Rest(stream, uri) {
       Rest.__super__.constructor.call(this, stream, uri, 'Rest');
       this.W = Store.where;
-      this.S = Store.schema;
-      this.A = Store.alters;
-      this.R = Store.resets;
     }
 
     Rest.prototype.add = function(table, id, object, params) {
@@ -83,40 +80,16 @@
       return this.ajaxSql('remove', table, where, null, params);
     };
 
-    Rest.prototype.open = function(table, schema) {
-      if (schema == null) {
-        schema = this.S;
-      }
-      return this.ajaxTable('open', table, {
-        schema: schema
-      });
+    Rest.prototype.make = function(table) {
+      return this.ajaxTable('open', table);
     };
 
-    Rest.prototype.show = function(table, format) {
-      if (format == null) {
-        format = this.F;
-      }
-      return this.ajaxTable('show', table, {
-        format: format
-      });
+    Rest.prototype.show = function(table) {
+      return this.ajaxTable('show', table);
     };
 
-    Rest.prototype.make = function(table, alters) {
-      if (alters == null) {
-        alters = this.A;
-      }
-      return this.ajaxTable('make', table, {
-        alters: alters
-      });
-    };
-
-    Rest.prototype.drop = function(table, resets) {
-      if (resets == null) {
-        resets = this.R;
-      }
-      return this.ajaxTable('drop', table, {
-        resets: resets
-      });
+    Rest.prototype.drop = function(table) {
+      return this.ajaxTable('drop', table);
     };
 
     Rest.prototype.on = function(t, id) {
@@ -234,7 +207,7 @@
       $.ajax(settings);
     };
 
-    Rest.prototype.ajaxTable = function(op, t, options) {
+    Rest.prototype.ajaxTable = function(op, t) {
       var dataType, settings, tableName, url;
       tableName = this.tableName(t);
       url = this.urlRest(op, t, '');
@@ -252,14 +225,14 @@
           var extras, result;
           result = op === 'show' ? _this.toKeysJson(data) : {};
           extras = _this.toExtras(status, url, dataType, jqXHR.readyState);
-          return _this.publish(tableName, 'none', op, result, _this.copyProperties(extras, options));
+          return _this.publish(tableName, 'none', op, result, extras);
         };
       })(this);
       settings.error = (function(_this) {
         return function(jqXHR, status, error) {
           var extras;
           extras = _this.toExtras(status, url, dataType, jqXHR.readyState, error);
-          return _this.onerror(tableName, 'none', op, {}, _this.copyProperties(extras, options));
+          return _this.onerror(tableName, 'none', op, {}, extras);
         };
       })(this);
       $.ajax(settings);

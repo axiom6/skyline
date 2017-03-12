@@ -142,26 +142,16 @@
       this.traverse('remove', tableName, where);
     };
 
-    IndexedDB.prototype.open = function(t, schema) {
+    IndexedDB.prototype.make = function(t) {
       var tableName;
       tableName = this.tableName(t);
-      this.publish(tableName, 'none', 'open', {}, {
-        schema: schema
-      });
+      this.publish(tableName, 'none', 'open', {}, {});
     };
 
     IndexedDB.prototype.show = function(t) {
       var tableName;
       tableName = this.tableName(t);
-      this.traverse('show', tableName, objects, where, false);
-    };
-
-    IndexedDB.prototype.make = function(t, alters) {
-      var tableName;
-      tableName = this.tableName(t);
-      this.publish(tableName, 'none', 'make', {}, {
-        alters: alters
-      });
+      this.traverse('show', tableName);
     };
 
     IndexedDB.prototype.drop = function(t) {
@@ -210,6 +200,9 @@
 
     IndexedDB.prototype.traverse = function(op, t, where) {
       var mode, req, txo;
+      if (where == null) {
+        where = Store.where;
+      }
       mode = op === 'select' ? 'readonly' : 'readwrite';
       txo = this.txnObjectStore(t, mode);
       req = txo.openCursor();

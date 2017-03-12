@@ -18,14 +18,7 @@
     Data.prototype.dropAllTables = function() {};
 
     Data.prototype.doRoom = function() {
-      this.room.open();
-      this.room.insert();
-      this.room.select();
-      this.room.add();
-      this.room.get();
-      this.room.put();
-      this.room.del();
-      this.room.drop();
+      this.room.make().then(this.room.insert()).then(this.room.select()).then(this.room.on()).then(this.room.add()).then(this.room.get()).then(this.room.put()).then(this.room.del());
     };
 
     Data.configSkytest = {

@@ -24,15 +24,7 @@ class Store
 
   # Dafaults for empty arguments
   @where  = () -> true # Default where clause filter that returns true to access all records
-  @schema = {}         # Default schema      for open()
-  @format = {}         # Default format      for show()
-  @alters = {}         # Default alterations for make()
-  @resets = {}         # Default resets      for drop()
   W       = Store.where
-  S       = Store.schema
-  F       = Store.format
-  A       = Store.alters
-  R       = Store.resets
 
   # @uri = REST URI where the file part is the database
   # @key = The key id property = default is ['id']
@@ -54,13 +46,12 @@ class Store
   update:( table, objects ) -> Util.noop( table, objects )  # Update objects into table mapped by id
   remove:( table, where=W ) -> Util.noop( table, where   )  # Delete objects from table with where clause
 
-  # Table DDL (Data Definition Language)
-  open:( table, schema=S ) -> Util.noop( table, schema ) # Create a table with an optional schema
-  show:( table, format=F ) -> Util.noop( table, format ) # Show a list tables if table name blank or columns
-  make:( table, alters=A ) -> Util.noop( table, alters ) # Alter a table's schema - especially columns
-  drop:( table, resets=R ) -> Util.noop( table, resets ) # Drop the entire @table - good for testing
+  # Table DDL (Data Definition Language) omitted schema update
+  make:( table           ) -> Util.noop( table ) # Create a table
+  show:( table=undefined ) -> Util.noop( table ) # Show a list of row keys or tables if table is undefined
+  drop:( table           ) -> Util.noop( table ) # Drop the entire table - good for testing
 
-  # Subscribe to CRUD changes on a table or an object with id
+  # Subscribe to CRUD changes on a table or a row with id
   on:( table, id='' ) ->
     Util.noop( table, id )
     return
@@ -76,7 +67,7 @@ class Store
      name  = Util.firstTok(t,'.') # Strips off  .json .js .csv file extensions
      table = @table( name )
      Util.noop( table )
-     Util.log( "Store.tableName()", { name:name, table:table, t:t } )
+     #Util.log( "Store.tableName()", { name:name, table:table, t:t } )
      name
 
   memory:( table, id , op ) ->
@@ -86,7 +77,7 @@ class Store
     return
 
   subscribe:( table, id ,op, onNext  ) ->
-    Util.log( 'Store.subscribe()', @toSubject(table,id,op) )
+    #Util.log( 'Store.subscribe()', @toSubject(table,id,op) )
     @stream.subscribe( @toSubject(table,id,op), onNext, @onError, @onComplete )
     return
 

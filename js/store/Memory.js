@@ -111,11 +111,9 @@
       });
     };
 
-    Memory.prototype.open = function(t, schema) {
+    Memory.prototype.make = function(t) {
       this.createTable(t);
-      this.publish(t, 'none', 'open', {}, {
-        schema: schema
-      });
+      this.publish(t, 'none', 'open', {}, {});
     };
 
     Memory.prototype.show = function(t) {
@@ -143,13 +141,6 @@
           showing: 'tables'
         });
       }
-    };
-
-    Memory.prototype.make = function(t, alters) {
-      this.publish(t, 'none', 'make', {}, {
-        alters: alters,
-        msg: 'alter is a noop'
-      });
     };
 
     Memory.prototype.drop = function(t) {

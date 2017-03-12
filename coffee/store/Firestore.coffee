@@ -7,10 +7,13 @@ class Firestore extends Store
 
   module.exports   = Firestore
 
+  @EventOn = { value:"onVal", child_added:"onAdd", child_changed:"onPut", child_removed:"onDel", child_moved:"onMov" }
+  @OnEvent = { onVal:"value", onAdd:"child_added", onPut:"child_changed", onDel:"child_removed", onMov:"child_moved" }
+
   constructor:( stream, uri, @config ) ->
     super( stream, uri, 'Firestore' )
     @fb = @init( @config ) # @dbName set by Store in super constructor
-    @anon() # Anonomous logins have to enabled
+    @auth() # Anonomous logins have to enabled
     @fd = Store.Firebase.database()
 
   init:( config ) ->
@@ -18,7 +21,6 @@ class Firestore extends Store
     Util.log( 'Firestore.init', config )
     Store.Firebase
 
-  # OK
   add:( t, id, object  ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -28,14 +30,14 @@ class Firestore extends Store
         @onerror( tableName, id, 'add', object, { error:error } )
     @fd.ref(tableName+'/'+id).set( object, onComplete )
 
-  # OK
   get:( t, id ) ->
     tableName = @tableName(t)
-    @fd.ref(tableName+'/'+id).once('value', (snapshot) =>
-      if snapshot.val()?
+    onComplete = (snapshot) =>
+      if snapshot? and snapshot.val()?
         @publish( tableName, id, 'get', snapshot.val() )
       else
-        @onerror( tableName, id, 'get', {}, { msg:'Firestore get error' } ) )
+        @onerror( tableName, id, 'get', {}, { msg:'Firestore get error' } )
+    @fd.ref(tableName+'/'+id).once('value', onComplete )
 
   # Same as add
   put:( t, id,  object ) ->
@@ -47,7 +49,6 @@ class Firestore extends Store
         @onerror( tableName, id, 'put', object, { error:error } )
     @fd.ref(tableName+'/'+id).set( object, onComplete )
 
-  # OK
   del:( t, id ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -57,7 +58,6 @@ class Firestore extends Store
         @onerror( tableName, id, 'del', {}, { error:error } )
     @fd.ref(tableName+'/'+id).remove( onComplete )
 
-  # OK of set takes objects
   insert:( t, objects ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -67,11 +67,10 @@ class Firestore extends Store
         @onerror( tableName, 'none', 'insert', { error:error } )
     @fd.ref(tableName).set( objects, onComplete )
 
-  # OK if snapshot returns objects
   select:( t, where=Store.where ) ->
     tableName = @tableName(t)
     onComplete = (snapshot) =>
-      if snapshot.val()?
+      if snapshot? and snapshot.val()?
         objects = Util.toObjects( snapshot.val(), where, @key )
         @publish( tableName, 'none', 'select', objects, { where:where.toString() } )
       else
@@ -92,7 +91,7 @@ class Firestore extends Store
   remove:( t, where=Store.where ) ->
     tableName = @tableName(t)
     onComplete = (snapshot) =>
-      if snapshot.val()?
+      if snapshot? and snapshot.val()?
         objects = Util.toObjects( snapshot.val(), where, @key )
         for key, object of objects when where(val)
           @fb.ref(t).remove( key ) # Need to see if onComplete is needed
@@ -101,34 +100,30 @@ class Firestore extends Store
         @onerror( tableName, 'none', 'remove', objects, { where:where.toString() } )
     @fd.ref(t).once('value', onComplete )
 
-  # Supported? are tables just child nodes
-  open:( t, schema={} ) ->
+  make:( t ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'none', 'open', {}, { schema:schema } )
+        @publish( tableName, 'none', 'make', {}, {} )
       else
-        @onerror( tableName, 'none', 'open', {}, { schema:schema, error:error } )
-    @fd.ref().push( tableName, onComplete )
+        @onerror( tableName, 'none', 'make', {}, { error:error } )
+    @fd.ref().set( tableName, onComplete )
 
   show:( t=undefined ) ->
     tableName = if t? then @tableName(t) else @dbName
     keys  = []
     onComplete = (snapshot) =>
-      snapshot.forEach( (key) =>
-        keys.push( key.key() )
-        @publish( tableName, 'none', 'show', keys ) )
+      if snapshot?
+        snapshot.forEach( (child) =>
+          keys.push( child.key ) )
+        @publish( tableName, 'none', 'show', keys )
+      else
+        @onerror( tableName, 'none', 'show', {}, { error:'error' } )
     if t?
       @fd.ref(tableName).once('value', onComplete )
     else
       @fd.ref(         ).once('value', onComplete )
 
-  # Supported? Obscure
-  make:( t, alters={} ) ->
-    @onerror( t, 'none', 'make', {}, { error:'Store.make() not supported', alters:alters } )
-    return
-
-  # Supported?
   drop:( t ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
@@ -138,42 +133,21 @@ class Firestore extends Store
         @onerror( tableName, 'none', 'drop', {}, { error:error } )
     @fd.ref(tableName).remove( onComplete )
 
-  # Maybe OK
-  on:( t, id ) ->
-    tableName = @tableName(t)
-    path    = if id eq '' then tableName else tableName+'/'+id
-    onEvt   = 'value'
-    @fd.ref(path).on( onEvt, (snapshot) =>
-      key = snapshot.name()
-      val = snapshot.val()
-      if key? and val?
-        @publish( tableName, id, 'onChange', val, { key:key } )
-      else if not val?
-        @publish( tableName, id, 'onChange', {}, { key:key, msg:'No Value' } )
+  on:( onEvt, t, id='none' ) ->
+    table  = @tableName(t)
+    onComplete = (snapshot) =>
+      if snapshot?
+        key = snapshot.key
+        val = snapshot.val()
+        @publish( table, id, onEvt, { onEvt:onEvt, table:table, key:key, val:val } )
       else
-        @onerror( tableName, id, 'onChange', {}, { error:'error' } ) )
-    return
+        @onerror( table, id, onEvt, {}, { error:'error' } )
+    path  = if id is 'none' then table else table + '/' + id
+    @fd.ref(path).on( Firestore.OnEvent[onEvt], onComplete )
 
-  # Not used for now
-  isNotEvt:( evt ) ->
-    switch evt
-      when 'value','child_added','child_changed','child_removed','child_moved' then false
-      else                                                                          true
+  # Sign Anonymously
+  auth:( ) ->
+   onError = (error) =>
+     @onerror( 'none', 'none', 'anon', {}, { error:error } )
+   @fb.auth().signInAnonymously().catch( onError )
 
-  # Supported? Check
-  anon:( ) ->
-    @fb.auth().signInAnonymously().catch( (error) =>
-      if not error?
-        @publish( 'none', 'none', 'anon', 'OK' )
-      else
-        @onerror( 'none', 'none', 'anon', {}, { error:error } ) )
-    return
-
-  # Supported? Check
-  auth:( tok ) ->
-    @fb.auth( tok,  ( error, result ) =>
-      if not error?
-        @publish( '', tok, 'auth', result.auth, { expires:new Date(result.expires * 1000) } )
-      else
-        @onerror( '', tok, 'auth', {}, { error:error } ) )
-    return

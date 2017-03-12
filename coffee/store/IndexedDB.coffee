@@ -71,20 +71,15 @@ class IndexedDB extends Store
     @traverse( 'remove', tableName, where )
     return
 
-  open:( t, schema ) ->
+  make:( t ) ->
     tableName = @tableName(t)
     # No real create table in IndexedDB so publish success
-    @publish( tableName, 'none', 'open', {}, { schema:schema } )
+    @publish( tableName, 'none', 'open', {}, {} )
     return
 
   show:( t ) ->
     tableName = @tableName(t)
-    @traverse( 'show', tableName, objects, where, false )
-    return
-
-  make:( t, alters ) ->
-    tableName = @tableName(t)
-    @publish( tableName, 'none', 'make', {}, { alters:alters } )
+    @traverse( 'show', tableName )
     return
 
   drop:( t ) ->
@@ -116,7 +111,7 @@ class IndexedDB extends Store
       Util.error( 'Store.IndexedDb.txnObjectStore() missing objectStore for', t )
     txo
 
-  traverse:( op, t, where ) ->
+  traverse:( op, t, where=Store.where ) ->
     mode = if op is 'select' then 'readonly' else 'readwrite'
     txo  = @txnObjectStore( t, mode )
     req  = txo.openCursor()

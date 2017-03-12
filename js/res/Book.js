@@ -9,8 +9,6 @@
   Book = (function() {
     module.exports = Book;
 
-    Book.Room = require('data/Room.json');
-
     Book.Book = require('data/Book.json');
 
     Book.Alloc = require('data/Alloc.json');
@@ -96,7 +94,7 @@
         htm += "<th>" + (this.dayMonth(day)) + "</th>";
       }
       htm += "<th>Total</th></tr></thead><tbody>";
-      ref2 = Book.Room;
+      ref2 = this.room.data;
       for (roomId in ref2) {
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
@@ -117,17 +115,17 @@
     };
 
     Book.prototype.roomsJQuery = function() {
-      var $cell, date, day, i, j, len, ref, ref1, ref2, room, roomId;
+      var $cell, date, day, i, j, len, ref, ref1, ref2, roomId, roomUI;
       ref = this.$cells;
       for (i = 0, len = ref.length; i < len; i++) {
         $cell = ref[i];
         $cell.unbind("click");
       }
       this.$cells = [];
-      ref1 = Book.Room;
+      ref1 = this.room.UIs;
       for (roomId in ref1) {
-        room = ref1[roomId];
-        room.$ = $('#' + roomId);
+        roomUI = ref1[roomId];
+        roomUI.$ = $('#' + roomId);
         for (day = j = 1, ref2 = this.numDays; 1 <= ref2 ? j <= ref2 : j >= ref2; day = 1 <= ref2 ? ++j : --j) {
           date = this.toDateStr(day);
           $cell = $('#' + roomId + date);
@@ -156,16 +154,16 @@
 
     Book.prototype.updatePrice = function(roomId, room) {
       if (this.guests > room.max) {
-        room.$.hide();
+        this.room.UIs[roomId].$.hide();
       } else {
-        room.$.show();
+        this.room.UIs[roomId].$.show();
         $('#P' + roomId).text("" + ('$' + this.calcPrice(room)));
       }
     };
 
     Book.prototype.updatePrices = function() {
       var ref, results, room, roomId;
-      ref = Book.Room;
+      ref = this.room.data;
       results = [];
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
@@ -177,7 +175,7 @@
 
     Book.prototype.updateTotal = function(roomId, date, status) {
       var cust, price, text;
-      price = Book.Room[roomId].price;
+      price = this.room.data[roomId].price;
       cust = Book.Book[roomId][this.myCustId];
       if (cust == null) {
         cust = this.newCust();

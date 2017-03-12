@@ -68,9 +68,9 @@ class Memory extends Store
     @publish( t, 'none', 'remove', objects, { where:where.toString() } )
     return
 
-  open:( t, schema ) ->
+  make:( t ) ->
     @createTable(t)
-    @publish( t, 'none', 'open', {}, { schema:schema } )
+    @publish( t, 'none', 'open', {}, {} )
     return
 
   show:( t ) ->
@@ -84,10 +84,6 @@ class Memory extends Store
       for own key, val of @tables
         tables.push(key)
       @publish( t, 'none', 'show', tables, { showing:'tables' } )
-    return
-
-  make:( t, alters ) ->
-    @publish( t, 'none', 'make', {}, { alters:alters, msg:'alter is a noop' } )
     return
 
   drop:( t ) ->

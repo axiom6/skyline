@@ -4,7 +4,7 @@
     hasProp = {}.hasOwnProperty;
 
   Store = (function() {
-    var A, F, R, S, W;
+    var W;
 
     module.exports = Store;
 
@@ -44,23 +44,7 @@
       return true;
     };
 
-    Store.schema = {};
-
-    Store.format = {};
-
-    Store.alters = {};
-
-    Store.resets = {};
-
     W = Store.where;
-
-    S = Store.schema;
-
-    F = Store.format;
-
-    A = Store.alters;
-
-    R = Store.resets;
 
     function Store(stream1, uri1, module1) {
       this.stream = stream1;
@@ -110,32 +94,19 @@
       return Util.noop(table, where);
     };
 
-    Store.prototype.open = function(table, schema) {
-      if (schema == null) {
-        schema = S;
-      }
-      return Util.noop(table, schema);
+    Store.prototype.make = function(table) {
+      return Util.noop(table);
     };
 
-    Store.prototype.show = function(table, format) {
-      if (format == null) {
-        format = F;
+    Store.prototype.show = function(table) {
+      if (table == null) {
+        table = void 0;
       }
-      return Util.noop(table, format);
+      return Util.noop(table);
     };
 
-    Store.prototype.make = function(table, alters) {
-      if (alters == null) {
-        alters = A;
-      }
-      return Util.noop(table, alters);
-    };
-
-    Store.prototype.drop = function(table, resets) {
-      if (resets == null) {
-        resets = R;
-      }
-      return Util.noop(table, resets);
+    Store.prototype.drop = function(table) {
+      return Util.noop(table);
     };
 
     Store.prototype.on = function(table, id) {
@@ -163,11 +134,6 @@
       name = Util.firstTok(t, '.');
       table = this.table(name);
       Util.noop(table);
-      Util.log("Store.tableName()", {
-        name: name,
-        table: table,
-        t: t
-      });
       return name;
     };
 
@@ -182,7 +148,6 @@
     };
 
     Store.prototype.subscribe = function(table, id, op, onNext) {
-      Util.log('Store.subscribe()', this.toSubject(table, id, op));
       this.stream.subscribe(this.toSubject(table, id, op), onNext, this.onError, this.onComplete);
     };
 

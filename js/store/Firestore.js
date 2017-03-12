@@ -13,11 +13,27 @@
 
     module.exports = Firestore;
 
+    Firestore.EventOn = {
+      value: "onVal",
+      child_added: "onAdd",
+      child_changed: "onPut",
+      child_removed: "onDel",
+      child_moved: "onMov"
+    };
+
+    Firestore.OnEvent = {
+      onVal: "value",
+      onAdd: "child_added",
+      onPut: "child_changed",
+      onDel: "child_removed",
+      onMov: "child_moved"
+    };
+
     function Firestore(stream, uri, config1) {
       this.config = config1;
       Firestore.__super__.constructor.call(this, stream, uri, 'Firestore');
       this.fb = this.init(this.config);
-      this.anon();
+      this.auth();
       this.fd = Store.Firebase.database();
     }
 
@@ -45,11 +61,11 @@
     };
 
     Firestore.prototype.get = function(t, id) {
-      var tableName;
+      var onComplete, tableName;
       tableName = this.tableName(t);
-      return this.fd.ref(tableName + '/' + id).once('value', (function(_this) {
+      onComplete = (function(_this) {
         return function(snapshot) {
-          if (snapshot.val() != null) {
+          if ((snapshot != null) && (snapshot.val() != null)) {
             return _this.publish(tableName, id, 'get', snapshot.val());
           } else {
             return _this.onerror(tableName, id, 'get', {}, {
@@ -57,7 +73,8 @@
             });
           }
         };
-      })(this));
+      })(this);
+      return this.fd.ref(tableName + '/' + id).once('value', onComplete);
     };
 
     Firestore.prototype.put = function(t, id, object) {
@@ -120,7 +137,7 @@
       onComplete = (function(_this) {
         return function(snapshot) {
           var objects;
-          if (snapshot.val() != null) {
+          if ((snapshot != null) && (snapshot.val() != null)) {
             objects = Util.toObjects(snapshot.val(), where, _this.key);
             return _this.publish(tableName, 'none', 'select', objects, {
               where: where.toString()
@@ -161,7 +178,7 @@
       onComplete = (function(_this) {
         return function(snapshot) {
           var key, object, objects;
-          if (snapshot.val() != null) {
+          if ((snapshot != null) && (snapshot.val() != null)) {
             objects = Util.toObjects(snapshot.val(), where, _this.key);
             for (key in objects) {
               object = objects[key];
@@ -182,27 +199,21 @@
       return this.fd.ref(t).once('value', onComplete);
     };
 
-    Firestore.prototype.open = function(t, schema) {
+    Firestore.prototype.make = function(t) {
       var onComplete, tableName;
-      if (schema == null) {
-        schema = {};
-      }
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(error) {
           if (error == null) {
-            return _this.publish(tableName, 'none', 'open', {}, {
-              schema: schema
-            });
+            return _this.publish(tableName, 'none', 'make', {}, {});
           } else {
-            return _this.onerror(tableName, 'none', 'open', {}, {
-              schema: schema,
+            return _this.onerror(tableName, 'none', 'make', {}, {
               error: error
             });
           }
         };
       })(this);
-      return this.fd.ref().push(tableName, onComplete);
+      return this.fd.ref().set(tableName, onComplete);
     };
 
     Firestore.prototype.show = function(t) {
@@ -214,10 +225,16 @@
       keys = [];
       onComplete = (function(_this) {
         return function(snapshot) {
-          return snapshot.forEach(function(key) {
-            keys.push(key.key());
+          if (snapshot != null) {
+            snapshot.forEach(function(child) {
+              return keys.push(child.key);
+            });
             return _this.publish(tableName, 'none', 'show', keys);
-          });
+          } else {
+            return _this.onerror(tableName, 'none', 'show', {}, {
+              error: 'error'
+            });
+          }
         };
       })(this);
       if (t != null) {
@@ -225,16 +242,6 @@
       } else {
         return this.fd.ref().once('value', onComplete);
       }
-    };
-
-    Firestore.prototype.make = function(t, alters) {
-      if (alters == null) {
-        alters = {};
-      }
-      this.onerror(t, 'none', 'make', {}, {
-        error: 'Store.make() not supported',
-        alters: alters
-      });
     };
 
     Firestore.prototype.drop = function(t) {
@@ -254,75 +261,45 @@
       return this.fd.ref(tableName).remove(onComplete);
     };
 
-    Firestore.prototype.on = function(t, id) {
-      var onEvt, path, tableName;
-      tableName = this.tableName(t);
-      path = id(eq('')) ? tableName : tableName + '/' + id;
-      onEvt = 'value';
-      this.fd.ref(path).on(onEvt, (function(_this) {
+    Firestore.prototype.on = function(onEvt, t, id) {
+      var onComplete, path, table;
+      if (id == null) {
+        id = 'none';
+      }
+      table = this.tableName(t);
+      onComplete = (function(_this) {
         return function(snapshot) {
           var key, val;
-          key = snapshot.name();
-          val = snapshot.val();
-          if ((key != null) && (val != null)) {
-            return _this.publish(tableName, id, 'onChange', val, {
-              key: key
-            });
-          } else if (val == null) {
-            return _this.publish(tableName, id, 'onChange', {}, {
+          if (snapshot != null) {
+            key = snapshot.key;
+            val = snapshot.val();
+            return _this.publish(table, id, onEvt, {
+              onEvt: onEvt,
+              table: table,
               key: key,
-              msg: 'No Value'
+              val: val
             });
           } else {
-            return _this.onerror(tableName, id, 'onChange', {}, {
+            return _this.onerror(table, id, onEvt, {}, {
               error: 'error'
             });
           }
         };
-      })(this));
+      })(this);
+      path = id === 'none' ? table : table + '/' + id;
+      return this.fd.ref(path).on(Firestore.OnEvent[onEvt], onComplete);
     };
 
-    Firestore.prototype.isNotEvt = function(evt) {
-      switch (evt) {
-        case 'value':
-        case 'child_added':
-        case 'child_changed':
-        case 'child_removed':
-        case 'child_moved':
-          return false;
-        default:
-          return true;
-      }
-    };
-
-    Firestore.prototype.anon = function() {
-      this.fb.auth().signInAnonymously()["catch"]((function(_this) {
+    Firestore.prototype.auth = function() {
+      var onError;
+      onError = (function(_this) {
         return function(error) {
-          if (error == null) {
-            return _this.publish('none', 'none', 'anon', 'OK');
-          } else {
-            return _this.onerror('none', 'none', 'anon', {}, {
-              error: error
-            });
-          }
+          return _this.onerror('none', 'none', 'anon', {}, {
+            error: error
+          });
         };
-      })(this));
-    };
-
-    Firestore.prototype.auth = function(tok) {
-      this.fb.auth(tok, (function(_this) {
-        return function(error, result) {
-          if (error == null) {
-            return _this.publish('', tok, 'auth', result.auth, {
-              expires: new Date(result.expires * 1000)
-            });
-          } else {
-            return _this.onerror('', tok, 'auth', {}, {
-              error: error
-            });
-          }
-        };
-      })(this));
+      })(this);
+      return this.fb.auth().signInAnonymously()["catch"](onError);
     };
 
     return Firestore;

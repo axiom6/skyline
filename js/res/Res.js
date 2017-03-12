@@ -23,7 +23,8 @@
         cust = new Cust(stream, store);
         book = new Book(stream, store, room, cust);
         data = new Data(stream, store, room, cust, book);
-        data.doRoom();
+        Util.noop(data);
+        room.make();
         return book.ready();
       });
     };

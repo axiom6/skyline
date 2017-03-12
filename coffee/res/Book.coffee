@@ -4,7 +4,6 @@ $ = require( 'jquery' )
 class Book
 
   module.exports    = Book
-  Book.Room         = require( 'data/Room.json'  )
   Book.Book         = require( 'data/Book.json'  )
   Book.Alloc        = require( 'data/Alloc.json' )
 
@@ -67,7 +66,7 @@ class Book
     for day in [1..@numDays]
       htm += "<th>#{@dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
-    for own roomId, room of Book.Room
+    for own roomId, room of @room.data
       htm += """<tr id="#{roomId}"><td>#{room.name}</td><td id="#{roomId}Price" class="room-price">#{'$'+@calcPrice(room)}</td>"""
       for day in [1..@numDays]
         date = @toDateStr(day)
@@ -83,8 +82,8 @@ class Book
     for $cell in @$cells
         $cell.unbind( "click" )
     @$cells = []
-    for roomId, room of Book.Room
-      room.$ = $('#'+roomId)
+    for roomId, roomUI of @room.UIs
+      roomUI.$ = $('#'+roomId) # Keep jQuery out of room database table
       for day in [1..@numDays]
         date  = @toDateStr(day)
         $cell = $('#'+roomId+date)
@@ -103,18 +102,18 @@ class Book
 
   updatePrice:( roomId, room ) ->
     if @guests > room.max
-      room.$.hide()
+      @room.UIs[roomId].$.hide()
     else
-      room.$.show()
+      @room.UIs[roomId].$.show()
       $('#P'+roomId).text("#{'$'+ @calcPrice(room) }")
     return
 
   updatePrices:() ->
-    for own roomId, room of Book.Room
+    for own roomId, room of @room.data
       @updatePrice( roomId, room )
 
   updateTotal:( roomId, date, status ) ->
-    price = Book.Room[roomId].price
+    price = @room.data[roomId].price
     cust  = Book.Book[roomId][@myCustId]
     if not cust?
       cust = @newCust()
