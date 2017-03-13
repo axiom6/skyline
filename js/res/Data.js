@@ -17,10 +17,6 @@
 
     Data.prototype.dropAllTables = function() {};
 
-    Data.prototype.doRoom = function() {
-      this.room.make().then(this.room.insert()).then(this.room.select()).then(this.room.on()).then(this.room.add()).then(this.room.get()).then(this.room.put()).then(this.room.del());
-    };
-
     Data.configSkytest = {
       apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
       authDomain: "skytest-25d1c.firebaseapp.com",

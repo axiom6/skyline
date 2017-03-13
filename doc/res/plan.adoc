@@ -27,7 +27,7 @@ Terms and Conditions:: x
 [horizontal]
 Amentities:: x
 
-### [.black]#Style#
+#### [.black]#Style#
 
 [horizontal]
 Print:: x

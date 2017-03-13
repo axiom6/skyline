@@ -24,8 +24,8 @@ class Util
   Util.modules       = []
   Util.instances     = []
   Util.globalPaths   = []
-  Util.root          = '../../' # Used internally
-  Util.rootJS        =  Util.root + 'js/'
+  Util.root          = '../' # Used internally
+  Util.rootJS        = Util.root + 'js/'
   Util.databases     = {}
   Util.htmlIds       = {} # Object of unique Html Ids
   Util.logStackNum   = 0
@@ -34,10 +34,11 @@ class Util
 
   # ------ Modules ------
 
-  @init:( moduleCommonJS=undefined, moduleWebPack=undefined, root='../../'  ) ->
+  @init:( moduleCommonJS=undefined, moduleWebPack=undefined, root=Util.root, prj="ui" ) ->
     Util.root   = root
     Util.rootJS = Util.root + 'js/'
-    Util.resetModuleExports()
+    Util.log( "Util.init() rootJS", Util.rootJS )
+    Util.resetModuleExports( prj )
     Util.fixTestGlobals()
     if     Util.isCommonJS and moduleCommonJS?
       require( moduleCommonJS )
@@ -69,8 +70,8 @@ class Util
       require( path )
 
   @fixTestGlobals:() ->
-    window.Util           = Util
-    window.xUtil          = Util
+    window.Util  = Util
+    #window.xUtil = Util
 
   @loadScript:( path, fn ) ->
     head          = document.getElementsByTagName('head')[0];
@@ -81,10 +82,10 @@ class Util
     head.appendChild( script )
     return
 
-  @resetModuleExports:() ->
+  @resetModuleExports:( prj ) ->
     if Util.isCommonJS
        Util.module = require('module')
-       Util.module.globalPaths.push("/Users/ax/Documents/prj/ui/")
+       Util.module.globalPaths.push("/Users/ax/Documents/prj/#{prj}/")
        #window.global = window
        #til.log( "Node Module Paths", Util.module.globalPaths )
     return
@@ -543,18 +544,35 @@ class Util
         array.push(object)
     array
 
-  @toObjects:( rows, whereIn=null, keyField='id' ) ->
+  @toObjects:( rows, whereIn=null, keyProp='key' ) ->
     where = if whereIn? then whereIn else () -> true
     objects = {}
     if Util.isArray(rows)
       for row in rows when where(row)
-        row[keyField] = row['id'] if row['id']? and keyField isnt 'id'
-        objects[row[keyField]] = row
+        if row[keyProp]?
+          objects[row[keyProp]] = row
+        else
+          Util.error( "Util.toObjects() row array element requires key property", keyProp, row )
     else
-      for key, row of rows when where(row)
-        row[keyField] = key
-        objects[key]  = row
+      for own key, row of rows # when where(row)
+        row[keyProp] = key
+        objects[key] = row
+        #Util.log( 'Util.toObjects()', { key:key, row:row } )
     objects
+
+  @toKeys:( rows, whereIn=null, keyProp='key' ) ->
+    where = if whereIn? then whereIn else () -> true
+    keys  = []
+    if Util.isArray(rows)
+      for row in rows when where(row)
+        if row[keyProp]?
+          keys.push( row[keyProp] )
+        else
+          Util.error( "Util.toKeys() row array element requires key property", keyProp, row )
+    else
+      for own key, row of rows # when where(row)
+        keys.push( key )
+    keys
 
   # Beautiful Code, Chapter 1.
   # Implements a regular expression matcher that supports character matches,

@@ -26,10 +26,10 @@ class Store
   @where  = () -> true # Default where clause filter that returns true to access all records
   W       = Store.where
 
-  # @uri = REST URI where the file part is the database
-  # @key = The key id property = default is ['id']
+  # @uri     = REST URI where the file part is the database
+  # @keyProp = The key id property = default is ['key']
   constructor:( @stream, @uri, @module ) ->
-    @key       = 'id'
+    @keyProp   = 'key'
     @dbName    = Store.nameDb( @uri )
     @tables    = {}
     @hasMemory = false
@@ -52,8 +52,8 @@ class Store
   drop:( table           ) -> Util.noop( table ) # Drop the entire table - good for testing
 
   # Subscribe to CRUD changes on a table or a row with id
-  on:( table, id='' ) ->
-    Util.noop( table, id )
+  on:( table, onEvt, id='' ) ->
+    Util.noop( table, onEvt, id )
     return
 
   createTable:( t  ) ->
@@ -186,7 +186,7 @@ class Store
 
   toKeysJson:( json ) -> @toKeys( JSON.parse(json) )
 
-  toObjectsJson:( json, where ) -> Util.toObjects( JSON.parse(json), where, @key )
+  toObjectsJson:( json, where ) -> Util.toObjects( JSON.parse(json), where, @keyProp )
 
   onError2:( error ) -> Util.error( 'Store.onError()', error.params, error.result )
 

@@ -11,19 +11,6 @@ class Data
   dropAllTables:() ->
     return
 
-  # Depends on Firebase promises
-  doRoom:() ->
-    @room.make()
-    .then( @room.insert() )
-    .then( @room.select() )
-    .then( @room.on()     )
-    .then( @room.add()    )
-    .then( @room.get()    )
-    .then( @room.put()    )
-    .then( @room.del()    )
-    #then( @room.drop()   )
-    return
-
   @configSkytest = {
     apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
     authDomain: "skytest-25d1c.firebaseapp.com",

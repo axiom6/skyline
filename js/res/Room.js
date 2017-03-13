@@ -12,6 +12,7 @@
     function Room(stream, store) {
       this.stream = stream;
       this.store = store;
+      this.logObjs = bind(this.logObjs, this);
       this.west = bind(this.west, this);
       this.onDel = bind(this.onDel, this);
       this.onPut = bind(this.onPut, this);
@@ -40,10 +41,6 @@
       return UIs;
     };
 
-    Room.prototype.doRoom = function() {
-      this.make().then(this.insert()).then(this.select()).then(this.on()).then(this.add()).then(this.get()).then(this.put()).then(this.del());
-    };
-
     Room.prototype.subscribe = function() {
       this.store.subscribe('Room', 'none', 'make', (function(_this) {
         return function(make) {
@@ -59,7 +56,7 @@
       })(this));
       this.store.subscribe('Room', 'none', 'select', (function(_this) {
         return function(select) {
-          Util.log('Room.select()', select);
+          _this.logObjs('Room.select()', select);
           _this.onAdd();
           _this.onPut();
           _this.onDel();
@@ -122,7 +119,8 @@
     };
 
     Room.prototype.show = function() {
-      return this.store.show('Room');
+      this.store.show('Room');
+      return this.store.show();
     };
 
     Room.prototype.drop = function() {
@@ -130,13 +128,6 @@
     };
 
     Room.prototype.insert = function() {
-      var key, ref, room;
-      ref = Room.Data;
-      for (key in ref) {
-        if (!hasProp.call(ref, key)) continue;
-        room = ref[key];
-        Util.log('Room.Data', key, room);
-      }
       return this.store.insert('Room', Room.Data);
     };
 
@@ -161,19 +152,20 @@
     };
 
     Room.prototype.onAdd = function() {
-      return this.store.on('onAdd', 'Room');
+      return this.store.on('Room', 'onAdd');
     };
 
     Room.prototype.onPut = function() {
-      return this.store.on('onPut', 'Room');
+      return this.store.on('Room', 'onPut');
     };
 
     Room.prototype.onDel = function() {
-      return this.store.on('onDel', 'Room');
+      return this.store.on('Room', 'onDel');
     };
 
     Room.prototype.west = function() {
       return {
+        "key": "W",
         "name": "West Skyline",
         "pet": 12,
         "spa": 0,
@@ -184,6 +176,21 @@
         "3": 145,
         "4": 155
       };
+    };
+
+    Room.prototype.logObjs = function(msg, objects) {
+      var key, results, row;
+      Util.log(msg);
+      results = [];
+      for (key in objects) {
+        if (!hasProp.call(objects, key)) continue;
+        row = objects[key];
+        results.push(Util.log('  ', {
+          key: key,
+          row: row
+        }));
+      }
+      return results;
     };
 
     return Room;

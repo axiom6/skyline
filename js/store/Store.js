@@ -50,7 +50,7 @@
       this.stream = stream1;
       this.uri = uri1;
       this.module = module1;
-      this.key = 'id';
+      this.keyProp = 'key';
       this.dbName = Store.nameDb(this.uri);
       this.tables = {};
       this.hasMemory = false;
@@ -109,11 +109,11 @@
       return Util.noop(table);
     };
 
-    Store.prototype.on = function(table, id) {
+    Store.prototype.on = function(table, onEvt, id) {
       if (id == null) {
         id = '';
       }
-      Util.noop(table, id);
+      Util.noop(table, onEvt, id);
     };
 
     Store.prototype.createTable = function(t) {
@@ -365,7 +365,7 @@
     };
 
     Store.prototype.toObjectsJson = function(json, where) {
-      return Util.toObjects(JSON.parse(json), where, this.key);
+      return Util.toObjects(JSON.parse(json), where, this.keyProp);
     };
 
     Store.prototype.onError2 = function(error) {

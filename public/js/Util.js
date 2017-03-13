@@ -40,7 +40,7 @@ Util = (function() {
 
   Util.globalPaths = [];
 
-  Util.root = '../../';
+  Util.root = '../';
 
   Util.rootJS = Util.root + 'js/';
 
@@ -54,7 +54,7 @@ Util = (function() {
 
   Util.fills = {};
 
-  Util.init = function(moduleCommonJS, moduleWebPack, root) {
+  Util.init = function(moduleCommonJS, moduleWebPack, root, prj) {
     if (moduleCommonJS == null) {
       moduleCommonJS = void 0;
     }
@@ -62,14 +62,17 @@ Util = (function() {
       moduleWebPack = void 0;
     }
     if (root == null) {
-      root = '../../';
+      root = Util.root;
+    }
+    if (prj == null) {
+      prj = "ui";
     }
     Util.root = root;
     Util.rootJS = Util.root + 'js/';
-    Util.resetModuleExports();
+    Util.log("Util.init() rootJS", Util.rootJS);
+    Util.resetModuleExports(prj);
     Util.fixTestGlobals();
     if (Util.isCommonJS && (moduleCommonJS != null)) {
-      //Util.log("Util.init()", moduleCommonJS);
       require(moduleCommonJS);
     } else if (Util.isWebPack && (moduleWebPack != null)) {
       Util.skipReady = true;
@@ -100,8 +103,7 @@ Util = (function() {
   };
 
   Util.fixTestGlobals = function() {
-    window.Util = Util;
-    return window.xUtil = Util;
+    return window.Util = Util;
   };
 
   Util.loadScript = function(path, fn) {
@@ -116,10 +118,10 @@ Util = (function() {
     head.appendChild(script);
   };
 
-  Util.resetModuleExports = function() {
+  Util.resetModuleExports = function(prj) {
     if (Util.isCommonJS) {
       Util.module = require('module');
-      Util.module.globalPaths.push("/Users/ax/Documents/prj/skyline/");
+      Util.module.globalPaths.push("/Users/ax/Documents/prj/" + prj + "/");
     }
   };
 
@@ -888,13 +890,13 @@ Util = (function() {
     return array;
   };
 
-  Util.toObjects = function(rows, whereIn, keyField) {
+  Util.toObjects = function(rows, whereIn, keyProp) {
     var j, key, len, objects, row, where;
     if (whereIn == null) {
       whereIn = null;
     }
-    if (keyField == null) {
-      keyField = 'id';
+    if (keyProp == null) {
+      keyProp = 'key';
     }
     where = whereIn != null ? whereIn : function() {
       return true;
@@ -903,25 +905,56 @@ Util = (function() {
     if (Util.isArray(rows)) {
       for (j = 0, len = rows.length; j < len; j++) {
         row = rows[j];
-        if (!(where(row))) {
-          continue;
+        if (where(row)) {
+          if (row[keyProp] != null) {
+            objects[row[keyProp]] = row;
+          } else {
+            Util.error("Util.toObjects() row array element requires key property", keyProp, row);
+          }
         }
-        if ((row['id'] != null) && keyField !== 'id') {
-          row[keyField] = row['id'];
-        }
-        objects[row[keyField]] = row;
       }
     } else {
       for (key in rows) {
+        if (!hasProp.call(rows, key)) continue;
         row = rows[key];
-        if (!(where(row))) {
-          continue;
-        }
-        row[keyField] = key;
+        row[keyProp] = key;
         objects[key] = row;
       }
     }
     return objects;
+  };
+
+  Util.toKeys = function(rows, whereIn, keyProp) {
+    var j, key, keys, len, row, where;
+    if (whereIn == null) {
+      whereIn = null;
+    }
+    if (keyProp == null) {
+      keyProp = 'key';
+    }
+    where = whereIn != null ? whereIn : function() {
+      return true;
+    };
+    keys = [];
+    if (Util.isArray(rows)) {
+      for (j = 0, len = rows.length; j < len; j++) {
+        row = rows[j];
+        if (where(row)) {
+          if (row[keyProp] != null) {
+            keys.push(row[keyProp]);
+          } else {
+            Util.error("Util.toKeys() row array element requires key property", keyProp, row);
+          }
+        }
+      }
+    } else {
+      for (key in rows) {
+        if (!hasProp.call(rows, key)) continue;
+        row = rows[key];
+        keys.push(key);
+      }
+    }
+    return keys;
   };
 
   Util.match = function(regexp, text) {
