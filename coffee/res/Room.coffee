@@ -20,7 +20,7 @@ class Room
     @store.subscribe( 'Room', 'none', 'insert', (insert) => Util.log( 'Room.insert()', insert ); @update() )
     @store.subscribe( 'Room', 'none', 'update', (update) => Util.log( 'Room.update()', update ); @remove() )
     @store.subscribe( 'Room', 'none', 'remove', (remove) => Util.log( 'Room.remove()', remove ); @select() )
-    @store.subscribe( 'Room', 'none', 'select', (select) => @logObjs( 'Room.select()', select ); @onAdd(); @onPut(); @onDel(); @add() )
+    @store.subscribe( 'Room', 'none', 'select', (select) => Util.logObjs( 'Room.select()', select ); @onAdd(); @onPut(); @onDel(); @add() )
     @store.subscribe( 'Room', 'none', 'onAdd',  (onAdd)  => Util.log( 'Room.onAdd()',  onAdd  )  )
     @store.subscribe( 'Room', 'none', 'onPut',  (onPut)  => Util.log( 'Room.onPut()',  onPut  )  )
     @store.subscribe( 'Room', 'none', 'onDel',  (onDel)  => Util.log( 'Room.onDel()',  onDel  )  )
@@ -69,6 +69,4 @@ class Room
   west:() =>
     { "key":"W", "name":"West Skyline", "pet":12,"spa": 0,"max": 4,"price":0,"1":135,"2":135,"3":145,"4":155 }
 
-  logObjs:( msg, objects ) =>
-    Util.log( msg )
-    Util.log( '  ', { key:key, row:row } ) for own key, row of objects
+

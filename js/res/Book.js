@@ -18,6 +18,9 @@
       this.store = store;
       this.room = room1;
       this.cust = cust1;
+      this.insert = bind(this.insert, this);
+      this.make = bind(this.make, this);
+      this.onAlloc2 = bind(this.onAlloc2, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
       this.onTest = bind(this.onTest, this);
@@ -25,6 +28,9 @@
       this.onDay = bind(this.onDay, this);
       this.onMonth = bind(this.onMonth, this);
       this.onGuests = bind(this.onGuests, this);
+      this.subscribe();
+      this.data = Book.Book;
+      this.make();
       this.numDayMonth = [31, 30, 31, 31, 30, 31];
       this.allDayMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
       this.months = ["May", "June", "July", "August", "September", "October"];
@@ -58,11 +64,26 @@
       $('#Months').change(this.onMonth);
       $('#Days').change(this.onDay);
       $('#Test').click(this.onTest);
-      this.roomsJQuery();
-      return this.subscribe();
+      return this.roomsJQuery();
     };
 
     Book.prototype.subscribe = function() {
+      this.store.subscribe('Book', 'none', 'make', (function(_this) {
+        return function(make) {
+          Util.log('Book.make()', make);
+          return _this.insert();
+        };
+      })(this));
+      this.store.subscribe('Book', 'none', 'insert', (function(_this) {
+        return function(insert) {
+          return Util.logObjs('Book.insert()', insert);
+        };
+      })(this));
+      this.store.subscribe('Book', 'none', 'update', (function(_this) {
+        return function(update) {
+          return Util.logObjs('Room.update()', update);
+        };
+      })(this));
       this.stream.subscribe('Alloc', (function(_this) {
         return function(alloc) {
           return _this.onAlloc(alloc);
@@ -297,6 +318,42 @@
     };
 
     Book.prototype.onAlloc = function(alloc) {
+      var book, cust, custId, day, i, len, ref, roomId, ru;
+      ru = {};
+      for (roomId in alloc) {
+        if (!hasProp.call(alloc, roomId)) continue;
+        book = alloc[roomId];
+        ru[roomId] = this.data[roomId];
+        for (custId in book) {
+          if (!hasProp.call(book, custId)) continue;
+          cust = book[custId];
+          ref = cust.days;
+          for (i = 0, len = ref.length; i < len; i++) {
+            day = ref[i];
+            this.allocBook(roomId, custId, day, cust.status, ru[roomId][custId]);
+            this.allocCell(roomId, custId, day, cust.status);
+          }
+        }
+      }
+      this.store.update('Book', ru);
+    };
+
+    Book.prototype.allocBook = function(roomId, custId, day, status, cust) {
+      cust.status = status;
+      if (!Util.inArray(cust.days, day)) {
+        return cust.days.push(day);
+      }
+    };
+
+    Book.prototype.allocCell = function(roomId, custId, day, status) {
+      return this.cellStatus($('#' + roomId + day), status);
+    };
+
+    Book.prototype.cellStatus = function($cell, status) {
+      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
+    };
+
+    Book.prototype.onAlloc2 = function(alloc) {
       var bdays, book, cust, custId, day, i, len, lookup, ref, roomId;
       for (roomId in alloc) {
         if (!hasProp.call(alloc, roomId)) continue;
@@ -310,19 +367,11 @@
             ref = cust.days;
             for (i = 0, len = ref.length; i < len; i++) {
               day = ref[i];
-              this.allocCell(roomId, day, cust.status);
+              this.allocCell(roomId, custId, day, cust.status);
             }
           }
         }
       }
-    };
-
-    Book.prototype.allocCell = function(roomId, day, status) {
-      return this.cellStatus($('#' + roomId + day), status);
-    };
-
-    Book.prototype.cellStatus = function($cell, status) {
-      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
     Book.prototype.dayMonth = function(iday) {
@@ -337,6 +386,14 @@
 
     Book.prototype.toDateStr = function(day) {
       return this.year + Util.pad(this.monthIdx + 5) + Util.pad(this.dayMonth(day));
+    };
+
+    Book.prototype.make = function() {
+      return this.store.make('Book');
+    };
+
+    Book.prototype.insert = function() {
+      return this.store.insert('Book', this.data);
     };
 
     return Book;

@@ -68,56 +68,40 @@ class Firestore extends Store
 
   insert:( t, objects ) ->
     tableName  = @tableName(t)
-    insObjects = Util.toObjects( objects, Store.where , @keyProp )
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'none', 'insert', insObjects )
+        @publish( tableName, 'none', 'insert', objects )
       else
         @onerror( tableName, 'none', 'insert', { error:error } )
-    @fd.ref(tableName).set( insObjects, onComplete )
+    @fd.ref(tableName).set( objects, onComplete )
     return
 
   select:( t, where=Store.where ) ->
     tableName = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
-        objects = Util.toObjects( snapshot.val(), where, @keyProp )
-        @publish( tableName, 'none', 'select', objects, { where:where.toString() } )
+        @publish( tableName, 'none', 'select', snapshot.val() )
       else
-        @onerror( tableName, 'none', 'select', {},      { where:where.toString() } )
+        @onerror( tableName, 'none', 'select', {} )
     @fd.ref(tableName).once('value', onComplete )
     return
 
-  # Review - OK if update takes objects and onComplete
   update:( t, objects ) ->
     tableName  = @tableName(t)
-    updObjects = Util.toObjects( objects, Store.where , @keyProp )
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'none', 'update', updObjects )
+        @publish( tableName, 'none', 'update', objects )
       else
         @onerror( tableName, 'none', 'update', { error:error } )
-    @fd.ref(tableName).update( updObjects, onComplete )
+    @fd.ref(tableName).update( objects, onComplete )
     return
 
-  remove:( t, whereKeys ) ->
+  remove:( t, keys ) ->
     tableName = @tableName(t)
     ref       = @fd.ref(t)
-    if Util.isArray(whereKeys)
-      @removeKeys( tableName, ref, whereKeys )
-    else  # where clause
-      onComplete = (snapshot) =>
-        if snapshot? and snapshot.val()?
-          keys = Util.toKeys( snapshot.val(), whereKeys, @keyProp )
-          @removeKeys( tableName, ref, keys )
-        else
-          @onerror( tableName, 'none', 'remove', {} )
-      ref.once('value', onComplete )
-    return
-
-  removeKeys:( tableName, ref, keys ) ->
     ref.child(key).remove() for key in keys
     @publish( tableName, 'none', 'remove', keys )
+    return
 
   make:( t ) ->
     tableName = @tableName(t)

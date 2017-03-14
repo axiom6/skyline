@@ -118,13 +118,12 @@
     };
 
     Firestore.prototype.insert = function(t, objects) {
-      var insObjects, onComplete, tableName;
+      var onComplete, tableName;
       tableName = this.tableName(t);
-      insObjects = Util.toObjects(objects, Store.where, this.keyProp);
       onComplete = (function(_this) {
         return function(error) {
           if (error == null) {
-            return _this.publish(tableName, 'none', 'insert', insObjects);
+            return _this.publish(tableName, 'none', 'insert', objects);
           } else {
             return _this.onerror(tableName, 'none', 'insert', {
               error: error
@@ -132,7 +131,7 @@
           }
         };
       })(this);
-      this.fd.ref(tableName).set(insObjects, onComplete);
+      this.fd.ref(tableName).set(objects, onComplete);
     };
 
     Firestore.prototype.select = function(t, where) {
@@ -143,16 +142,10 @@
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(snapshot) {
-          var objects;
           if ((snapshot != null) && (snapshot.val() != null)) {
-            objects = Util.toObjects(snapshot.val(), where, _this.keyProp);
-            return _this.publish(tableName, 'none', 'select', objects, {
-              where: where.toString()
-            });
+            return _this.publish(tableName, 'none', 'select', snapshot.val());
           } else {
-            return _this.onerror(tableName, 'none', 'select', {}, {
-              where: where.toString()
-            });
+            return _this.onerror(tableName, 'none', 'select', {});
           }
         };
       })(this);
@@ -160,13 +153,12 @@
     };
 
     Firestore.prototype.update = function(t, objects) {
-      var onComplete, tableName, updObjects;
+      var onComplete, tableName;
       tableName = this.tableName(t);
-      updObjects = Util.toObjects(objects, Store.where, this.keyProp);
       onComplete = (function(_this) {
         return function(error) {
           if (error == null) {
-            return _this.publish(tableName, 'none', 'update', updObjects);
+            return _this.publish(tableName, 'none', 'update', objects);
           } else {
             return _this.onerror(tableName, 'none', 'update', {
               error: error
@@ -174,38 +166,18 @@
           }
         };
       })(this);
-      this.fd.ref(tableName).update(updObjects, onComplete);
+      this.fd.ref(tableName).update(objects, onComplete);
     };
 
-    Firestore.prototype.remove = function(t, whereKeys) {
-      var onComplete, ref, tableName;
+    Firestore.prototype.remove = function(t, keys) {
+      var i, key, len, ref, tableName;
       tableName = this.tableName(t);
       ref = this.fd.ref(t);
-      if (Util.isArray(whereKeys)) {
-        this.removeKeys(tableName, ref, whereKeys);
-      } else {
-        onComplete = (function(_this) {
-          return function(snapshot) {
-            var keys;
-            if ((snapshot != null) && (snapshot.val() != null)) {
-              keys = Util.toKeys(snapshot.val(), whereKeys, _this.keyProp);
-              return _this.removeKeys(tableName, ref, keys);
-            } else {
-              return _this.onerror(tableName, 'none', 'remove', {});
-            }
-          };
-        })(this);
-        ref.once('value', onComplete);
-      }
-    };
-
-    Firestore.prototype.removeKeys = function(tableName, ref, keys) {
-      var i, key, len;
       for (i = 0, len = keys.length; i < len; i++) {
         key = keys[i];
         ref.child(key).remove();
       }
-      return this.publish(tableName, 'none', 'remove', keys);
+      this.publish(tableName, 'none', 'remove', keys);
     };
 
     Firestore.prototype.make = function(t) {

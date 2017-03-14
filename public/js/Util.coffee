@@ -531,6 +531,7 @@ class Util
   @unCap:( str ) ->
     str.charAt(0).toLowerCase() + str.substring(1)
 
+  # Review
   @toArray:( objects, whereIn=null, keyField='id' ) ->
     where = if whereIn? then whereIn else () -> true
     array = []
@@ -544,6 +545,7 @@ class Util
         array.push(object)
     array
 
+  # keyProp only needed if rows is away
   @toObjects:( rows, whereIn=null, keyProp='key' ) ->
     where = if whereIn? then whereIn else () -> true
     objects = {}
@@ -555,11 +557,10 @@ class Util
           Util.error( "Util.toObjects() row array element requires key property", keyProp, row )
     else
       for own key, row of rows when where(row)
-        row[keyProp] = key
         objects[key] = row
-        #Util.log( 'Util.toObjects()', { key:key, row:row } )
     objects
 
+  # keyProp only needed if rows is away
   @toKeys:( rows, whereIn=null, keyProp='key' ) ->
     where = if whereIn? then whereIn else () -> true
     keys  = []
@@ -573,6 +574,11 @@ class Util
       for own key, row of rows when where(row)
         keys.push( key )
     keys
+
+  @logObjs:( msg, objects ) =>
+    Util.log( msg )
+    Util.log( '  ', { key:key, row:row } ) for own key, row of objects
+    return
 
   # Beautiful Code, Chapter 1.
   # Implements a regular expression matcher that supports character matches,

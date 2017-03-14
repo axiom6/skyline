@@ -917,11 +917,9 @@ Util = (function() {
       for (key in rows) {
         if (!hasProp.call(rows, key)) continue;
         row = rows[key];
-        if (!(where(row))) {
-          continue;
+        if (where(row)) {
+          objects[key] = row;
         }
-        row[keyProp] = key;
-        objects[key] = row;
       }
     }
     return objects;
@@ -960,6 +958,19 @@ Util = (function() {
       }
     }
     return keys;
+  };
+
+  Util.logObjs = function(msg, objects) {
+    var key, row;
+    Util.log(msg);
+    for (key in objects) {
+      if (!hasProp.call(objects, key)) continue;
+      row = objects[key];
+      Util.log('  ', {
+        key: key,
+        row: row
+      });
+    }
   };
 
   Util.match = function(regexp, text) {

@@ -8,6 +8,9 @@ class Book
   Book.Alloc        = require( 'data/Alloc.json' )
 
   constructor:( @stream, @store, @room, @cust ) ->
+    @subscribe()
+    @data        = Book.Book
+    @make()
     @numDayMonth = [            31,30,31,31,30,31]
     @allDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
     @months      = [                                     "May","June","July","August","September","October"]
@@ -41,9 +44,11 @@ class Book
     $('#Days'  ).change( @onDay    )
     $('#Test'  ).click(  @onTest   )
     @roomsJQuery()
-    @subscribe()
 
   subscribe:() ->
+    @store.subscribe(  'Book', 'none', 'make',   (make)   => Util.log(     'Book.make()',   make   ); @insert() )
+    @store.subscribe(  'Book', 'none', 'insert', (insert) => Util.logObjs( 'Book.insert()', insert ) )
+    @store.subscribe(  'Book', 'none', 'update', (update) => Util.logObjs( 'Room.update()', update ) )
     @stream.subscribe( 'Alloc', (alloc) => @onAlloc( alloc ) )
     return
 
@@ -200,18 +205,33 @@ class Book
     # Util.log( "Book.onCellBook", $cell.attr('id'), $cell.attr('data-status'), status )
 
   onAlloc:( alloc ) =>
-    for     own roomId, book  of alloc
-      for   own custId, cust  of book
-        for own lookup, bdays of cust
-          for day in cust.days
-            @allocCell( roomId, day, cust.status )
+    ru = {}
+    for   own roomId, book of alloc
+      ru[roomId] = @data[roomId]
+      for own custId, cust of book
+        for day in cust.days
+          @allocBook( roomId, custId, day, cust.status, ru[roomId][custId] )
+          @allocCell( roomId, custId, day, cust.status )
+    @store.update( 'Book', ru )
     return
 
-  allocCell:( roomId, day, status ) ->
+  allocBook:( roomId, custId, day, status, cust ) ->
+    cust.status = status
+    cust.days.push(day) if not Util.inArray(cust.days,day)
+
+  allocCell:( roomId, custId, day, status ) ->
     @cellStatus( $('#'+roomId+day), status )
 
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
+
+  onAlloc2:( alloc ) =>
+    for     own roomId, book  of alloc
+      for   own custId, cust  of book
+        for own lookup, bdays of cust
+          for day in cust.days
+            @allocCell( roomId, custId, day, cust.status )
+    return
 
   dayMonth:( iday ) ->
     day = @begDay + iday - 1
@@ -219,3 +239,7 @@ class Book
 
   toDateStr:( day ) ->
     @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day))
+
+  make:()   => @store.make(   'Book' )
+
+  insert:() => @store.insert( 'Book', @data )
