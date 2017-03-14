@@ -917,6 +917,9 @@ Util = (function() {
       for (key in rows) {
         if (!hasProp.call(rows, key)) continue;
         row = rows[key];
+        if (!(where(row))) {
+          continue;
+        }
         row[keyProp] = key;
         objects[key] = row;
       }
@@ -951,7 +954,9 @@ Util = (function() {
       for (key in rows) {
         if (!hasProp.call(rows, key)) continue;
         row = rows[key];
-        keys.push(key);
+        if (where(row)) {
+          keys.push(key);
+        }
       }
     }
     return keys;

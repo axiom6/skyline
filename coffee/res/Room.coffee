@@ -17,7 +17,9 @@ class Room
 
   subscribe:() ->
     @store.subscribe( 'Room', 'none', 'make',   (make)   => Util.log( 'Room.make()',   make   ); @insert() )
-    @store.subscribe( 'Room', 'none', 'insert', (insert) => Util.log( 'Room.insert()', insert ); @select() )
+    @store.subscribe( 'Room', 'none', 'insert', (insert) => Util.log( 'Room.insert()', insert ); @update() )
+    @store.subscribe( 'Room', 'none', 'update', (update) => Util.log( 'Room.update()', update ); @remove() )
+    @store.subscribe( 'Room', 'none', 'remove', (remove) => Util.log( 'Room.remove()', remove ); @select() )
     @store.subscribe( 'Room', 'none', 'select', (select) => @logObjs( 'Room.select()', select ); @onAdd(); @onPut(); @onDel(); @add() )
     @store.subscribe( 'Room', 'none', 'onAdd',  (onAdd)  => Util.log( 'Room.onAdd()',  onAdd  )  )
     @store.subscribe( 'Room', 'none', 'onPut',  (onPut)  => Util.log( 'Room.onPut()',  onPut  )  )
@@ -37,7 +39,21 @@ class Room
 
   insert:() =>
     #Util.log( 'Room.Data', key, room ) for own key, room of Room.Data
-    @store.insert( 'Room', Room.Data )
+    @store.insert( 'Room', @data )
+
+  update:() =>
+    updt = {}
+    updt['1'] = @data['1']
+    updt['2'] = @data['2']
+    updt['3'] = @data['3']
+    updt['1'].max = 14
+    updt['2'].max = 14
+    updt['3'].max = 14
+    @store.update( 'Room', updt )
+
+  remove:() =>
+    #where = (obj) -> Util.inArray( ['4','5','6'], obj.key )
+    @store.remove( 'Room', ['4','5','6'] )
 
   select:() => @store.select( 'Room' )
 

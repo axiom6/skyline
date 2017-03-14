@@ -100,19 +100,24 @@ class Firestore extends Store
     @fd.ref(tableName).update( updObjects, onComplete )
     return
 
-  # Review - OK if this is really the right approach
-  remove:( t, where=Store.where ) ->
+  remove:( t, whereKeys ) ->
     tableName = @tableName(t)
-    onComplete = (snapshot) =>
-      if snapshot? and snapshot.val()?
-        objects = Util.toObjects( snapshot.val(), where, @keyProp )
-        for key, object of objects when where(val)
-          @fb.ref(t).remove( key ) # Need to see if onComplete is needed
-        @publish( tableName, 'none', 'remove', objects, { where:where.toString() } )
-      else
-        @onerror( tableName, 'none', 'remove', {},      { where:where.toString() } )
-    @fd.ref(t).once('value', onComplete )
+    ref       = @fd.ref(t)
+    if Util.isArray(whereKeys)
+      @removeKeys( tableName, ref, whereKeys )
+    else  # where clause
+      onComplete = (snapshot) =>
+        if snapshot? and snapshot.val()?
+          keys = Util.toKeys( snapshot.val(), whereKeys, @keyProp )
+          @removeKeys( tableName, ref, keys )
+        else
+          @onerror( tableName, 'none', 'remove', {} )
+      ref.once('value', onComplete )
     return
+
+  removeKeys:( tableName, ref, keys ) ->
+    ref.child(key).remove() for key in keys
+    @publish( tableName, 'none', 'remove', keys )
 
   make:( t ) ->
     tableName = @tableName(t)

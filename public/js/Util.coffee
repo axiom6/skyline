@@ -554,7 +554,7 @@ class Util
         else
           Util.error( "Util.toObjects() row array element requires key property", keyProp, row )
     else
-      for own key, row of rows # when where(row)
+      for own key, row of rows when where(row)
         row[keyProp] = key
         objects[key] = row
         #Util.log( 'Util.toObjects()', { key:key, row:row } )
@@ -570,7 +570,7 @@ class Util
         else
           Util.error( "Util.toKeys() row array element requires key property", keyProp, row )
     else
-      for own key, row of rows # when where(row)
+      for own key, row of rows when where(row)
         keys.push( key )
     keys
 

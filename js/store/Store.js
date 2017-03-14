@@ -87,11 +87,8 @@
       return Util.noop(table, objects);
     };
 
-    Store.prototype.remove = function(table, where) {
-      if (where == null) {
-        where = W;
-      }
-      return Util.noop(table, where);
+    Store.prototype.remove = function(table, wheKeys) {
+      return Util.noop(table, wheKeys);
     };
 
     Store.prototype.make = function(table) {

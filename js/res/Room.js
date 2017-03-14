@@ -22,6 +22,8 @@
       this.get = bind(this.get, this);
       this.add = bind(this.add, this);
       this.select = bind(this.select, this);
+      this.remove = bind(this.remove, this);
+      this.update = bind(this.update, this);
       this.insert = bind(this.insert, this);
       this.drop = bind(this.drop, this);
       this.show = bind(this.show, this);
@@ -51,6 +53,18 @@
       this.store.subscribe('Room', 'none', 'insert', (function(_this) {
         return function(insert) {
           Util.log('Room.insert()', insert);
+          return _this.update();
+        };
+      })(this));
+      this.store.subscribe('Room', 'none', 'update', (function(_this) {
+        return function(update) {
+          Util.log('Room.update()', update);
+          return _this.remove();
+        };
+      })(this));
+      this.store.subscribe('Room', 'none', 'remove', (function(_this) {
+        return function(remove) {
+          Util.log('Room.remove()', remove);
           return _this.select();
         };
       })(this));
@@ -128,7 +142,23 @@
     };
 
     Room.prototype.insert = function() {
-      return this.store.insert('Room', Room.Data);
+      return this.store.insert('Room', this.data);
+    };
+
+    Room.prototype.update = function() {
+      var updt;
+      updt = {};
+      updt['1'] = this.data['1'];
+      updt['2'] = this.data['2'];
+      updt['3'] = this.data['3'];
+      updt['1'].max = 14;
+      updt['2'].max = 14;
+      updt['3'].max = 14;
+      return this.store.update('Room', updt);
+    };
+
+    Room.prototype.remove = function() {
+      return this.store.remove('Room', ['4', '5', '6']);
     };
 
     Room.prototype.select = function() {

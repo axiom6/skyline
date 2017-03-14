@@ -177,34 +177,35 @@
       this.fd.ref(tableName).update(updObjects, onComplete);
     };
 
-    Firestore.prototype.remove = function(t, where) {
-      var onComplete, tableName;
-      if (where == null) {
-        where = Store.where;
-      }
+    Firestore.prototype.remove = function(t, whereKeys) {
+      var onComplete, ref, tableName;
       tableName = this.tableName(t);
-      onComplete = (function(_this) {
-        return function(snapshot) {
-          var key, object, objects;
-          if ((snapshot != null) && (snapshot.val() != null)) {
-            objects = Util.toObjects(snapshot.val(), where, _this.keyProp);
-            for (key in objects) {
-              object = objects[key];
-              if (where(val)) {
-                _this.fb.ref(t).remove(key);
-              }
+      ref = this.fd.ref(t);
+      if (Util.isArray(whereKeys)) {
+        this.removeKeys(tableName, ref, whereKeys);
+      } else {
+        onComplete = (function(_this) {
+          return function(snapshot) {
+            var keys;
+            if ((snapshot != null) && (snapshot.val() != null)) {
+              keys = Util.toKeys(snapshot.val(), whereKeys, _this.keyProp);
+              return _this.removeKeys(tableName, ref, keys);
+            } else {
+              return _this.onerror(tableName, 'none', 'remove', {});
             }
-            return _this.publish(tableName, 'none', 'remove', objects, {
-              where: where.toString()
-            });
-          } else {
-            return _this.onerror(tableName, 'none', 'remove', {}, {
-              where: where.toString()
-            });
-          }
-        };
-      })(this);
-      this.fd.ref(t).once('value', onComplete);
+          };
+        })(this);
+        ref.once('value', onComplete);
+      }
+    };
+
+    Firestore.prototype.removeKeys = function(tableName, ref, keys) {
+      var i, key, len;
+      for (i = 0, len = keys.length; i < len; i++) {
+        key = keys[i];
+        ref.child(key).remove();
+      }
+      return this.publish(tableName, 'none', 'remove', keys);
     };
 
     Firestore.prototype.make = function(t) {
