@@ -2,18 +2,18 @@
 class Room
 
   module.exports = Room
-  Room.Data      = require( 'data/Room.json' )
+  Room.Rooms     = require( 'data/Room.json' )
 
   constructor:( @stream, @store ) ->
-    @data = Room.Data
-    @UIs  = @createUIs( @data )
-    @subscribe()
+    @rooms   = Room.Rooms
+    @roomUIs = @createRoomUIs( @rooms )
+    #@subscribe()
 
-  createUIs:( data ) ->
-    UIs = {}
+  createRoomUIs:( data ) ->
+    roomUIs = {}
     for key, room of data
-      UIs[key] = {}
-    UIs
+      roomUIs[key] = {}
+    roomUIs
 
   subscribe:() ->
     @store.subscribe( 'Room', 'none', 'make',   (make)   => Util.log( 'Room.make()',   make   ); @insert() )
@@ -39,13 +39,13 @@ class Room
 
   insert:() =>
     #Util.log( 'Room.Data', key, room ) for own key, room of Room.Data
-    @store.insert( 'Room', @data )
+    @store.insert( 'Room', @rooms )
 
   update:() =>
     updt = {}
-    updt['1'] = @data['1']
-    updt['2'] = @data['2']
-    updt['3'] = @data['3']
+    updt['1'] = @rooms['1']
+    updt['2'] = @rooms['2']
+    updt['3'] = @rooms['3']
     updt['1'].max = 14
     updt['2'].max = 14
     updt['3'].max = 14

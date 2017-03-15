@@ -9,7 +9,7 @@
 
     Res.init = function() {
       return Util.ready(function() {
-        var Book, Cust, Data, Firestore, Room, Stream, book, cust, data, room, store, stream, subjects;
+        var Book, Cust, Data, Firestore, Room, Stream, book, cust, room, store, stream, subjects;
         Stream = require('js/store/Stream');
         Firestore = require('js/store/Firestore');
         Room = require('js/res/Room');
@@ -22,9 +22,6 @@
         room = new Room(stream, store);
         cust = new Cust(stream, store);
         book = new Book(stream, store, room, cust);
-        data = new Data(stream, store, room, cust, book);
-        Util.noop(data);
-        room.make();
         return book.ready();
       });
     };

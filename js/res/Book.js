@@ -9,28 +9,29 @@
   Book = (function() {
     module.exports = Book;
 
-    Book.Book = require('data/Book.json');
+    Book.Allocs = require('data/Alloc.json');
 
-    Book.Alloc = require('data/Alloc.json');
+    Book.States = ["book", "depo", "hold", "free"];
 
-    function Book(stream, store, room1, cust1) {
+    function Book(stream, store, room1, cust) {
       this.stream = stream;
       this.store = store;
       this.room = room1;
-      this.cust = cust1;
+      this.cust = cust;
       this.insert = bind(this.insert, this);
       this.make = bind(this.make, this);
-      this.onAlloc2 = bind(this.onAlloc2, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
       this.onTest = bind(this.onTest, this);
+      this.initRooms = bind(this.initRooms, this);
       this.onPets = bind(this.onPets, this);
       this.onDay = bind(this.onDay, this);
       this.onMonth = bind(this.onMonth, this);
       this.onGuests = bind(this.onGuests, this);
       this.subscribe();
-      this.data = Book.Book;
-      this.make();
+      this.rooms = this.room.rooms;
+      this.roomUIs = this.room.roomUIs;
+      this.initRooms();
       this.numDayMonth = [31, 30, 31, 31, 30, 31];
       this.allDayMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
       this.months = ["May", "June", "July", "August", "September", "October"];
@@ -64,26 +65,11 @@
       $('#Months').change(this.onMonth);
       $('#Days').change(this.onDay);
       $('#Test').click(this.onTest);
+      this.initAlloc();
       return this.roomsJQuery();
     };
 
     Book.prototype.subscribe = function() {
-      this.store.subscribe('Book', 'none', 'make', (function(_this) {
-        return function(make) {
-          Util.log('Book.make()', make);
-          return _this.insert();
-        };
-      })(this));
-      this.store.subscribe('Book', 'none', 'insert', (function(_this) {
-        return function(insert) {
-          return Util.logObjs('Book.insert()', insert);
-        };
-      })(this));
-      this.store.subscribe('Book', 'none', 'update', (function(_this) {
-        return function(update) {
-          return Util.logObjs('Room.update()', update);
-        };
-      })(this));
       this.stream.subscribe('Alloc', (function(_this) {
         return function(alloc) {
           return _this.onAlloc(alloc);
@@ -115,14 +101,14 @@
         htm += "<th>" + (this.dayMonth(day)) + "</th>";
       }
       htm += "<th>Total</th></tr></thead><tbody>";
-      ref2 = this.room.data;
+      ref2 = this.rooms;
       for (roomId in ref2) {
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
         htm += "<tr id=\"" + roomId + "\"><td>" + room.name + "</td><td id=\"" + roomId + "Price\" class=\"room-price\">" + ('$' + this.calcPrice(room)) + "</td>";
         for (day = k = 1, ref3 = this.numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
           date = this.toDateStr(day);
-          htm += this.createCell(roomId, Book.Book[roomId], date);
+          htm += this.createCell(room, date);
         }
         htm += "<td class=\"room-total\" id=\"" + roomId + "Total\"></td></tr>";
       }
@@ -143,7 +129,7 @@
         $cell.unbind("click");
       }
       this.$cells = [];
-      ref1 = this.room.UIs;
+      ref1 = this.roomUIs;
       for (roomId in ref1) {
         roomUI = ref1[roomId];
         roomUI.$ = $('#' + roomId);
@@ -160,10 +146,10 @@
       }
     };
 
-    Book.prototype.createCell = function(roomId, book, date) {
+    Book.prototype.createCell = function(room, date) {
       var status;
-      status = this.dayBooked(book, date);
-      return "<td id=\"" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
+      status = this.dayBooked(room, date);
+      return "<td id=\"" + (room.roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
     };
 
     Book.prototype.calcPrice = function(room) {
@@ -173,40 +159,35 @@
       return price;
     };
 
-    Book.prototype.updatePrice = function(roomId, room) {
+    Book.prototype.updatePrice = function(room) {
+      var roomId;
+      roomId = room.roomId;
       if (this.guests > room.max) {
-        this.room.UIs[roomId].$.hide();
+        this.roomUIs[roomId].$.hide();
       } else {
-        this.room.UIs[roomId].$.show();
+        this.roomUIs[roomId].$.show();
         $('#P' + roomId).text("" + ('$' + this.calcPrice(room)));
       }
     };
 
     Book.prototype.updatePrices = function() {
       var ref, results, room, roomId;
-      ref = this.room.data;
+      ref = this.rooms;
       results = [];
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
         room = ref[roomId];
-        results.push(this.updatePrice(roomId, room));
+        results.push(this.updatePrice(room));
       }
       return results;
     };
 
-    Book.prototype.updateTotal = function(roomId, date, status) {
-      var cust, price, text;
-      price = this.room.data[roomId].price;
-      cust = Book.Book[roomId][this.myCustId];
-      if (cust == null) {
-        cust = this.newCust();
-        Book.Book[roomId][this.myCustId] = cust;
-      }
-      cust.status = status;
-      cust.days.push(date);
-      cust.total += status === 'mine' ? price : -price;
-      text = cust.total === 0 ? '' : '$' + cust.total;
-      $('#' + roomId + 'Total').text(text);
+    Book.prototype.updateTotal = function(room, date, status) {
+      var price, text;
+      price = room.price;
+      room.total += status === 'mine' ? price : -price;
+      text = room.total === 0 ? '' : '$' + room.total;
+      $('#' + room.roomId + 'Total').text(text);
       this.updateTotals();
     };
 
@@ -219,16 +200,13 @@
     };
 
     Book.prototype.updateTotals = function() {
-      var book, cust, ref, roomId, text, totals;
+      var ref, room, roomId, text, totals;
       totals = 0;
-      ref = Book.Book;
+      ref = this.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
-        book = ref[roomId];
-        cust = book[this.myCustId];
-        if (cust != null) {
-          totals += book[this.myCustId].total;
-        }
+        room = ref[roomId];
+        totals += room.total;
       }
       text = totals === 0 ? '' : '$' + totals;
       $('#Totals').text(text);
@@ -242,16 +220,18 @@
       }
     };
 
-    Book.prototype.dayBooked = function(book, date) {
-      var cust, custId, day, i, len, ref;
-      for (custId in book) {
-        if (!hasProp.call(book, custId)) continue;
-        cust = book[custId];
-        ref = cust.days;
-        for (i = 0, len = ref.length; i < len; i++) {
-          day = ref[i];
-          if (day === date) {
-            return cust.status;
+    Book.prototype.dayBooked = function(room, date) {
+      var day, i, j, len, len1, ref, ref1, status;
+      ref = Book.States;
+      for (i = 0, len = ref.length; i < len; i++) {
+        status = ref[i];
+        if (room[status] != null) {
+          ref1 = room[status];
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            day = ref1[j];
+            if (day === date) {
+              return status;
+            }
           }
         }
       }
@@ -298,8 +278,41 @@
       this.updatePrices();
     };
 
+    Book.prototype.initRooms = function() {
+      this.store.subscribe('Room', 'none', 'make', (function(_this) {
+        return function(make) {
+          return _this.store.insert('Room', _this.rooms);
+        };
+      })(this));
+      return this.store.make('Room');
+    };
+
+    Book.prototype.initAlloc = function() {
+      this.store.subscribe('Alloc', 'none', 'onAdd', (function(_this) {
+        return function(onAdd) {
+          Util.log('Alloc.onAdd()', onAdd);
+          return _this.onAlloc(onAdd);
+        };
+      })(this));
+      this.store.subscribe('Alloc', 'none', 'onPut', (function(_this) {
+        return function(onPut) {
+          return Util.log('Alloc.onPut()', onPut);
+        };
+      })(this));
+      this.store.subscribe('Alloc', 'none', 'onDel', (function(_this) {
+        return function(onDel) {
+          return Util.log('Alloc.onDel()', onDel);
+        };
+      })(this));
+      this.store.make('Alloc');
+      this.store.on('Alloc', 'onAdd');
+      this.store.on('Alloc', 'onPut');
+      return this.store.on('Alloc', 'onDel');
+    };
+
     Book.prototype.onTest = function() {
-      return this.stream.publish("Alloc", Book.Alloc);
+      Util.log('Book.onTest()');
+      return this.store.insert('Alloc', Book.Allocs);
     };
 
     Book.prototype.onCellBook = function(event) {
@@ -317,61 +330,45 @@
       return this.updateTotal(roomId, date, status);
     };
 
-    Book.prototype.onAlloc = function(alloc) {
-      var book, cust, custId, day, i, len, ref, roomId, ru;
-      ru = {};
-      for (roomId in alloc) {
-        if (!hasProp.call(alloc, roomId)) continue;
-        book = alloc[roomId];
-        ru[roomId] = this.data[roomId];
-        for (custId in book) {
-          if (!hasProp.call(book, custId)) continue;
-          cust = book[custId];
-          ref = cust.days;
-          for (i = 0, len = ref.length; i < len; i++) {
-            day = ref[i];
-            this.allocBook(roomId, custId, day, cust.status, ru[roomId][custId]);
-            this.allocCell(roomId, custId, day, cust.status);
+    Book.prototype.onAlloc = function(onAdd) {
+      var alloc, day, i, j, len, len1, ref, ref1, status;
+      Util.log('Book.onAlloc()', {
+        onEvt: onAdd.onEvt,
+        table: onAdd.table,
+        key: onAdd.key,
+        val: onAdd.val
+      });
+      alloc = onAdd.val;
+      ref = Book.States;
+      for (i = 0, len = ref.length; i < len; i++) {
+        status = ref[i];
+        if (alloc[status] != null) {
+          ref1 = alloc[status];
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            day = ref1[j];
+            this.allocRoom(alloc, day, status);
+            this.allocCell(alloc, day, status);
           }
         }
       }
-      this.store.update('Book', ru);
     };
 
-    Book.prototype.allocBook = function(roomId, custId, day, status, cust) {
-      cust.status = status;
-      if (!Util.inArray(cust.days, day)) {
-        return cust.days.push(day);
+    Book.prototype.allocRoom = function(alloc, day, status) {
+      var room, roomDays;
+      room = this.rooms[alloc.roomId];
+      room[status] = room[status] != null ? room[status] : [];
+      roomDays = room[status];
+      if (!Util.inArray(roomDays, day)) {
+        return roomDays.push(day);
       }
     };
 
-    Book.prototype.allocCell = function(roomId, custId, day, status) {
-      return this.cellStatus($('#' + roomId + day), status);
+    Book.prototype.allocCell = function(alloc, day, status) {
+      return this.cellStatus($('#' + alloc.roomId + day), status);
     };
 
     Book.prototype.cellStatus = function($cell, status) {
       return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
-    };
-
-    Book.prototype.onAlloc2 = function(alloc) {
-      var bdays, book, cust, custId, day, i, len, lookup, ref, roomId;
-      for (roomId in alloc) {
-        if (!hasProp.call(alloc, roomId)) continue;
-        book = alloc[roomId];
-        for (custId in book) {
-          if (!hasProp.call(book, custId)) continue;
-          cust = book[custId];
-          for (lookup in cust) {
-            if (!hasProp.call(cust, lookup)) continue;
-            bdays = cust[lookup];
-            ref = cust.days;
-            for (i = 0, len = ref.length; i < len; i++) {
-              day = ref[i];
-              this.allocCell(roomId, custId, day, cust.status);
-            }
-          }
-        }
-      }
     };
 
     Book.prototype.dayMonth = function(iday) {
@@ -389,11 +386,11 @@
     };
 
     Book.prototype.make = function() {
-      return this.store.make('Book');
+      return this.store.make('Room');
     };
 
     Book.prototype.insert = function() {
-      return this.store.insert('Book', this.data);
+      return this.store.insert('Room', this.rooms);
     };
 
     return Book;

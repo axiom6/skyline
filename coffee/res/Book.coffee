@@ -3,14 +3,15 @@ $ = require( 'jquery' )
 
 class Book
 
-  module.exports    = Book
-  Book.Book         = require( 'data/Book.json'  )
-  Book.Alloc        = require( 'data/Alloc.json' )
+  module.exports = Book
+  Book.Allocs    = require( 'data/Alloc.json' )
+  Book.States    = ["book","depo","hold","free"]
 
   constructor:( @stream, @store, @room, @cust ) ->
     @subscribe()
-    @data        = Book.Book
-    @make()
+    @rooms       = @room.rooms
+    @roomUIs     = @room.roomUIs
+    @initRooms()
     @numDayMonth = [            31,30,31,31,30,31]
     @allDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
     @months      = [                                     "May","June","July","August","September","October"]
@@ -43,12 +44,10 @@ class Book
     $('#Months').change( @onMonth  )
     $('#Days'  ).change( @onDay    )
     $('#Test'  ).click(  @onTest   )
+    @initAlloc()
     @roomsJQuery()
 
   subscribe:() ->
-    @store.subscribe(  'Book', 'none', 'make',   (make)   => Util.log(     'Book.make()',   make   ); @insert() )
-    @store.subscribe(  'Book', 'none', 'insert', (insert) => Util.logObjs( 'Book.insert()', insert ) )
-    @store.subscribe(  'Book', 'none', 'update', (update) => Util.logObjs( 'Room.update()', update ) )
     @stream.subscribe( 'Alloc', (alloc) => @onAlloc( alloc ) )
     return
 
@@ -71,11 +70,11 @@ class Book
     for day in [1..@numDays]
       htm += "<th>#{@dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
-    for own roomId, room of @room.data
+    for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{room.name}</td><td id="#{roomId}Price" class="room-price">#{'$'+@calcPrice(room)}</td>"""
       for day in [1..@numDays]
         date = @toDateStr(day)
-        htm += @createCell( roomId, Book.Book[roomId], date )
+        htm += @createCell( room, date )
       htm += """<td class="room-total" id="#{roomId}Total"></td></tr>"""
     htm += """<tr><td></td><td></td>"""
     htm += """<td></td>""" for day in [1..@numDays]
@@ -87,7 +86,7 @@ class Book
     for $cell in @$cells
         $cell.unbind( "click" )
     @$cells = []
-    for roomId, roomUI of @room.UIs
+    for roomId, roomUI of @roomUIs
       roomUI.$ = $('#'+roomId) # Keep jQuery out of room database table
       for day in [1..@numDays]
         date  = @toDateStr(day)
@@ -96,39 +95,33 @@ class Book
         @$cells.push( $cell )
     return
 
-  createCell:( roomId, book, date ) ->
-    status = @dayBooked( book, date )
-    """<td id="#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
+  createCell:( room, date ) ->
+    status = @dayBooked( room, date )
+    """<td id="#{room.roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
 
   calcPrice:( room ) ->
     price = room[@guests]+@pet*@petPrice
     room.price = price
     price
 
-  updatePrice:( roomId, room ) ->
+  updatePrice:( room ) ->
+    roomId = room.roomId
     if @guests > room.max
-      @room.UIs[roomId].$.hide()
+      @roomUIs[roomId].$.hide()
     else
-      @room.UIs[roomId].$.show()
+      @roomUIs[roomId].$.show()
       $('#P'+roomId).text("#{'$'+ @calcPrice(room) }")
     return
 
   updatePrices:() ->
-    for own roomId, room of @room.data
-      @updatePrice( roomId, room )
+    for own roomId, room of @rooms
+      @updatePrice( room )
 
-  updateTotal:( roomId, date, status ) ->
-    price = @room.data[roomId].price
-    cust  = Book.Book[roomId][@myCustId]
-    if not cust?
-      cust = @newCust()
-      Book.Book[roomId][@myCustId] = cust
-    cust.status = status
-    cust.days.push( date )
-    cust.total += if status is 'mine' then price else -price
-    # Util.log( 'Book.updateTotal()', status, price, origTotal, cust )
-    text = if cust.total is 0 then '' else '$'+cust.total
-    $('#'+roomId+'Total').text(text)
+  updateTotal:( room, date, status ) ->
+    price = room.price
+    room.total += if status is 'mine' then price else -price
+    text = if room.total is 0 then '' else '$'+room.total
+    $('#'+room.roomId+'Total').text(text)
     @updateTotals()
     return
 
@@ -137,9 +130,8 @@ class Book
 
   updateTotals:() ->
     totals = 0
-    for own roomId, book of Book.Book
-      cust    = book[@myCustId]
-      totals += book[@myCustId].total if cust?
+    for own roomId, room of @rooms
+      totals += room.total
     text = if totals is 0 then '' else '$'+totals
     $('#Totals').text(text)
     return
@@ -147,10 +139,10 @@ class Book
   toDay:( date ) ->
     if date.charAt(6) is '0' then date.substr(7,8) else date.substr(6,8)
 
-  dayBooked:( book, date ) ->
-    for own custId, cust of book
-      for day in cust.days
-        return cust.status if day is date
+  dayBooked:( room, date ) ->
+    for status in Book.States when room[status]?
+      for day  in room[status]
+        return status if day is date
     'free'
 
   htmlSelect:( htmlId, array, choice  ) ->
@@ -188,8 +180,22 @@ class Book
     @updatePrices()
     return
 
+  initRooms:() =>
+    @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms )  )
+    @store.make( 'Room' )
+
+  initAlloc:() ->
+    @store.subscribe( 'Alloc', 'none', 'onAdd', (onAdd)  => Util.log( 'Alloc.onAdd()', onAdd ); @onAlloc(onAdd) )
+    @store.subscribe( 'Alloc', 'none', 'onPut', (onPut)  => Util.log( 'Alloc.onPut()', onPut ) )
+    @store.subscribe( 'Alloc', 'none', 'onDel', (onDel)  => Util.log( 'Alloc.onDel()', onDel ) )
+    @store.make(      'Alloc' )
+    @store.on( 'Alloc', 'onAdd' )
+    @store.on( 'Alloc', 'onPut' )
+    @store.on( 'Alloc', 'onDel' )
+
   onTest:() =>
-    @stream.publish( "Alloc", Book.Alloc )
+    Util.log( 'Book.onTest()' )
+    @store.insert( 'Alloc', Book.Allocs )
 
   onCellBook:( event ) =>
     $cell  = $(event.target)
@@ -202,36 +208,28 @@ class Book
     roomId = $cell.attr('id').substr(0,1)
     date   = $cell.attr('id').substr(1,8)
     @updateTotal( roomId, date, status )
-    # Util.log( "Book.onCellBook", $cell.attr('id'), $cell.attr('data-status'), status )
 
-  onAlloc:( alloc ) =>
-    ru = {}
-    for   own roomId, book of alloc
-      ru[roomId] = @data[roomId]
-      for own custId, cust of book
-        for day in cust.days
-          @allocBook( roomId, custId, day, cust.status, ru[roomId][custId] )
-          @allocCell( roomId, custId, day, cust.status )
-    @store.update( 'Book', ru )
+  onAlloc:( onAdd ) =>
+    Util.log( 'Book.onAlloc()', { onEvt:onAdd.onEvt, table:onAdd.table, key:onAdd.key, val:onAdd.val } )
+    alloc = onAdd.val
+    for status in Book.States when alloc[status]?
+      for day  in alloc[status]
+        @allocRoom( alloc, day, status )
+        @allocCell( alloc, day, status )
+    #@store.put( 'Room', alloc.roomId )
     return
 
-  allocBook:( roomId, custId, day, status, cust ) ->
-    cust.status = status
-    cust.days.push(day) if not Util.inArray(cust.days,day)
+  allocRoom:( alloc, day, status ) ->
+    room         = @rooms[alloc.roomId]
+    room[status] = if room[status]? then room[status] else []
+    roomDays     = room[status]
+    roomDays.push(day) if not Util.inArray(roomDays,day)
 
-  allocCell:( roomId, custId, day, status ) ->
-    @cellStatus( $('#'+roomId+day), status )
+  allocCell:( alloc, day, status ) ->
+    @cellStatus( $('#'+alloc.roomId+day), status )
 
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
-
-  onAlloc2:( alloc ) =>
-    for     own roomId, book  of alloc
-      for   own custId, cust  of book
-        for own lookup, bdays of cust
-          for day in cust.days
-            @allocCell( roomId, custId, day, cust.status )
-    return
 
   dayMonth:( iday ) ->
     day = @begDay + iday - 1
@@ -240,6 +238,6 @@ class Book
   toDateStr:( day ) ->
     @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day))
 
-  make:()   => @store.make(   'Book' )
+  make:()   => @store.make(   'Room' )
 
-  insert:() => @store.insert( 'Book', @data )
+  insert:() => @store.insert( 'Room', @rooms )

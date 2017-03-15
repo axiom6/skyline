@@ -137,6 +137,7 @@ class Firestore extends Store
     @fd.ref(tableName).remove( onComplete )
     return
 
+  # Have too clarify id with snapshot.key
   on:( t, onEvt, id='none' ) ->
     table  = @tableName(t)
     onComplete = (snapshot) =>

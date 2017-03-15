@@ -4,21 +4,27 @@ body {
 .init-font {
   font-size: 12px;
 }
-.room-price {
-  background-color: lightgrey;
-  color: black;
-  text-align: right;
-  width: 35px;
-}
 .room-free {
   background-color: lightgrey;
   color: black;
   text-align: right;
   width: 35px;
 }
+.room-mine {
+  background-color: blue;
+  color: white;
+  text-align: right;
+  width: 35px;
+}
 .room-hold {
-  background-color: grey;
+  background-color: slategray;
   color: black;
+  text-align: right;
+  width: 35px;
+}
+.room-depo {
+  background-color: dimgray;
+  color: white;
   text-align: right;
   width: 35px;
 }
@@ -28,9 +34,9 @@ body {
   text-align: right;
   width: 35px;
 }
-.room-mine {
-  background-color: blue;
-  color: white;
+.room-price {
+  background-color: lightgrey;
+  color: black;
   text-align: right;
   width: 35px;
 }

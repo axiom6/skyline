@@ -6,7 +6,7 @@
   Room = (function() {
     module.exports = Room;
 
-    Room.Data = require('data/Room.json');
+    Room.Rooms = require('data/Room.json');
 
     function Room(stream, store) {
       this.stream = stream;
@@ -26,19 +26,18 @@
       this.drop = bind(this.drop, this);
       this.show = bind(this.show, this);
       this.make = bind(this.make, this);
-      this.data = Room.Data;
-      this.UIs = this.createUIs(this.data);
-      this.subscribe();
+      this.rooms = Room.Rooms;
+      this.roomUIs = this.createRoomUIs(this.rooms);
     }
 
-    Room.prototype.createUIs = function(data) {
-      var UIs, key, room;
-      UIs = {};
+    Room.prototype.createRoomUIs = function(data) {
+      var key, room, roomUIs;
+      roomUIs = {};
       for (key in data) {
         room = data[key];
-        UIs[key] = {};
+        roomUIs[key] = {};
       }
-      return UIs;
+      return roomUIs;
     };
 
     Room.prototype.subscribe = function() {
@@ -140,15 +139,15 @@
     };
 
     Room.prototype.insert = function() {
-      return this.store.insert('Room', this.data);
+      return this.store.insert('Room', this.rooms);
     };
 
     Room.prototype.update = function() {
       var updt;
       updt = {};
-      updt['1'] = this.data['1'];
-      updt['2'] = this.data['2'];
-      updt['3'] = this.data['3'];
+      updt['1'] = this.rooms['1'];
+      updt['2'] = this.rooms['2'];
+      updt['3'] = this.rooms['3'];
       updt['1'].max = 14;
       updt['2'].max = 14;
       updt['3'].max = 14;
