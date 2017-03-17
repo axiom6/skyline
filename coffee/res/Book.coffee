@@ -13,7 +13,6 @@ class Book
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @initRooms()
-
     @guests      = "2"
     @pet         =  0
     @myDays      =  0
@@ -21,7 +20,7 @@ class Book
     @today       = new Date()
     @monthIdx    = @today.getMonth()
     @monthIdx    = 2 # 2 is July if 4 < @monthIdx and @monthIdx < 10 then @monthIdx else 0
-    @year        = "2017"
+    @year        = 2017
     @month       = Data.months[@monthIdx] # if 4 < @monthIdx and @monthIdx < 10 then @months[@monthIdx] else "May"
     @begDay      =  9
     @weekdayIdx  = new Date( 2017, @monthIdx, 1 ).getDay()
@@ -32,7 +31,7 @@ class Book
 
   ready:() ->
     $('#Inits').append( @initsHtml( ) )
-    $('#Rooms').append( @roomsHtml( ) )
+    $('#Rooms').append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
     $('#Guests').change( @onGuests )
     $('#Pets'  ).change( @onPets   )
     $('#Months').change( @onMonth  )
@@ -54,19 +53,20 @@ class Book
     htm    += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
     htm
 
-  roomsHtml:( ) ->
+  roomsHtml:( year, monthIdx, begDay, numDays ) ->
+    weekdayIdx  = new Date( year, monthIdx, 1 ).getDay()
     htm   = "<table><thead>"
     htm  += """<tr><th></th><th id="NumGuests">#{@guests}&nbsp;Guests</th>"""
-    for day in [1..@numDays]
-      weekday = Data.weekdays[(@weekdayIdx+day-1)%7]
+    for day in [1..numDays]
+      weekday = Data.weekdays[(weekdayIdx+day-1)%7]
       htm += "<th>#{weekday}</th>"
     htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>#{@pet}&nbsp;Pets</th>"
-    for day in [1..@numDays]
-      htm += "<th>#{@dayMonth(day)}</th>"
+    for day in [1..numDays]
+      htm += "<th>#{@dayMonth(day,begDay)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{room.name}</td><td id="#{roomId}Price" class="room-price">#{'$'+@calcPrice(room)}</td>"""
-      for day in [1..@numDays]
+      for day in [1..numDays]
         date = @toDateStr(day)
         htm += @createCell( room, date )
       htm += """<td class="room-total" id="#{roomId}Total"></td></tr>"""
@@ -155,7 +155,7 @@ class Book
   onMonth:( event ) =>
     @month      = event.target.value
     @monthIdx   = @months.indexOf(@month)
-    @weekdayIdx = new Date( 2017, @monthIdx, 1 ).getDay()
+    @weekdayIdx = new Date( @year, @monthIdx, 1 ).getDay()
     @resetRooms()
     return
 
@@ -166,7 +166,7 @@ class Book
 
   resetRooms:() ->
     $('#Rooms').empty()
-    $('#Rooms').append( @roomsHtml( ) )
+    $('#Rooms').append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
     @roomsJQuery()
 
   onPets:( event ) =>
@@ -175,7 +175,7 @@ class Book
     return
 
   initRooms:() =>
-    @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms )  )
+    @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
     @store.make( 'Room' )
 
   initAlloc:() ->
@@ -225,12 +225,12 @@ class Book
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
 
-  dayMonth:( iday ) ->
-    day = @begDay + iday - 1
+  dayMonth:( iday, begDay ) ->
+    day = begDay + iday - 1
     if day > Data.numDayMonth[@monthIdx] then day-Data.numDayMonth[@monthIdx] else day
 
   toDateStr:( day ) ->
-    @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day))
+    @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day,@begDay))
 
   make:()   => @store.make(   'Room' )
 

@@ -34,6 +34,60 @@ body {
   text-align: right;
   width: 35px;
 }
+.MonthTable thead tr th {
+  width: 14%;
+  text-align: center;
+  vertical-align: top;
+  border: 1px solid black;
+}
+.MonthTable tbody tr td {
+  width: 14%;
+  text-align: right;
+  vertical-align: top;
+  border: 1px solid black;
+}
+.MonthTitle {
+  text-align: center;
+}
+.MonthTable {
+  width: 100%;
+  height: 95%;
+  border-collapse: collapse;
+}
+.MonthDay {
+  font-size: 13px;
+  text-align: right;
+  font-weight: bold;
+}
+.MonthRoom {
+  font-size: 10px;
+  text-align: left;
+}
+.own-free {
+  background-color: lightgrey;
+  color: black;
+  text-align: center;
+}
+.own-mine {
+  background-color: blue;
+  color: white;
+  text-align: center;
+}
+.own-hold {
+  background-color: slategray;
+  color: black;
+  text-align: center;
+}
+.own-depo {
+  background-color: dimgray;
+  color: white;
+  text-align: center;
+}
+.own-book {
+  background-color: black;
+  color: white;
+  text-align: center;
+}
 .room-price {
   background-color: lightgrey;
   color: black;
@@ -56,6 +110,13 @@ img.center {
   margin-right: auto;
 }
 .Season {
+  position: absolute;
+  left: 0;
+  top: 480px;
+  width: 100%;
+  height: 600px;
+}
+.Master {
   position: absolute;
   left: 0;
   top: 480px;
@@ -109,33 +170,4 @@ img.center {
   width: 33%;
   height: 50%;
   border: 2px solid black;
-}
-.MonthTitle {
-  text-align: center;
-}
-.MonthTable {
-  width: 100%;
-  height: 95%;
-  border-collapse: collapse;
-}
-.MonthTable thead tr th {
-  width: 14%;
-  text-align: center;
-  vertical-align: top;
-  border: 1px solid black;
-}
-.MonthTable tbody tr td {
-  width: 14%;
-  text-align: right;
-  vertical-align: top;
-  border: 1px solid black;
-}
-.MonthDay {
-  font-size: 13px;
-  text-align: right;
-  font-weight: bold;
-}
-.MonthRoom {
-  font-size: 10px;
-  text-align: left;
 }

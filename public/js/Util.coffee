@@ -87,7 +87,7 @@ class Util
        Util.module = require('module')
        Util.module.globalPaths.push("/Users/ax/Documents/prj/#{prj}/")
        #window.global = window
-       #til.log( "Node Module Paths", Util.module.globalPaths )
+       Util.log( "Node Module Paths", Util.module.globalPaths )
     return
 
   @ready:( fn ) ->

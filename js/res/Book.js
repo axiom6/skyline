@@ -41,7 +41,7 @@
       this.today = new Date();
       this.monthIdx = this.today.getMonth();
       this.monthIdx = 2;
-      this.year = "2017";
+      this.year = 2017;
       this.month = Data.months[this.monthIdx];
       this.begDay = 9;
       this.weekdayIdx = new Date(2017, this.monthIdx, 1).getDay();
@@ -53,7 +53,7 @@
 
     Book.prototype.ready = function() {
       $('#Inits').append(this.initsHtml());
-      $('#Rooms').append(this.roomsHtml());
+      $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
       $('#Guests').change(this.onGuests);
       $('#Pets').change(this.onPets);
       $('#Months').change(this.onMonth);
@@ -82,17 +82,18 @@
       return htm;
     };
 
-    Book.prototype.roomsHtml = function() {
-      var date, day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday;
+    Book.prototype.roomsHtml = function(year, monthIdx, begDay, numDays) {
+      var date, day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday, weekdayIdx;
+      weekdayIdx = new Date(year, monthIdx, 1).getDay();
       htm = "<table><thead>";
       htm += "<tr><th></th><th id=\"NumGuests\">" + this.guests + "&nbsp;Guests</th>";
-      for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
-        weekday = Data.weekdays[(this.weekdayIdx + day - 1) % 7];
+      for (day = i = 1, ref = numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
+        weekday = Data.weekdays[(weekdayIdx + day - 1) % 7];
         htm += "<th>" + weekday + "</th>";
       }
       htm += "<th>Room</th></tr><tr><th>Cottage</th><th>" + this.pet + "&nbsp;Pets</th>";
-      for (day = j = 1, ref1 = this.numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
-        htm += "<th>" + (this.dayMonth(day)) + "</th>";
+      for (day = j = 1, ref1 = numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
+        htm += "<th>" + (this.dayMonth(day, begDay)) + "</th>";
       }
       htm += "<th>Total</th></tr></thead><tbody>";
       ref2 = this.rooms;
@@ -100,7 +101,7 @@
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
         htm += "<tr id=\"" + roomId + "\"><td>" + room.name + "</td><td id=\"" + roomId + "Price\" class=\"room-price\">" + ('$' + this.calcPrice(room)) + "</td>";
-        for (day = k = 1, ref3 = this.numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
+        for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
           date = this.toDateStr(day);
           htm += this.createCell(room, date);
         }
@@ -252,7 +253,7 @@
     Book.prototype.onMonth = function(event) {
       this.month = event.target.value;
       this.monthIdx = this.months.indexOf(this.month);
-      this.weekdayIdx = new Date(2017, this.monthIdx, 1).getDay();
+      this.weekdayIdx = new Date(this.year, this.monthIdx, 1).getDay();
       this.resetRooms();
     };
 
@@ -263,7 +264,7 @@
 
     Book.prototype.resetRooms = function() {
       $('#Rooms').empty();
-      $('#Rooms').append(this.roomsHtml());
+      $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
       return this.roomsJQuery();
     };
 
@@ -275,7 +276,8 @@
     Book.prototype.initRooms = function() {
       this.store.subscribe('Room', 'none', 'make', (function(_this) {
         return function(make) {
-          return _this.store.insert('Room', _this.rooms);
+          _this.store.insert('Room', _this.rooms);
+          return Util.noop(make);
         };
       })(this));
       return this.store.make('Room');
@@ -365,9 +367,9 @@
       return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
-    Book.prototype.dayMonth = function(iday) {
+    Book.prototype.dayMonth = function(iday, begDay) {
       var day;
-      day = this.begDay + iday - 1;
+      day = begDay + iday - 1;
       if (day > Data.numDayMonth[this.monthIdx]) {
         return day - Data.numDayMonth[this.monthIdx];
       } else {
@@ -376,7 +378,7 @@
     };
 
     Book.prototype.toDateStr = function(day) {
-      return this.year + Util.pad(this.monthIdx + 5) + Util.pad(this.dayMonth(day));
+      return this.year + Util.pad(this.monthIdx + 5) + Util.pad(this.dayMonth(day, this.begDay));
     };
 
     Book.prototype.make = function() {

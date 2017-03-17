@@ -7,13 +7,11 @@
 
     module.exports = Data;
 
-    Data.numDayMonth = [31, 30, 31, 31, 30, 31];
+    Data.season = ["May", "June", "July", "August", "September", "October"];
 
-    Data.allDayMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    Data.months = ["May", "June", "July", "August", "September", "October"];
-
-    Data.monthsAll = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    Data.numDayMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     Data.weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 

@@ -122,6 +122,7 @@ Util = (function() {
     if (Util.isCommonJS) {
       Util.module = require('module');
       Util.module.globalPaths.push("/Users/ax/Documents/prj/" + prj + "/");
+      Util.log("Node Module Paths", Util.module.globalPaths);
     }
   };
 
