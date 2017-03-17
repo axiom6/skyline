@@ -1,15 +1,16 @@
 
 class Data
 
-  module.exports    = Data
+  module.exports = Data
 
-  constructor:( @stream, @store, @room, @cust, @book ) ->
-
-  initAllTables:() ->
-    return
-
-  dropAllTables:() ->
-    return
+  @numDayMonth = [            31,30,31,31,30,31]
+  @allDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+  @months      = [                                     "May","June","July","August","September","October"]
+  @monthsAll   = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+  @weekdays    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+  @days        = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
+  @persons     = ["1","2","3","4","5","6","7","8","9","10","11","12"]
+  @pets        = ["0","1","2","3"]
 
   @configSkytest = {
     apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",

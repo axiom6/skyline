@@ -3,19 +3,25 @@
   var Data;
 
   Data = (function() {
+    function Data() {}
+
     module.exports = Data;
 
-    function Data(stream, store, room, cust, book) {
-      this.stream = stream;
-      this.store = store;
-      this.room = room;
-      this.cust = cust;
-      this.book = book;
-    }
+    Data.numDayMonth = [31, 30, 31, 31, 30, 31];
 
-    Data.prototype.initAllTables = function() {};
+    Data.allDayMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-    Data.prototype.dropAllTables = function() {};
+    Data.months = ["May", "June", "July", "August", "September", "October"];
+
+    Data.monthsAll = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    Data.weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    Data.days = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"];
+
+    Data.persons = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+
+    Data.pets = ["0", "1", "2", "3"];
 
     Data.configSkytest = {
       apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",

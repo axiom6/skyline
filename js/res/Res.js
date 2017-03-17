@@ -9,20 +9,22 @@
 
     Res.init = function() {
       return Util.ready(function() {
-        var Book, Cust, Data, Firestore, Room, Stream, book, cust, room, store, stream, subjects;
+        var Book, Cust, Data, Firestore, Own, Room, Stream, book, cust, own, room, store, stream;
         Stream = require('js/store/Stream');
         Firestore = require('js/store/Firestore');
+        Data = require('js/res/Data');
         Room = require('js/res/Room');
         Cust = require('js/res/Cust');
         Book = require('js/res/Book');
-        Data = require('js/res/Data');
-        subjects = ["Book", "Alloc", "Debug"];
-        stream = new Stream(subjects);
+        Own = require('js/res/Own');
+        stream = new Stream([]);
         store = new Firestore(stream, "skytest", Data.configSkytest);
         room = new Room(stream, store);
         cust = new Cust(stream, store);
         book = new Book(stream, store, room, cust);
-        return book.ready();
+        own = new Own(stream, store, room, cust, book);
+        book.ready();
+        return own.ready();
       });
     };
 

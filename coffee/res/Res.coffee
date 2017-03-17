@@ -9,20 +9,20 @@ class Res
 
       Stream    = require( 'js/store/Stream'    )
       Firestore = require( 'js/store/Firestore' )
+      Data      = require( 'js/res/Data'        )
       Room      = require( 'js/res/Room'        )
       Cust      = require( 'js/res/Cust'        )
       Book      = require( 'js/res/Book'        )
-      Data      = require( 'js/res/Data'        )
+      Own       = require( 'js/res/Own'         )
 
-      subjects = ["Book","Alloc","Debug"]
-      stream   = new Stream( subjects )
+      stream   = new Stream( [] )
       store    = new Firestore( stream, "skytest", Data.configSkytest )
       room     = new Room(      stream, store )
       cust     = new Cust(      stream, store )
       book     = new Book(      stream, store, room, cust )
-      #data    = new Data(      stream, store, room, cust, book )
+      own      = new Own(       stream, store, room, cust, book )
 
-      #room.make()
       book.ready()
+      own. ready()
 
 Res.init()

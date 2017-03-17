@@ -1,5 +1,6 @@
 
-$ = require( 'jquery' )
+$    = require( 'jquery'     )
+Data = require( 'js/res/Data')
 
 class Book
 
@@ -12,14 +13,7 @@ class Book
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @initRooms()
-    @numDayMonth = [            31,30,31,31,30,31]
-    @allDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
-    @months      = [                                     "May","June","July","August","September","October"]
-    @monthsAll   = ["January","February","March","April","May","June","July","August","September","October","November","December"]
-    @weekdays    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
-    @days        = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
-    @persons     = ["1","2","3","4","5","6","7","8","9","10","11","12"]
-    @pets        = ["0","1","2","3"]
+
     @guests      = "2"
     @pet         =  0
     @myDays      =  0
@@ -28,7 +22,7 @@ class Book
     @monthIdx    = @today.getMonth()
     @monthIdx    = 2 # 2 is July if 4 < @monthIdx and @monthIdx < 10 then @monthIdx else 0
     @year        = "2017"
-    @month       = @months[@monthIdx] # if 4 < @monthIdx and @monthIdx < 10 then @months[@monthIdx] else "May"
+    @month       = Data.months[@monthIdx] # if 4 < @monthIdx and @monthIdx < 10 then @months[@monthIdx] else "May"
     @begDay      =  9
     @weekdayIdx  = new Date( 2017, @monthIdx, 1 ).getDay()
     @numDays     = 14
@@ -52,10 +46,10 @@ class Book
     return
 
   initsHtml:() ->
-    htm     = """<label class="init-font">&nbsp;&nbsp;Guests:#{ @htmlSelect( "Guests", @persons, @guests ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;Pets:  #{ @htmlSelect( "Pets",   @pets,    @pet    ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", @months,  @month  ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   @days,    @begDay ) }</label>"""
+    htm     = """<label class="init-font">&nbsp;&nbsp;Guests:#{ @htmlSelect( "Guests", Data.persons, @guests ) }</label>"""
+    htm    += """<label class="init-font">&nbsp;&nbsp;Pets:  #{ @htmlSelect( "Pets",   Data.pets,    @pet    ) }</label>"""
+    htm    += """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", Data.months,  @month  ) }</label>"""
+    htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   Data.days,    @begDay ) }</label>"""
     htm    += """<label class="init-font">&nbsp;&nbsp;#{@year}</label>"""
     htm    += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
     htm
@@ -64,7 +58,7 @@ class Book
     htm   = "<table><thead>"
     htm  += """<tr><th></th><th id="NumGuests">#{@guests}&nbsp;Guests</th>"""
     for day in [1..@numDays]
-      weekday = @weekdays[(@weekdayIdx+day-1)%7]
+      weekday = Data.weekdays[(@weekdayIdx+day-1)%7]
       htm += "<th>#{weekday}</th>"
     htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>#{@pet}&nbsp;Pets</th>"
     for day in [1..@numDays]
@@ -233,7 +227,7 @@ class Book
 
   dayMonth:( iday ) ->
     day = @begDay + iday - 1
-    if day > @numDayMonth[@monthIdx] then day-@numDayMonth[@monthIdx] else day
+    if day > Data.numDayMonth[@monthIdx] then day-Data.numDayMonth[@monthIdx] else day
 
   toDateStr:( day ) ->
     @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day))
