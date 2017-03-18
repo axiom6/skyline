@@ -22,24 +22,28 @@ class Own
   masterHtml:() ->
     htm = ""
     for month in Data.season
-      monthIdx = Data.months.indexOf(month)
-      numDays  = Data.numDayMonth[monthIdx]
-      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @year, monthIdx, 1, numDays )}</div>"""
+
+      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @year, month )}</div>"""
     htm
 
-  roomsHtml:( year, monthIdx, begDay, numDays ) ->
-    weekdayIdx  = new Date( year, monthIdx, 1 ).getDay()
-    htm   = "<table><thead>"
-    htm  += """<tr><th></th>"""
-    for day in [1..numDays]
+  roomsHtml:( year, month ) ->
+    monthIdx   = Data.months.indexOf(month)
+    begDay     = if month isnt 'May'     then 1 else 17
+    endDay     = if month isnt 'October' then Data.numDayMonth[monthIdx] else 15
+    weekdayIdx = new Date( year, monthIdx, 1 ).getDay()
+    htm  = """<div class="MonthTitle">#{month}</div>"""
+    htm += "<table><thead>"
+    htm += """<tr><th></th>"""
+    for day in [begDay..endDay]
       weekday = Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
       htm += "<th>#{weekday}</th>"
-    htm  += "</tr><tr><th></th></tr></thead><tbody>"
-    for day in [1..numDays]
-      htm += "<th>#{@book.dayMonth(day,begDay)}</th>"
+    htm  += "</tr><tr><th></th>"
+    for day in [begDay..endDay]
+      htm += "<th>#{day}</th>"
+    htm  += "</tr></thead><tbody>"
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
-      for day in [1..numDays]
+      for day in [begDay..endDay]
         date = @toDateStr(day)
         htm += @book.createCell( room, date )
       htm += """</tr>"""

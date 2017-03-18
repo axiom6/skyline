@@ -122,28 +122,29 @@ img.center {
   top: 480px;
   width: 100%;
   height: 600px;
+  font-size: 10px;
 }
 .May {
   position: absolute;
   left: 0;
   top: 0;
-  width: 33%;
+  width: 20%;
   height: 50%;
   border: 2px solid black;
 }
 .June {
   position: absolute;
-  left: 33%;
+  left: 20%;
   top: 0;
-  width: 33%;
+  width: 40%;
   height: 50%;
   border: 2px solid black;
 }
 .July {
   position: absolute;
-  left: 66%;
+  left: 60%;
   top: 0;
-  width: 33%;
+  width: 40%;
   height: 50%;
   border: 2px solid black;
 }
@@ -151,11 +152,59 @@ img.center {
   position: absolute;
   left: 0;
   top: 50%;
-  width: 33%;
+  width: 40%;
   height: 50%;
   border: 2px solid black;
 }
 .September {
+  position: absolute;
+  left: 40%;
+  top: 50%;
+  width: 40%;
+  height: 50%;
+  border: 2px solid black;
+}
+.October {
+  position: absolute;
+  left: 80%;
+  top: 50%;
+  width: 20%;
+  height: 50%;
+  border: 2px solid black;
+}
+.MayC {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 33%;
+  height: 50%;
+  border: 2px solid black;
+}
+.JuneC {
+  position: absolute;
+  left: 33%;
+  top: 0;
+  width: 33%;
+  height: 50%;
+  border: 2px solid black;
+}
+.JulyC {
+  position: absolute;
+  left: 66%;
+  top: 0;
+  width: 33%;
+  height: 50%;
+  border: 2px solid black;
+}
+.AugustC {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 33%;
+  height: 50%;
+  border: 2px solid black;
+}
+.SeptemberC {
   position: absolute;
   left: 33%;
   top: 50%;
@@ -163,7 +212,7 @@ img.center {
   height: 50%;
   border: 2px solid black;
 }
-.October {
+.OctoberC {
   position: absolute;
   left: 66%;
   top: 50%;
