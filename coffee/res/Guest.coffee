@@ -1,7 +1,7 @@
 
-class Res
+class Guest
 
-  module.exports = Res
+  module.exports = Guest
 
   @init = () ->
 
@@ -13,16 +13,16 @@ class Res
       Room      = require( 'js/res/Room'        )
       Cust      = require( 'js/res/Cust'        )
       Book      = require( 'js/res/Book'        )
-      Own       = require( 'js/res/Own'         )
+      Master    = require( 'js/res/Master'      )
 
       stream   = new Stream( [] )
       store    = new Firestore( stream, "skytest", Data.configSkytest )
       room     = new Room(      stream, store )
       cust     = new Cust(      stream, store )
       book     = new Book(      stream, store, room, cust )
-      own      = new Own(       stream, store, room, cust, book )
+      master   = new Master(    stream, store, room, cust, book )
 
-      book.ready()
-      own. ready()
+      book.  ready()
+      master.ready()
 
-Res.init()
+Guest.init()

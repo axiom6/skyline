@@ -34,6 +34,22 @@ body {
   text-align: right;
   width: 35px;
 }
+.room-price {
+  background-color: lightgrey;
+  color: black;
+  text-align: right;
+  width: 35px;
+}
+.room-total {
+  background-color: lightblue;
+  color: black;
+  text-align: right;
+  width: 35px;
+}
+.btn-book {
+  background-color: blue;
+  color: yellow;
+}
 .MonthTable thead tr th {
   width: 14%;
   text-align: center;
@@ -46,8 +62,13 @@ body {
   vertical-align: top;
   border: 1px solid black;
 }
-.MonthTitle {
+.MasterTitle {
   text-align: center;
+  font-size: 18px;
+}
+.SeasonTitle {
+  text-align: center;
+  font-size: 18px;
 }
 .MonthTable {
   width: 100%;
@@ -88,40 +109,17 @@ body {
   color: white;
   text-align: center;
 }
-.room-price {
-  background-color: lightgrey;
-  color: black;
-  text-align: right;
-  width: 35px;
-}
-.room-total {
-  background-color: lightblue;
-  color: black;
-  text-align: right;
-  width: 35px;
-}
-.btn-book {
-  background-color: blue;
-  color: yellow;
-}
 img.center {
   display: block;
   margin-left: auto;
   margin-right: auto;
 }
-.Season {
-  position: absolute;
-  left: 0;
-  top: 480px;
-  width: 100%;
-  height: 600px;
-}
 .Master {
-  position: absolute;
+  position: relative;
   left: 0;
-  top: 480px;
+  top: 0;
   width: 100%;
-  height: 600px;
+  height: 450px;
   font-size: 10px;
 }
 .May {
@@ -171,6 +169,13 @@ img.center {
   width: 20%;
   height: 50%;
   border: 2px solid black;
+}
+.Season {
+  position: relative;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 740px;
 }
 .MayC {
   position: absolute;

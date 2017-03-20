@@ -18,27 +18,21 @@ Guest Pets per Room:: x
 Terms and Conditions:: x
 
 
-### [.black]#Gallerys#
-
-#### [.black]#Scenic#
-
-#### [.black]#Rooms#
+### [.black]#Gallerys Scenic Rooms Style Print#
 
 [horizontal]
-Amentities:: x
+Scenic:: x
+Rooms::  x
+Style::  x
+Print::  x
 
-#### [.black]#Style#
-
-[horizontal]
-Print:: x
 
 ## [.black]#Owner Site#
 
 ### [.black]#Master Calendar#
 
-#### [.black]#Arrivals#
+### [.black]#Customer#
 
-#### [.black]#Departures#
 
 ### [.black]#Work Schedule#
 

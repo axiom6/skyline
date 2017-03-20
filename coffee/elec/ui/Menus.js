@@ -196,10 +196,17 @@
               };
             })(this)
           }, {
-            label: 'Skyline',
+            label: 'Guest',
             click: (function(_this) {
               return function() {
-                return _this.action.view('Skyline', '/public/index.html');
+                return _this.action.view('Guest', '/public/index.html');
+              };
+            })(this)
+          }, {
+            label: 'Owner',
+            click: (function(_this) {
+              return function() {
+                return _this.action.view('Owner', '/public/owner.html');
               };
             })(this)
           }, {

@@ -2,27 +2,55 @@
 $    = require( 'jquery'     )
 Data = require( 'js/res/Data')
 
-class Own
+class Master
 
-  module.exports = Own
+  module.exports = Master
 
   constructor:( @stream, @store, @room, @cust, @book ) ->
     #@subscribe()
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @year        = 2017
+    @lastMaster  = { left:0, top:0, width:0, height:0 }
+    @lastSeason = { left:0, top:0, width:0, height:0 }
 
   ready:() ->
-    #htm =
-    #Util.log(htm)
-    #('#Season').append( @monthsHtml() )
     $('#Master').append( @masterHtml() )
+    $('#Season').append( @seasonHtml() )
+    $('.MasterTitle').click( (event) => @onMasterClick(event) )
+    $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
+
     return
+
+  onMasterClick:( event ) =>
+    $title  = $(event.target)
+    $month  = $title.parent()
+    $master = $('#Master')
+    if @lastMaster.height is 0
+       $master.children().hide()
+       @lastMaster = { left:$month.css('left'), top:$month.css('top'), width:$month.css('width'), height:$month.css('height') }
+       $month.css( { left:0, top:0, width:'100%', height:'450px' } ).show()
+    else
+      $month.css( @lastMaster )
+      $master.children().show()
+      @lastMaster.height = 0
+
+  onSeasonClick:( event ) =>
+    $title  = $(event.target)
+    $month  = $title.parent()
+    $season = $('#Season')
+    if @lastSeason.height is 0
+      $season.children().hide()
+      @lastSeason = { left:$month.css('left'), top:$month.css('top'), width:$month.css('width'), height:$month.css('height') }
+      $month.css( { left:0, top:0, width:'100%', height:'450px' } ).show()
+    else
+      $month.css( @lastSeason )
+      $season.children().show()
+      @lastSeason.height = 0
 
   masterHtml:() ->
     htm = ""
     for month in Data.season
-
       htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @year, month )}</div>"""
     htm
 
@@ -31,7 +59,7 @@ class Own
     begDay     = if month isnt 'May'     then 1 else 17
     endDay     = if month isnt 'October' then Data.numDayMonth[monthIdx] else 15
     weekdayIdx = new Date( year, monthIdx, 1 ).getDay()
-    htm  = """<div class="MonthTitle">#{month}</div>"""
+    htm  = """<div class="MasterTitle">#{month}</div>"""
     htm += "<table><thead>"
     htm += """<tr><th></th>"""
     for day in [begDay..endDay]
@@ -50,17 +78,17 @@ class Own
     htm += "</tbody></table>"
     htm
 
-  monthsHtml:() ->
+  seasonHtml:() ->
     htm = ""
     for month in Data.season
-      htm += """<div id="#{month}" class="#{month}">#{@monthTable(month)}</div>"""
+      htm += """<div id="#{month}" class="#{month}C">#{@monthTable(month)}</div>"""
     htm
 
   monthTable:( month ) ->
     monthIdx = Data.months.indexOf(month)
     begDay   = new Date( 2017, monthIdx, 1 ).getDay() - 1
     endDay   = Data.numDayMonth[monthIdx]
-    htm  = """<div class="MonthTitle">#{month}</div>"""
+    htm  = """<div class="SeasonTitle">#{month}</div>"""
     htm += """<table class="MonthTable"><thead><tr>"""
     for day in [0...7]
       weekday = Data.weekdays[day]
