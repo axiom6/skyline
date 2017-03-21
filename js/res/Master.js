@@ -11,14 +11,14 @@
   Master = (function() {
     module.exports = Master;
 
-    function Master(stream, store, room1, cust, book) {
+    function Master(stream, store, room1, cust) {
       this.stream = stream;
       this.store = store;
       this.room = room1;
       this.cust = cust;
-      this.book = book;
       this.onSeasonClick = bind(this.onSeasonClick, this);
       this.onMasterClick = bind(this.onMasterClick, this);
+      this.onAlloc = bind(this.onAlloc, this);
       this.rooms = this.room.rooms;
       this.roomUIs = this.room.roomUIs;
       this.year = 2017;
@@ -49,6 +49,38 @@
           return _this.onSeasonClick(event);
         };
       })(this));
+    };
+
+    Master.prototype.onAlloc = function(alloc) {
+      var day, i, j, len, len1, ref, ref1, status;
+      ref = this.room.states;
+      for (i = 0, len = ref.length; i < len; i++) {
+        status = ref[i];
+        if (alloc[status] != null) {
+          ref1 = alloc[status];
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            day = ref1[j];
+            this.allocMasterCell(alloc, day, status);
+            this.allocSeasonCell(alloc, day, status);
+          }
+        }
+      }
+    };
+
+    Master.prototype.allocMasterCell = function(alloc, day, status) {
+      return this.cellMasterStatus($('#' + alloc.roomId + day), status);
+    };
+
+    Master.prototype.cellMasterStatus = function($cell, status) {
+      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
+    };
+
+    Master.prototype.allocSeasonCell = function(alloc, day, status) {
+      return this.cellMasterStatus($('#' + alloc.roomId + day), status);
+    };
+
+    Master.prototype.cellSeasonStatus = function($cell, status) {
+      return $cell.removeClass().addClass("own-" + status).attr('data-status', status);
     };
 
     Master.prototype.onMasterClick = function(event) {
@@ -138,8 +170,8 @@
         room = ref4[roomId];
         htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
         for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
-          date = this.toDateStr(day);
-          htm += this.book.createCell(room, date);
+          date = this.toDateStr(monthIdx, day);
+          htm += this.room.createCell(room, date);
         }
         htm += "</tr>";
       }
@@ -194,34 +226,12 @@
         if (roomId === 10) {
           roomId = 'S';
         }
-        status = this.book.dayBooked(this.book.rooms[roomId], this.toDateStr(monthIdx, day));
+        status = this.room.dayBooked(this.room.rooms[roomId], this.toDateStr(monthIdx, day));
         if (status !== 'free') {
           htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + "</span>";
         }
       }
       htm += "</div>";
-      return htm;
-    };
-
-    Master.prototype.roomDay2 = function(monthIdx, day) {
-      var col, htm, i, j, roomId, row, status;
-      htm = "";
-      htm += "<div class=\"MonthDay\">" + day + "</div>";
-      for (row = i = 0; i < 2; row = ++i) {
-        htm += "<div class=\"MonthRoom\">";
-        for (col = j = 1; j <= 5; col = ++j) {
-          roomId = row * 5 + col;
-          if (roomId === 9) {
-            roomId = 'N';
-          }
-          if (roomId === 10) {
-            roomId = 'S';
-          }
-          status = this.book.dayBooked(this.book.rooms[roomId], this.toDateStr(monthIdx, day));
-          htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + "</span>";
-        }
-        htm += "</div>";
-      }
       return htm;
     };
 

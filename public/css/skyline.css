@@ -119,10 +119,58 @@ img.center {
   left: 0;
   top: 0;
   width: 100%;
-  height: 450px;
+  height: 675px;
   font-size: 10px;
 }
 .May {
+  position: absolute;
+  left: 25%;
+  top: 0;
+  width: 25%;
+  height: 33%;
+  border: 2px solid black;
+}
+.June {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 33%;
+  border: 2px solid black;
+}
+.July {
+  position: absolute;
+  left: 0;
+  top: 33%;
+  width: 50%;
+  height: 33%;
+  border: 2px solid black;
+}
+.August {
+  position: absolute;
+  left: 50%;
+  top: 33%;
+  width: 50%;
+  height: 33%;
+  border: 2px solid black;
+}
+.September {
+  position: absolute;
+  left: 0;
+  top: 66%;
+  width: 50%;
+  height: 33%;
+  border: 2px solid black;
+}
+.October {
+  position: absolute;
+  left: 50%;
+  top: 66%;
+  width: 25%;
+  height: 33%;
+  border: 2px solid black;
+}
+.MayQ {
   position: absolute;
   left: 0;
   top: 0;
@@ -130,7 +178,7 @@ img.center {
   height: 50%;
   border: 2px solid black;
 }
-.June {
+.JuneQ {
   position: absolute;
   left: 20%;
   top: 0;
@@ -138,7 +186,7 @@ img.center {
   height: 50%;
   border: 2px solid black;
 }
-.July {
+.JulyQ {
   position: absolute;
   left: 60%;
   top: 0;
@@ -146,7 +194,7 @@ img.center {
   height: 50%;
   border: 2px solid black;
 }
-.August {
+.AugustQ {
   position: absolute;
   left: 0;
   top: 50%;
@@ -154,7 +202,7 @@ img.center {
   height: 50%;
   border: 2px solid black;
 }
-.September {
+.SeptemberQ {
   position: absolute;
   left: 40%;
   top: 50%;
@@ -162,7 +210,7 @@ img.center {
   height: 50%;
   border: 2px solid black;
 }
-.October {
+.OctoberQ {
   position: absolute;
   left: 80%;
   top: 50%;

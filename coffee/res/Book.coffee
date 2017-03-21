@@ -1,15 +1,13 @@
 
-$    = require( 'jquery'     )
-Data = require( 'js/res/Data')
+$     = require( 'jquery'       )
+Data  = require( 'js/res/Data'  )
+Alloc = require( 'js/res/Alloc' )
 
 class Book
 
   module.exports = Book
-  Book.Allocs    = require( 'data/Alloc.json' )
-  Book.States    = ["book","depo","hold","free"]
 
   constructor:( @stream, @store, @room, @cust ) ->
-    @subscribe()
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @initRooms()
@@ -37,12 +35,7 @@ class Book
     $('#Months').change( @onMonth  )
     $('#Days'  ).change( @onDay    )
     $('#Test'  ).click(  @onTest   )
-    @initAlloc()
     @roomsJQuery()
-
-  subscribe:() ->
-    @stream.subscribe( 'Alloc', (alloc) => @onAlloc( alloc ) )
-    return
 
   initsHtml:() ->
     htm     = """<label class="init-font">&nbsp;&nbsp;Guests:#{ @htmlSelect( "Guests", Data.persons, @guests ) }</label>"""
@@ -68,7 +61,7 @@ class Book
       htm += """<tr id="#{roomId}"><td>#{room.name}</td><td id="#{roomId}Price" class="room-price">#{'$'+@calcPrice(room)}</td>"""
       for day in [1..numDays]
         date = @toDateStr(day)
-        htm += @createCell( room, date )
+        htm += @room.createCell( room, date )
       htm += """<td class="room-total" id="#{roomId}Total"></td></tr>"""
     htm += """<tr><td></td><td></td>"""
     htm += """<td></td>""" for day in [1..@numDays]
@@ -88,10 +81,6 @@ class Book
         $cell.click( (event) => @onCellBook(event) )
         @$cells.push( $cell )
     return
-
-  createCell:( room, date ) ->
-    status = @dayBooked( room, date )
-    """<td id="#{room.roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
 
   calcPrice:( room ) ->
     price = room[@guests]+@pet*@petPrice
@@ -133,12 +122,6 @@ class Book
   toDay:( date ) ->
     if date.charAt(6) is '0' then date.substr(7,8) else date.substr(6,8)
 
-  dayBooked:( room, date ) ->
-    for status in Book.States when room[status]?
-      for day  in room[status]
-        return status if day is date
-    'free'
-
   htmlSelect:( htmlId, array, choice  ) ->
     htm  = """<select id="#{htmlId}">"""
     for elem in array
@@ -178,18 +161,9 @@ class Book
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
     @store.make( 'Room' )
 
-  initAlloc:() ->
-    @store.subscribe( 'Alloc', 'none', 'onAdd', (onAdd)  => Util.log( 'Alloc.onAdd()', onAdd ); @onAlloc(onAdd) )
-    @store.subscribe( 'Alloc', 'none', 'onPut', (onPut)  => Util.log( 'Alloc.onPut()', onPut ) )
-    @store.subscribe( 'Alloc', 'none', 'onDel', (onDel)  => Util.log( 'Alloc.onDel()', onDel ) )
-    @store.make(      'Alloc' )
-    @store.on( 'Alloc', 'onAdd' )
-    @store.on( 'Alloc', 'onPut' )
-    @store.on( 'Alloc', 'onDel' )
-
   onTest:() =>
     Util.log( 'Book.onTest()' )
-    @store.insert( 'Alloc', Book.Allocs )
+    @store.insert( 'Alloc', Alloc.Allocs )
 
   onCellBook:( event ) =>
     $cell  = $(event.target)
@@ -203,14 +177,12 @@ class Book
     date   = $cell.attr('id').substr(1,8)
     @updateTotal( roomId, date, status )
 
-  onAlloc:( onAdd ) =>
-    Util.log( 'Book.onAlloc()', { onEvt:onAdd.onEvt, table:onAdd.table, key:onAdd.key, val:onAdd.val } )
-    alloc = onAdd.val
-    for status in Book.States when alloc[status]?
+  onAlloc:( alloc ) =>
+    Util.log( 'Book.onAlloc()' )
+    for status in @room.states when alloc[status]?
       for day  in alloc[status]
         @allocRoom( alloc, day, status )
         @allocCell( alloc, day, status )
-    #@store.put( 'Room', alloc.roomId )
     return
 
   allocRoom:( alloc, day, status ) ->

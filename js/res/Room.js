@@ -8,25 +8,14 @@
 
     Room.Rooms = require('data/Room.json');
 
+    Room.States = ["book", "depo", "hold", "free"];
+
     function Room(stream, store) {
       this.stream = stream;
       this.store = store;
-      this.west = bind(this.west, this);
-      this.onDel = bind(this.onDel, this);
-      this.onPut = bind(this.onPut, this);
-      this.onAdd = bind(this.onAdd, this);
-      this.del = bind(this.del, this);
-      this.put = bind(this.put, this);
-      this.get = bind(this.get, this);
-      this.add = bind(this.add, this);
-      this.select = bind(this.select, this);
-      this.remove = bind(this.remove, this);
-      this.update = bind(this.update, this);
-      this.insert = bind(this.insert, this);
-      this.drop = bind(this.drop, this);
-      this.show = bind(this.show, this);
-      this.make = bind(this.make, this);
+      this.onAlloc = bind(this.onAlloc, this);
       this.rooms = Room.Rooms;
+      this.states = Room.States;
       this.roomUIs = this.createRoomUIs(this.rooms);
     }
 
@@ -40,169 +29,54 @@
       return roomUIs;
     };
 
-    Room.prototype.subscribe = function() {
-      this.store.subscribe('Room', 'none', 'make', (function(_this) {
-        return function(make) {
-          Util.log('Room.make()', make);
-          return _this.insert();
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'insert', (function(_this) {
-        return function(insert) {
-          Util.log('Room.insert()', insert);
-          return _this.update();
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'update', (function(_this) {
-        return function(update) {
-          Util.log('Room.update()', update);
-          return _this.remove();
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'remove', (function(_this) {
-        return function(remove) {
-          Util.log('Room.remove()', remove);
-          return _this.select();
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'select', (function(_this) {
-        return function(select) {
-          Util.logObjs('Room.select()', select);
-          _this.onAdd();
-          _this.onPut();
-          _this.onDel();
-          return _this.add();
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'onAdd', (function(_this) {
-        return function(onAdd) {
-          return Util.log('Room.onAdd()', onAdd);
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'onPut', (function(_this) {
-        return function(onPut) {
-          return Util.log('Room.onPut()', onPut);
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'onDel', (function(_this) {
-        return function(onDel) {
-          return Util.log('Room.onDel()', onDel);
-        };
-      })(this));
-      this.store.subscribe('Room', 'W', 'add', (function(_this) {
-        return function(add) {
-          Util.log('Room.add()', add);
-          return _this.get();
-        };
-      })(this));
-      this.store.subscribe('Room', 'S', 'get', (function(_this) {
-        return function(get) {
-          Util.log('Room.get()', get);
-          return _this.put();
-        };
-      })(this));
-      this.store.subscribe('Room', '7', 'put', (function(_this) {
-        return function(put) {
-          Util.log('Room.put()', put);
-          return _this.del();
-        };
-      })(this));
-      this.store.subscribe('Room', '8', 'del', (function(_this) {
-        return function(del) {
-          Util.log('Room.del()', del);
-          return _this.show();
-        };
-      })(this));
-      this.store.subscribe('Room', 'none', 'show', (function(_this) {
-        return function(show) {
-          return Util.log('Room.show()', show);
-        };
-      })(this));
-      return this.store.subscribe('Room', 'none', 'drop', (function(_this) {
-        return function(drop) {
-          return Util.log('Room.drop()', drop);
-        };
-      })(this));
+    Room.prototype.createCell = function(room, date) {
+      var status;
+      status = this.dayBooked(room, date);
+      return "<td id=\"" + (room.roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
     };
 
-    Room.prototype.make = function() {
-      return this.store.make('Room');
+    Room.prototype.dayBooked = function(room, date) {
+      var day, i, j, len, len1, ref, ref1, status;
+      ref = this.states;
+      for (i = 0, len = ref.length; i < len; i++) {
+        status = ref[i];
+        if (room[status] != null) {
+          ref1 = room[status];
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            day = ref1[j];
+            if (day === date) {
+              return status;
+            }
+          }
+        }
+      }
+      return 'free';
     };
 
-    Room.prototype.show = function() {
-      this.store.show('Room');
-      return this.store.show();
+    Room.prototype.onAlloc = function(alloc) {
+      var day, i, j, len, len1, ref, ref1, status;
+      Util.log('Room.onAlloc()');
+      ref = this.states;
+      for (i = 0, len = ref.length; i < len; i++) {
+        status = ref[i];
+        if (alloc[status] != null) {
+          ref1 = alloc[status];
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            day = ref1[j];
+            this.allocRoom(alloc, day, status);
+          }
+        }
+      }
     };
 
-    Room.prototype.drop = function() {
-      return this.store.drop('Room');
-    };
-
-    Room.prototype.insert = function() {
-      return this.store.insert('Room', this.rooms);
-    };
-
-    Room.prototype.update = function() {
-      var updt;
-      updt = {};
-      updt['1'] = this.rooms['1'];
-      updt['2'] = this.rooms['2'];
-      updt['3'] = this.rooms['3'];
-      updt['1'].max = 14;
-      updt['2'].max = 14;
-      updt['3'].max = 14;
-      return this.store.update('Room', updt);
-    };
-
-    Room.prototype.remove = function() {
-      return this.store.remove('Room', ['4', '5', '6']);
-    };
-
-    Room.prototype.select = function() {
-      return this.store.select('Room');
-    };
-
-    Room.prototype.add = function() {
-      return this.store.add('Room', "W", this.west());
-    };
-
-    Room.prototype.get = function() {
-      return this.store.get('Room', "S");
-    };
-
-    Room.prototype.put = function() {
-      return this.store.put('Room', "7", this.west());
-    };
-
-    Room.prototype.del = function() {
-      return this.store.del('Room', "8");
-    };
-
-    Room.prototype.onAdd = function() {
-      return this.store.on('Room', 'onAdd');
-    };
-
-    Room.prototype.onPut = function() {
-      return this.store.on('Room', 'onPut');
-    };
-
-    Room.prototype.onDel = function() {
-      return this.store.on('Room', 'onDel');
-    };
-
-    Room.prototype.west = function() {
-      return {
-        "key": "W",
-        "name": "West Skyline",
-        "pet": 12,
-        "spa": 0,
-        "max": 4,
-        "price": 0,
-        "1": 135,
-        "2": 135,
-        "3": 145,
-        "4": 155
-      };
+    Room.prototype.allocRoom = function(alloc, day, status) {
+      var room, roomDays;
+      room = this.rooms[alloc.roomId];
+      room[status] = room[status] != null ? room[status] : [];
+      roomDays = room[status];
+      if (!Util.inArray(roomDays, day)) {
+        return roomDays.push(day);
+      }
     };
 
     return Room;

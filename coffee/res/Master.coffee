@@ -6,7 +6,7 @@ class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @room, @cust, @book ) ->
+  constructor:( @stream, @store, @room, @cust ) ->
     #@subscribe()
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
@@ -19,8 +19,26 @@ class Master
     $('#Season').append( @seasonHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
-
     return
+
+  onAlloc:( alloc ) =>
+    for status in @room.states when alloc[status]?
+      for day  in alloc[status]
+        @allocMasterCell( alloc, day, status )
+        @allocSeasonCell( alloc, day, status )
+    return
+
+  allocMasterCell:( alloc, day, status ) ->
+    @cellMasterStatus( $('#'+alloc.roomId+day), status )
+
+  cellMasterStatus:( $cell, status ) ->
+    $cell.removeClass().addClass("room-"+status).attr('data-status',status)
+
+  allocSeasonCell:( alloc, day, status ) ->
+    @cellMasterStatus( $('#'+alloc.roomId+day), status )
+
+  cellSeasonStatus:( $cell, status ) ->
+    $cell.removeClass().addClass("own-"+status).attr('data-status',status)
 
   onMasterClick:( event ) =>
     $title  = $(event.target)
@@ -72,8 +90,9 @@ class Master
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
-        date = @toDateStr(day)
-        htm += @book.createCell( room, date )
+        date = @toDateStr(monthIdx,day)
+        #Util.log('roomsHtml()', @year, monthIx, day, date, roomId )
+        htm += @room.createCell( room, date )
       htm += """</tr>"""
     htm += "</tbody></table>"
     htm
@@ -102,7 +121,6 @@ class Master
       htm += """</tr>"""
     htm += """</tbody></table>"""
 
-
   roomDay:( monthIdx, day ) ->
     htm = ""
     htm += """<div class="MonthDay">#{day}</div>"""
@@ -111,27 +129,12 @@ class Master
       roomId = col
       roomId = 'N' if roomId is  9
       roomId = 'S' if roomId is 10
-      status = @book.dayBooked( @book.rooms[roomId], @toDateStr(monthIdx,day) )
+      status = @room.dayBooked( @room.rooms[roomId], @toDateStr(monthIdx,day) )
       if status isnt 'free'
         htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId}</span>"""
     htm += """</div>"""
     htm
 
-  roomDay2:( monthIdx, day ) ->
-    htm = ""
-    htm += """<div class="MonthDay">#{day}</div>"""
-    for   row in [0...2]
-      htm += """<div class="MonthRoom">"""
-      for col in [1..5]
-        roomId = row*5 + col
-        roomId = 'N' if roomId is  9
-        roomId = 'S' if roomId is 10
-        status = @book.dayBooked( @book.rooms[roomId], @toDateStr(monthIdx,day) )
-        #Util.log( "Own.roomDay()", @roomDayId(monthIdx,day,roomId), status, @book.rooms[roomId] ) if monthIdx is 6 and day >= 9
-        htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId}</span>"""
-      htm += """</div>"""
-    htm
-    
   roomDayId:( monthIdx, day, roomId ) ->
     monPad = Util.pad( monthIdx+1 )
     dayPad = Util.pad( day )
