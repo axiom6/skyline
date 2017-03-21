@@ -7,7 +7,6 @@ class Master
   module.exports = Master
 
   constructor:( @stream, @store, @room, @cust ) ->
-    #@subscribe()
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @year        = 2017
@@ -21,21 +20,24 @@ class Master
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
     return
 
-  onAlloc:( alloc ) =>
-    for status in @room.states when alloc[status]?
-      for day  in alloc[status]
-        @allocMasterCell( alloc, day, status )
-        @allocSeasonCell( alloc, day, status )
+  onAlloc:( alloc, roomId ) =>
+    for own day, obj of alloc.days
+      @allocMasterCell( roomId, day, obj.status )
+      @allocSeasonCell( roomId, day, obj.status )
     return
 
-  allocMasterCell:( alloc, day, status ) ->
-    @cellMasterStatus( $('#'+alloc.roomId+day), status )
+  createMasterCell:( roomId,  room, date ) ->
+    status = @room.dayBooked( room, date )
+    """<td id="M#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
+
+  allocMasterCell:( roomId, day, status ) ->
+    @cellMasterStatus( $('#M'+roomId+day), status )
+
+  allocSeasonCell:( roomId, day, status ) ->
+    @cellSeasonStatus( $('#S'+roomId+day), status )
 
   cellMasterStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
-
-  allocSeasonCell:( alloc, day, status ) ->
-    @cellMasterStatus( $('#'+alloc.roomId+day), status )
 
   cellSeasonStatus:( $cell, status ) ->
     $cell.removeClass().addClass("own-"+status).attr('data-status',status)
@@ -91,8 +93,7 @@ class Master
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
         date = @toDateStr(monthIdx,day)
-        #Util.log('roomsHtml()', @year, monthIx, day, date, roomId )
-        htm += @room.createCell( room, date )
+        htm += @createMasterCell( roomId, room, date )
       htm += """</tr>"""
     htm += "</tbody></table>"
     htm
@@ -138,8 +139,7 @@ class Master
   roomDayId:( monthIdx, day, roomId ) ->
     monPad = Util.pad( monthIdx+1 )
     dayPad = Util.pad( day )
-    @year + monPad + dayPad + roomId
-
+    'S' + roomId + @year + monPad + dayPad
 
   monthDay:( begDay, endDay, row, col ) ->
     day = row*7 + col - begDay

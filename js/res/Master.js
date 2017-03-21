@@ -51,32 +51,33 @@
       })(this));
     };
 
-    Master.prototype.onAlloc = function(alloc) {
-      var day, i, j, len, len1, ref, ref1, status;
-      ref = this.room.states;
-      for (i = 0, len = ref.length; i < len; i++) {
-        status = ref[i];
-        if (alloc[status] != null) {
-          ref1 = alloc[status];
-          for (j = 0, len1 = ref1.length; j < len1; j++) {
-            day = ref1[j];
-            this.allocMasterCell(alloc, day, status);
-            this.allocSeasonCell(alloc, day, status);
-          }
-        }
+    Master.prototype.onAlloc = function(alloc, roomId) {
+      var day, obj, ref;
+      ref = alloc.days;
+      for (day in ref) {
+        if (!hasProp.call(ref, day)) continue;
+        obj = ref[day];
+        this.allocMasterCell(roomId, day, obj.status);
+        this.allocSeasonCell(roomId, day, obj.status);
       }
     };
 
-    Master.prototype.allocMasterCell = function(alloc, day, status) {
-      return this.cellMasterStatus($('#' + alloc.roomId + day), status);
+    Master.prototype.createMasterCell = function(roomId, room, date) {
+      var status;
+      status = this.room.dayBooked(room, date);
+      return "<td id=\"M" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
+    };
+
+    Master.prototype.allocMasterCell = function(roomId, day, status) {
+      return this.cellMasterStatus($('#M' + roomId + day), status);
+    };
+
+    Master.prototype.allocSeasonCell = function(roomId, day, status) {
+      return this.cellSeasonStatus($('#S' + roomId + day), status);
     };
 
     Master.prototype.cellMasterStatus = function($cell, status) {
       return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
-    };
-
-    Master.prototype.allocSeasonCell = function(alloc, day, status) {
-      return this.cellMasterStatus($('#' + alloc.roomId + day), status);
     };
 
     Master.prototype.cellSeasonStatus = function($cell, status) {
@@ -171,7 +172,7 @@
         htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
         for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
           date = this.toDateStr(monthIdx, day);
-          htm += this.room.createCell(room, date);
+          htm += this.createMasterCell(roomId, room, date);
         }
         htm += "</tr>";
       }
@@ -239,7 +240,7 @@
       var dayPad, monPad;
       monPad = Util.pad(monthIdx + 1);
       dayPad = Util.pad(day);
-      return this.year + monPad + dayPad + roomId;
+      return 'S' + roomId + this.year + monPad + dayPad;
     };
 
     Master.prototype.monthDay = function(begDay, endDay, row, col) {

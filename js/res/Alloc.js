@@ -25,10 +25,6 @@
       return this.store.make('Alloc');
     };
 
-    Alloc.prototype.insert = function() {
-      return this.store.insert('Alloc', Alloc.Allocs);
-    };
-
     Alloc.prototype.subscribe = function() {
       this.store.subscribe('Alloc', 'none', 'make', (function(_this) {
         return function(make) {
@@ -37,7 +33,6 @@
       })(this));
       this.store.subscribe('Alloc', 'none', 'onAdd', (function(_this) {
         return function(onAdd) {
-          Util.log('Alloc.onAdd()', onAdd);
           return _this.onAlloc(onAdd);
         };
       })(this));
@@ -58,18 +53,13 @@
     };
 
     Alloc.prototype.onAlloc = function(onAdd) {
-      var alloc;
-      Util.log('Alloc.onAlloc()', {
-        onEvt: onAdd.onEvt,
-        table: onAdd.table,
-        key: onAdd.key,
-        val: onAdd.val
-      });
+      var alloc, roomId;
       alloc = onAdd.val;
-      this.room.onAlloc(alloc);
-      this.master.onAlloc(alloc);
+      roomId = onAdd.key;
+      this.room.onAlloc(alloc, roomId);
+      this.master.onAlloc(alloc, roomId);
       if (this.book != null) {
-        this.book.onAlloc(alloc);
+        this.book.onAlloc(alloc, roomId);
       }
     };
 

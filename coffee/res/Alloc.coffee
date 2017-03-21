@@ -13,12 +13,12 @@ class Alloc
   init:() ->
     @store.make( 'Alloc' )
 
-  insert:() ->
-    @store.insert( 'Alloc', Alloc.Allocs )
+  #insert:() ->
+  #  @store.insert( 'Alloc', Alloc.Allocs )
 
   subscribe:() ->
     @store.subscribe( 'Alloc', 'none', 'make',  (make)   => Util.log( 'Alloc.make()',  make   ) )
-    @store.subscribe( 'Alloc', 'none', 'onAdd', (onAdd)  => Util.log( 'Alloc.onAdd()', onAdd ); @onAlloc(onAdd) )
+    @store.subscribe( 'Alloc', 'none', 'onAdd', (onAdd)  => @onAlloc(onAdd) )
     @store.subscribe( 'Alloc', 'none', 'onPut', (onPut)  => Util.log( 'Alloc.onPut()', onPut ) )
     @store.subscribe( 'Alloc', 'none', 'onDel', (onDel)  => Util.log( 'Alloc.onDel()', onDel ) )
     @store.make(      'Alloc' )
@@ -27,9 +27,10 @@ class Alloc
     @store.on( 'Alloc', 'onDel' )
 
   onAlloc:( onAdd ) =>
-    Util.log( 'Alloc.onAlloc()', { onEvt:onAdd.onEvt, table:onAdd.table, key:onAdd.key, val:onAdd.val } )
-    alloc = onAdd.val
-    @room.  onAlloc( alloc )
-    @master.onAlloc( alloc )
-    @book.  onAlloc( alloc ) if @book?
+    #Util.log( 'Alloc.onAlloc()', { onEvt:onAdd.onEvt, table:onAdd.table, key:onAdd.key, val:onAdd.val } )
+    alloc  = onAdd.val
+    roomId = onAdd.key
+    @room.  onAlloc( alloc, roomId )
+    @master.onAlloc( alloc, roomId )
+    @book.  onAlloc( alloc, roomId ) if @book?
     return

@@ -10,14 +10,13 @@ class Book
   constructor:( @stream, @store, @room, @cust ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
-    @initRooms()
     @guests      = "2"
     @pet         =  0
     @myDays      =  0
     @petPrice    = 12
     @today       = new Date()
     @monthIdx    = @today.getMonth()
-    @monthIdx    = 2 # 2 is July if 4 < @monthIdx and @monthIdx < 10 then @monthIdx else 0
+    @monthIdx    = 6
     @year        = 2017
     @month       = Data.months[@monthIdx] # if 4 < @monthIdx and @monthIdx < 10 then @months[@monthIdx] else "May"
     @begDay      =  9
@@ -60,14 +59,18 @@ class Book
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{room.name}</td><td id="#{roomId}Price" class="room-price">#{'$'+@calcPrice(room)}</td>"""
       for day in [1..numDays]
-        date = @toDateStr(day)
-        htm += @room.createCell( room, date )
+        htm += @createCell( roomId, room, @toDateStr(day) )
       htm += """<td class="room-total" id="#{roomId}Total"></td></tr>"""
     htm += """<tr><td></td><td></td>"""
     htm += """<td></td>""" for day in [1..@numDays]
     htm += """<td class="room-total" id="Totals">&nbsp;</td></tr>"""
     htm += "</tbody></table>"
     htm
+
+  createCell:( roomId, room, date ) ->
+    status = @room.dayBooked( room, date )
+    #Util.log( 'Book.createCell()', { roomId:roomId, date:date, status:status, day:day } )
+    """<td id="R#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
 
   roomsJQuery:() ->
     for $cell in @$cells
@@ -77,7 +80,7 @@ class Book
       roomUI.$ = $('#'+roomId) # Keep jQuery out of room database table
       for day in [1..@numDays]
         date  = @toDateStr(day)
-        $cell = $('#'+roomId+date)
+        $cell = $('#R'+roomId+date)
         $cell.click( (event) => @onCellBook(event) )
         @$cells.push( $cell )
     return
@@ -137,7 +140,7 @@ class Book
 
   onMonth:( event ) =>
     @month      = event.target.value
-    @monthIdx   = @months.indexOf(@month)
+    @monthIdx   = Data.months.indexOf(@month)
     @weekdayIdx = new Date( @year, @monthIdx, 1 ).getDay()
     @resetRooms()
     return
@@ -157,10 +160,6 @@ class Book
     @updatePrices()
     return
 
-  initRooms:() =>
-    @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
-    @store.make( 'Room' )
-
   onTest:() =>
     Util.log( 'Book.onTest()' )
     @store.insert( 'Alloc', Alloc.Allocs )
@@ -177,22 +176,14 @@ class Book
     date   = $cell.attr('id').substr(1,8)
     @updateTotal( roomId, date, status )
 
-  onAlloc:( alloc ) =>
-    Util.log( 'Book.onAlloc()' )
-    for status in @room.states when alloc[status]?
-      for day  in alloc[status]
-        @allocRoom( alloc, day, status )
-        @allocCell( alloc, day, status )
+  onAlloc:( alloc, roomId ) =>
+    #Util.log( 'Book.onAlloc()' )
+    for own day, obj of alloc.days
+      @allocCell( day, obj.status, roomId )
     return
 
-  allocRoom:( alloc, day, status ) ->
-    room         = @rooms[alloc.roomId]
-    room[status] = if room[status]? then room[status] else []
-    roomDays     = room[status]
-    roomDays.push(day) if not Util.inArray(roomDays,day)
-
-  allocCell:( alloc, day, status ) ->
-    @cellStatus( $('#'+alloc.roomId+day), status )
+  allocCell:( day, status, roomId ) ->
+    @cellStatus( $('#R'+roomId+day), status )
 
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
@@ -202,7 +193,7 @@ class Book
     if day > Data.numDayMonth[@monthIdx] then day-Data.numDayMonth[@monthIdx] else day
 
   toDateStr:( day ) ->
-    @year+Util.pad(@monthIdx+5)+Util.pad(@dayMonth(day,@begDay))
+    @year+Util.pad(@monthIdx+1)+Util.pad(@dayMonth(day,@begDay))
 
   make:()   => @store.make(   'Room' )
 
