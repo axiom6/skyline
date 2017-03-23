@@ -1,6 +1,6 @@
 
 Store          = require( 'js/store/Store' )
-Store.Firebase = require( 'firebase' )
+Store.Firebase = firebase #require( 'firebase' )
 
 class Firestore extends Store
 

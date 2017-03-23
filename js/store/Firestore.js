@@ -6,7 +6,7 @@
 
   Store = require('js/store/Store');
 
-  Store.Firebase = require('firebase');
+  Store.Firebase = firebase;
 
   Firestore = (function(superClass) {
     extend(Firestore, superClass);

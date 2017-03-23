@@ -7,11 +7,12 @@
     "start": "electron main.js"
   },
   "dependencies": {
-    "jquery":   "^3.0.0",
-    "rxjs":     ">=5.0.0-rc.4",
-    "firebase": ">=3.7.0"
+    "jquery":   ">=3.0.0",
+    "rxjs":     ">=5.0.0-rc.4"
   },
   "dependendenciesArc": {
+    "firebase": ">=3.7.0",
+    "stripe":   ">=4.16.0"
   },
   "author": "Tom Flaherty",
   "license": "MIT",

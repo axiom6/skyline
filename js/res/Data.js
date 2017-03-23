@@ -44,6 +44,14 @@
       skytest: "skytest-25d1c"
     };
 
+    Data.stripeTestKey = "sk_test_FCa6Z3AusbsdhyV93B4CdWnV";
+
+    Data.stripeTestPub = "pk_test_0VHIhWRH8hFwSeP2n084Ze4L";
+
+    Data.stripeLiveKey = "sk_live_CCbj5oirIeHwTlyKVXJnbrgt";
+
+    Data.stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3";
+
     return Data;
 
   })();

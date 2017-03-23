@@ -14,6 +14,7 @@ class Guest
       Cust      = require( 'js/res/Cust'        )
       Res       = require( 'js/res/Res'         )
       Book      = require( 'js/res/Book'        )
+      StripeCC  = require( 'js/res/StripeCC'    )
       Master    = require( 'js/res/Master'      )
       Alloc     = require( 'js/res/Alloc'       )
 
@@ -23,10 +24,12 @@ class Guest
       cust       = new Cust(      stream, store )
       res        = new Res(       stream, store, room, cust )
       book       = new Book(      stream, store, room, cust, res )
+      stripeCC   = new StripeCC(  stream, store, room, cust, res )
       master     = new Master(    stream, store, room, cust, res )
       alloc      = new Alloc(     stream, store, room, cust, res, master, book )
-      book.  ready()
-      master.ready()
+      book.    ready()
+      stripeCC.ready()
+      master.  ready()
       Util.noop( alloc )
 
 Guest.init()

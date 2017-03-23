@@ -28,3 +28,8 @@ class Data
 
   @databases = { skyline:"skyline-fed2b", skytest:"skytest-25d1c" }
 
+  @stripeTestKey = "sk_test_FCa6Z3AusbsdhyV93B4CdWnV"
+  @stripeTestPub = "pk_test_0VHIhWRH8hFwSeP2n084Ze4L"
+  @stripeLiveKey = "sk_live_CCbj5oirIeHwTlyKVXJnbrgt"
+  @stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3"
+
