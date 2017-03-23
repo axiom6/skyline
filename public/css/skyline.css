@@ -4,6 +4,9 @@ body {
 .init-font {
   font-size: 12px;
 }
+.guests {
+  width: 44px;
+}
 .room-free {
   background-color: lightgrey;
   color: black;

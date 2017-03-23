@@ -6,7 +6,7 @@ class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @room, @cust ) ->
+  constructor:( @stream, @store, @room, @cust, @res ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @year        = 2017

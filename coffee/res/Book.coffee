@@ -7,18 +7,15 @@ class Book
 
   module.exports = Book
 
-  constructor:( @stream, @store, @room, @cust ) ->
+  constructor:( @stream, @store, @room, @cust, @res ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
-    @guests      = "2"
-    @pet         =  0
     @myDays      =  0
-    @petPrice    = 12
     @today       = new Date()
     @monthIdx    = @today.getMonth()
     @monthIdx    = 6
     @year        = 2017
-    @month       = Data.months[@monthIdx] # if 4 < @monthIdx and @monthIdx < 10 then @months[@monthIdx] else "May"
+    @month       = Data.months[@monthIdx]
     @begDay      =  9
     @weekdayIdx  = new Date( 2017, @monthIdx, 1 ).getDay()
     @numDays     = 14
@@ -27,20 +24,20 @@ class Book
     Util.log('Book Constructor' )
 
   ready:() ->
-    $('#Inits').append( @initsHtml( ) )
-    $('#Rooms').append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
-    $('#Guests').change( @onGuests )
-    $('#Pets'  ).change( @onPets   )
-    $('#Months').change( @onMonth  )
-    $('#Days'  ).change( @onDay    )
-    $('#Test'  ).click(  @onTest   )
+    $('#Inits'   ).append( @initsHtml( ) )
+    $('#Rooms'   ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
+    $('.guests'  ).change( @onGuests  )
+    $('.pets'    ).change( @onPets    )
+    $('#Months'  ).change( @onMonth   )
+    $('#Days'    ).change( @onDay     )
+    $('#Test'    ).click(  @onTest    )
+    $('#Pay'     ).click(  @onPay     )
+    $('#Approve' ).click(  @onApprove )
     @roomsJQuery()
 
   initsHtml:() ->
-    htm     = """<label class="init-font">&nbsp;&nbsp;Guests:#{ @htmlSelect( "Guests", Data.persons, @guests ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;Pets:  #{ @htmlSelect( "Pets",   Data.pets,    @pet    ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", Data.months,  @month  ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   Data.days,    @begDay ) }</label>"""
+    htm     = """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", Data.months, @month,  'months' ) }</label>"""
+    htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   Data.days,   @begDay, 'days'   ) }</label>"""
     htm    += """<label class="init-font">&nbsp;&nbsp;#{@year}</label>"""
     htm    += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
     htm
@@ -48,28 +45,27 @@ class Book
   roomsHtml:( year, monthIdx, begDay, numDays ) ->
     weekdayIdx  = new Date( year, monthIdx, 1 ).getDay()
     htm   = "<table><thead>"
-    htm  += """<tr><th></th><th id="NumGuests">#{@guests}&nbsp;Guests</th>"""
+    htm  += """<tr><th></th><th></th><th></th><th></th>"""
     for day in [1..numDays]
       weekday = Data.weekdays[(weekdayIdx+day-1)%7]
       htm += "<th>#{weekday}</th>"
-    htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>#{@pet}&nbsp;Pets</th>"
+    htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th>"
     for day in [1..numDays]
       htm += "<th>#{@dayMonth(day,begDay)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
-      htm += """<tr id="#{roomId}"><td>#{room.name}</td><td id="#{roomId}Price" class="room-price">#{'$'+@calcPrice(room)}</td>"""
+      htm += """<tr id="#{roomId}"><td>#{room.name}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
       for day in [1..numDays]
         htm += @createCell( roomId, room, @toDateStr(day) )
-      htm += """<td class="room-total" id="#{roomId}Total"></td></tr>"""
-    htm += """<tr><td></td><td></td>"""
-    htm += """<td></td>""" for day in [1..@numDays]
+      htm += """<td class="room-total" id="#{roomId}T"></td></tr>"""
+    htm += """<tr>"""
+    htm += """<td></td>""" for day in [1..@numDays+4]
     htm += """<td class="room-total" id="Totals">&nbsp;</td></tr>"""
     htm += "</tbody></table>"
     htm
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
-    #Util.log( 'Book.createCell()', { roomId:roomId, date:date, status:status, day:day } )
     """<td id="R#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
 
   roomsJQuery:() ->
@@ -85,29 +81,25 @@ class Book
         @$cells.push( $cell )
     return
 
-  calcPrice:( room ) ->
-    price = room[@guests]+@pet*@petPrice
-    room.price = price
+  calcPrice:( roomId ) =>
+    roomUI = @roomUIs[roomId]
+    guests = roomUI.guests
+    pets   = roomUI.pets
+    price  = @rooms[roomId][guests]+pets*Data.petPrice
+    roomUI.price = price
     price
 
-  updatePrice:( room ) ->
-    roomId = room.roomId
-    if @guests > room.max
-      @roomUIs[roomId].$.hide()
-    else
-      @roomUIs[roomId].$.show()
-      $('#P'+roomId).text("#{'$'+ @calcPrice(room) }")
+  updatePrice:(   roomId ) =>
+    $('#'+roomId+'M').text("#{'$'+ @calcPrice(roomId) }")
+    @updateTotal( roomId )
     return
 
-  updatePrices:() ->
-    for own roomId, room of @rooms
-      @updatePrice( room )
-
-  updateTotal:( room, date, status ) ->
-    price = room.price
-    room.total += if status is 'mine' then price else -price
+  updateTotal:( roomId ) ->
+    price = @calcPrice( roomId )
+    room  = @roomUIs[roomId]
+    room.total = price * room.numDays
     text = if room.total is 0 then '' else '$'+room.total
-    $('#'+room.roomId+'Total').text(text)
+    $('#'+roomId+'T').text(text)
     @updateTotals()
     return
 
@@ -116,7 +108,7 @@ class Book
 
   updateTotals:() ->
     totals = 0
-    for own roomId, room of @rooms
+    for own roomId, room of @roomUIs
       totals += room.total
     text = if totals is 0 then '' else '$'+totals
     $('#Totals').text(text)
@@ -125,17 +117,29 @@ class Book
   toDay:( date ) ->
     if date.charAt(6) is '0' then date.substr(7,8) else date.substr(6,8)
 
-  htmlSelect:( htmlId, array, choice  ) ->
-    htm  = """<select id="#{htmlId}">"""
-    for elem in array
+  g:(roomId) -> @htmlSelect( roomId+'G', Data.persons, 2, 'guests', @rooms[roomId].max )
+  p:(roomId) -> @htmlSelect( roomId+'P', Data.pets,    0, 'pets',   3                  )
+
+  htmlSelect:( htmlId, array, choice, klass, max=undefined ) ->
+    htm  = """<select id="#{htmlId}" class="#{klass}">"""
+    where = if max? then (elem) -> elem <=max else () -> true
+    for elem in array when where(elem)
       selected = if elem is Util.toStr(choice) then "selected" else ""
       htm += """<option#{' '+selected}>#{elem}</option>"""
     htm += "</select>"
 
   onGuests:( event ) =>
-    @guests = event.target.value
-    $('#NumGuests').text(@guests)
-    @updatePrices()
+    roomId = $(event.target).attr('id').charAt(0)
+    @roomUIs[roomId].guests = event.target.value
+    Util.log( 'Book.onGuests', roomId, @roomUIs[roomId].guests, @calcPrice(roomId) )
+    @updatePrice(roomId)
+    return
+
+  onPets:( event ) =>
+    roomId = $(event.target).attr('id').charAt(0)
+    @roomUIs[roomId].pets = event.target.value
+    Util.log( 'Book.onPets', roomId, @roomUIs[roomId].pets, @calcPrice(roomId) )
+    @updatePrice(roomId)
     return
 
   onMonth:( event ) =>
@@ -155,14 +159,13 @@ class Book
     $('#Rooms').append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
     @roomsJQuery()
 
-  onPets:( event ) =>
-    @pet = event.target.value
-    @updatePrices()
-    return
-
   onTest:() =>
     Util.log( 'Book.onTest()' )
     @store.insert( 'Alloc', Alloc.Allocs )
+
+  onPay:() =>
+    Util.log( 'Book.onTest()' )
+    for own roomId, room of @roomUIs
 
   onCellBook:( event ) =>
     $cell  = $(event.target)
@@ -172,8 +175,13 @@ class Book
     else if status is 'mine'
             status =  'free'
     @cellStatus( $cell, status )
-    roomId = $cell.attr('id').substr(0,1)
-    date   = $cell.attr('id').substr(1,8)
+    roomId = $cell.attr('id').substr(1,1)
+    date   = $cell.attr('id').substr(2,8)
+    @roomUIs[roomId].numDays += if status is 'mine' then 1 else -1
+    @roomUIs[roomId].numDays  = 0 if @roomUIs[roomId].numDays < 0
+    date = @roomUIs[roomId].days[date]
+    date = if date? then date else
+    Util.log('Book.onCellBook()', roomId, date )
     @updateTotal( roomId, date, status )
 
   onAlloc:( alloc, roomId ) =>

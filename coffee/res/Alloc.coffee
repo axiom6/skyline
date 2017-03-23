@@ -5,7 +5,7 @@ class Alloc
 
   Alloc.Allocs   = require( 'data/Alloc.json' )
 
-  constructor:( @stream, @store, @room, @cust, @master, @book=null ) ->
+  constructor:( @stream, @store, @room, @cust, @res, @master, @book=null ) ->
     @subscribe()
     @rooms = @room.rooms
     @init()

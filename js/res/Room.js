@@ -5,9 +5,11 @@
     hasProp = {}.hasOwnProperty;
 
   Room = (function() {
+    var c;
+
     module.exports = Room;
 
-    Room.Rooms = require('data/Room.json');
+    Room.Rooms = require('data/room.json');
 
     Room.States = ["book", "depo", "hold", "free"];
 
@@ -22,14 +24,28 @@
       this.initRooms();
     }
 
-    Room.prototype.createRoomUIs = function(data) {
-      var key, room, roomUIs;
+    Room.prototype.createRoomUIs = function(rooms) {
+      var key, resRoom, room, roomUIs;
       roomUIs = {};
-      for (key in data) {
-        room = data[key];
-        roomUIs[key] = {};
+      for (key in rooms) {
+        room = rooms[key];
+        roomUIs[key](resRoom = this.resRoom);
+        roomUIs[key].guests = 2;
+        roomUIs[key].pets = 0;
+        roomUIs[key].numDays = 0;
+        roomUIs[key].total = 0;
+        roomUIs[key].days = {};
       }
       return roomUIs;
+    };
+
+    c = {
+      "total": 0,
+      "price": 0,
+      "guests": 2,
+      "pets": 0,
+      "spa": false,
+      "days": {}
     };
 
     Room.prototype.initRooms = function() {

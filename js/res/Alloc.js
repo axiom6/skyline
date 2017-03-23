@@ -8,11 +8,12 @@
 
     Alloc.Allocs = require('data/Alloc.json');
 
-    function Alloc(stream, store, room, cust, master, book) {
+    function Alloc(stream, store, room, cust, res, master, book) {
       this.stream = stream;
       this.store = store;
       this.room = room;
       this.cust = cust;
+      this.res = res;
       this.master = master;
       this.book = book != null ? book : null;
       this.onAlloc = bind(this.onAlloc, this);

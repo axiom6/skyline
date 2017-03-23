@@ -2,7 +2,7 @@
 class Room
 
   module.exports = Room
-  Room.Rooms     = require( 'data/Room.json' )
+  Room.Rooms     = require( 'data/room.json' )
   Room.States    = ["book","depo","hold","free"]
 
   constructor:( @stream, @store ) ->
@@ -11,11 +11,18 @@ class Room
     @roomUIs = @createRoomUIs( @rooms )
     @initRooms()
 
-  createRoomUIs:( data ) ->
+  createRoomUIs:( rooms ) ->
     roomUIs = {}
-    for key, room of data
-      roomUIs[key] = {}
+    for key, room of rooms
+      roomUIs[key] resRoom = @resRoom
+      roomUIs[key].guests  = 2
+      roomUIs[key].pets    = 0
+      roomUIs[key].numDays = 0
+      roomUIs[key].total   = 0
+      roomUIs[key].days    = {}
     roomUIs
+
+  c = { "total":0, "price":0, "guests":2, "pets":0, "spa":false, "days":{} }
 
   initRooms:() =>
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
