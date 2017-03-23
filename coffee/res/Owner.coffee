@@ -18,7 +18,7 @@ class Owner
 
       stream   = new Stream( [] )
       store    = new Firestore( stream, "skytest", Data.configSkytest )
-      room     = new Room(      stream, store )
+      room     = new Room(      stream, store, Data )
       cust     = new Cust(      stream, store )
       res      = new Res(       stream, store, room, cust )
       master   = new Master(    stream, store, room, cust, res )

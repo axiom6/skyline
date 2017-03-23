@@ -5,7 +5,7 @@ class Room
   Room.Rooms     = require( 'data/room.json' )
   Room.States    = ["book","depo","hold","free"]
 
-  constructor:( @stream, @store ) ->
+  constructor:( @stream, @store, @Data ) ->
     @rooms   = Room.Rooms
     @states  = Room.States
     @roomUIs = @createRoomUIs( @rooms )
@@ -14,15 +14,21 @@ class Room
   createRoomUIs:( rooms ) ->
     roomUIs = {}
     for key, room of rooms
-      roomUIs[key] resRoom = @resRoom
-      roomUIs[key].guests  = 2
-      roomUIs[key].pets    = 0
-      roomUIs[key].numDays = 0
-      roomUIs[key].total   = 0
-      roomUIs[key].days    = {}
+      roomUIs[key]    = {}
+      roomUI          = roomUIs[key]
+      roomUI.numDays  = 0
+      roomUI.$        = {}
+      roomUI.resRoom  = {}
+      resRoom         = roomUI.resRoom
+      resRoom.total   = 0
+      resRoom.price   = 0
+      resRoom.guests  = 2
+      resRoom.pets    = 0
+      resRoom.spa     = false
+      resRoom.days    = {}
     roomUIs
 
-  c = { "total":0, "price":0, "guests":2, "pets":0, "spa":false, "days":{} }
+  # { "total":0, "price":0, "guests":2,"pets":0, "spa":false, "days":{} },
 
   initRooms:() =>
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
@@ -38,5 +44,3 @@ class Room
       room.days[day] =  alloc.days[day]
     @store.put( 'Room', roomId, room )
     return
-
-

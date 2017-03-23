@@ -20,19 +20,23 @@ class Book
     @weekdayIdx  = new Date( 2017, @monthIdx, 1 ).getDay()
     @numDays     = 14
     @$cells      = []
-    @myCustId    = "12"
+    @myResId     = @res.myResId
+    @myCustId    = @res.myCustId
+    @totals      = 0
+    @method      = 'site'
+    @myRes       = null
     Util.log('Book Constructor' )
 
   ready:() ->
-    $('#Inits'   ).append( @initsHtml( ) )
-    $('#Rooms'   ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
-    $('.guests'  ).change( @onGuests  )
-    $('.pets'    ).change( @onPets    )
-    $('#Months'  ).change( @onMonth   )
-    $('#Days'    ).change( @onDay     )
-    $('#Test'    ).click(  @onTest    )
-    $('#Pay'     ).click(  @onPay     )
-    $('#Approve' ).click(  @onApprove )
+    $('#Inits'  ).append( @initsHtml( ) )
+    $('#Rooms'  ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
+    $('.guests' ).change( @onGuests  )
+    $('.pets'   ).change( @onPets    )
+    $('#Months' ).change( @onMonth   )
+    $('#Days'   ).change( @onDay     )
+    $('#Test'   ).click(  @onTest    )
+    $('#Hold'   ).click(  @onHold    )
+    $('#Book'   ).click(  @onBook    )
     @roomsJQuery()
 
   initsHtml:() ->
@@ -40,6 +44,8 @@ class Book
     htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   Data.days,   @begDay, 'days'   ) }</label>"""
     htm    += """<label class="init-font">&nbsp;&nbsp;#{@year}</label>"""
     htm    += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
+    htm    += """<span  class="init-font" id="Hold">&nbsp;&nbsp;Hold</span>"""
+    htm    += """<span  class="init-font" id="Book">&nbsp;&nbsp;Book</span>"""
     htm
 
   roomsHtml:( year, monthIdx, begDay, numDays ) ->
@@ -83,10 +89,10 @@ class Book
 
   calcPrice:( roomId ) =>
     roomUI = @roomUIs[roomId]
-    guests = roomUI.guests
-    pets   = roomUI.pets
+    guests = roomUI.resRoom.guests
+    pets   = roomUI.resRoom.pets
     price  = @rooms[roomId][guests]+pets*Data.petPrice
-    roomUI.price = price
+    roomUI.resRoom.price = price
     price
 
   updatePrice:(   roomId ) =>
@@ -97,8 +103,8 @@ class Book
   updateTotal:( roomId ) ->
     price = @calcPrice( roomId )
     room  = @roomUIs[roomId]
-    room.total = price * room.numDays
-    text = if room.total is 0 then '' else '$'+room.total
+    room.resRoom.total = price * room.numDays
+    text = if room.resRoom.total is 0 then '' else '$'+room.resRoom.total
     $('#'+roomId+'T').text(text)
     @updateTotals()
     return
@@ -107,10 +113,10 @@ class Book
     { status:'mine', days:[], total:0 }
 
   updateTotals:() ->
-    totals = 0
+    @totals = 0
     for own roomId, room of @roomUIs
-      totals += room.total
-    text = if totals is 0 then '' else '$'+totals
+      @totals += room.resRoom.total
+    text = if @totals is 0 then '' else '$'+@totals
     $('#Totals').text(text)
     return
 
@@ -130,14 +136,14 @@ class Book
 
   onGuests:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
-    @roomUIs[roomId].guests = event.target.value
+    @roomUIs[roomId].resRoom.guests = event.target.value
     Util.log( 'Book.onGuests', roomId, @roomUIs[roomId].guests, @calcPrice(roomId) )
     @updatePrice(roomId)
     return
 
   onPets:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
-    @roomUIs[roomId].pets = event.target.value
+    @roomUIs[roomId].resRoom.pets = event.target.value
     Util.log( 'Book.onPets', roomId, @roomUIs[roomId].pets, @calcPrice(roomId) )
     @updatePrice(roomId)
     return
@@ -163,10 +169,29 @@ class Book
     Util.log( 'Book.onTest()' )
     @store.insert( 'Alloc', Alloc.Allocs )
 
-  onPay:() =>
-    Util.log( 'Book.onTest()' )
-    for own roomId, room of @roomUIs
+  onHold:() =>
+    @myRes = @res.createHold( @totals, 'hold', @method, @myCustId, @roomUIs, {} )
+    #@res.add( @myResId, @myRes )
+    Util.log( 'Book.onHold()', @myRes )
+    for own roomId, room of @myRes.rooms
+      onAdd = {}
+      onAdd.days = room.days
+      @store.add( 'Alloc', roomId, onAdd )
+    return
 
+  onBook:() =>
+    @onHold() if not @myRes?
+    @myRes.payments      = {}
+    @myRes.payments['1'] = @res.resPay()
+    #@res.put( @myResId, @myRes )
+    for own roomId, room of @myRes.rooms
+      day.status = 'book' for own date, day of room.days
+      onPut = {}
+      onPut.days = room.days
+      @store.put( 'Alloc', roomId, onPut )
+    Util.log( 'Book.onBook()', @myRes )
+    return
+    
   onCellBook:( event ) =>
     $cell  = $(event.target)
     status = $cell.attr('data-status')
@@ -177,12 +202,15 @@ class Book
     @cellStatus( $cell, status )
     roomId = $cell.attr('id').substr(1,1)
     date   = $cell.attr('id').substr(2,8)
-    @roomUIs[roomId].numDays += if status is 'mine' then 1 else -1
-    @roomUIs[roomId].numDays  = 0 if @roomUIs[roomId].numDays < 0
-    date = @roomUIs[roomId].days[date]
-    date = if date? then date else
-    Util.log('Book.onCellBook()', roomId, date )
-    @updateTotal( roomId, date, status )
+    roomUI = @roomUIs[roomId]
+    if status is 'mine'
+      roomUI.numDays += 1
+      roomUI.resRoom.days[date] = { "status":"hold" }
+    else
+      roomUI.numDays -= 1 if roomUI.numDays > 0
+      delete roomUI.resRoom.days[date]
+    Util.log('Book.onCellBook()', roomId, date, status, roomUI.resRoom.days )
+    @updateTotal( roomId  )
 
   onAlloc:( alloc, roomId ) =>
     #Util.log( 'Book.onAlloc()' )

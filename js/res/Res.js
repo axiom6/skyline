@@ -16,11 +16,23 @@
       this.cust = cust;
       this.initRes = bind(this.initRes, this);
       this.resvs = Res.Resvs;
+      this.myResId = '12';
+      this.myCustId = '12';
       this.initRes();
       this.updateRooms();
     }
 
     Res.prototype.initRes = function() {
+      this.store.subscribe('Res', this.myResId, 'add', (function(_this) {
+        return function(add) {
+          return Util.log(add);
+        };
+      })(this));
+      this.store.subscribe('Res', this.myResId, 'put', (function(_this) {
+        return function(put) {
+          return Util.log(put);
+        };
+      })(this));
       this.store.subscribe('Res', 'none', 'make', (function(_this) {
         return function(make) {
           _this.store.insert('Res', _this.resvs);
@@ -67,12 +79,65 @@
       return results;
     };
 
+    Res.prototype.createHold = function(total, status, method, custId, roomUIs, payments) {
+      var res, roomId, roomUI;
+      res = {};
+      res.total = total;
+      res.paid = 0;
+      res.balance = 0;
+      res.status = status;
+      res.method = method;
+      res.custId = custId;
+      res.rooms = {};
+      for (roomId in roomUIs) {
+        if (!hasProp.call(roomUIs, roomId)) continue;
+        roomUI = roomUIs[roomId];
+        if (roomUI.numDays > 0) {
+          res.rooms[roomId] = roomUI.resRoom;
+        }
+      }
+      res.payments = payments;
+      return res;
+    };
+
+    Res.prototype.add = function(id, res) {
+      return this.store.add('Res', id, res);
+    };
+
+    Res.prototype.put = function(id, res) {
+      return this.store.put('Res', id, res);
+    };
+
+    Res.prototype.resRoom = function() {
+      return {
+        "total": 0,
+        "price": 0,
+        "guests": 2,
+        "pets": 0,
+        "spa": false,
+        "days": {}
+      };
+    };
+
+    Res.prototype.resPay = function() {
+      return {
+        "amount": 0,
+        "date": "xxxxxxxx",
+        "with": "xxxxx",
+        "num": "xxxx"
+      };
+    };
+
     return Res;
 
   })();
 
 
   /*
+      "1":{ "total":250, "paid":250, "balance":0,
+      "rooms":  { "1":{ "total":250, "price":125, "guests":2,"pets":1, "spa":false, "days":{"20170709":{},"20170710":{} } } },
+      "payments":{"1":{ "amount":250,"date":"20170517", "with":"check", "num":"4028" } },
+      "status":"book", "method":"site", "custId":"1" },
   onAlloc:( alloc, roomId ) =>
     room = @rooms[roomId]
     for own day, obj of alloc.days

@@ -39,7 +39,7 @@
       })(this));
       this.store.subscribe('Alloc', 'none', 'onPut', (function(_this) {
         return function(onPut) {
-          return Util.log('Alloc.onPut()', onPut);
+          return _this.onAlloc(onPut);
         };
       })(this));
       this.store.subscribe('Alloc', 'none', 'onDel', (function(_this) {

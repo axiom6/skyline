@@ -28,6 +28,3 @@ class Data
 
   @databases = { skyline:"skyline-fed2b", skytest:"skytest-25d1c" }
 
-  @resRoom = { "total":NaN, "price":0, "guests":NaN, "pets":NaN, "spa":false, "days":{} }
-  @resPay  = { "amount":NaN,"date":"xxxxxxxx", "with":"xxxxx", "num":"xxxx" } }
-

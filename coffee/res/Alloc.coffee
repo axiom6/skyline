@@ -19,7 +19,7 @@ class Alloc
   subscribe:() ->
     @store.subscribe( 'Alloc', 'none', 'make',  (make)   => Util.log( 'Alloc.make()',  make   ) )
     @store.subscribe( 'Alloc', 'none', 'onAdd', (onAdd)  => @onAlloc(onAdd) )
-    @store.subscribe( 'Alloc', 'none', 'onPut', (onPut)  => Util.log( 'Alloc.onPut()', onPut ) )
+    @store.subscribe( 'Alloc', 'none', 'onPut', (onPut)  => @onAlloc(onPut) )
     @store.subscribe( 'Alloc', 'none', 'onDel', (onDel)  => Util.log( 'Alloc.onDel()', onDel ) )
     @store.make(      'Alloc' )
     @store.on( 'Alloc', 'onAdd' )
