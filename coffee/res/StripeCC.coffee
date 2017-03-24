@@ -1,17 +1,24 @@
 
-$       = require('jquery')
-Data    = require('js/res/Data')
-#stripe = require("stripe")(Data.stripeTestKey) # Using browser
+$          = require('jquery')
+Data       = require('js/res/Data')
+stripeNode = require("stripe")(Data.stripeTestKey) # Using browser
 
 class StripeCC
 
   module.exports = StripeCC
 
   constructor:( @stream, @store, @room, @cust, @res ) ->
-    @stripe   = Stripe( Data.stripeTestPub )
-    @elements = @stripe.elements()
+    @stripeClient = Stripe( Data.stripeTestPub )
+    @elements     = @stripeClient.elements()
+    @token        = ""
+    @totals       = 800
+    @desc         = "First Run"
 
   ready:() ->
+    $("#StripeCC").append( @checkOutForm() )
+    return
+
+  readyElements:() ->
     $("#StripeCC").append( @elementsForm() )
     @card = @elements.create('card', { style:@elementsStyle() } )
     @card.mount('#card-element')
@@ -21,7 +28,8 @@ class StripeCC
     return
 
   elementsForm:() ->
-    """<form action="charge.html" method="post" id="payment-form">
+    # action="Javascript:#{@doCharge()}"
+    """<form action="index.html#Confirm" method="post" id="payment-form">
         <div class="form-row">
           <label for="card-element">Credit or debit card</label>
           <div id="card-element"></div>
@@ -29,6 +37,19 @@ class StripeCC
         </div>
         <button>Submit Payment</button>
       </form>"""
+
+  checkOutForm:() ->
+    """<form action=Javascript:#{@doAction()}" method="POST">
+        <script
+        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+        data-key="pk_test_VmF7xSInW8JHrcUga6yRmjqq"
+        data-amount="999"
+        data-name="SkylineSue"
+        data-description="Widget"
+        data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+        data-locale="auto">
+        </script>
+    </form>"""
 
   elementsStyle:() ->
     { base: { fontSize:'16px', lineHeight:'24px' } }
@@ -43,14 +64,16 @@ class StripeCC
 
   onFormSubmit:( event ) =>
     event.preventDefault()
-    @stripe.createToken(@card).then( (result) =>
+    @stripeClient.createToken(@card).then( (result) =>
       if result.error
         errorElement = document.getElementById('card-errors') # Inform the user if there was an error
         errorElement.textContent = result.error.message
       else
-        @stripeTokenHandler( result.token ) ) # Send the token to your server
+        @token = result.token
+        @tokenHandler( result.token ) ) # Send the token to your server
+    return
 
-  stripeTokenHandler:( token ) =>
+  tokenHandler:( token ) =>
     # Insert the token ID into the form so it gets submitted to the server
     hiddenInput = document.createElement('input')
     hiddenInput.setAttribute('type', 'hidden' )
@@ -58,3 +81,20 @@ class StripeCC
     hiddenInput.setAttribute('value', token.id )
     @form.appendChild( hiddenInput )
     @form.submit()
+    return
+
+  doCharge:() =>
+    stripeNode.charges.create( { amount:@totals, currency:"usd", description:@desc, source:@token }, @onCharge )
+    return
+
+  onCharge:( error, charge ) =>
+    if error
+      Util.error( "StripeCC.onCharge", error  )
+    else
+      Util.log(   "StripeCC.onCharge", charge )
+    return
+
+  doAction:() =>
+    Util.log( "StripeCC.doAction", 'called too soon' )
+    return
+
