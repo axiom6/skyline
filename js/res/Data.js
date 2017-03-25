@@ -52,6 +52,8 @@
 
     Data.stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3";
 
+    Data.stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs";
+
     return Data;
 
   })();

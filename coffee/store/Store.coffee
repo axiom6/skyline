@@ -87,7 +87,7 @@ class Store
     @stream.publish( @toSubject(table,id,op), data )
     return
 
-  onerror:( table, id, op, result={}, error={} ) ->
+  onError:( table, id, op, result={}, error={} ) ->
     console.log( 'Stream.onerror', { db:@dbName, table:table, id:id, op:op, result:result, error:error } )
     #@stream.onerror( @toSubject(table,op,id), @toStoreObject( @toParams(table,id,op,extras),result ) )
     return

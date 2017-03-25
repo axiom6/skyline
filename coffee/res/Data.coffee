@@ -32,4 +32,5 @@ class Data
   @stripeTestPub = "pk_test_0VHIhWRH8hFwSeP2n084Ze4L"
   @stripeLiveKey = "sk_live_CCbj5oirIeHwTlyKVXJnbrgt"
   @stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3"
+  @stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs"
 

@@ -160,7 +160,7 @@
       this.stream.publish(this.toSubject(table, id, op), data);
     };
 
-    Store.prototype.onerror = function(table, id, op, result, error) {
+    Store.prototype.onError = function(table, id, op, result, error) {
       if (result == null) {
         result = {};
       }

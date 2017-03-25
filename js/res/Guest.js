@@ -9,7 +9,7 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Alloc, Book, Cust, Data, Firestore, Master, Res, Room, Stream, StripeCC, alloc, book, cust, master, res, room, store, stream, stripeCC;
+        var Book, Cust, Data, Firestore, Res, Room, Stream, StripeRest, book, cust, res, room, store, stream, stripeRest;
         Stream = require('js/store/Stream');
         Firestore = require('js/store/Firestore');
         Data = require('js/res/Data');
@@ -17,22 +17,16 @@
         Cust = require('js/res/Cust');
         Res = require('js/res/Res');
         Book = require('js/res/Book');
-        StripeCC = require('js/res/StripeCC');
-        Master = require('js/res/Master');
-        Alloc = require('js/res/Alloc');
+        StripeRest = require('js/res/StripeRest');
         stream = new Stream([]);
         store = new Firestore(stream, "skytest", Data.configSkytest);
         room = new Room(stream, store, Data);
         cust = new Cust(stream, store);
         res = new Res(stream, store, room, cust);
         book = new Book(stream, store, room, cust, res);
-        stripeCC = new StripeCC(stream, store, room, cust, res);
-        master = new Master(stream, store, room, cust, res);
-        alloc = new Alloc(stream, store, room, cust, res, master, book);
+        stripeRest = new StripeRest(stream, store, room, cust, res);
         book.ready();
-        stripeCC.ready();
-        master.ready();
-        return Util.noop(alloc);
+        return stripeRest.ready();
       });
     };
 

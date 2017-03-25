@@ -109,14 +109,11 @@ class Stream
        Util.error('Stream.domElement( jqSel )', typeof(jQuerySelector), jQuerySelector, 'jQuerySelector is neither jQuery object nor selector' )
        $().get(0)
 
-  onNext:( object ) ->
-    Util.log(   'Stream.onNext()',     object      )
+  onNext:( object ) -> Util.log(   'Stream.onNext()',     object      )
 
-  onError:( error ) ->
-    Util.error( 'Stream.onError()',    error       )
+  onError:( error ) -> Util.error( 'Stream.onError()',    error       )
 
-  onComplete:()     ->
-    Util.dbg(   'Stream.onComplete()', 'Completed' )
+  onComplete:()     -> Util.dbg(   'Stream.onComplete()', 'Completed' )
 
   logSubjects:() ->
     for key, obj of @subjects
