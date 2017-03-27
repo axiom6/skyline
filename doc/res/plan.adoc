@@ -6,93 +6,26 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-### [.black]#Book Engine#
-
-[horizontal]
-User Experience::     x
-Guest Pets per Room:: x
-
-### [.black]#Payment Engine#
-
-[horizontal]
-Terms and Conditions:: x
-
-
-### [.black]#Gallerys Scenic Rooms Style Print#
-
-[horizontal]
-Scenic:: x
-Rooms::  x
-Style::  x
-Print::  x
-
+* Credit Card Form
+* Confirmation
+# Room Pages
+* Gallerys - Scenic Rooms Style Print
+* Terms and Conditions
 
 ## [.black]#Owner Site#
 
-### [.black]#Master Calendar#
-
-### [.black]#Customer#
-
-
-### [.black]#Work Schedule#
-
-[horizontal]
-Maid:: x
-Handyman:: x
-Reservationist:: x
-
-### [.black]#Email Processing#
-
-### [.black]#Payments Tracking#
-
-#### [.black]#Owner Secured#
-
-#### [.black]#Tax Accounts#
-
-[horizontal]
-Pillow  Tax:: x
-Larimer Tax:: x
-State   Tax:: x
-
-
-## [.black]#Firebase (Google)#
-
-### [.black]#JSON#
-room::    x
-route::   x
-
-### [.black]#Data Model#
-[horizontal]
-Book::    PSIUD
-Cust::    PSIU
-Alloc::   N
-Partner:: PSIUD
-Log::     PSIUD
-Pay::     PSIU
-Tax::     PSIU
-Work::    PSIUD
-
-## [.black]#Payments#
-
-### [.black]#Authorize.Net#
-
-### [.black]#Bank Deposits#
-
-## [.black]#Partners#
-
-### [.black]#Bookings.com#
-
-### [.black]#Expedia#
+* Master Calendar
+* Confirmation
+* Booking.com
+* Payments Track - Tax, Deposit, OTS
+* Work Schedule
+* Customer - Marking
 
 ## [.black]#Marketing#
 
-### [.black]#Google Search#
+* Google Search
+* Visit Estes Park
+* EstesPark.com#
+* Trips With Pets#
 
-
-
-### [.black]#Visit Estes Park#
-
-### [.black]#EstesPark.com#
-
-### [.black]#Trips With Pets#
 
