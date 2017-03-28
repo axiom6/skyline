@@ -16,17 +16,16 @@
         Room = require('js/res/Room');
         Cust = require('js/res/Cust');
         Res = require('js/res/Res');
-        Book = require('js/res/Book');
         Pay = require('js/res/Pay');
+        Book = require('js/res/Book');
         stream = new Stream([]);
         store = new Firestore(stream, "skytest", Data.configSkytest);
         room = new Room(stream, store, Data);
         cust = new Cust(stream, store);
         res = new Res(stream, store, room, cust);
-        book = new Book(stream, store, room, cust, res);
         pay = new Pay(stream, store, room, cust, res);
-        book.ready();
-        return pay.ready();
+        book = new Book(stream, store, room, cust, res, pay);
+        return book.ready();
       });
     };
 

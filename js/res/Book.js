@@ -13,14 +13,16 @@
   Book = (function() {
     module.exports = Book;
 
-    function Book(stream, store, room1, cust, res) {
+    function Book(stream, store, room1, cust, res, pay) {
       this.stream = stream;
       this.store = store;
       this.room = room1;
       this.cust = cust;
       this.res = res;
+      this.pay = pay;
       this.insert = bind(this.insert, this);
       this.make = bind(this.make, this);
+      this.onMakeRes = bind(this.onMakeRes, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
       this.onBook = bind(this.onBook, this);
@@ -55,6 +57,7 @@
     Book.prototype.ready = function() {
       $('#Inits').append(this.initsHtml());
       $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
+      $('#Confirm').append(this.resHtml());
       $('.guests').change(this.onGuests);
       $('.pets').change(this.onPets);
       $('#Months').change(this.onMonth);
@@ -62,6 +65,7 @@
       $('#Test').click(this.onTest);
       $('#Hold').click(this.onHold);
       $('#Book').click(this.onBook);
+      $('#MakeRes').click(this.onMakeRes).hide();
       return this.roomsJQuery();
     };
 
@@ -107,6 +111,10 @@
       htm += "<td class=\"room-total\" id=\"Totals\">&nbsp;</td></tr>";
       htm += "</tbody></table>";
       return htm;
+    };
+
+    Book.prototype.resHtml = function() {
+      return "<button class=\"btn btn-lg btn-primary\" id=\"MakeRes\">Make Reservation</button>";
     };
 
     Book.prototype.createCell = function(roomId, room, date) {
@@ -184,7 +192,9 @@
       }
       text = this.totals === 0 ? '' : '$' + this.totals;
       $('#Totals').text(text);
-      $('#cc-amt').text(text);
+      if (this.totals > 0) {
+        $('#MakeRes').show();
+      }
     };
 
     Book.prototype.toDay = function(date) {
@@ -338,6 +348,11 @@
         obj = ref[day];
         this.allocCell(day, obj.status, roomId);
       }
+    };
+
+    Book.prototype.onMakeRes = function(event) {
+      $('#MakeRes').hide();
+      return this.pay.showConfirmPay(this.totals);
     };
 
     Book.prototype.allocCell = function(day, status, roomId) {

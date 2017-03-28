@@ -12,10 +12,11 @@ class Pay
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": Data.stripeCurlKey } } )
 
-  ready:() ->
-    $('#Pay').append( @payHtml() )
+  showConfirmPay:( amount ) ->
+    $('#Confirm').append( @payHtml() )
     window.$ = $
     Util.loadScript( "../js/res/payment.js", @initPayment )
+    $('#cc-amt').text('$'+amount)
     # @token( '4242424242424242', '12', '2018', '123' )
 
   payHtml:() ->

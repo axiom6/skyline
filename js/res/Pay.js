@@ -31,10 +31,11 @@
       });
     }
 
-    Pay.prototype.ready = function() {
-      $('#Pay').append(this.payHtml());
+    Pay.prototype.showConfirmPay = function(amount) {
+      $('#Confirm').append(this.payHtml());
       window.$ = $;
-      return Util.loadScript("../js/res/payment.js", this.initPayment);
+      Util.loadScript("../js/res/payment.js", this.initPayment);
+      return $('#cc-amt').text('$' + amount);
     };
 
     Pay.prototype.payHtml = function() {

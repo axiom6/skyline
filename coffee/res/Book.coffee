@@ -7,7 +7,7 @@ class Book
 
   module.exports = Book
 
-  constructor:( @stream, @store, @room, @cust, @res ) ->
+  constructor:( @stream, @store, @room, @cust, @res, @pay ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @myDays      =  0
@@ -30,6 +30,7 @@ class Book
   ready:() ->
     $('#Inits'  ).append( @initsHtml( ) )
     $('#Rooms'  ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
+    $('#Confirm').append( @resHtml( ) )
     $('.guests' ).change( @onGuests  )
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
@@ -37,6 +38,7 @@ class Book
     $('#Test'   ).click(  @onTest    )
     $('#Hold'   ).click(  @onHold    )
     $('#Book'   ).click(  @onBook    )
+    $('#MakeRes').click(  @onMakeRes ).hide()
     @roomsJQuery()
 
   initsHtml:() ->
@@ -69,6 +71,9 @@ class Book
     htm += """<td class="room-total" id="Totals">&nbsp;</td></tr>"""
     htm += "</tbody></table>"
     htm
+
+  resHtml:() ->
+   """<button class="btn btn-lg btn-primary" id="MakeRes">Make Reservation</button>"""
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
@@ -118,7 +123,7 @@ class Book
       @totals += room.resRoom.total
     text = if @totals is 0 then '' else '$'+@totals
     $('#Totals').text(text)
-    $('#cc-amt').text(text)
+    $('#MakeRes').show() if @totals > 0
     return
 
   toDay:( date ) ->
@@ -218,6 +223,10 @@ class Book
     for own day, obj of alloc.days
       @allocCell( day, obj.status, roomId )
     return
+
+  onMakeRes:( event ) =>
+    $('#MakeRes').hide()
+    @pay.showConfirmPay( @totals )
 
   allocCell:( day, status, roomId ) ->
     @cellStatus( $('#R'+roomId+day), status )
