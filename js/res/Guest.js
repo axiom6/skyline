@@ -9,7 +9,7 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Book, Cust, Data, Firestore, Res, Room, Stream, StripeRest, book, cust, res, room, store, stream, stripeRest;
+        var Book, Cust, Data, Firestore, Pay, Res, Room, Stream, book, cust, pay, res, room, store, stream;
         Stream = require('js/store/Stream');
         Firestore = require('js/store/Firestore');
         Data = require('js/res/Data');
@@ -17,16 +17,16 @@
         Cust = require('js/res/Cust');
         Res = require('js/res/Res');
         Book = require('js/res/Book');
-        StripeRest = require('js/res/StripeRest');
+        Pay = require('js/res/Pay');
         stream = new Stream([]);
         store = new Firestore(stream, "skytest", Data.configSkytest);
         room = new Room(stream, store, Data);
         cust = new Cust(stream, store);
         res = new Res(stream, store, room, cust);
         book = new Book(stream, store, room, cust, res);
-        stripeRest = new StripeRest(stream, store, room, cust, res);
+        pay = new Pay(stream, store, room, cust, res);
         book.ready();
-        return stripeRest.ready();
+        return pay.ready();
       });
     };
 

@@ -5,21 +5,15 @@
 
 .cc-cvc { width:50px }
 
-.cc-amt { width:60px }
+.cc-amt { width:60px; display:block; }
 
 .cc-com { font-size: 16px; }
 
+.cc-msg { font-size: 16px; }
+.cc-msg .text-danger:after  {  content: 'Validation failed'; }
+.cc-msg .text-success:after {  content: 'Validation passed'; }
 
-.has-error input {
-  border-width: 2px;
-}
-
-.validation.text-danger:after {
-  content: 'Validation failed';
-}
-
-.validation.text-success:after {
-  content: 'Validation passed'; }
+.has-error input {  border-width: 2px; }
 
 .form-group {
   float:left;
@@ -29,6 +23,8 @@
 .control-label {
   display: block;
 }
+
+#form-pay { height:80px; }
 
 .form-control {
   //display: block;

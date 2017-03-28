@@ -118,6 +118,7 @@ class Book
       @totals += room.resRoom.total
     text = if @totals is 0 then '' else '$'+@totals
     $('#Totals').text(text)
+    $('#cc-amt').text(text)
     return
 
   toDay:( date ) ->

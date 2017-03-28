@@ -184,6 +184,7 @@
       }
       text = this.totals === 0 ? '' : '$' + this.totals;
       $('#Totals').text(text);
+      $('#cc-amt').text(text);
     };
 
     Book.prototype.toDay = function(date) {
