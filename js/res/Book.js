@@ -97,7 +97,7 @@
       for (roomId in ref2) {
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
-        htm += "<tr id=\"" + roomId + "\"><td>" + room.name + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
+        htm += "<tr id=\"" + roomId + "\"><td><a href=\"rooms/" + roomId + ".html\" id=\"" + roomId + "L\">" + room.name + "</a></td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
         for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
           htm += this.createCell(roomId, room, this.toDateStr(day));
         }
@@ -111,6 +111,8 @@
       htm += "</tbody></table>";
       return htm;
     };
+
+    Book.prototype.roomLink = function(roomId, room) {};
 
     Book.prototype.resHtml = function() {
       return "<button class=\"btn btn-lg btn-primary\" id=\"MakeRes\">Make Reservation</button>";

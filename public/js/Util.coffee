@@ -362,6 +362,9 @@ class Util
     Util.htmlIds[id] = id
     id
 
+  @toPage:( path ) ->
+    window.location = path
+
   # ------ Converters ------
 
   @extend:( obj, mixin ) ->

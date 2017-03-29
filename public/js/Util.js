@@ -590,6 +590,10 @@ Util = (function() {
     return id;
   };
 
+  Util.toPage = function(path) {
+    return window.location = path;
+  };
+
   Util.extend = function(obj, mixin) {
     var method, name;
     for (name in mixin) {

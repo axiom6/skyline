@@ -61,7 +61,7 @@ class Book
       htm += "<th>#{@dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
-      htm += """<tr id="#{roomId}"><td>#{room.name}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
+      htm += """<tr id="#{roomId}"><td><a href="rooms/#{roomId}.html" id="#{roomId}L">#{room.name}</a></td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
       for day in [1..numDays]
         htm += @createCell( roomId, room, @toDateStr(day) )
       htm += """<td class="room-total" id="#{roomId}T"></td></tr>"""
@@ -70,6 +70,8 @@ class Book
     htm += """<td class="room-total" id="Totals">&nbsp;</td></tr>"""
     htm += "</tbody></table>"
     htm
+
+  roomLink:( roomId, room ) ->
 
   resHtml:() ->
    """<button class="btn btn-lg btn-primary" id="MakeRes">Make Reservation</button>"""
