@@ -20,6 +20,7 @@ class Room
       roomUI.$        = {}
       roomUI.resRoom  = {}
       resRoom         = roomUI.resRoom
+      resRoom.name    = room.name
       resRoom.total   = 0
       resRoom.price   = 0
       resRoom.guests  = 2

@@ -29,7 +29,7 @@ class Res
           room.days[dayId] = roomDay
 
   createHold:( total, status, method, custId, roomUIs, payments ) ->
-    res = {}
+    res          = {}
     res.total    = total
     res.paid     = 0
     res.balance  = 0

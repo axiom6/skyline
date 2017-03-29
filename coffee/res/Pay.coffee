@@ -11,13 +11,65 @@ class Pay
     @uri  = "https://api.stripe.com/v1/"
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": Data.stripeCurlKey } } )
+    @myRes = {}
+    @created = false
 
-  showConfirmPay:( amount ) ->
-    $('#Confirm').append( @payHtml() )
-    window.$ = $
-    Util.loadScript( "../js/res/payment.js", @initPayment )
-    $('#cc-amt').text('$'+amount)
-    # @token( '4242424242424242', '12', '2018', '123' )
+  showConfirmPay:( myRes ) ->
+    @myRes = myRes
+    if @created
+      $('#Confirms').remove()
+      $('#Confirm').prepend( @confirmHtml( @myRes ) )
+      $('#form-pay').show()
+    else
+      $('#Confirm').append( @confirmHtml( @myRes ) )
+      $('#Confirm').append( @payHtml() )
+      window.$ = $
+      Util.loadScript( "../js/res/payment.js", @initPayment )
+      $('#cc-amt').text('$'+myRes.total)
+      $('#cc-bak').click( (e) => @onBack(e) )
+      # @token( '4242424242424242', '12', '2018', '123' )
+      @created = true
+
+  onBack:( e ) =>
+    e.preventDefault()
+    $('#Confirms').hide()
+    $('#form-pay').hide()
+    $('#Inits'   ).show()
+    $('#Rooms'   ).show()
+    $('#MakeRes' ).show()
+    return
+ 
+  confirmHtml:( myRes ) ->
+    htm   = """<table id="Confirms"><thead>"""
+    htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
+    htm  += """</thead><tbody>"""
+    for own roomId, r of myRes.rooms
+      days   = Object.keys(r.days).sort()
+      num    = days.length
+      arrive = @confirmDate( days[0],     "", false )  # from 3:00-8:00PM
+      depart = @confirmDate( days[num-1], "", true  )  # by 10:00AM
+      htm  += """<tr><td>#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
+    htm  += """<tr><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td class="room-total">$#{myRes.total}</td></tr>"""
+    htm  += """</tbody></table>"""
+    #tm  += """<div>Arrivals are from 3:00-8:00PM  Departures are before 10:00AM</div>"""
+    htm
+
+  departDate:( monthI, dayI, weekdayI ) ->
+    dayO     = dayI + 1
+    monthO   = monthI
+    weekdayO = ( weekdayI + 1 ) % 7
+    if dayI >= Data.numDayMonth[monthI]
+       dayO     = 1
+       monthO   = monthI + 1
+    [monthO, dayO, weekdayO]
+
+  confirmDate:( dayStr, msg, isDepart ) ->
+    year       = parseInt( dayStr.substr(0,4) )
+    monthIdx   = parseInt( dayStr.substr(4,2) ) - 1
+    day        = parseInt( dayStr.substr(6,2) )
+    weekdayIdx = new Date( year, monthIdx, day ).getDay()
+    [monthIdx,day,weekdayIdx] = @departDate( monthIdx,day,weekdayIdx ) if isDepart
+    """#{Data.weekdays[weekdayIdx]} #{Data.months[monthIdx]} #{day}, #{year}  #{msg}"""
 
   payHtml:() ->
     """<form novalidate autocomplete="on" method="POST" id="form-pay">
@@ -47,6 +99,10 @@ class Pay
           <button type="submit" class="btn btn-lg btn-primary" id="cc-sub">Pay</button>
         </span>
 
+        <span class="form-group">
+          <label class="control-label">&nbsp;</label>
+          <button class="btn btn-lg btn-primary" id="cc-bak">Go Back</button>
+        </span>
 
         <span class="form-group">
           <label for="cc-msg"   class="control-label">Message</label>

@@ -24,7 +24,6 @@ class Guest
       pay        = new Pay(        stream, store, room, cust, res )
       book       = new Book(       stream, store, room, cust, res, pay )
 
-      book.      ready()
-
+      book.ready()
 
 Guest.init()

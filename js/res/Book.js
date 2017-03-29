@@ -42,9 +42,8 @@
       this.monthIdx = 6;
       this.year = 2017;
       this.month = Data.months[this.monthIdx];
-      this.begDay = 9;
-      this.weekdayIdx = new Date(2017, this.monthIdx, 1).getDay();
       this.numDays = 14;
+      this.begDay = 9;
       this.$cells = [];
       this.myResId = this.res.myResId;
       this.myCustId = this.res.myCustId;
@@ -85,13 +84,13 @@
       weekdayIdx = new Date(year, monthIdx, 1).getDay();
       htm = "<table><thead>";
       htm += "<tr><th></th><th></th><th></th><th></th>";
-      for (day = i = 1, ref = numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
-        weekday = Data.weekdays[(weekdayIdx + day - 1) % 7];
+      for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
+        weekday = Data.weekdays[(weekdayIdx + this.begDay + day - 2) % 7];
         htm += "<th>" + weekday + "</th>";
       }
       htm += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th>";
-      for (day = j = 1, ref1 = numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
-        htm += "<th>" + (this.dayMonth(day, begDay)) + "</th>";
+      for (day = j = 1, ref1 = this.numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
+        htm += "<th>" + (this.dayMonth(day)) + "</th>";
       }
       htm += "<th>Total</th></tr></thead><tbody>";
       ref2 = this.rooms;
@@ -254,7 +253,6 @@
     Book.prototype.onMonth = function(event) {
       this.month = event.target.value;
       this.monthIdx = Data.months.indexOf(this.month);
-      this.weekdayIdx = new Date(this.year, this.monthIdx, 1).getDay();
       this.resetRooms();
     };
 
@@ -350,9 +348,14 @@
       }
     };
 
-    Book.prototype.onMakeRes = function(event) {
+    Book.prototype.onMakeRes = function(e) {
+      e.preventDefault();
+      $('#Inits').hide();
+      $('#Rooms').hide();
+      this.onHold();
+      this.myRes.total = this.totals;
       $('#MakeRes').hide();
-      return this.pay.showConfirmPay(this.totals);
+      return this.pay.showConfirmPay(this.myRes);
     };
 
     Book.prototype.allocCell = function(day, status, roomId) {
@@ -363,13 +366,13 @@
       return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
-    Book.prototype.dayMonth = function(iday, begDay) {
-      var day;
-      day = begDay + iday - 1;
-      if (day > Data.numDayMonth[this.monthIdx]) {
-        return day - Data.numDayMonth[this.monthIdx];
+    Book.prototype.dayMonth = function(day) {
+      var monthDay;
+      monthDay = day + this.begDay - 1;
+      if (monthDay > Data.numDayMonth[this.monthIdx]) {
+        return monthDay - Data.numDayMonth[this.monthIdx];
       } else {
-        return day;
+        return monthDay;
       }
     };
 

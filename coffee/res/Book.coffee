@@ -16,9 +16,8 @@ class Book
     @monthIdx    = 6
     @year        = 2017
     @month       = Data.months[@monthIdx]
-    @begDay      =  9
-    @weekdayIdx  = new Date( 2017, @monthIdx, 1 ).getDay()
     @numDays     = 14
+    @begDay      = 9
     @$cells      = []
     @myResId     = @res.myResId
     @myCustId    = @res.myCustId
@@ -54,12 +53,12 @@ class Book
     weekdayIdx  = new Date( year, monthIdx, 1 ).getDay()
     htm   = "<table><thead>"
     htm  += """<tr><th></th><th></th><th></th><th></th>"""
-    for day in [1..numDays]
-      weekday = Data.weekdays[(weekdayIdx+day-1)%7]
+    for day in [1..@numDays]
+      weekday = Data.weekdays[(weekdayIdx+@begDay+day-2)%7]
       htm += "<th>#{weekday}</th>"
     htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th>"
-    for day in [1..numDays]
-      htm += "<th>#{@dayMonth(day,begDay)}</th>"
+    for day in [1..@numDays]
+      htm += "<th>#{@dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{room.name}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
@@ -157,7 +156,6 @@ class Book
   onMonth:( event ) =>
     @month      = event.target.value
     @monthIdx   = Data.months.indexOf(@month)
-    @weekdayIdx = new Date( @year, @monthIdx, 1 ).getDay()
     @resetRooms()
     return
 
@@ -224,9 +222,14 @@ class Book
       @allocCell( day, obj.status, roomId )
     return
 
-  onMakeRes:( event ) =>
+  onMakeRes:( e ) =>
+    e.preventDefault()
+    $('#Inits').hide()
+    $('#Rooms').hide()
+    @onHold()
+    @myRes.total = @totals
     $('#MakeRes').hide()
-    @pay.showConfirmPay( @totals )
+    @pay.showConfirmPay( @myRes )
 
   allocCell:( day, status, roomId ) ->
     @cellStatus( $('#R'+roomId+day), status )
@@ -234,9 +237,9 @@ class Book
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
 
-  dayMonth:( iday, begDay ) ->
-    day = begDay + iday - 1
-    if day > Data.numDayMonth[@monthIdx] then day-Data.numDayMonth[@monthIdx] else day
+  dayMonth:( day ) ->
+    monthDay = day + @begDay - 1
+    if monthDay > Data.numDayMonth[@monthIdx] then monthDay-Data.numDayMonth[@monthIdx] else monthDay
 
   toDateStr:( day ) ->
     @year+Util.pad(@monthIdx+1)+Util.pad(@dayMonth(day,@begDay))

@@ -5,7 +5,20 @@ body {
   font-size: 12px;
 }
 .guests {
+  text-align: center;
   width: 44px;
+}
+.pets {
+  text-align: center;
+}
+.nights {
+  text-align: center;
+}
+.arrive-times {
+  text-align: center;
+}
+.depart-times {
+  text-align: center;
 }
 .room-free {
   background-color: lightgrey;
@@ -48,6 +61,16 @@ body {
   color: black;
   text-align: right;
   width: 35px;
+}
+.arrive {
+  background-color: lightgrey;
+  color: black;
+  width: 242px;
+}
+.depart {
+  background-color: lightgrey;
+  color: black;
+  width: 242px;
 }
 .btn-book {
   background-color: blue;
