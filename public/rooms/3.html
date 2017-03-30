@@ -3,7 +3,8 @@
 <head>
   <title>#3 Southwest Spa</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-  <link href="../css/skyline.css" rel="stylesheet" type="text/css" />
+  <link  href="../css/skyline.css" rel="stylesheet" type="text/css"/>
+  <link  href="../css/slide.css"   rel="stylesheet" type="text/css"/>
   <script src="../js/Util.js"></script>
 </head>
 <body class="rooms">
@@ -12,5 +13,106 @@
   <span   class="room">#3 Southwest Spa</span>
   <button class="next" onclick="Util.toPage('4.html');">Next Room</button>
 </div>
+<ul id="slideshow">
+  <li>
+    <h3>Front View</h3>
+    <span>../img/r3/SL-0003-300.jpg</span>
+    <p>Spacious two story cabin</p>
+    <a href="#"><img src="../img/r3/SL-0003-300.jpg" width="100"  alt="Front View" /></a>
+  </li>
+  <li>
+    <h3>Living Room with Fireplace</h3>
+    <span>../img/r3/SL-1002-300.jpg</span>
+    <p>Cozy Fireplac</p>
+    <a href="#"><img src="../img/r3/SL-1002-300.jpg" width="100"  alt="Living Room" /></a>
+  </li>
+  <li>
+    <h3>Spa</h3>
+    <span>../img/r3/SL-1003-300.jpg</span>
+    <p>Full Size Spa</p>
+    <a href="#"><img src="../img/r3/SL-1003-300.jpg" width="100" alt="Spa" /></a>
+  </li>
+  <li>
+    <h3>Kitchen and Dining</h3>
+    <span>../img/r3/SL-1004-300.jpg</span>
+    <p>Kitchen and Dining</p>
+    <a href="#"><img src="../img/r3/SL-1004-300.jpg" width="100" alt="Kitchen" /></a>
+  </li>
+  <li>
+    <h3>First Floor from Kitchen</h3>
+    <span>../img/r3/SL-1004-300.jpg</span>
+    <p>First Floor from Kitchen</p>
+    <a href="#"><img src="../img/r3/SL-1004-300.jpg" width="100" alt="First Floor" /></a>
+  </li>
+  <li>
+    <h3>First Bedroom</h3>
+    <span>../img/r3/SL-1008-300.jpg</span>
+    <p>First Bedroom</p>
+    <a href="#"><img src="../img/r3/SL-1008-300.jpg" width="102" alt="First Bedroom" /></a>
+  </li>
+  <li>
+    <h3>Second Bedroom</h3>
+    <span>../img/r3/SL-1012-300.jpg</span>
+    <p>Second Bedroom</p>
+    <a href="#"><img src="../img/r3/SL-1012-300.jpg" width="102" alt="Second Bedroom" /></a>
+  </li>
+  <li>
+    <h3>Second Floor Living Room</h3>
+    <span>../img/r3/SL-1014-300.jpg</span>
+    <p>Second Floor Living Room</p>
+    <a href="#"><img src="../img/r3/SL-1014-300.jpg" width="102" alt="Second Floor Living Room" /></a>
+  </li>
+  <li>
+    <h3>Front Balcony</h3>
+    <span>../img/r3/SL-1016-300.jpg</span>
+    <p>Front Balcony</p>
+    <a href="#"><img src="../img/r3/SL-1016-300.jpg" width="102" alt="Front Balcony" /></a>
+  </li>
+  <li>
+    <h3>Back Patio</h3>
+    <span>../img/r3/SL-1017-300.jpg</span>
+    <p>Back Patio</p>
+    <a href="#"><img src="../img/r3/SL-1017-300.jpg" width="102" alt="Back Patio" /></a>
+  </li>
+</ul>
+<div id="wrapper">
+  <div id="fullsize">
+    <div id="imgprev" class="imgnav" title="Previous Image"></div>
+    <div id="imglink"></div>
+    <div id="imgnext" class="imgnav" title="Next Image"></div>
+    <div id="image"></div>
+    <div id="information">
+      <h3></h3>
+      <p></p>
+    </div>
+  </div>
+  <div id="thumbnails">
+    <div id="slideleft" title="Slide Left"></div>
+    <div id="slidearea">
+      <div id="slider"></div>
+    </div>
+    <div id="slideright" title="Slide Right"></div>
+  </div>
+</div>
+<script src="../js/Slide.js"></script>
+<!--script src="../js/Gallery.js"></script-->
+<script type="text/javascript">
+  $('slideshow').style.display='none';
+  $('wrapper').style.display='block';
+  var slideshow=new TINY.slideshow("slideshow");
+  window.onload=function(){
+    slideshow.auto=true;
+    slideshow.speed=5;
+    slideshow.link="linkhover";
+    slideshow.info="information";
+    slideshow.thumbs="slider";
+    slideshow.left="slideleft";
+    slideshow.right="slideright";
+    slideshow.scrollSpeed=4;
+    slideshow.spacing=5;
+    slideshow.active="#fff";
+    slideshow.init("slideshow","image","imgprev","imgnext","imglink");
+  }
+</script>
 </body>
 </html>
