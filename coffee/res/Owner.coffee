@@ -21,7 +21,7 @@ class Owner
       room     = new Room(      stream, store, Data )
       cust     = new Cust(      stream, store )
       res      = new Res(       stream, store, room, cust )
-      master   = new Master(    stream, store, room, cust, res )
+      master   = new Master(    stream, store, room, cust, res, Data )
       alloc    = new Alloc(     stream, store, room, cust, res, master )
       master.ready()
 

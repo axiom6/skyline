@@ -1,16 +1,14 @@
 
-
 $    = require('jquery')
-Data = require('js/res/Data')
 
 class Pay
 
   module.exports = Pay
 
-  constructor:( @stream, @store, @room, @cust, @res ) ->
+  constructor:( @stream, @store, @room, @cust, @res, @Data ) ->
     @uri  = "https://api.stripe.com/v1/"
     @subscribe()
-    $.ajaxSetup( { headers: { "Authorization": Data.stripeCurlKey } } )
+    $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
     @myRes = {}
     @created = false
 
@@ -58,7 +56,7 @@ class Pay
     dayO     = dayI + 1
     monthO   = monthI
     weekdayO = ( weekdayI + 1 ) % 7
-    if dayI >= Data.numDayMonth[monthI]
+    if dayI >= @Data.numDayMonth[monthI]
        dayO     = 1
        monthO   = monthI + 1
     [monthO, dayO, weekdayO]
@@ -69,7 +67,7 @@ class Pay
     day        = parseInt( dayStr.substr(6,2) )
     weekdayIdx = new Date( year, monthIdx, day ).getDay()
     [monthIdx,day,weekdayIdx] = @departDate( monthIdx,day,weekdayIdx ) if isDepart
-    """#{Data.weekdays[weekdayIdx]} #{Data.months[monthIdx]} #{day}, #{year}  #{msg}"""
+    """#{@Data.weekdays[weekdayIdx]} #{@Data.months[monthIdx]} #{day}, #{year}  #{msg}"""
 
   payHtml:() ->
     """<form novalidate autocomplete="on" method="POST" id="form-pay">
@@ -164,7 +162,7 @@ class Pay
   ajaxRest:( table, op, input  ) ->
     url       = @uri + table
     settings  = { url:url, type:op }
-    settings.headers = { Authorization: 'Bearer '+ Data.stripeTestKey }
+    settings.headers = { Authorization: 'Bearer '+ @Data.stripeTestKey }
     settings.data = input
     settings.success = ( result,  status, jqXHR ) =>
       @stream.publish( table, result )

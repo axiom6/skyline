@@ -1,11 +1,11 @@
 {
-  "M": { "dir":"../img/scenic/", "pics":[
-    { "src":"SC-DownRiver.jpg",       "width":"", "name":"Down River",       "p":"Down River"       },
-    { "src":"SC-Patio001.jpg",        "width":"", "name":"Patio",            "p":"Patio"            },
-    { "src":"SC-RiverWalk-East.jpg",  "width":"", "name":"River Walk East",  "p":"River Walk East"  },
-    { "src":"SC-RiverWithLongs.jpg",  "width":"", "name":"River With Longs", "p":"River With Longs" },
-    { "src":"SC-BigFish001.jpg",      "width":"", "name":"Big Fish",         "p":"Big Fish"         },
-    { "src":"SC-ElkInYard.jpg",       "width":"", "name":"Elk In Yard",      "p":"Elk In Yard"      },
-    { "src":"SC-ElkWithRedChair.jpg", "width":"", "name":"Elk Red Chair",    "p":"Elk Red Chair"    },
-    { "src":"SC-RiverWalk.jpg",       "width":"", "name":"River Walk",       "p":"River Walk"       } ] }
+  "M": { "dir":"img/scenic/", "pics":[
+    { "src":"SC-DownRiver.jpg",        "width":"", "name":"Down River",       "p":"Down River"       },
+    { "src":"SC-Patio001.jpg",         "width":"", "name":"Patio",            "p":"Patio"            },
+    { "src":"SC-RiverWalk-East.jpg",   "width":"", "name":"River Walk East",  "p":"River Walk East"  },
+    { "src":"SC-RiverWithLongs.jpg",   "width":"", "name":"River With Longs", "p":"River With Longs" },
+    { "src":"SLC-BigFish001.jpg",      "width":"", "name":"Big Fish",         "p":"Big Fish"         },
+    { "src":"SLC-ElkInYard.jpg",       "width":"", "name":"Elk In Yard",      "p":"Elk In Yard"      },
+    { "src":"SLC-ElkWithRedChair.jpg", "width":"", "name":"Elk Red Chair",    "p":"Elk Red Chair"    },
+    { "src":"SLC-RiverWalk.jpg",       "width":"", "name":"River Walk",       "p":"River Walk"       } ] }
 }

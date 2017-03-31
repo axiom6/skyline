@@ -1,17 +1,16 @@
 
 $    = require( 'jquery'     )
-Data = require( 'js/res/Data')
 
 class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @room, @cust, @res ) ->
+  constructor:( @stream, @store, @room, @cust, @res, @Data ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @year        = 2017
     @lastMaster  = { left:0, top:0, width:0, height:0 }
-    @lastSeason = { left:0, top:0, width:0, height:0 }
+    @lastSeason  = { left:0, top:0, width:0, height:0 }
 
   ready:() ->
     $('#Master').append( @masterHtml() )
@@ -70,20 +69,20 @@ class Master
 
   masterHtml:() ->
     htm = ""
-    for month in Data.season
+    for month in @Data.season
       htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @year, month )}</div>"""
     htm
 
   roomsHtml:( year, month ) ->
-    monthIdx   = Data.months.indexOf(month)
+    monthIdx   = @Data.months.indexOf(month)
     begDay     = if month isnt 'May'     then 1 else 17
-    endDay     = if month isnt 'October' then Data.numDayMonth[monthIdx] else 15
+    endDay     = if month isnt 'October' then @Data.numDayMonth[monthIdx] else 15
     weekdayIdx = new Date( year, monthIdx, 1 ).getDay()
     htm  = """<div class="MasterTitle">#{month}</div>"""
     htm += "<table><thead>"
     htm += """<tr><th></th>"""
     for day in [begDay..endDay]
-      weekday = Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
+      weekday = @Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
       htm += "<th>#{weekday}</th>"
     htm  += "</tr><tr><th></th>"
     for day in [begDay..endDay]
@@ -100,18 +99,18 @@ class Master
 
   seasonHtml:() ->
     htm = ""
-    for month in Data.season
+    for month in @Data.season
       htm += """<div id="#{month}" class="#{month}C">#{@monthTable(month)}</div>"""
     htm
 
   monthTable:( month ) ->
-    monthIdx = Data.months.indexOf(month)
+    monthIdx = @Data.months.indexOf(month)
     begDay   = new Date( 2017, monthIdx, 1 ).getDay() - 1
-    endDay   = Data.numDayMonth[monthIdx]
+    endDay   = @Data.numDayMonth[monthIdx]
     htm  = """<div class="SeasonTitle">#{month}</div>"""
     htm += """<table class="MonthTable"><thead><tr>"""
     for day in [0...7]
-      weekday = Data.weekdays[day]
+      weekday = @Data.weekdays[day]
       htm += """<th>#{weekday}</th>"""
     htm += """</tr></thead><tbody>"""
     for row in [0...6]

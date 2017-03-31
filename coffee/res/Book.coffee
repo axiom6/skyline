@@ -1,13 +1,12 @@
 
 $     = require( 'jquery'       )
-Data  = require( 'js/res/Data'  )
 Alloc = require( 'js/res/Alloc' )
 
 class Book
 
   module.exports = Book
 
-  constructor:( @stream, @store, @room, @cust, @res, @pay ) ->
+  constructor:( @stream, @store, @room, @cust, @res, @pay, @pict, @Data ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @myDays      =  0
@@ -15,7 +14,7 @@ class Book
     @monthIdx    = @today.getMonth()
     @monthIdx    = 6
     @year        = 2017
-    @month       = Data.months[@monthIdx]
+    @month       = @Data.months[@monthIdx]
     @numDays     = 14
     @begDay      = 9
     @$cells      = []
@@ -38,11 +37,12 @@ class Book
     $('#Hold'   ).click(  @onHold    )
     $('#Book'   ).click(  @onBook    )
     $('#MakeRes').click(  @onMakeRes ).hide()
+    @pict.createSlideShow('M')
     @roomsJQuery()
 
   initsHtml:() ->
-    htm     = """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", Data.months, @month,  'months' ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   Data.days,   @begDay, 'days'   ) }</label>"""
+    htm     = """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", @Data.months, @month,  'months' ) }</label>"""
+    htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
     htm    += """<label class="init-font">&nbsp;&nbsp;#{@year}</label>"""
     htm    += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
     htm    += """<span  class="init-font" id="Hold">&nbsp;&nbsp;Hold</span>"""
@@ -54,7 +54,7 @@ class Book
     htm   = "<table><thead>"
     htm  += """<tr><th></th><th></th><th></th><th></th>"""
     for day in [1..@numDays]
-      weekday = Data.weekdays[(weekdayIdx+@begDay+day-2)%7]
+      weekday = @Data.weekdays[(weekdayIdx+@begDay+day-2)%7]
       htm += "<th>#{weekday}</th>"
     htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th>"
     for day in [1..@numDays]
@@ -97,7 +97,7 @@ class Book
     roomUI = @roomUIs[roomId]
     guests = roomUI.resRoom.guests
     pets   = roomUI.resRoom.pets
-    price  = @rooms[roomId][guests]+pets*Data.petPrice
+    price  = @rooms[roomId][guests]+pets*@Data.petPrice
     roomUI.resRoom.price = price
     price
 
@@ -130,8 +130,8 @@ class Book
   toDay:( date ) ->
     if date.charAt(6) is '0' then date.substr(7,8) else date.substr(6,8)
 
-  g:(roomId) -> @htmlSelect( roomId+'G', Data.persons, 2, 'guests', @rooms[roomId].max )
-  p:(roomId) -> @htmlSelect( roomId+'P', Data.pets,    0, 'pets',   3                  )
+  g:(roomId) -> @htmlSelect( roomId+'G', @Data.persons, 2, 'guests', @rooms[roomId].max )
+  p:(roomId) -> @htmlSelect( roomId+'P', @Data.pets,    0, 'pets',   3                  )
 
   htmlSelect:( htmlId, array, choice, klass, max=undefined ) ->
     htm  = """<select id="#{htmlId}" class="#{klass}">"""
@@ -157,7 +157,7 @@ class Book
 
   onMonth:( event ) =>
     @month      = event.target.value
-    @monthIdx   = Data.months.indexOf(@month)
+    @monthIdx   = @Data.months.indexOf(@month)
     @resetRooms()
     return
 
@@ -241,7 +241,7 @@ class Book
 
   dayMonth:( day ) ->
     monthDay = day + @begDay - 1
-    if monthDay > Data.numDayMonth[@monthIdx] then monthDay-Data.numDayMonth[@monthIdx] else monthDay
+    if monthDay > @Data.numDayMonth[@monthIdx] then monthDay-@Data.numDayMonth[@monthIdx] else monthDay
 
   toDateStr:( day ) ->
     @year+Util.pad(@monthIdx+1)+Util.pad(@dayMonth(day,@begDay))
