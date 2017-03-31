@@ -96,9 +96,11 @@ Util = (function() {
   Util.require = function(path) {
     if (Util.isCommonJS) {
       return require(path);
-    } else {
+    } else if (Util.isWebPack) {
       Util.warn('Util.require may not work with WebPack', path);
       return require(path);
+    } else {
+      return Util.loadScript(path + '.js');
     }
   };
 
@@ -1081,7 +1083,8 @@ Util = (function() {
     blob = new Blob([stuff], {
       type: this.mineType(fileType)
     });
-    url = URL.createObjectURL(blob);
+    Util.noop(blob);
+    url = "";
     downloadLink = document.createElement("a");
     downloadLink.href = url;
     downloadLink.download = fileName;

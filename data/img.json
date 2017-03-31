@@ -1,11 +1,24 @@
 {
   "M": { "dir":"img/scenic/", "pics":[
-    { "src":"SC-DownRiver.jpg",        "width":"", "name":"Down River",       "p":"Down River"       },
-    { "src":"SC-Patio001.jpg",         "width":"", "name":"Patio",            "p":"Patio"            },
-    { "src":"SC-RiverWalk-East.jpg",   "width":"", "name":"River Walk East",  "p":"River Walk East"  },
-    { "src":"SC-RiverWithLongs.jpg",   "width":"", "name":"River With Longs", "p":"River With Longs" },
-    { "src":"SLC-BigFish001.jpg",      "width":"", "name":"Big Fish",         "p":"Big Fish"         },
-    { "src":"SLC-ElkInYard.jpg",       "width":"", "name":"Elk In Yard",      "p":"Elk In Yard"      },
-    { "src":"SLC-ElkWithRedChair.jpg", "width":"", "name":"Elk Red Chair",    "p":"Elk Red Chair"    },
-    { "src":"SLC-RiverWalk.jpg",       "width":"", "name":"River Walk",       "p":"River Walk"       } ] }
+    { "src":"SC-DownRiver.jpg",        "name":"Down River",       "p":"Down River"       },
+    { "src":"SC-Patio001.jpg",         "name":"Patio",            "p":"Patio"            },
+    { "src":"SC-RiverWalk-East.jpg",   "name":"River Walk East",  "p":"River Walk East"  },
+    { "src":"SC-RiverWithLongs.jpg",   "name":"River With Longs", "p":"River With Longs" },
+    { "src":"SLC-BigFish001.jpg",      "name":"Big Fish",         "p":"Big Fish"         },
+    { "src":"SLC-ElkInYard.jpg",       "name":"Elk In Yard",      "p":"Elk In Yard"      },
+    { "src":"SLC-ElkWithRedChair.jpg", "name":"Elk Red Chair",    "p":"Elk Red Chair"    },
+    { "src":"SLC-RiverWalk.jpg",       "name":"River Walk",       "p":"River Walk"       } ] },
+  "1": { "dir":"../img/r1/", "pics":[
+    { "src":"SL-Cabin001.jpg", "name":"Bed",            "p":"Bed and Living Room"        } ] },
+  "3": { "dir":"../img/r3/", "pics":[
+    { "src":"SL-0003-300.jpg", "name":"Front View",     "p":"Down River"                 },
+    { "src":"SL-1002-300.jpg", "name":"Living Room",    "p":"Living Room with Fireplace" },
+    { "src":"SL-1003-300.jpg", "name":"Spa",            "p":"Full Size Spa"              },
+    { "src":"SL-1004-300.jpg", "name":"Kitchen",        "p":"Kitchen with Dining Area"   },
+    { "src":"SL-1006-300.jpg", "name":"First Floor",    "p":"First Floor from Kitchen"   },
+    { "src":"SL-1008-300.jpg", "name":"First Bedroom",  "p":"First Bedroom"              },
+    { "src":"SL-1012-300.jpg", "name":"Second Bedroom", "p":"Second Bedroom"             },
+    { "src":"SL-1014-300.jpg", "name":"Living Room",    "p":"Second Floor Living Room"   },
+    { "src":"SL-1016-300.jpg", "name":"Front Balcony",  "p":"Front Balcony"              },
+    { "src":"SL-1017-300.jpg", "name":"Back Patio",     "p":"Back Patio"                 } ] }
 }

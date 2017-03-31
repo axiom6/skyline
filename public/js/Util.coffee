@@ -65,9 +65,11 @@ class Util
   @require:( path ) ->
     if Util.isCommonJS
       require( path )
-    else
+    else if Util.isWebPack
       Util.warn( 'Util.require may not work with WebPack', path )
       require( path )
+    else
+      Util.loadScript( path+'.js' )
 
   @fixTestGlobals:() ->
     window.Util  = Util
@@ -640,9 +642,11 @@ class Util
     mine += ";charset=utf-8"
     mine
 
+  # Need find URL
   @saveFile:( stuff, fileName, fileType ) ->
     blob = new Blob( [stuff], { type:@mineType(fileType) } )
-    url  = URL.createObjectURL(blob)
+    Util.noop(blob)
+    url  = "" # URL.createObjectURL(blob)
     downloadLink      = document.createElement("a")
     downloadLink.href = url;
     downloadLink.download = fileName

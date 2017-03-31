@@ -19,11 +19,11 @@
         Res = require('js/res/Res');
         Pay = require('js/res/Pay');
         Book = require('js/res/Book');
+        pict = new Pict();
         stream = new Stream([]);
         store = new Firestore(stream, "skytest", Data.configSkytest);
         room = new Room(stream, store, Data);
         cust = new Cust(stream, store);
-        pict = new Pict(stream, store, room, Data);
         res = new Res(stream, store, room, cust);
         pay = new Pay(stream, store, room, cust, res, Data);
         book = new Book(stream, store, room, cust, res, pay, pict, Data);

@@ -1,9 +1,10 @@
-body {margin:0; padding:5px; font:11px Verdana,Arial} /* background:#111; */
+/*body {margin:0; padding:5px; font:11px Verdana,Arial} *//* background:#111; */
+#Slides  { background-color:#111; padding:25px; }
 #slideshow {list-style:none; color:#fff}
 #slideshow span {display:none}
-#wrapper {width:506px; height:450px; background-color:#111; margin:50px auto; display:none}  /* width:506px; height:450px; - new background:#111; - new */
+#wrapper {width:506px; height:450px; margin:50px auto; display:none}  /* width:506px; height:450px; - new background:#111; - new */
 #wrapper * {margin:0; padding:0}
-#fullsize {position:relative; width:500px; height:350px; padding:2px; border:1px solid #ccc; background:#000} /* height:300px;*/
+#fullsize {position:relative; width:500px; height:350px; padding:20px 2px 2px 2px; border:1px solid #ccc; background:#000} /* height:300px;*/
 #information {position:absolute; bottom:0; width:500px; height:0; background:#000; color:#fff; overflow:hidden; z-index:200; opacity:.7; filter:alpha(opacity=70)}
 #information h3 {padding:4px 8px 3px; font-size:14px}
 #information p {padding:0 8px 8px}
