@@ -1,16 +1,18 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <title>#5 Cabin With View</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-  <link  href="../css/skyline.css" rel="stylesheet" type="text/css" />
-  <script src="../js/Util.js"></script>
+  <link  href="../css/skyline.css" rel="stylesheet" type="text/css"/>
+  <link  href="../css/slide.css"   rel="stylesheet" type="text/css"/>
+  <script src="../js/Util.js" ></script>
+  <script src="../js/Slide.js"></script>
+  <script src="../../js/res/Pict.js"></script>
 </head>
 <body class="rooms">
-<div class="top">
-  <button class="prev" onclick="Util.toPage('4.html');">Prev Room</button>
-  <span   class="room">#5 Cabin With View</span>
-  <button class="next" onclick="Util.toPage('6.html');">Next Room</button>
-</div>
+  <div id="top" class="top"></div>
+  <div id="Slides"></div>
+  <script> window.Pict.page("#5 Cabin With View","4","5","6"); </script>
 </body>
 </html>
