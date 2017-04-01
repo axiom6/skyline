@@ -65,7 +65,7 @@
       $('#Hold').click(this.onHold);
       $('#Book').click(this.onBook);
       $('#MakeRes').click(this.onMakeRes).hide();
-      this.pict.createSlideShow('M');
+      this.pict.createSlideShow('M', 800, 600);
       return this.roomsJQuery();
     };
 

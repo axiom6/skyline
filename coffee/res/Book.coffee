@@ -37,7 +37,7 @@ class Book
     $('#Hold'   ).click(  @onHold    )
     $('#Book'   ).click(  @onBook    )
     $('#MakeRes').click(  @onMakeRes ).hide()
-    @pict.createSlideShow('M')
+    @pict.createSlideShow('M', 800, 600 )
     @roomsJQuery()
 
   initsHtml:() ->

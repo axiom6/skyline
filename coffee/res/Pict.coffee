@@ -16,7 +16,7 @@ class Pict
     pict = new Pict()
     Util.ready () ->
       pict.roomPageHtml( title, prev, next )
-      pict.createSlideShow( curr )
+      pict.createSlideShow( curr, 600, 400 )
     return
 
   constructor:() ->
@@ -33,16 +33,15 @@ class Pict
     $('#top').append( htm )
     return
 
-  createSlideShow:( roomId ) ->
+  createSlideShow:( roomId, w,  h ) ->
     $('#Slides').append( @wrapperHtml() )
     htm = ""
     Img = if roomId is 'M' then require( 'data/Img.json' ) else require( '../../data/Img.json' )
     dir = Img[roomId].dir
     for pic in Img[roomId].pics
-      # Util.log("Pict.createSlideShow()", pic )
       htm += @li( pic, dir )
     $('#slideshow').append( htm )
-    @initTINY()
+    @initTINY( w, h )
     return
 
   li:( pic, dir ) ->
@@ -72,7 +71,7 @@ class Pict
     </div>
     """
 
-  initTINY:() ->
+  initTINY:( w, h ) ->
     TINY.ElemById('slideshow').style.display='none'
     TINY.ElemById('wrapper'  ).style.display='block'
     window.slideshow=new TINY.slideshow("slideshow")
@@ -87,5 +86,15 @@ class Pict
     slideshow.scrollSpeed=4
     slideshow.spacing=5
     slideshow.active="#fff"
+    @resizeSlideView( w, h )
     slideshow.init("slideshow","image","imgprev","imgnext","imglink")
+
+  resizeSlideView:( w, h ) ->
+    $('#wrapper'  ).css( { width:w,     height:h       } )
+    $('#fullsize' ).css( { width:w,     height:h-100   } )
+    $('#slidearea').css( { width:w- 44, height:61      } )
+    $('#image img').css( { width:w-100, height:h*0.666 } )
+    slideshow.width  = w-100
+    slideshow.height = h*0.666
+    return
 

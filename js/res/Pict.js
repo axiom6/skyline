@@ -21,7 +21,7 @@
       pict = new Pict();
       Util.ready(function() {
         pict.roomPageHtml(title, prev, next);
-        return pict.createSlideShow(curr);
+        return pict.createSlideShow(curr, 600, 400);
       });
     };
 
@@ -35,7 +35,7 @@
       $('#top').append(htm);
     };
 
-    Pict.prototype.createSlideShow = function(roomId) {
+    Pict.prototype.createSlideShow = function(roomId, w, h) {
       var Img, dir, htm, i, len, pic, ref;
       $('#Slides').append(this.wrapperHtml());
       htm = "";
@@ -47,7 +47,7 @@
         htm += this.li(pic, dir);
       }
       $('#slideshow').append(htm);
-      this.initTINY();
+      this.initTINY(w, h);
     };
 
     Pict.prototype.li = function(pic, dir) {
@@ -58,7 +58,7 @@
       return "<ul id=\"slideshow\"></ul>\n<div id=\"wrapper\">\n  <div id=\"fullsize\">\n    <div id=\"imgprev\" class=\"imgnav\" title=\"Previous Image\"></div>\n    <div id=\"imglink\"></div>\n    <div id=\"imgnext\" class=\"imgnav\" title=\"Next Image\"></div>\n    <div id=\"image\"></div>\n    <div id=\"information\">\n      <h3></h3>\n      <p></p>\n    </div>\n  </div>\n  <div id=\"thumbnails\">\n    <div id=\"slideleft\" title=\"Slide Left\"></div>\n    <div id=\"slidearea\">\n      <div id=\"slider\"></div>\n    </div>\n    <div id=\"slideright\" title=\"Slide Right\"></div>\n  </div>\n</div>";
     };
 
-    Pict.prototype.initTINY = function() {
+    Pict.prototype.initTINY = function(w, h) {
       var slideshow;
       TINY.ElemById('slideshow').style.display = 'none';
       TINY.ElemById('wrapper').style.display = 'block';
@@ -74,7 +74,29 @@
       slideshow.scrollSpeed = 4;
       slideshow.spacing = 5;
       slideshow.active = "#fff";
+      this.resizeSlideView(w, h);
       return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
+    };
+
+    Pict.prototype.resizeSlideView = function(w, h) {
+      $('#wrapper').css({
+        width: w,
+        height: h
+      });
+      $('#fullsize').css({
+        width: w,
+        height: h - 100
+      });
+      $('#slidearea').css({
+        width: w - 44,
+        height: 61
+      });
+      $('#image img').css({
+        width: w - 100,
+        height: h * 0.666
+      });
+      slideshow.width = w - 100;
+      slideshow.height = h * 0.666;
     };
 
     return Pict;
