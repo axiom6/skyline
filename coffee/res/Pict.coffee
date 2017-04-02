@@ -86,7 +86,7 @@ class Pict
     slideshow.scrollSpeed=4
     slideshow.spacing=5
     slideshow.active="#fff"
-    @resizeSlideView( w, h )
+    #@resizeSlideView( w, h )
     slideshow.init("slideshow","image","imgprev","imgnext","imglink")
 
   resizeSlideView:( w, h ) ->

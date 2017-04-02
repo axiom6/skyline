@@ -74,7 +74,6 @@
       slideshow.scrollSpeed = 4;
       slideshow.spacing = 5;
       slideshow.active = "#fff";
-      this.resizeSlideView(w, h);
       return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
     };
 
