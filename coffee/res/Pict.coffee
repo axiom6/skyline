@@ -16,7 +16,7 @@ class Pict
     pict = new Pict()
     Util.ready () ->
       pict.roomPageHtml( title, prev, next )
-      pict.createSlideShow( curr, 600, 400 )
+      pict.createSlideShow( curr, 600, 600 )
     return
 
   constructor:() ->
@@ -86,15 +86,16 @@ class Pict
     slideshow.scrollSpeed=4
     slideshow.spacing=5
     slideshow.active="#fff"
-    #@resizeSlideView( w, h )
+    # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slideshow.init("slideshow","image","imgprev","imgnext","imglink")
 
   resizeSlideView:( w, h ) ->
     $('#wrapper'  ).css( { width:w,     height:h       } )
     $('#fullsize' ).css( { width:w,     height:h-100   } )
-    $('#slidearea').css( { width:w- 44, height:61      } )
-    $('#image img').css( { width:w-100, height:h*0.666 } )
+    $('#slidearea').css( { width:w- 45, height:61      } )
+    $('#image'    ).css( { width:w-100, height:h-200 } )
+    $('#image img').css( { width:w-100, height:h-200 } )
     slideshow.width  = w-100
-    slideshow.height = h*0.666
+    slideshow.height = h-200
     return
 

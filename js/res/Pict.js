@@ -21,7 +21,7 @@
       pict = new Pict();
       Util.ready(function() {
         pict.roomPageHtml(title, prev, next);
-        return pict.createSlideShow(curr, 600, 400);
+        return pict.createSlideShow(curr, 600, 600);
       });
     };
 
@@ -87,15 +87,19 @@
         height: h - 100
       });
       $('#slidearea').css({
-        width: w - 44,
+        width: w - 45,
         height: 61
+      });
+      $('#image').css({
+        width: w - 100,
+        height: h - 200
       });
       $('#image img').css({
         width: w - 100,
-        height: h * 0.666
+        height: h - 200
       });
       slideshow.width = w - 100;
-      slideshow.height = h * 0.666;
+      slideshow.height = h - 200;
     };
 
     return Pict;

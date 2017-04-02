@@ -119,8 +119,8 @@ TINY.slideshow.prototype={
     this.i=i;
     i.onload=new Function(this.n+'.le('+s+','+c+')');
     i.src=this.a[s].p;
-    i.width  = slideshow.width;
-    i.height = slideshow.height;
+    //i.width  = slideshow.width;
+    //i.height = slideshow.height;
     if(this.thumbs){
       var a=ElemByTag('img',this.p), l=a.length, x=0;
       for(x;x<l;x++){
