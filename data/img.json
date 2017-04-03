@@ -8,6 +8,9 @@
     { "src":"SLC-ElkInYard.jpg",       "name":"Elk In Yard",      "p":"Elk In Yard"      },
     { "src":"SLC-ElkWithRedChair.jpg", "name":"Elk Red Chair",    "p":"Elk Red Chair"    },
     { "src":"SLC-RiverWalk.jpg",       "name":"River Walk",       "p":"River Walk"       } ] },
+  "X": { "dir":"img/scenic/", "pics":[
+    { "src":"SC-Sign.gif",             "name":"Sign",             "p":"Sign at 1752 Highway 66" },
+    { "src":"SC-Map-EstesPark.gif",    "name":"Map",              "p":"Estes Park Map"   } ] },
   "1": { "dir":"../img/r1/", "pics":[
     { "src":"SL-Cabin001.jpg", "name":"Bed",     "p":"Bed and Living Room"        } ] },
   "2": { "dir":"../img/r2/", "pics":[

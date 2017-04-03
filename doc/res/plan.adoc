@@ -6,11 +6,13 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-* Credit Card Form
-* Confirmation
-# Room Pages
-* Gallerys - Scenic Rooms Style Print
+* Home Layout
+* Room Layout
+* Test Payments
+* Test Reservation
+* Contact, Map and Directions
 * Terms and Conditions
+* Confirmation EMail
 
 ## [.black]#Owner Site#
 
@@ -27,5 +29,13 @@ include::../dir/inc/DefBook.adoc[]
 * Visit Estes Park
 * EstesPark.com#
 * Trips With Pets#
+
+## [.black]#Guest Site Completed#
+
+* Credit Card Form
+* Confirmation
+# Room Pages
+* Gallerys - Scenic Rooms Style Print
+
 
 

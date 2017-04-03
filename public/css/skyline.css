@@ -1,6 +1,53 @@
 body {
   color: black;
 }
+#State {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+}
+.Head {
+  position: relative;
+  left: 0;
+  width: 100%;
+  top: 0;
+  height: 70px;
+}
+.Head1 {
+  position: absolute;
+  left: 0;
+  width: 20%;
+  top: 0;
+  height: 100%;
+}
+.Head2 {
+  position: absolute;
+  left: 22%;
+  width: 20%;
+  top: 0;
+  height: 100%;
+}
+.Head3 {
+  position: absolute;
+  left: 40%;
+  width: 20%;
+  top: 0;
+  height: 100%;
+}
+.Head4 {
+  position: absolute;
+  left: 60%;
+  width: 20%;
+  top: 0;
+  height: 100%;
+}
+.HeadA {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: 0;
+  height: 100%;
+}
 .init-font {
   font-size: 12px;
 }
@@ -19,6 +66,15 @@ body {
 }
 .depart-times {
   text-align: center;
+}
+#Make {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+}
+#MakeRes {
+  text-align: center;
+  margin: auto;
 }
 .room-free {
   background-color: lightgrey;

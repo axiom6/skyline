@@ -74,7 +74,7 @@ class Book
   roomLink:( roomId, room ) ->
 
   resHtml:() ->
-   """<button class="btn btn-lg btn-primary" id="MakeRes">Make Reservation</button>"""
+   """<div style="text-align:center;"><button class="btn btn-primary" id="MakeRes">Go To Confirmation and Payment</button></div>"""
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )

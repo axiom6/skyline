@@ -116,7 +116,7 @@
     Book.prototype.roomLink = function(roomId, room) {};
 
     Book.prototype.resHtml = function() {
-      return "<button class=\"btn btn-lg btn-primary\" id=\"MakeRes\">Make Reservation</button>";
+      return "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"MakeRes\">Go To Confirmation and Payment</button></div>";
     };
 
     Book.prototype.createCell = function(roomId, room, date) {

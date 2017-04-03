@@ -25,9 +25,9 @@ class Pict
     prevPage = """ '#{prev}.html' """
     nextPage = """ '#{next}.html' """
     htm = """
-        <button class="prev" onclick="Util.toPage(#{prevPage});"   >Prev Room</button>
+        <button class="prev" onclick="Util.toPage(#{prevPage});"    >Prev Room</button>
         <span   class="room">#{title}</span>
-        <button class="next" onclick="Util.toPage(#{nextPage});"   >Next Room</button>
+        <button class="next" onclick="Util.toPage(#{nextPage});"    >Next Room</button>
         <button class="home" onclick="Util.toPage('../index.html');">Home Page</button>
     """
     $('#top').append( htm )
