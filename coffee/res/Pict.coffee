@@ -1,6 +1,4 @@
 
-
-
 if Util.isCommonJS
   $   = require( 'jquery'        )
 else

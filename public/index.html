@@ -12,7 +12,8 @@
   <script src="https://www.gstatic.com/firebasejs/3.7.0/firebase.js"></script>
 </head>
 <body class="body">
-  <img src="img/all/SC-Logo001b.jpg" class="center">
+<img src="img/all/SC-Logo001b.jpg" class="center">
+<button id="MakeRes" class="btn btn-primary">Make Your Reservation</button>
   <div  id="State">1/2 mile from Rocky Mountain National Park on the Big Thompson River</div>
   <div  class="Head">
     <ul class="Head1">
@@ -32,25 +33,32 @@
       <li>All Non-Smoking Cabins</li>
     </ul>
   </div>
-  <div id="Make"><button class="btn btn-primary">Make Your Reservation Online Here</button></div>
-  <div  class="Head">
-    <ul class="Head1">
-      <li>For each room select:</li>
-    </ul>
-    <ul class="Head2">
-      <li>Number of Guests</li>
-    </ul>
-    <ul class="Head3">
-      <li>Number of Pets</li>
-    </ul>
-    <ul class="Head4">
-      <li>Click the days you want</li>
-    </ul>
+
+  <div id="Viewer">
+    <div id="Slides"></div>
   </div>
-  <div id="Inits"></div>
-  <div id="Rooms"></div>
-  <div id="Confirm"></div>
-  <div id="Slides"></div>
+
+  <div id="Book">
+    <div id="Inits"></div>
+    <div id="Rooms">
+      <div  class="Head">
+        <ul class="Head1">
+          <li>For each room select:</li>
+        </ul>
+        <ul class="Head2">
+          <li>Number of Guests</li>
+        </ul>
+        <ul class="Head3">
+          <li>Number of Pets</li>
+        </ul>
+        <ul class="Head4">
+          <li>Click the days you want</li>
+        </ul>
+      </div>
+    </div>
+    <div id="Confirm"></div>
+  </div>
+
   <script>Util.init( 'js/res/Guest','js/Pack.js', "", "skyline" )</script>
 </body>
 </html>

@@ -12,6 +12,7 @@ class Guest
       Data       = require( 'js/res/Data'        )
       Room       = require( 'js/res/Room'        )
       Cust       = require( 'js/res/Cust'        )
+      Home       = require( 'js/res/Home'        )
       Pict       = require( 'js/res/Pict'        )
       Res        = require( 'js/res/Res'         )
       Pay        = require( 'js/res/Pay'         )
@@ -22,10 +23,10 @@ class Guest
       store      = new Firestore(  stream, "skytest", Data.configSkytest )
       room       = new Room(       stream, store, Data )
       cust       = new Cust(       stream, store )
+      home       = new Home(       stream, store, room, pict )
       res        = new Res(        stream, store, room, cust )
       pay        = new Pay(        stream, store, room, cust, res, Data )
       book       = new Book(       stream, store, room, cust, res, pay, pict, Data )
-
-      book.ready()
+      home.ready( book )
 
 Guest.init()

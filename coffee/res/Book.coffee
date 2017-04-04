@@ -36,8 +36,8 @@ class Book
     $('#Test'   ).click(  @onTest    )
     $('#Hold'   ).click(  @onHold    )
     $('#Book'   ).click(  @onBook    )
-    $('#MakeRes').click(  @onMakeRes ).hide()
-    @pict.createSlideShow('M', 600, 600 )
+    $('#GoToPay').click(  @onGoToPay ).hide()
+    $('#Book').show()
     @roomsJQuery()
 
   initsHtml:() ->
@@ -74,7 +74,7 @@ class Book
   roomLink:( roomId, room ) ->
 
   resHtml:() ->
-   """<div style="text-align:center;"><button class="btn btn-primary" id="MakeRes">Go To Confirmation and Payment</button></div>"""
+   """<div style="text-align:center;"><button class="btn btn-primary" id="GotoConfirm">Go To Confirmation and Payment</button></div>"""
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
@@ -124,7 +124,7 @@ class Book
       @totals += room.resRoom.total
     text = if @totals is 0 then '' else '$'+@totals
     $('#Totals').text(text)
-    $('#MakeRes').show() if @totals > 0
+    $('#GoToPay').show() if @totals > 0
     return
 
   toDay:( date ) ->
@@ -224,7 +224,7 @@ class Book
       @allocCell( day, obj.status, roomId )
     return
 
-  onMakeRes:( e ) =>
+  onGoToPay:( e ) =>
     e.preventDefault()
     $('#Inits').hide()
     $('#Rooms').hide()

@@ -22,7 +22,7 @@
       this.Data = Data;
       this.insert = bind(this.insert, this);
       this.make = bind(this.make, this);
-      this.onMakeRes = bind(this.onMakeRes, this);
+      this.onGoToPay = bind(this.onGoToPay, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
       this.onBook = bind(this.onBook, this);
@@ -64,8 +64,8 @@
       $('#Test').click(this.onTest);
       $('#Hold').click(this.onHold);
       $('#Book').click(this.onBook);
-      $('#MakeRes').click(this.onMakeRes).hide();
-      this.pict.createSlideShow('M', 600, 600);
+      $('#GoToPay').click(this.onGoToPay).hide();
+      $('#Book').show();
       return this.roomsJQuery();
     };
 
@@ -116,7 +116,7 @@
     Book.prototype.roomLink = function(roomId, room) {};
 
     Book.prototype.resHtml = function() {
-      return "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"MakeRes\">Go To Confirmation and Payment</button></div>";
+      return "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"GotoConfirm\">Go To Confirmation and Payment</button></div>";
     };
 
     Book.prototype.createCell = function(roomId, room, date) {
@@ -195,7 +195,7 @@
       text = this.totals === 0 ? '' : '$' + this.totals;
       $('#Totals').text(text);
       if (this.totals > 0) {
-        $('#MakeRes').show();
+        $('#GoToPay').show();
       }
     };
 
@@ -351,7 +351,7 @@
       }
     };
 
-    Book.prototype.onMakeRes = function(e) {
+    Book.prototype.onGoToPay = function(e) {
       e.preventDefault();
       $('#Inits').hide();
       $('#Rooms').hide();
