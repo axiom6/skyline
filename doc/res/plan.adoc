@@ -6,11 +6,10 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-* Home Layout
-* Room Layout
+* Fix Res
+* Contact, Map and Directions
 * Test Payments
 * Test Reservation
-* Contact, Map and Directions
 * Terms and Conditions
 * Confirmation EMail
 
@@ -32,6 +31,8 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site Completed#
 
+* Home Layout
+* Room Layout
 * Credit Card Form
 * Confirmation
 # Room Pages

@@ -22,6 +22,16 @@
     Home.prototype.ready = function(book) {
       this.book = book;
       $('#MakeRes').click(this.onMakeRes);
+      $('#MapDirs').click((function(_this) {
+        return function() {
+          return Util.toPage('rooms/X.html');
+        };
+      })(this));
+      $('#Contact').click((function(_this) {
+        return function() {
+          return Util.toPage('rooms/Y.html');
+        };
+      })(this));
       this.listRooms();
       this.pict.createSlideShow('M', 600, 600);
     };

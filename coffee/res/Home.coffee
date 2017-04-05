@@ -11,7 +11,10 @@ class Home
 
   ready:( book ) ->
     @book = book
-    $('#MakeRes'   ).click(  @onMakeRes )
+    $('#MakeRes').click( @onMakeRes )
+    $('#MapDirs').click( () => Util.toPage('rooms/X.html') )
+    $('#Contact').click( () => Util.toPage('rooms/Y.html') )
+
     @listRooms()
     @pict.createSlideShow('M', 600, 600 )
     return

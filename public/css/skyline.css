@@ -1,6 +1,5 @@
 body {
-  background-color: #333;
-  color: white;
+  color: black;
 }
 img.center {
   display: block;
@@ -453,4 +452,10 @@ img.center {
 }
 .rooms .top .home {
   vertical-align: middle;
+}
+.PageTitle {
+  text-align: center;
+  color: blue;
+  font-size: 24px;
+  font-weight: bold;
 }
