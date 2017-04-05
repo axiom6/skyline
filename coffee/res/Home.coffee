@@ -18,7 +18,9 @@ class Home
 
   listRooms:() ->
     $('#Slides').css( { left:"20%", width:"80%" })
-    htm = """<ul class="RoomUL">"""
+    htm  = """<div class="HomeSee">Enjoy Everything Skyline has to Offer</div>"""
+    htm += """<div class="RoomSee">See Our Cottages</div>"""
+    htm += """<ul  class="RoomUL">"""
     for own roomId, room of @rooms
       htm += """<li class="RoomLI"><a href="rooms/#{roomId}.html">#{room.name}</a></li>"""
     htm += """</ul>"""

@@ -32,7 +32,9 @@
         left: "20%",
         width: "80%"
       });
-      htm = "<ul class=\"RoomUL\">";
+      htm = "<div class=\"HomeSee\">Enjoy Everything Skyline has to Offer</div>";
+      htm += "<div class=\"RoomSee\">See Our Cottages</div>";
+      htm += "<ul  class=\"RoomUL\">";
       ref = this.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;

@@ -14,8 +14,8 @@
   "1": { "dir":"../img/r1/", "pics":[
     { "src":"SL-Cabin001.jpg", "name":"Bed",     "p":"Bed and Living Room"        } ] },
   "2": { "dir":"../img/r2/", "pics":[
-    { "src":"SL-4044-300.jpg", "name":"Bedroom", "p":"Serta Perfect Sleeper queen bed, double and single sofabeds"                 },
-    { "src":"SL-4046-300.jpg", "name":"Spa",     "p":"Snuggle into cozy cabin in your luxurious mountain spa" },
+    { "src":"SL-4046-300.jpg", "name":"Bedroom", "p":"Serta Perfect Sleeper queen bed, double and single sofabeds"                 },
+    { "src":"SL-4044-300.jpg", "name":"Spa",     "p":"Snuggle into cozy cabin in your luxurious mountain spa" },
     { "src":"SL-4048-300.jpg", "name":"Kitchen", "p":"Full electric kitchen. Moose china and pine cone shelves."              },
     { "src":"SL-4050-300.jpg", "name":"Dining",  "p":"Dining Area"   } ] },
   "3": { "dir":"../img/r3/", "pics":[
