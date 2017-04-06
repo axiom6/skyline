@@ -39,11 +39,12 @@
       this.myDays = 0;
       this.today = new Date();
       this.monthIdx = this.today.getMonth();
-      this.monthIdx = 6;
+      this.monthIdx = 4 <= this.monthIdx && this.monthIdx <= 9 ? this.monthIdx : 4;
       this.year = 2017;
       this.month = this.Data.months[this.monthIdx];
-      this.numDays = 14;
-      this.begDay = 9;
+      this.numDays = 15;
+      this.begMay = 15;
+      this.begDay = this.month === 'May' ? this.begMay : 1;
       this.$cells = [];
       this.myResId = this.res.myResId;
       this.myCustId = this.res.myCustId;
@@ -67,13 +68,17 @@
     };
 
     Book.prototype.bookHtml = function() {
-      return "  <div  class=\"Instruct\">\n    <ul class=\"Instruct1\">\n      <li>For each room select:</li>\n    </ul>\n    <ul class=\"Instruct2\">\n      <li>Number of Guests</li>\n    </ul>\n    <ul class=\"Instruct3\">\n      <li>Number of Pets</li>\n    </ul>\n    <ul class=\"Instruct4\">\n      <li>Click the days you want</li>\n    </ul>\n  </div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+      return "<div class=\"ConfirmPay\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+    };
+
+    Book.prototype.bookHtml2 = function() {
+      return "<div   class=\"Instruct\">\n  <div class=\"ConfirmPay\">Make Your Reservation</div>\n  <ul  class=\"Instruct1\">\n    <li>For each room select:</li>\n  </ul>\n  <ul class=\"Instruct2\">\n    <li>Number of Guests</li>\n  </ul>\n  <ul class=\"Instruct3\">\n    <li>Number of Pets</li>\n  </ul>\n  <ul class=\"Instruct4\">\n    <li>Click the days you want</li>\n  </ul>\n</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
     };
 
     Book.prototype.initsHtml = function() {
       var htm;
-      htm = "<label class=\"init-font\">&nbsp;&nbsp;Arrive:" + (this.htmlSelect("Months", this.Data.months, this.month, 'months')) + "</label>";
-      htm += "<label class=\"init-font\">&nbsp;&nbsp;       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
+      htm = "<label for=\"Months\" class=\"init-font\">Arrive:" + (this.htmlSelect("Months", this.Data.season, this.month, 'months')) + "</label>";
+      htm += "<label for=\"Days\"   class=\"init-font\">       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
       htm += "<label class=\"init-font\">&nbsp;&nbsp;" + this.year + "</label>";
       return htm;
     };
@@ -222,7 +227,7 @@
       if (max == null) {
         max = void 0;
       }
-      htm = "<select id=\"" + htmlId + "\" class=\"" + klass + "\">";
+      htm = "<select name=\"" + htmlId + "\" id=\"" + htmlId + "\" class=\"" + klass + "\">";
       where = max != null ? function(elem) {
         return elem <= max;
       } : function() {
@@ -258,12 +263,24 @@
     Book.prototype.onMonth = function(event) {
       this.month = event.target.value;
       this.monthIdx = this.Data.months.indexOf(this.month);
+      this.begDay = this.month === 'May' ? this.begMay : 1;
+      $('#Days').val(this.begDay.toString());
+      Util.log('Book.onMonth()', {
+        monthIdx: this.monthIdx,
+        month: this.month,
+        begDay: this.begDay
+      });
       this.resetRooms();
     };
 
     Book.prototype.onDay = function(event) {
       this.begDay = parseInt(event.target.value);
-      this.resetRooms();
+      if (this.month === 'October' && this.begDay > 1) {
+        this.begDay = 1;
+        alert('The Season Ends on October 15');
+      } else {
+        this.resetRooms();
+      }
     };
 
     Book.prototype.resetRooms = function() {

@@ -12,11 +12,12 @@ class Book
     @myDays      =  0
     @today       = new Date()
     @monthIdx    = @today.getMonth()
-    @monthIdx    = 6
+    @monthIdx    = if 4 <=  @monthIdx and @monthIdx <= 9 then @monthIdx else 4
     @year        = 2017
     @month       = @Data.months[@monthIdx]
-    @numDays     = 14
-    @begDay      = 9
+    @numDays     = 15
+    @begMay      = 15
+    @begDay      = if @month is 'May' then @begMay else 1
     @$cells      = []
     @myResId     = @res.myResId
     @myCustId    = @res.myCustId
@@ -33,41 +34,44 @@ class Book
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
     $('#Days'   ).change( @onDay     )
-    #('#Test'   ).click(  @onTest    )
-    #('#Hold'   ).click(  @onHold    )
-    #$('#Book'  ).click(  @onBook    )
     $('#GoToPay').click(  @onGoToPay ).hide()
     $('#Book').show()
     @roomsJQuery()
 
   bookHtml:() ->
-    """ 
-      <div  class="Instruct">
-        <ul class="Instruct1">
-          <li>For each room select:</li>
-        </ul>
-        <ul class="Instruct2">
-          <li>Number of Guests</li>
-        </ul>
-        <ul class="Instruct3">
-          <li>Number of Pets</li>
-        </ul>
-        <ul class="Instruct4">
-          <li>Click the days you want</li>
-        </ul>
-      </div>
+    """
+    <div class="ConfirmPay">Make Your Reservation</div>
+    <div id="Inits"></div>
+    <div id="Rooms"></div>
+    <div id="Confirm"></div>
+    """
+
+  bookHtml2:() ->
+    """
+    <div   class="Instruct">
+      <div class="ConfirmPay">Make Your Reservation</div>
+      <ul  class="Instruct1">
+        <li>For each room select:</li>
+      </ul>
+      <ul class="Instruct2">
+        <li>Number of Guests</li>
+      </ul>
+      <ul class="Instruct3">
+        <li>Number of Pets</li>
+      </ul>
+      <ul class="Instruct4">
+        <li>Click the days you want</li>
+      </ul>
+    </div>
     <div id="Inits"></div>
     <div id="Rooms"></div>
     <div id="Confirm"></div>
     """
 
   initsHtml:() ->
-    htm     = """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", @Data.months, @month,  'months' ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
+    htm     = """<label for="Months" class="init-font">Arrive:#{ @htmlSelect( "Months", @Data.season, @month,  'months' ) }</label>"""
+    htm    += """<label for="Days"   class="init-font">       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
     htm    += """<label class="init-font">&nbsp;&nbsp;#{@year}</label>"""
-    #htm   += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
-    #htm   += """<span  class="init-font" id="Hold">&nbsp;&nbsp;Hold</span>"""
-    #htm   += """<span  class="init-font" id="Book">&nbsp;&nbsp;Book</span>"""
     htm
 
   seeRoom:( roomId, room ) ->
@@ -159,8 +163,8 @@ class Book
   p:(roomId) -> @htmlSelect( roomId+'P', @Data.pets,    0, 'pets',   3                  )
 
   htmlSelect:( htmlId, array, choice, klass, max=undefined ) ->
-    htm  = """<select id="#{htmlId}" class="#{klass}">"""
-    where = if max? then (elem) -> elem <=max else () -> true
+    htm   = """<select name="#{htmlId}" id="#{htmlId}" class="#{klass}">"""
+    where = if max? then (elem) -> elem <= max else () -> true
     for elem in array when where(elem)
       selected = if elem is Util.toStr(choice) then "selected" else ""
       htm += """<option#{' '+selected}>#{elem}</option>"""
@@ -183,12 +187,19 @@ class Book
   onMonth:( event ) =>
     @month      = event.target.value
     @monthIdx   = @Data.months.indexOf(@month)
+    @begDay     = if @month is 'May' then @begMay else 1
+    $('#Days').val(@begDay.toString())
+    Util.log( 'Book.onMonth()', { monthIdx:@monthIdx, month:@month, begDay:@begDay } )
     @resetRooms()
     return
 
   onDay:( event ) =>
     @begDay = parseInt(event.target.value)
-    @resetRooms()
+    if @month is 'October' and @begDay > 1
+      @begDay = 1
+      alert( 'The Season Ends on October 15' )
+    else
+      @resetRooms()
     return
 
   resetRooms:() ->
