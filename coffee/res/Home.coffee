@@ -1,5 +1,5 @@
 
-$     = require( 'jquery' )
+$ = require( 'jquery' )
 
 class Home
 
@@ -14,14 +14,34 @@ class Home
     $('#MakeRes').click( @onMakeRes )
     $('#MapDirs').click( () => Util.toPage('rooms/X.html') )
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
-
+    $('#Head').append( @headHtml() )
     @listRooms()
     @pict.createSlideShow('M', 600, 600 )
     return
 
+  headHtml:() ->
+    """
+    <ul class="Head1">
+     <li>Trout Fishing</li>
+     <li>Bring your Pet</li>
+    </ul>
+    <ul class="Head2">
+      <li>Near YMCA</li>
+      <li>Hiking</li>
+    </ul>
+    <ul class="Head3">
+      <li>Free Parking</li>
+      <li>3 Private Spas</li>
+    </ul>
+    <ul class="Head4">
+      <li>WiFi in Cabins 1-8</li>
+      <li>All Non-Smoking Cabins</li>
+    </ul>
+    """
+
   listRooms:() ->
-    $('#Slides').css( { left:"20%", width:"80%" })
-    htm  = """<div class="HomeSee">Enjoy Everything Skyline has to Offer</div>"""
+    $('#Slides').css( { left:"22%", width:"78%" })
+    htm  = """<div class="HomeSee">Enjoy Everything Skyline Has to Offer</div>"""
     htm += """<div class="RoomSee">See Our Cottages</div>"""
     htm += """<ul  class="RoomUL">"""
     for own roomId, room of @rooms
@@ -30,7 +50,15 @@ class Home
     $("#Viewer").append( htm )
     return
 
+  hideMkt:() ->
+    $('#MakeRes').hide()
+    $('#MapDirs').hide()
+    $('#Contact').hide()
+    $('#State'  ).hide()
+    $('#Head'   ).hide()
+    $('#Viewer' ).hide()
+
   onMakeRes:() =>
-    $('#Viewer').hide()
+    @hideMkt()
     @book.ready()
     return

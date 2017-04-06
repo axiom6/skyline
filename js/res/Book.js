@@ -50,10 +50,10 @@
       this.totals = 0;
       this.method = 'site';
       this.myRes = null;
-      Util.log('Book Constructor');
     }
 
     Book.prototype.ready = function() {
+      $('#Book').append(this.bookHtml());
       $('#Inits').append(this.initsHtml());
       $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
       $('#Confirm').append(this.resHtml());
@@ -61,12 +61,13 @@
       $('.pets').change(this.onPets);
       $('#Months').change(this.onMonth);
       $('#Days').change(this.onDay);
-      $('#Test').click(this.onTest);
-      $('#Hold').click(this.onHold);
-      $('#Book').click(this.onBook);
       $('#GoToPay').click(this.onGoToPay).hide();
       $('#Book').show();
       return this.roomsJQuery();
+    };
+
+    Book.prototype.bookHtml = function() {
+      return "  <div  class=\"Instruct\">\n    <ul class=\"Instruct1\">\n      <li>For each room select:</li>\n    </ul>\n    <ul class=\"Instruct2\">\n      <li>Number of Guests</li>\n    </ul>\n    <ul class=\"Instruct3\">\n      <li>Number of Pets</li>\n    </ul>\n    <ul class=\"Instruct4\">\n      <li>Click the days you want</li>\n    </ul>\n  </div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
     };
 
     Book.prototype.initsHtml = function() {
@@ -74,10 +75,11 @@
       htm = "<label class=\"init-font\">&nbsp;&nbsp;Arrive:" + (this.htmlSelect("Months", this.Data.months, this.month, 'months')) + "</label>";
       htm += "<label class=\"init-font\">&nbsp;&nbsp;       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
       htm += "<label class=\"init-font\">&nbsp;&nbsp;" + this.year + "</label>";
-      htm += "<span  class=\"init-font\" id=\"Test\">&nbsp;&nbsp;Test</span>";
-      htm += "<span  class=\"init-font\" id=\"Hold\">&nbsp;&nbsp;Hold</span>";
-      htm += "<span  class=\"init-font\" id=\"Book\">&nbsp;&nbsp;Book</span>";
       return htm;
+    };
+
+    Book.prototype.seeRoom = function(roomId, room) {
+      return room.name;
     };
 
     Book.prototype.roomsHtml = function(year, monthIdx, begDay, numDays) {
@@ -98,7 +100,7 @@
       for (roomId in ref2) {
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
-        htm += "<tr id=\"" + roomId + "\"><td><a href=\"rooms/" + roomId + ".html\" id=\"" + roomId + "L\">" + room.name + "</a></td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
+        htm += "<tr id=\"" + roomId + "\"><td>" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
         for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
           htm += this.createCell(roomId, room, this.toDateStr(day));
         }
@@ -116,7 +118,7 @@
     Book.prototype.roomLink = function(roomId, room) {};
 
     Book.prototype.resHtml = function() {
-      return "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"GotoConfirm\">Go To Confirmation and Payment</button></div>";
+      return "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"GotoPay\">Go To Confirmation and Payment</button></div>";
     };
 
     Book.prototype.createCell = function(roomId, room, date) {

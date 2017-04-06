@@ -32,17 +32,22 @@
           return Util.toPage('rooms/Y.html');
         };
       })(this));
+      $('#Head').append(this.headHtml());
       this.listRooms();
       this.pict.createSlideShow('M', 600, 600);
+    };
+
+    Home.prototype.headHtml = function() {
+      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Near YMCA</li>\n  <li>Hiking</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Free Parking</li>\n  <li>3 Private Spas</li>\n</ul>\n<ul class=\"Head4\">\n  <li>WiFi in Cabins 1-8</li>\n  <li>All Non-Smoking Cabins</li>\n</ul>";
     };
 
     Home.prototype.listRooms = function() {
       var htm, ref, room, roomId;
       $('#Slides').css({
-        left: "20%",
-        width: "80%"
+        left: "22%",
+        width: "78%"
       });
-      htm = "<div class=\"HomeSee\">Enjoy Everything Skyline has to Offer</div>";
+      htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
       htm += "<div class=\"RoomSee\">See Our Cottages</div>";
       htm += "<ul  class=\"RoomUL\">";
       ref = this.rooms;
@@ -55,8 +60,17 @@
       $("#Viewer").append(htm);
     };
 
+    Home.prototype.hideMkt = function() {
+      $('#MakeRes').hide();
+      $('#MapDirs').hide();
+      $('#Contact').hide();
+      $('#State').hide();
+      $('#Head').hide();
+      return $('#Viewer').hide();
+    };
+
     Home.prototype.onMakeRes = function() {
-      $('#Viewer').hide();
+      this.hideMkt();
       this.book.ready();
     };
 

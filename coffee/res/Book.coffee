@@ -23,31 +23,56 @@ class Book
     @totals      = 0
     @method      = 'site'
     @myRes       = null
-    Util.log('Book Constructor' )
 
   ready:() ->
-    $('#Inits'  ).append( @initsHtml( ) )
+    $('#Book'   ).append( @bookHtml()  )
+    $('#Inits'  ).append( @initsHtml() )
     $('#Rooms'  ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
     $('#Confirm').append( @resHtml( ) )
     $('.guests' ).change( @onGuests  )
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
     $('#Days'   ).change( @onDay     )
-    $('#Test'   ).click(  @onTest    )
-    $('#Hold'   ).click(  @onHold    )
-    $('#Book'   ).click(  @onBook    )
+    #('#Test'   ).click(  @onTest    )
+    #('#Hold'   ).click(  @onHold    )
+    #$('#Book'  ).click(  @onBook    )
     $('#GoToPay').click(  @onGoToPay ).hide()
     $('#Book').show()
     @roomsJQuery()
+
+  bookHtml:() ->
+    """ 
+      <div  class="Instruct">
+        <ul class="Instruct1">
+          <li>For each room select:</li>
+        </ul>
+        <ul class="Instruct2">
+          <li>Number of Guests</li>
+        </ul>
+        <ul class="Instruct3">
+          <li>Number of Pets</li>
+        </ul>
+        <ul class="Instruct4">
+          <li>Click the days you want</li>
+        </ul>
+      </div>
+    <div id="Inits"></div>
+    <div id="Rooms"></div>
+    <div id="Confirm"></div>
+    """
 
   initsHtml:() ->
     htm     = """<label class="init-font">&nbsp;&nbsp;Arrive:#{ @htmlSelect( "Months", @Data.months, @month,  'months' ) }</label>"""
     htm    += """<label class="init-font">&nbsp;&nbsp;       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
     htm    += """<label class="init-font">&nbsp;&nbsp;#{@year}</label>"""
-    htm    += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
-    htm    += """<span  class="init-font" id="Hold">&nbsp;&nbsp;Hold</span>"""
-    htm    += """<span  class="init-font" id="Book">&nbsp;&nbsp;Book</span>"""
+    #htm   += """<span  class="init-font" id="Test">&nbsp;&nbsp;Test</span>"""
+    #htm   += """<span  class="init-font" id="Hold">&nbsp;&nbsp;Hold</span>"""
+    #htm   += """<span  class="init-font" id="Book">&nbsp;&nbsp;Book</span>"""
     htm
+
+  seeRoom:( roomId, room ) ->
+    #"""<a href="rooms/#{roomId}.html" id="#{roomId}L">#{room.name}</a>"""
+    room.name
 
   roomsHtml:( year, monthIdx, begDay, numDays ) ->
     weekdayIdx  = new Date( year, monthIdx, 1 ).getDay()
@@ -61,7 +86,7 @@ class Book
       htm += "<th>#{@dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
-      htm += """<tr id="#{roomId}"><td><a href="rooms/#{roomId}.html" id="#{roomId}L">#{room.name}</a></td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
+      htm += """<tr id="#{roomId}"><td>#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
       for day in [1..numDays]
         htm += @createCell( roomId, room, @toDateStr(day) )
       htm += """<td class="room-total" id="#{roomId}T"></td></tr>"""
@@ -74,7 +99,7 @@ class Book
   roomLink:( roomId, room ) ->
 
   resHtml:() ->
-   """<div style="text-align:center;"><button class="btn btn-primary" id="GotoConfirm">Go To Confirmation and Payment</button></div>"""
+   """<div style="text-align:center;"><button class="btn btn-primary" id="GotoPay">Go To Confirmation and Payment</button></div>"""
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
