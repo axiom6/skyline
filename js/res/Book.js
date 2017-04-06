@@ -56,7 +56,7 @@
       $('#Book').append(this.bookHtml());
       $('#Inits').append(this.initsHtml());
       $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
-      $('#Confirm').append(this.resHtml());
+      $('#Confirm').append(this.goToPayHtml());
       $('.guests').change(this.onGuests);
       $('.pets').change(this.onPets);
       $('#Months').change(this.onMonth);
@@ -117,8 +117,8 @@
 
     Book.prototype.roomLink = function(roomId, room) {};
 
-    Book.prototype.resHtml = function() {
-      return "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"GotoPay\">Go To Confirmation and Payment</button></div>";
+    Book.prototype.goToPayHtml = function() {
+      return "<div id=\"GoToDiv\" style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"GoToPay\">Go To Confirmation and Payment</button></div>";
     };
 
     Book.prototype.createCell = function(roomId, room, date) {
@@ -355,11 +355,12 @@
 
     Book.prototype.onGoToPay = function(e) {
       e.preventDefault();
+      $('.Instruct').hide();
       $('#Inits').hide();
       $('#Rooms').hide();
+      $('#GoToDiv').hide();
       this.onHold();
       this.myRes.total = this.totals;
-      $('#MakeRes').hide();
       return this.pay.showConfirmPay(this.myRes);
     };
 

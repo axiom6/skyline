@@ -28,7 +28,7 @@ class Book
     $('#Book'   ).append( @bookHtml()  )
     $('#Inits'  ).append( @initsHtml() )
     $('#Rooms'  ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
-    $('#Confirm').append( @resHtml( ) )
+    $('#Confirm').append( @goToPayHtml( ) )
     $('.guests' ).change( @onGuests  )
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
@@ -98,8 +98,8 @@ class Book
 
   roomLink:( roomId, room ) ->
 
-  resHtml:() ->
-   """<div style="text-align:center;"><button class="btn btn-primary" id="GotoPay">Go To Confirmation and Payment</button></div>"""
+  goToPayHtml:() ->
+   """<div id="GoToDiv" style="text-align:center;"><button class="btn btn-primary" id="GoToPay">Go To Confirmation and Payment</button></div>"""
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
@@ -251,11 +251,12 @@ class Book
 
   onGoToPay:( e ) =>
     e.preventDefault()
-    $('#Inits').hide()
-    $('#Rooms').hide()
+    $('.Instruct').hide()
+    $('#Inits'   ).hide()
+    $('#Rooms'   ).hide()
+    $('#GoToDiv' ).hide()
     @onHold()
     @myRes.total = @totals
-    $('#MakeRes').hide()
     @pay.showConfirmPay( @myRes )
 
   allocCell:( day, status, roomId ) ->

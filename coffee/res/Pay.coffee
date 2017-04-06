@@ -38,7 +38,8 @@ class Pay
     return
  
   confirmHtml:( myRes ) ->
-    htm   = """<table id="Confirms"><thead>"""
+    htm   = """<div class= "ConfirmPay">Confirmation</div>"""
+    htm  += """<table id="Confirms"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
     for own roomId, r of myRes.rooms
@@ -49,7 +50,7 @@ class Pay
       htm  += """<tr><td>#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
     htm  += """<tr><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td class="room-total">$#{myRes.total}</td></tr>"""
     htm  += """</tbody></table>"""
-    #tm  += """<div>Arrivals are from 3:00-8:00PM  Departures are before 10:00AM</div>"""
+    htm  += """<div class="ConfirmPay">Payment</div>"""
     htm
 
   departDate:( monthI, dayI, weekdayI ) ->

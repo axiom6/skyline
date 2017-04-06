@@ -65,7 +65,8 @@
 
     Pay.prototype.confirmHtml = function(myRes) {
       var arrive, days, depart, htm, num, r, ref, roomId;
-      htm = "<table id=\"Confirms\"><thead>";
+      htm = "<div class= \"ConfirmPay\">Confirmation</div>";
+      htm += "<table id=\"Confirms\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
       ref = myRes.rooms;
@@ -80,6 +81,7 @@
       }
       htm += "<tr><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td class=\"room-total\">$" + myRes.total + "</td></tr>";
       htm += "</tbody></table>";
+      htm += "<div class=\"ConfirmPay\">Payment</div>";
       return htm;
     };
 

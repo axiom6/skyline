@@ -61,13 +61,6 @@ img.center {
   top: 0;
   height: 100%;
 }
-.Head4 {
-  position: absolute;
-  left: 60%;
-  width: 20%;
-  top: 0;
-  height: 100%;
-}
 .HeadA {
   position: absolute;
   left: 0;
@@ -502,4 +495,12 @@ img.center {
   color: blue;
   font-size: 24px;
   font-weight: bold;
+}
+.ConfirmPay {
+  text-align: center;
+  color: blue;
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 12px;
+  margin-bottom: 12px;
 }
