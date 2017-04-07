@@ -15,8 +15,9 @@ class Pay
   showConfirmPay:( myRes ) ->
     @myRes = myRes
     if @created
-      $('#Confirms').remove()
+      $('#Confirm').remove()
       $('#Confirm').prepend( @confirmHtml( @myRes ) )
+      $('#cc-amt').text('$'+c)
       $('#form-pay').show()
       $('#Pays').show()
     else
@@ -27,22 +28,19 @@ class Pay
       Util.loadScript( "../js/res/payment.js", @initPayment )
       $('#cc-amt').text('$'+myRes.total)
       $('#cc-bak').click( (e) => @onBack(e) )
-      # @token( '4242424242424242', '12', '2018', '123' )
       @created = true
+    return
 
   onBack:( e ) =>
     e.preventDefault()
-    #$('#Confirms').hide()
-    #$('#form-pay').hide()
-    #$('#Inits'   ).show()
-    #$('#Rooms'   ).show()
-    #$('#MakeRes' ).show()
-    $('#Book' ).show()
+    $('#Make').text( 'Change Reservation')
+    $('#Pays').hide()
+    $('#Book').show()
     return
  
   confirmHtml:( myRes ) ->
-    htm   = """<div class= "ConfirmPay">Confirmation</div>"""
-    htm  += """<table id="Confirms"><thead>"""
+    htm   = """<div   id="ConTitle" class= "Title">Confirmation</div>"""
+    htm  += """<table id="Confirm"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
     for own roomId, r of myRes.rooms
@@ -53,7 +51,7 @@ class Pay
       htm  += """<tr><td>#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
     htm  += """<tr><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td class="room-total">$#{myRes.total}</td></tr>"""
     htm  += """</tbody></table>"""
-    htm  += """<div class="ConfirmPay">Payment</div>"""
+    htm  += """<div class="Title">Payment</div>"""
     htm
 
   departDate:( monthI, dayI, weekdayI ) ->
@@ -103,7 +101,7 @@ class Pay
 
         <span class="form-group">
           <label class="control-label">&nbsp;</label>
-          <button class="btn btn-lg btn-primary" id="cc-bak">Go Back</button>
+          <button class="btn btn-lg btn-primary" id="cc-bak">Change Reservation</button>
         </span>
 
         <span class="form-group">
@@ -112,14 +110,15 @@ class Pay
         </span>
     </form>"""
 
-  toggleInputError: ( field, status ) ->
-    text = switch field
-      when 'Num' then 'Invalid Card Number'
-      when 'Exp' then 'Invalid Expiration'
-      when 'CVC' then 'Invalid CVC'
-      else            ''
-    $("#cc-msg").text( text )  if status
-    this
+  toggleInputError: ( field, valid ) ->
+    msg = ''
+    if not valid
+      msg = switch field
+        when 'Num' then 'Invalid Card Number'
+        when 'Exp' then 'Invalid Expiration'
+        when 'CVC' then 'Invalid CVC'
+    msg
+
 
   initPayment:() =>
     $('.cc-num').payment('formatCardNumber')
@@ -129,14 +128,26 @@ class Pay
 
   submitPayment:( e ) =>
     e.preventDefault()
-    cardType = $.payment.cardType($('.cc-num').val())
-    @toggleInputError( 'Num', !$.payment.validateCardNumber( $('.cc-num').val()) )
-    @toggleInputError( 'Exp', !$.payment.validateCardExpiry( $('.cc-exp').payment('cardExpiryVal')) )
-    @toggleInputError( 'CVC', !$.payment.validateCardCVC(    $('.cc-cvc').val(), cardType ) )
+    num = $('.cc-num').val()
+    exp = $('.cc-exp').val()
+    mon =      exp.substr(0,2)
+    yer = '20'+exp.substr(5,2)
+    cvc = $('.cc-cvc').val()
+    cardType = $.payment.cardType(num)
+
+    msg  = @toggleInputError( 'Num', $.payment.validateCardNumber( $('.cc-num').val()) )
+    msg += @toggleInputError( 'Exp', $.payment.validateCardExpiry( $('.cc-exp').payment('cardExpiryVal')) )
+    msg += @toggleInputError( 'CVC', $.payment.validateCardCVC(    $('.cc-cvc').val(), cardType ) )
     $('.cc-com').text(cardType);
     $('.cc-msg').removeClass('text-danger text-success')
     $('.cc-msg').addClass($('.has-error').length ? 'text-danger' : 'text-success')
-    $('#cc-sub').text("Approved")
+    if msg is ''
+      $('#cc-sub').text("Waiting For Approval")
+      @token( num, mon, yer, cvc )
+    else
+      $('#cc-sub').text("Input Error")
+      $('.cc-msg').text( msg )
+    Util.log( 'Pay.submitPayment()', { num:num, exp:exp, cvc:cvc, mon:mon, yer:yer, msg:msg } )
     return
 
   subscribe:() ->
@@ -146,16 +157,18 @@ class Pay
   token:( number, exp_month, exp_year, cvc ) ->
     input = { "card[number]":number, "card[exp_month]":exp_month, "card[exp_year]":exp_year, "card[cvc]":cvc }
     @ajaxRest( "tokens", 'post', input )
+    return
 
   charge:( token, amount, currency, description ) ->
     input = { source:token, amount:amount, currency:currency, description:description }
     @ajaxRest( "charges", 'post', input )
+    return
 
   onToken:(obj) =>
     Util.log( 'StoreRest.onToken()', obj )
-    @token  = obj.id
-    @cardId = obj.card.id
-    @charge( @token, 800, 'usd', 'First Test Charge' )
+    @tokenId  = obj.id
+    @cardId   = obj.card.id
+    @charge( @tokenId, @myRes.total, 'usd', 'First Test Charge' )
 
   onCharge:(obj) =>
     Util.log( 'StoreRest.onCharge()', obj )

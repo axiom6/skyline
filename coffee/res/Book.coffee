@@ -34,13 +34,14 @@ class Book
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
     $('#Days'   ).change( @onDay     )
-    $('#GoToPay').click(  @onGoToPay ).hide()
+    $('#GoToPay').click(  @onGoToPay ).prop('disabled',true)
+    $('#Navb').hide()
     $('#Book').show()
     @roomsJQuery()
 
   bookHtml:() ->
     """
-    <div class="ConfirmPay">Make Your Reservation</div>
+    <div id="Make" class="Title">Make Your Reservation</div>
     <div id="Inits"></div>
     <div id="Rooms"></div>
     <div id="Confirm"></div>
@@ -49,7 +50,6 @@ class Book
   bookHtml2:() ->
     """
     <div   class="Instruct">
-      <div class="ConfirmPay">Make Your Reservation</div>
       <ul  class="Instruct1">
         <li>For each room select:</li>
       </ul>
@@ -153,7 +153,7 @@ class Book
       @totals += room.resRoom.total
     text = if @totals is 0 then '' else '$'+@totals
     $('#Totals').text(text)
-    $('#GoToPay').show() if @totals > 0
+    $('#GoToPay').prop('disabled',false) if @totals > 0
     return
 
   toDay:( date ) ->
@@ -255,18 +255,13 @@ class Book
     @updateTotal( roomId  )
 
   onAlloc:( alloc, roomId ) =>
-    #Util.log( 'Book.onAlloc()' )
     for own day, obj of alloc.days
       @allocCell( day, obj.status, roomId )
     return
 
   onGoToPay:( e ) =>
     e.preventDefault()
-    #$('.Instruct').hide()
-    #$('#Inits'   ).hide()
-    #$('#Rooms'   ).hide()
-    #$('#GoToDiv' ).hide()
-    #$('#Book'    ).hide()
+    $('#Book').hide()
     @onHold()
     @myRes.total = @totals
     @pay.showConfirmPay( @myRes )

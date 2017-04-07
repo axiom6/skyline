@@ -61,10 +61,7 @@
     };
 
     Home.prototype.hideMkt = function() {
-      $('#MakeRes').hide();
-      $('#MapDirs').hide();
-      $('#Contact').hide();
-      $('#State').hide();
+      $('#Navb').hide();
       $('#Head').hide();
       return $('#View').hide();
     };

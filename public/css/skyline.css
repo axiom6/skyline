@@ -493,13 +493,7 @@ img.center {
 #Pays {
   display: none;
 }
-.PageTitle {
-  text-align: center;
-  color: blue;
-  font-size: 24px;
-  font-weight: bold;
-}
-.ConfirmPay {
+.Title {
   text-align: center;
   color: blue;
   font-size: 24px;

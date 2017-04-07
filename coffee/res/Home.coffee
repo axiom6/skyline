@@ -51,12 +51,9 @@ class Home
     return
 
   hideMkt:() ->
-    $('#MakeRes').hide()
-    $('#MapDirs').hide()
-    $('#Contact').hide()
-    $('#State'  ).hide()
-    $('#Head'   ).hide()
-    $('#View'   ).hide()
+    $('#Navb').hide()
+    $('#Head').hide()
+    $('#View').hide()
 
   onMakeRes:() =>
     @hideMkt()

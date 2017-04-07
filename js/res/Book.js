@@ -62,17 +62,18 @@
       $('.pets').change(this.onPets);
       $('#Months').change(this.onMonth);
       $('#Days').change(this.onDay);
-      $('#GoToPay').click(this.onGoToPay).hide();
+      $('#GoToPay').click(this.onGoToPay).prop('disabled', true);
+      $('#Navb').hide();
       $('#Book').show();
       return this.roomsJQuery();
     };
 
     Book.prototype.bookHtml = function() {
-      return "<div class=\"ConfirmPay\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
     };
 
     Book.prototype.bookHtml2 = function() {
-      return "<div   class=\"Instruct\">\n  <div class=\"ConfirmPay\">Make Your Reservation</div>\n  <ul  class=\"Instruct1\">\n    <li>For each room select:</li>\n  </ul>\n  <ul class=\"Instruct2\">\n    <li>Number of Guests</li>\n  </ul>\n  <ul class=\"Instruct3\">\n    <li>Number of Pets</li>\n  </ul>\n  <ul class=\"Instruct4\">\n    <li>Click the days you want</li>\n  </ul>\n</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+      return "<div   class=\"Instruct\">\n  <ul  class=\"Instruct1\">\n    <li>For each room select:</li>\n  </ul>\n  <ul class=\"Instruct2\">\n    <li>Number of Guests</li>\n  </ul>\n  <ul class=\"Instruct3\">\n    <li>Number of Pets</li>\n  </ul>\n  <ul class=\"Instruct4\">\n    <li>Click the days you want</li>\n  </ul>\n</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
     };
 
     Book.prototype.initsHtml = function() {
@@ -202,7 +203,7 @@
       text = this.totals === 0 ? '' : '$' + this.totals;
       $('#Totals').text(text);
       if (this.totals > 0) {
-        $('#GoToPay').show();
+        $('#GoToPay').prop('disabled', false);
       }
     };
 
@@ -372,6 +373,7 @@
 
     Book.prototype.onGoToPay = function(e) {
       e.preventDefault();
+      $('#Book').hide();
       this.onHold();
       this.myRes.total = this.totals;
       return this.pay.showConfirmPay(this.myRes);
