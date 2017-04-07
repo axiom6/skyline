@@ -262,10 +262,11 @@ class Book
 
   onGoToPay:( e ) =>
     e.preventDefault()
-    $('.Instruct').hide()
-    $('#Inits'   ).hide()
-    $('#Rooms'   ).hide()
-    $('#GoToDiv' ).hide()
+    #$('.Instruct').hide()
+    #$('#Inits'   ).hide()
+    #$('#Rooms'   ).hide()
+    #$('#GoToDiv' ).hide()
+    #$('#Book'    ).hide()
     @onHold()
     @myRes.total = @totals
     @pay.showConfirmPay( @myRes )

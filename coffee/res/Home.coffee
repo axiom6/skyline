@@ -47,7 +47,7 @@ class Home
     for own roomId, room of @rooms
       htm += """<li class="RoomLI"><a href="rooms/#{roomId}.html">#{room.name}</a></li>"""
     htm += """</ul>"""
-    $("#Viewer").append( htm )
+    $("#View").append( htm )
     return
 
   hideMkt:() ->
@@ -56,7 +56,7 @@ class Home
     $('#Contact').hide()
     $('#State'  ).hide()
     $('#Head'   ).hide()
-    $('#Viewer' ).hide()
+    $('#View'   ).hide()
 
   onMakeRes:() =>
     @hideMkt()

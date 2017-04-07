@@ -18,9 +18,11 @@ class Pay
       $('#Confirms').remove()
       $('#Confirm').prepend( @confirmHtml( @myRes ) )
       $('#form-pay').show()
+      $('#Pays').show()
     else
-      $('#Confirm').append( @confirmHtml( @myRes ) )
-      $('#Confirm').append( @payHtml() )
+      $('#Pays').append( @confirmHtml( @myRes ) )
+      $('#Pays').append( @payHtml() )
+      $('#Pays').show()
       window.$ = $
       Util.loadScript( "../js/res/payment.js", @initPayment )
       $('#cc-amt').text('$'+myRes.total)
@@ -30,11 +32,12 @@ class Pay
 
   onBack:( e ) =>
     e.preventDefault()
-    $('#Confirms').hide()
-    $('#form-pay').hide()
-    $('#Inits'   ).show()
-    $('#Rooms'   ).show()
-    $('#MakeRes' ).show()
+    #$('#Confirms').hide()
+    #$('#form-pay').hide()
+    #$('#Inits'   ).show()
+    #$('#Rooms'   ).show()
+    #$('#MakeRes' ).show()
+    $('#Book' ).show()
     return
  
   confirmHtml:( myRes ) ->

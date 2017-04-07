@@ -57,7 +57,7 @@
         htm += "<li class=\"RoomLI\"><a href=\"rooms/" + roomId + ".html\">" + room.name + "</a></li>";
       }
       htm += "</ul>";
-      $("#Viewer").append(htm);
+      $("#View").append(htm);
     };
 
     Home.prototype.hideMkt = function() {
@@ -66,7 +66,7 @@
       $('#Contact').hide();
       $('#State').hide();
       $('#Head').hide();
-      return $('#Viewer').hide();
+      return $('#View').hide();
     };
 
     Home.prototype.onMakeRes = function() {

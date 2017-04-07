@@ -38,10 +38,12 @@
       if (this.created) {
         $('#Confirms').remove();
         $('#Confirm').prepend(this.confirmHtml(this.myRes));
-        return $('#form-pay').show();
+        $('#form-pay').show();
+        return $('#Pays').show();
       } else {
-        $('#Confirm').append(this.confirmHtml(this.myRes));
-        $('#Confirm').append(this.payHtml());
+        $('#Pays').append(this.confirmHtml(this.myRes));
+        $('#Pays').append(this.payHtml());
+        $('#Pays').show();
         window.$ = $;
         Util.loadScript("../js/res/payment.js", this.initPayment);
         $('#cc-amt').text('$' + myRes.total);
@@ -56,11 +58,7 @@
 
     Pay.prototype.onBack = function(e) {
       e.preventDefault();
-      $('#Confirms').hide();
-      $('#form-pay').hide();
-      $('#Inits').show();
-      $('#Rooms').show();
-      $('#MakeRes').show();
+      $('#Book').show();
     };
 
     Pay.prototype.confirmHtml = function(myRes) {

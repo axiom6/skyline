@@ -372,10 +372,6 @@
 
     Book.prototype.onGoToPay = function(e) {
       e.preventDefault();
-      $('.Instruct').hide();
-      $('#Inits').hide();
-      $('#Rooms').hide();
-      $('#GoToDiv').hide();
       this.onHold();
       this.myRes.total = this.totals;
       return this.pay.showConfirmPay(this.myRes);

@@ -28,7 +28,7 @@ img.center {
   top: 105px;
   height: 30px;
 }
-#State {
+#Caption {
   text-align: center;
   margin-top: 10px;
   font-weight: bold;
@@ -113,7 +113,7 @@ img.center {
 #Book {
   display: none;
 }
-#Viewer {
+#View {
   position: relative;
   left: 0;
   width: 100%;
@@ -489,6 +489,9 @@ img.center {
 }
 .rooms .top .home {
   vertical-align: middle;
+}
+#Pays {
+  display: none;
 }
 .PageTitle {
   text-align: center;
