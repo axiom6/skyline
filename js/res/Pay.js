@@ -36,7 +36,8 @@
     Pay.prototype.showConfirmPay = function(myRes) {
       this.myRes = myRes;
       if (this.created) {
-        $('#Confirm').remove();
+        $('#ConfirmTitle').remove();
+        $('#ConfirmTable').remove();
         $('#Confirm').prepend(this.confirmHtml(this.myRes));
         $('#cc-amt').text('$' + c);
         $('#form-pay').show();
@@ -66,8 +67,8 @@
 
     Pay.prototype.confirmHtml = function(myRes) {
       var arrive, days, depart, htm, num, r, ref, roomId;
-      htm = "<div   id=\"ConTitle\" class= \"Title\">Confirmation</div>";
-      htm += "<table id=\"Confirm\"><thead>";
+      htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation</div>";
+      htm += "<table id=\"ConfirmTable\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
       ref = myRes.rooms;
@@ -82,7 +83,8 @@
       }
       htm += "<tr><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td class=\"room-total\">$" + myRes.total + "</td></tr>";
       htm += "</tbody></table>";
-      htm += "<div class=\"Title\">Payment</div>";
+      htm += "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"cc-bak\">Change Reservation</button></div>";
+      htm += "<div id=\"MakePay\" class=\"Title\">Make Payment</div>";
       return htm;
     };
 
@@ -111,7 +113,7 @@
     };
 
     Pay.prototype.payHtml = function() {
-      return "<form novalidate autocomplete=\"on\" method=\"POST\" id=\"form-pay\">\n\n    <span class=\"form-group\">\n      <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\">  [<span class=\"cc-com\"></span>]</span></label>\n      <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num\" autocomplete=\"cc-num\" placeholder=\"•••• •••• •••• ••••\" required>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n      <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp\" autocomplete=\"cc-exp\" placeholder=\"mm / yy\" required>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n      <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc\" autocomplete=\"off\" placeholder=\"•••\" required>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n      <div  id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label class=\"control-label\">&nbsp;</label>\n      <button type=\"submit\" class=\"btn btn-lg btn-primary\" id=\"cc-sub\">Pay</button>\n    </span>\n\n    <span class=\"form-group\">\n      <label class=\"control-label\">&nbsp;</label>\n      <button class=\"btn btn-lg btn-primary\" id=\"cc-bak\">Change Reservation</button>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-msg\"   class=\"control-label\">Message</label>\n      <div  id= \"cc-msg\" class=\"input-lg form-control cc-msg\"></div>\n    </span>\n</form>";
+      return "<div id=\"PayDiv\">\n  <form novalidate autocomplete=\"on\" method=\"POST\" id=\"form-pay\">\n\n    <span class=\"form-group\">\n      <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\">  [<span class=\"cc-com\"></span>]</span></label>\n      <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num\" autocomplete=\"cc-num\" placeholder=\"•••• •••• •••• ••••\" required>\n      <div   id= \"er-num\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n      <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp\" autocomplete=\"cc-exp\" placeholder=\"mm / yy\" required>\n      <div   id= \"er-exp\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n      <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc\" autocomplete=\"off\" placeholder=\"•••\" required>\n      <div   id= \"er-cvc\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n      <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n      <div   id= \"er-amt\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n      <button  id=\"cc-sub\" type=\"submit\" class=\"btn btn-lg btn-primary\">Pay</button>\n      <div    id= \"er-sub\" class=\"cc-msg\"></div>\n    </span>\n  </form>\n</div>\n<div id=\"Approval\"></div>";
     };
 
     Pay.prototype.toggleInputError = function(field, valid) {
@@ -121,11 +123,11 @@
         msg = (function() {
           switch (field) {
             case 'Num':
-              return 'Invalid Card Number';
+              return "Card Number?";
             case 'Exp':
-              return 'Invalid Expiration';
+              return "Expiration?";
             case 'CVC':
-              return 'Invalid CVC';
+              return "CVC?";
           }
         })();
       }
@@ -144,7 +146,7 @@
     };
 
     Pay.prototype.submitPayment = function(e) {
-      var cardType, cvc, exp, mon, msg, num, ref, yer;
+      var cardType, cvc, cvcerr, exp, experr, mon, num, numerr, ref, yer;
       e.preventDefault();
       num = $('.cc-num').val();
       exp = $('.cc-exp').val();
@@ -152,28 +154,30 @@
       yer = '20' + exp.substr(5, 2);
       cvc = $('.cc-cvc').val();
       cardType = $.payment.cardType(num);
-      msg = this.toggleInputError('Num', $.payment.validateCardNumber($('.cc-num').val()));
-      msg += this.toggleInputError('Exp', $.payment.validateCardExpiry($('.cc-exp').payment('cardExpiryVal')));
-      msg += this.toggleInputError('CVC', $.payment.validateCardCVC($('.cc-cvc').val(), cardType));
+      numerr = this.toggleInputError('Num', $.payment.validateCardNumber($('.cc-num').val()));
+      experr = this.toggleInputError('Exp', $.payment.validateCardExpiry($('.cc-exp').payment('cardExpiryVal')));
+      cvcerr = this.toggleInputError('CVC', $.payment.validateCardCVC($('.cc-cvc').val(), cardType));
       $('.cc-com').text(cardType);
       $('.cc-msg').removeClass('text-danger text-success');
       $('.cc-msg').addClass((ref = $('.has-error').length) != null ? ref : {
         'text-danger': 'text-success'
       });
-      if (msg === '') {
-        $('#cc-sub').text("Waiting For Approval");
+      if (numerr === '' && experr === '' && cvcerr === '') {
+        $('#er-sub').text("Waiting For Approval");
         this.token(num, mon, yer, cvc);
       } else {
-        $('#cc-sub').text("Input Error");
-        $('.cc-msg').text(msg);
+        $('#er-num').text(numerr);
+        $('#er-exp').text(experr);
+        $('#er-cvc').text(cvcerr);
+        $('#er-sub').text("Fix?");
+        $('#cc-sub').text("Try Again");
       }
       Util.log('Pay.submitPayment()', {
         num: num,
         exp: exp,
         cvc: cvc,
         mon: mon,
-        yer: yer,
-        msg: msg
+        yer: yer
       });
     };
 
@@ -212,7 +216,15 @@
     };
 
     Pay.prototype.onCharge = function(obj) {
-      return Util.log('StoreRest.onCharge()', obj);
+      Util.log('StoreRest.onCharge()', obj);
+      if (obj.outcome.type === 'authorized') {
+        $('#cc-bak').hide();
+        $('#MakePay').hide();
+        $('#PayDiv').hide();
+        return $('#Approval').text('Approved: A Confirnation EMail Has Been Sent').show();
+      } else {
+        return $('#Approval').text('Denied').show();
+      }
     };
 
     Pay.prototype.onError = function(obj) {

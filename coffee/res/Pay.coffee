@@ -15,7 +15,8 @@ class Pay
   showConfirmPay:( myRes ) ->
     @myRes = myRes
     if @created
-      $('#Confirm').remove()
+      $('#ConfirmTitle').remove()
+      $('#ConfirmTable').remove()
       $('#Confirm').prepend( @confirmHtml( @myRes ) )
       $('#cc-amt').text('$'+c)
       $('#form-pay').show()
@@ -39,8 +40,8 @@ class Pay
     return
  
   confirmHtml:( myRes ) ->
-    htm   = """<div   id="ConTitle" class= "Title">Confirmation</div>"""
-    htm  += """<table id="Confirm"><thead>"""
+    htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation</div>"""
+    htm  += """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
     for own roomId, r of myRes.rooms
@@ -51,7 +52,8 @@ class Pay
       htm  += """<tr><td>#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
     htm  += """<tr><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td class="room-total">$#{myRes.total}</td></tr>"""
     htm  += """</tbody></table>"""
-    htm  += """<div class="Title">Payment</div>"""
+    htm  += """<div style="text-align:center;"><button class="btn btn-primary" id="cc-bak">Change Reservation</button></div>"""
+    htm  += """<div id="MakePay" class="Title">Make Payment</div>"""
     htm
 
   departDate:( monthI, dayI, weekdayI ) ->
@@ -72,53 +74,52 @@ class Pay
     """#{@Data.weekdays[weekdayIdx]} #{@Data.months[monthIdx]} #{day}, #{year}  #{msg}"""
 
   payHtml:() ->
-    """<form novalidate autocomplete="on" method="POST" id="form-pay">
+    """
+    <div id="PayDiv">
+      <form novalidate autocomplete="on" method="POST" id="form-pay">
 
         <span class="form-group">
           <label for="cc-num" class="control-label">Card Number<span class="text-muted">  [<span class="cc-com"></span>]</span></label>
           <input id= "cc-num" type="tel" class="input-lg form-control cc-num" autocomplete="cc-num" placeholder="•••• •••• •••• ••••" required>
+          <div   id= "er-num" class="cc-msg"></div>
         </span>
 
         <span class="form-group">
           <label for="cc-exp" class="control-label">Expiration</label>
           <input id= "cc-exp" type="tel" class="input-lg form-control cc-exp" autocomplete="cc-exp" placeholder="mm / yy" required>
+          <div   id= "er-exp" class="cc-msg"></div>
         </span>
 
         <span class="form-group">
           <label for="cc-cvc" class="control-label">CVC</label>
           <input id= "cc-cvc" type="tel" class="input-lg form-control cc-cvc" autocomplete="off" placeholder="•••" required>
+          <div   id= "er-cvc" class="cc-msg"></div>
         </span>
 
         <span class="form-group">
           <label for="cc-amt"   class="control-label">Amount</label>
-          <div  id= "cc-amt" class="input-lg form-control cc-amt"></div>
+          <div   id= "cc-amt" class="input-lg form-control cc-amt"></div>
+          <div   id= "er-amt" class="cc-msg"></div>
         </span>
 
         <span class="form-group">
-          <label class="control-label">&nbsp;</label>
-          <button type="submit" class="btn btn-lg btn-primary" id="cc-sub">Pay</button>
+          <label  for="cc-sub" class="control-label">&nbsp;</label>
+          <button  id="cc-sub" type="submit" class="btn btn-lg btn-primary">Pay</button>
+          <div    id= "er-sub" class="cc-msg"></div>
         </span>
-
-        <span class="form-group">
-          <label class="control-label">&nbsp;</label>
-          <button class="btn btn-lg btn-primary" id="cc-bak">Change Reservation</button>
-        </span>
-
-        <span class="form-group">
-          <label for="cc-msg"   class="control-label">Message</label>
-          <div  id= "cc-msg" class="input-lg form-control cc-msg"></div>
-        </span>
-    </form>"""
+      </form>
+    </div>
+    <div id="Approval"></div>
+    """
 
   toggleInputError: ( field, valid ) ->
     msg = ''
     if not valid
       msg = switch field
-        when 'Num' then 'Invalid Card Number'
-        when 'Exp' then 'Invalid Expiration'
-        when 'CVC' then 'Invalid CVC'
+        when 'Num' then """Card Number?"""
+        when 'Exp' then """Expiration?"""
+        when 'CVC' then """CVC?"""
     msg
-
 
   initPayment:() =>
     $('.cc-num').payment('formatCardNumber')
@@ -134,20 +135,24 @@ class Pay
     yer = '20'+exp.substr(5,2)
     cvc = $('.cc-cvc').val()
     cardType = $.payment.cardType(num)
-
-    msg  = @toggleInputError( 'Num', $.payment.validateCardNumber( $('.cc-num').val()) )
-    msg += @toggleInputError( 'Exp', $.payment.validateCardExpiry( $('.cc-exp').payment('cardExpiryVal')) )
-    msg += @toggleInputError( 'CVC', $.payment.validateCardCVC(    $('.cc-cvc').val(), cardType ) )
+    numerr = @toggleInputError( 'Num', $.payment.validateCardNumber( $('.cc-num').val()) )
+    experr = @toggleInputError( 'Exp', $.payment.validateCardExpiry( $('.cc-exp').payment('cardExpiryVal')) )
+    cvcerr = @toggleInputError( 'CVC', $.payment.validateCardCVC(    $('.cc-cvc').val(), cardType ) )
     $('.cc-com').text(cardType);
     $('.cc-msg').removeClass('text-danger text-success')
     $('.cc-msg').addClass($('.has-error').length ? 'text-danger' : 'text-success')
-    if msg is ''
-      $('#cc-sub').text("Waiting For Approval")
+    if numerr is '' and experr is '' and cvcerr is ''
+      $('#er-sub' ).text("Waiting For Approval")
+
       @token( num, mon, yer, cvc )
     else
-      $('#cc-sub').text("Input Error")
-      $('.cc-msg').text( msg )
-    Util.log( 'Pay.submitPayment()', { num:num, exp:exp, cvc:cvc, mon:mon, yer:yer, msg:msg } )
+      $('#er-num').text(numerr)
+      $('#er-exp').text(experr)
+      $('#er-cvc').text(cvcerr)
+      $('#er-sub').text("Fix?")
+      $('#cc-sub').text("Try Again")
+
+    Util.log( 'Pay.submitPayment()', { num:num, exp:exp, cvc:cvc, mon:mon, yer:yer } )
     return
 
   subscribe:() ->
@@ -172,6 +177,13 @@ class Pay
 
   onCharge:(obj) =>
     Util.log( 'StoreRest.onCharge()', obj )
+    if obj.outcome.type is 'authorized'
+      $('#cc-bak'  ).hide()
+      $('#MakePay' ).hide()
+      $('#PayDiv'  ).hide()
+      $('#Approval').text('Approved: A Confirnation EMail Has Been Sent').show()
+    else
+      $('#Approval').text('Denied'  ).show()
 
   onError:(obj) =>
     Util.error( 'StoreRest.onError()', obj )

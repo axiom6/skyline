@@ -6,12 +6,15 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-* Fix Res
+* Move "Change Reservation" Button
+* Validation Message
+* Model Payment Status and display it
+* Input First  Last Names, Phone Number and Confirmaton EMail
 * Contact, Map and Directions
-* Test Payments
-* Test Reservation
+* Post and Test Reservations
+* Test and Test Payments
 * Terms and Conditions
-* Confirmation EMail
+* Send Confirmation EMail
 
 ## [.black]#Owner Site#
 
@@ -31,6 +34,7 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site Completed#
 
+* Fix Res
 * Home Layout
 * Room Layout
 * Credit Card Form
