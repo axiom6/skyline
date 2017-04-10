@@ -57,7 +57,7 @@
       $('#Book').append(this.bookHtml());
       $('#Inits').append(this.initsHtml());
       $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
-      $('#Confirm').append(this.goToPayHtml());
+      $('#Guest').append(this.guestHtml());
       $('.guests').change(this.onGuests);
       $('.pets').change(this.onPets);
       $('#Months').change(this.onMonth);
@@ -69,7 +69,7 @@
     };
 
     Book.prototype.bookHtml = function() {
-      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
     };
 
     Book.prototype.bookHtml2 = function() {
@@ -121,10 +121,8 @@
       return htm;
     };
 
-    Book.prototype.roomLink = function(roomId, room) {};
-
-    Book.prototype.goToPayHtml = function() {
-      return "<div id=\"GoToDiv\" style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"GoToPay\">Go To Confirmation and Payment</button></div>";
+    Book.prototype.guestHtml = function() {
+      return "<div id=\"Names\">\n  <span class=\"SpanIp\">\n    <label for=\"First\" class=\"control-label\">First Name</label>\n    <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n  </span>\n\n  <span class=\"SpanIp\">\n    <label for=\"Last\" class=\"control-label\">Last Name</label>\n    <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n  </span>\n\n  <span class=\"SpanIp\">\n    <label for=\"Phone\" class=\"control-label\">Phone</label>\n    <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" autocomplete=\"off\" placeholder=\"••• ••• ••••\" required>\n  </span>\n\n  <span class=\"SpanIp\">\n    <label for=\"EMail\"   class=\"control-label\">Email</label>\n    <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n  </span>\n</div>\n<div id=\"GoToDiv\" style=\"text-align:center;\">\n <button class=\"btn btn-primary\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n</div>";
     };
 
     Book.prototype.createCell = function(roomId, room, date) {

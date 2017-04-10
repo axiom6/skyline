@@ -29,7 +29,7 @@ class Book
     $('#Book'   ).append( @bookHtml()  )
     $('#Inits'  ).append( @initsHtml() )
     $('#Rooms'  ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
-    $('#Confirm').append( @goToPayHtml( ) )
+    $('#Guest'  ).append( @guestHtml() )
     $('.guests' ).change( @onGuests  )
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
@@ -44,7 +44,7 @@ class Book
     <div id="Make" class="Title">Make Your Reservation</div>
     <div id="Inits"></div>
     <div id="Rooms"></div>
-    <div id="Confirm"></div>
+    <div id="Guest"></div>
     """
 
   bookHtml2:() ->
@@ -100,10 +100,33 @@ class Book
     htm += "</tbody></table>"
     htm
 
-  roomLink:( roomId, room ) ->
+  guestHtml:() ->
+    """
+    <div id="Names">
+      <span class="SpanIp">
+        <label for="First" class="control-label">First Name</label>
+        <input id= "First" type="text" class="input-lg form-control" autocomplete="given-name" required>
+      </span>
 
-  goToPayHtml:() ->
-   """<div id="GoToDiv" style="text-align:center;"><button class="btn btn-primary" id="GoToPay">Go To Confirmation and Payment</button></div>"""
+      <span class="SpanIp">
+        <label for="Last" class="control-label">Last Name</label>
+        <input id= "Last" type="text" class="input-lg form-control" autocomplete="family-name" required>
+      </span>
+
+      <span class="SpanIp">
+        <label for="Phone" class="control-label">Phone</label>
+        <input id= "Phone" type="tel" class="input-lg form-control" autocomplete="off" placeholder="••• ••• ••••" required>
+      </span>
+
+      <span class="SpanIp">
+        <label for="EMail"   class="control-label">Email</label>
+        <input id= "EMail" type="email" class="input-lg form-control" autocomplete="email" required>
+      </span>
+    </div>
+    <div id="GoToDiv" style="text-align:center;">
+     <button class="btn btn-primary" id="GoToPay">Go To Confirmation and Payment</button>
+    </div>
+    """
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )

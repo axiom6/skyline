@@ -6,15 +6,21 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-* Move "Change Reservation" Button
-* Validation Message
-* Model Payment Status and display it
 * Input First  Last Names, Phone Number and Confirmaton EMail
+* Compose Send Confirmation EMail
+* Reservation Instructions
+* Home buttons
+* Deposit - get time frame
+* Model Payment Status and display it
 * Contact, Map and Directions
 * Post and Test Reservations
 * Test and Test Payments
+* Refine Owner site
+* Update text with Sue
 * Terms and Conditions
-* Send Confirmation EMail
+* Consider Owner reservation - maybe just a link
+* Package Slide.js and payment.coffee
+* Deploy to Firebase
 
 ## [.black]#Owner Site#
 
@@ -34,6 +40,8 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site Completed#
 
+* Move "Change Reservation" Button
+* Validation Message
 * Fix Res
 * Home Layout
 * Room Layout

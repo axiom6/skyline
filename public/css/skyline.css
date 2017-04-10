@@ -189,10 +189,6 @@ img.center {
   margin-top: 10px;
   font-weight: bold;
 }
-#GotoPay {
-  text-align: center;
-  margin: auto;
-}
 .room-free {
   background-color: lightgrey;
   color: black;
@@ -489,6 +485,31 @@ img.center {
 }
 .rooms .top .home {
   vertical-align: middle;
+}
+#Names {
+  width: 975px;
+  margin: auto;
+  height: 100px;
+}
+.SpanIp {
+  float: left;
+  margin-left: 20px;
+}
+#First {
+  width: 200px;
+}
+#Last {
+  width: 200px;
+}
+#Phone {
+  width: 130px;
+}
+#EMail {
+  width: 200px;
+}
+#GotoPay {
+  text-align: center;
+  margin: auto;
 }
 #Pays {
   display: none;

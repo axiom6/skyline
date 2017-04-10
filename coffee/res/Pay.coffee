@@ -26,7 +26,8 @@ class Pay
       $('#Pays').append( @payHtml() )
       $('#Pays').show()
       window.$ = $
-      Util.loadScript( "../js/res/payment.js", @initPayment )
+      Util.loadScript( "../js/res/payment.js", @initPayment )  # payment.js need jQuery global
+      #@initPayment()
       $('#cc-amt').text('$'+myRes.total)
       $('#cc-bak').click( (e) => @onBack(e) )
       @created = true
