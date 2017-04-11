@@ -34,7 +34,8 @@ class Book
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
     $('#Days'   ).change( @onDay     )
-    $('#GoToPay').click(  @onGoToPay ).prop('disabled',true)
+    #$('#GoToPay').click(  @onGoToPay ).prop('disabled',true)
+    $('#FormName').submit( (e) => @onGoToPay(e) ).prop('disabled',true)
     $('#Navb').hide()
     $('#Book').show()
     @roomsJQuery()
@@ -102,31 +103,65 @@ class Book
 
   guestHtml:() ->
     """
-    <div id="Names">
-      <span class="SpanIp">
-        <label for="First" class="control-label">First Name</label>
-        <input id= "First" type="text" class="input-lg form-control" autocomplete="given-name" required>
-      </span>
+    <form novalidate autocomplete="on" method="POST" id="FormName">
+      <div id="Names">
+        <span class="SpanIp">
+          <label for="First" class="control-label">First Name</label>
+          <input id= "First" type="text" class="input-lg form-control" autocomplete="given-name" required>
+          <div   id= "FirstER" class="NameER">* Required</div>
+        </span>
 
-      <span class="SpanIp">
-        <label for="Last" class="control-label">Last Name</label>
-        <input id= "Last" type="text" class="input-lg form-control" autocomplete="family-name" required>
-      </span>
+        <span class="SpanIp">
+          <label for="Last" class="control-label">Last Name</label>
+          <input id= "Last" type="text" class="input-lg form-control" autocomplete="family-name" required>
+          <div   id= "LastER" class="NameER">* Required</div>
+        </span>
 
-      <span class="SpanIp">
-        <label for="Phone" class="control-label">Phone</label>
-        <input id= "Phone" type="tel" class="input-lg form-control" autocomplete="off" placeholder="••• ••• ••••" required>
-      </span>
+        <span class="SpanIp">
+          <label for="Phone" class="control-label">Phone</label>
+          <input id= "Phone" type="tel" class="input-lg form-control" autocomplete="off" placeholder="••• ••• ••••" required>
+          <div   id= "PhoneER" class="NameER">* Required</div>
+        </span>
 
-      <span class="SpanIp">
-        <label for="EMail"   class="control-label">Email</label>
-        <input id= "EMail" type="email" class="input-lg form-control" autocomplete="email" required>
-      </span>
-    </div>
-    <div id="GoToDiv" style="text-align:center;">
-     <button class="btn btn-primary" id="GoToPay">Go To Confirmation and Payment</button>
-    </div>
+        <span class="SpanIp">
+          <label for="EMail"   class="control-label">Email</label>
+          <input id= "EMail" type="email" class="input-lg form-control" autocomplete="email" required>
+          <div   id= "EMailER" class="NameER">* Required</div>
+        </span>
+      </div>
+      <div id="GoToDiv" style="text-align:center;">
+       <button class="btn btn-primary" type="submit" id="GoToPay">Go To Confirmation and Payment</button>
+      </div>
+    </form>
     """
+
+  isValid:( name ) ->
+    value = $('#'+name).val()
+    valid = Util.isStr( value )
+    $('#'+name+'ER').show() if not valid
+    [value,valid]
+
+  getNamesPhoneEmail:() ->
+    [@pay.first,fv] = @isValid('First')
+    [@pay.last, lv] = @isValid('Last' )
+    [@pay.phone,pv] = @isValid('Phone')
+    [@pay.email,ev] = @isValid('EMail')
+    ok =   @totals > 0 and fv and lv and pv and ev
+    Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
+    return @totals > 0 and fv and lv and pv and ev
+
+  onGoToPay:( e ) =>
+    e.preventDefault()
+    ok = @getNamesPhoneEmail()
+    if ok
+      $('.NameER').hide()
+      $('#Book').hide()
+      @onHold()
+      @myRes.total = @totals
+      @pay.showConfirmPay( @myRes )
+    else
+      alert('Correct Errors')
+    return
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
@@ -282,13 +317,6 @@ class Book
       @allocCell( day, obj.status, roomId )
     return
 
-  onGoToPay:( e ) =>
-    e.preventDefault()
-    $('#Book').hide()
-    @onHold()
-    @myRes.total = @totals
-    @pay.showConfirmPay( @myRes )
-
   allocCell:( day, status, roomId ) ->
     @cellStatus( $('#R'+roomId+day), status )
 
@@ -305,3 +333,14 @@ class Book
   make:()   => @store.make(   'Room' )
 
   insert:() => @store.insert( 'Room', @rooms )
+
+  ###
+    switch name
+      when 'First' then Util.isStr( value )
+      when 'Last'  then Util.isStr( value )
+      when 'Phone' then Util.isStr( value )
+      when 'EMail' then Util.isStr( value )
+      else
+        Util.error( "Book.isValid() unknown #id", name )
+        Util.isStr( value )
+   ###

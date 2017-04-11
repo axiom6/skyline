@@ -31,6 +31,10 @@
       });
       this.myRes = {};
       this.created = false;
+      this.first = '';
+      this.last = '';
+      this.phone = '';
+      this.email = '';
     }
 
     Pay.prototype.showConfirmPay = function(myRes) {
@@ -39,7 +43,7 @@
         $('#ConfirmTitle').remove();
         $('#ConfirmTable').remove();
         $('#Confirm').prepend(this.confirmHtml(this.myRes));
-        $('#cc-amt').text('$' + c);
+        $('#cc-amt').text('$' + this.myRes.total);
         $('#form-pay').show();
         $('#Pays').show();
       } else {
@@ -66,8 +70,10 @@
     };
 
     Pay.prototype.confirmHtml = function(myRes) {
-      var arrive, days, depart, htm, num, r, ref, roomId;
+      var arrive, days, depart, htm, num, ph, r, ref, roomId;
+      ph = '(' + this.phone.substr(0, 3) + ')-' + this.phone.substr(3, 3) + '-' + this.phone.substr(6, 4);
       htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation</div>";
+      htm += "<div   id=\"ConfirmName\">\n   <span>For: " + this.first + " </span><span>" + this.last + " </span><span>Phone: " + ph + " </span><span>EMail: " + this.email + " </span>\n</div>";
       htm += "<table id=\"ConfirmTable\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";

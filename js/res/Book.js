@@ -22,7 +22,6 @@
       this.Data = Data;
       this.insert = bind(this.insert, this);
       this.make = bind(this.make, this);
-      this.onGoToPay = bind(this.onGoToPay, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
       this.onBook = bind(this.onBook, this);
@@ -34,6 +33,7 @@
       this.onGuests = bind(this.onGuests, this);
       this.updatePrice = bind(this.updatePrice, this);
       this.calcPrice = bind(this.calcPrice, this);
+      this.onGoToPay = bind(this.onGoToPay, this);
       this.rooms = this.room.rooms;
       this.roomUIs = this.room.roomUIs;
       this.myDays = 0;
@@ -62,7 +62,11 @@
       $('.pets').change(this.onPets);
       $('#Months').change(this.onMonth);
       $('#Days').change(this.onDay);
-      $('#GoToPay').click(this.onGoToPay).prop('disabled', true);
+      $('#FormName').submit((function(_this) {
+        return function(e) {
+          return _this.onGoToPay(e);
+        };
+      })(this)).prop('disabled', true);
       $('#Navb').hide();
       $('#Book').show();
       return this.roomsJQuery();
@@ -122,7 +126,43 @@
     };
 
     Book.prototype.guestHtml = function() {
-      return "<div id=\"Names\">\n  <span class=\"SpanIp\">\n    <label for=\"First\" class=\"control-label\">First Name</label>\n    <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n  </span>\n\n  <span class=\"SpanIp\">\n    <label for=\"Last\" class=\"control-label\">Last Name</label>\n    <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n  </span>\n\n  <span class=\"SpanIp\">\n    <label for=\"Phone\" class=\"control-label\">Phone</label>\n    <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" autocomplete=\"off\" placeholder=\"••• ••• ••••\" required>\n  </span>\n\n  <span class=\"SpanIp\">\n    <label for=\"EMail\"   class=\"control-label\">Email</label>\n    <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n  </span>\n</div>\n<div id=\"GoToDiv\" style=\"text-align:center;\">\n <button class=\"btn btn-primary\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n</div>";
+      return "<form novalidate autocomplete=\"on\" method=\"POST\" id=\"FormName\">\n  <div id=\"Names\">\n    <span class=\"SpanIp\">\n      <label for=\"First\" class=\"control-label\">First Name</label>\n      <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n      <div   id= \"FirstER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Last\" class=\"control-label\">Last Name</label>\n      <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n      <div   id= \"LastER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Phone\" class=\"control-label\">Phone</label>\n      <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" autocomplete=\"off\" placeholder=\"••• ••• ••••\" required>\n      <div   id= \"PhoneER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"EMail\"   class=\"control-label\">Email</label>\n      <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n      <div   id= \"EMailER\" class=\"NameER\">* Required</div>\n    </span>\n  </div>\n  <div id=\"GoToDiv\" style=\"text-align:center;\">\n   <button class=\"btn btn-primary\" type=\"submit\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n  </div>\n</form>";
+    };
+
+    Book.prototype.isValid = function(name) {
+      var valid, value;
+      value = $('#' + name).val();
+      valid = Util.isStr(value);
+      if (!valid) {
+        $('#' + name + 'ER').show();
+      }
+      return [value, valid];
+    };
+
+    Book.prototype.getNamesPhoneEmail = function() {
+      var ev, fv, lv, ok, pv, ref, ref1, ref2, ref3;
+      ref = this.isValid('First'), this.pay.first = ref[0], fv = ref[1];
+      ref1 = this.isValid('Last'), this.pay.last = ref1[0], lv = ref1[1];
+      ref2 = this.isValid('Phone'), this.pay.phone = ref2[0], pv = ref2[1];
+      ref3 = this.isValid('EMail'), this.pay.email = ref3[0], ev = ref3[1];
+      ok = this.totals > 0 && fv && lv && pv && ev;
+      Util.log('Book.getNamesPhoneEmail()', this.pay.first, fv, this.pay.last, lv, this.pay.phone, pv, this.pay.email, ev, ok);
+      return this.totals > 0 && fv && lv && pv && ev;
+    };
+
+    Book.prototype.onGoToPay = function(e) {
+      var ok;
+      e.preventDefault();
+      ok = this.getNamesPhoneEmail();
+      if (ok) {
+        $('.NameER').hide();
+        $('#Book').hide();
+        this.onHold();
+        this.myRes.total = this.totals;
+        this.pay.showConfirmPay(this.myRes);
+      } else {
+        alert('Correct Errors');
+      }
     };
 
     Book.prototype.createCell = function(roomId, room, date) {
@@ -369,14 +409,6 @@
       }
     };
 
-    Book.prototype.onGoToPay = function(e) {
-      e.preventDefault();
-      $('#Book').hide();
-      this.onHold();
-      this.myRes.total = this.totals;
-      return this.pay.showConfirmPay(this.myRes);
-    };
-
     Book.prototype.allocCell = function(day, status, roomId) {
       return this.cellStatus($('#R' + roomId + day), status);
     };
@@ -406,6 +438,18 @@
     Book.prototype.insert = function() {
       return this.store.insert('Room', this.rooms);
     };
+
+
+    /*
+      switch name
+        when 'First' then Util.isStr( value )
+        when 'Last'  then Util.isStr( value )
+        when 'Phone' then Util.isStr( value )
+        when 'EMail' then Util.isStr( value )
+        else
+          Util.error( "Book.isValid() unknown #id", name )
+          Util.isStr( value )
+     */
 
     return Book;
 

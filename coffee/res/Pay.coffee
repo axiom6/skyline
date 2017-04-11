@@ -11,6 +11,10 @@ class Pay
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
     @myRes = {}
     @created = false
+    @first = ''
+    @last  = ''
+    @phone = ''
+    @email = ''
 
   showConfirmPay:( myRes ) ->
     @myRes = myRes
@@ -18,7 +22,7 @@ class Pay
       $('#ConfirmTitle').remove()
       $('#ConfirmTable').remove()
       $('#Confirm').prepend( @confirmHtml( @myRes ) )
-      $('#cc-amt').text('$'+c)
+      $('#cc-amt').text('$'+@myRes.total)
       $('#form-pay').show()
       $('#Pays').show()
     else
@@ -41,7 +45,13 @@ class Pay
     return
  
   confirmHtml:( myRes ) ->
+    #pf    = str.replace(/[^-.0-9]/g,'')
+    #px    = /^(?:(\d{2})\-)?(\d{3})\-(\d{4})\-(\d{3})$/
+    ph    = '('+@phone.substr(0,3)+')-'+@phone.substr(3,3)+'-'+@phone.substr(6,4)
     htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation</div>"""
+    htm  += """<div   id="ConfirmName">
+                  <span>For: #{@first} </span><span>#{@last} </span><span>Phone: #{ph} </span><span>EMail: #{@email} </span>
+               </div>"""
     htm  += """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""

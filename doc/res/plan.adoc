@@ -6,7 +6,7 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-* Input First  Last Names, Phone Number and Confirmaton EMail
+
 * Compose Send Confirmation EMail
 * Reservation Instructions
 * Home buttons
@@ -40,6 +40,7 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site Completed#
 
+* Input First  Last Names, Phone Number and Confirmaton EMail
 * Move "Change Reservation" Button
 * Validation Message
 * Fix Res
