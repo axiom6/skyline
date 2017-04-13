@@ -160,6 +160,7 @@
         this.onHold();
         this.myRes.total = this.totals;
         this.pay.showConfirmPay(this.myRes);
+        this.pay.confirmEmail();
       } else {
         alert('Correct Errors');
       }

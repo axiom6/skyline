@@ -67,6 +67,34 @@ class Pay
     htm  += """<div id="MakePay" class="Title">Make Payment</div>"""
     htm
 
+  confirmBody:() ->
+    first = 'Tom' # @first
+    last  = 'Hosendecker' #@last
+    phone = '(303)-797-7129' #@phone
+    email = "Thomas.Edmund.Flaherty@gmail.com"
+    body = """
+                  Confirmation\n
+    \n
+    For:#{first} #{last}     Phone:#{phone}  Email:#{email}\n
+    \n
+    """
+    body  += """    Cottage        Guests       Pets      Price     Arrive      Depart     Nights       Total\n"""
+    for own roomId, r of @myRes.rooms
+      days   = Object.keys(r.days).sort()
+      num    = days.length
+      arrive = @confirmDate( days[0],     "", false )  # from 3:00-8:00PM
+      depart = @confirmDate( days[num-1], "", true  )  # by 10:00AM
+      body  += """  {r.name}   #{r.guests}  {r.pets} $#{r.price} #{arrive}   #{depart}   #{num}   $#{r.total} \n"""
+    body += """\n
+                  Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n"""
+    body
+
+  confirmEmail:() ->
+
+    win = window.open("""mailto:#{@email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
+    #win.close() if win? and not win.closed
+    return
+
   departDate:( monthI, dayI, weekdayI ) ->
     dayO     = dayI + 1
     monthO   = monthI
@@ -189,6 +217,7 @@ class Pay
   onCharge:(obj) =>
     Util.log( 'StoreRest.onCharge()', obj )
     if obj.outcome.type is 'authorized'
+      @confirmEmail()
       $('#cc-bak'  ).hide()
       $('#MakePay' ).hide()
       $('#PayDiv'  ).hide()

@@ -94,6 +94,33 @@
       return htm;
     };
 
+    Pay.prototype.confirmBody = function() {
+      var arrive, body, days, depart, email, first, last, num, phone, r, ref, roomId;
+      first = 'Tom';
+      last = 'Hosendecker';
+      phone = '(303)-797-7129';
+      email = "Thomas.Edmund.Flaherty@gmail.com";
+      body = "              Confirmation\n\n\n\nFor:" + first + " " + last + "     Phone:" + phone + "  Email:" + email + "\n\n\n";
+      body += "    Cottage        Guests       Pets      Price     Arrive      Depart     Nights       Total\n";
+      ref = this.myRes.rooms;
+      for (roomId in ref) {
+        if (!hasProp.call(ref, roomId)) continue;
+        r = ref[roomId];
+        days = Object.keys(r.days).sort();
+        num = days.length;
+        arrive = this.confirmDate(days[0], "", false);
+        depart = this.confirmDate(days[num - 1], "", true);
+        body += "  {r.name}   " + r.guests + "  {r.pets} $" + r.price + " " + arrive + "   " + depart + "   " + num + "   $" + r.total + " \n";
+      }
+      body += "\n\nArrival is from 3:00-8:00PM   Checkout is before 10:00AM\n";
+      return body;
+    };
+
+    Pay.prototype.confirmEmail = function() {
+      var win;
+      win = window.open("mailto:" + this.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
+    };
+
     Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
       var dayO, monthO, weekdayO;
       dayO = dayI + 1;
@@ -224,6 +251,7 @@
     Pay.prototype.onCharge = function(obj) {
       Util.log('StoreRest.onCharge()', obj);
       if (obj.outcome.type === 'authorized') {
+        this.confirmEmail();
         $('#cc-bak').hide();
         $('#MakePay').hide();
         $('#PayDiv').hide();

@@ -7,15 +7,16 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 
-* Compose Send Confirmation EMail
+* Compose and Send Confirmation EMail
 * Reservation Instructions
 * Home buttons
-* Deposit - get time frame
+* Deposit
 * Model Payment Status and display it
 * Contact, Map and Directions
 * Post and Test Reservations
 * Test and Test Payments
 * Refine Owner site
+* Improve Confirm and Maybe Pay Errors
 * Update text with Sue
 * Terms and Conditions
 * Consider Owner reservation - maybe just a link

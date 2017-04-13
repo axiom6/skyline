@@ -159,6 +159,7 @@ class Book
       @onHold()
       @myRes.total = @totals
       @pay.showConfirmPay( @myRes )
+      @pay.confirmEmail()
     else
       alert('Correct Errors')
     return
