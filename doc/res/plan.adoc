@@ -6,20 +6,22 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
+* Prepopulate Forms for Test
+* Improve confirm alert
 * Post and Test customer
 * Post and Test Reservations
 * Post and Test Payments
+* Model Payment Status and display it
 * Deposit
 * Reservation Instructions
-* Home buttons
-* Model Payment Status and display it
-* Contact, Map and Directions
+* Home buttons jQuery in Rooms
 * Spa opt out
+* Improve Less Styling - Contact
 * Refine Owner site
 * Improve Confirm and Maybe Pay Errors
-* Compose and Send Confirmation EMail with confirmation #
 * Update text with Sue
 * Terms and Conditions
+* Move domain from GoDaddy
 * Consider Owner reservation - maybe just a link
 * Package Slide.js and payment.coffee
 * Deploy to Firebase
@@ -42,6 +44,9 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site Completed#
 
+* Contact, Map and Directions
+* Home buttons jQuery in Rooms
+* Compose and Send Confirmation EMail with confirmation #
 * Input First  Last Names, Phone Number and Confirmaton EMail
 * Move "Change Reservation" Button
 * Validation Message

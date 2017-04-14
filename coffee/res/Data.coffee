@@ -36,14 +36,14 @@ class Data
   @stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3"
   @stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs"
 
-  @genCustId:( phone ) ->
-    custId = Util.padEnd( phone.substr(0,10), 10, '_' )
-    if Data.testing then Data.randomCustId() else custId
+  @genCustKey:( phone ) ->
+    custKey = Util.padEnd( phone.substr(0,10), 10, '_' )
+    if Data.testing then Data.randomCustKey() else custKey
 
-  @randomCustId:() ->
+  @randomCustKey:() ->
     Math.floor( Math.random() * (9999999999-1000000000)) + 1000000000
 
-  @genResId:(  roomId, date ) ->  roomId + date
+  @genResKey:(  roomId, date ) ->  roomId + date
 
   @today:() ->
     date = new Date()

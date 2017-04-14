@@ -14,6 +14,7 @@
       this.store = store;
       this.room = room1;
       this.pict = pict;
+      this.onHome = bind(this.onHome, this);
       this.onMakeRes = bind(this.onMakeRes, this);
       this.rooms = this.room.rooms;
       this.roomUIs = this.room.roomUIs;
@@ -22,6 +23,7 @@
     Home.prototype.ready = function(book) {
       this.book = book;
       $('#MakeRes').click(this.onMakeRes);
+      $('#HomeBtn').click(this.onHome);
       $('#MapDirs').click((function(_this) {
         return function() {
           return Util.toPage('rooms/X.html');
@@ -61,7 +63,31 @@
     };
 
     Home.prototype.hideMkt = function() {
-      $('#Navb').hide();
+      $('#MakeRes').hide();
+      $('#HomeBtn').hide();
+      $('#MapDirs').hide();
+      $('#Contact').hide();
+      $('#Caption').hide();
+      $('#Head').hide();
+      return $('#View').hide();
+    };
+
+    Home.prototype.showMkt = function() {
+      $('#MakeRes').show();
+      $('#HomeBtn').hide();
+      $('#MapDirs').show();
+      $('#Contact').show();
+      $('#Caption').show();
+      $('#Head').show();
+      return $('#View').show();
+    };
+
+    Home.prototype.showConfirm = function() {
+      $('#MakeRes').hide();
+      $('#HomeBtn').show();
+      $('#MapDirs').show();
+      $('#Contact').show();
+      $('#Caption').hide();
       $('#Head').hide();
       return $('#View').hide();
     };
@@ -69,6 +95,10 @@
     Home.prototype.onMakeRes = function() {
       this.hideMkt();
       this.book.ready();
+    };
+
+    Home.prototype.onHome = function() {
+      this.showMkt();
     };
 
     return Home;

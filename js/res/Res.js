@@ -14,22 +14,22 @@
       this.store = store;
       this.room = room1;
       this.Data = Data;
-      this.subscribeToResId = bind(this.subscribeToResId, this);
+      this.subscribeToResKey = bind(this.subscribeToResKey, this);
       this.testResvs = Res.Resvs;
       if (this.Data.testing) {
         this.insertTestResvs();
       }
     }
 
-    Res.prototype.subscribeToResId = function(resId) {
-      this.store.subscribe('Res', resId, 'add', (function(_this) {
+    Res.prototype.subscribeToResKey = function(resKey) {
+      this.store.subscribe('Res', resKey, 'add', (function(_this) {
         return function(add) {
-          return Util.log(add);
+          return Util.log('Res.subscribeToResKey', resKey, add);
         };
       })(this));
-      return this.store.subscribe('Res', resId, 'put', (function(_this) {
+      return this.store.subscribe('Res', resKey, 'put', (function(_this) {
         return function(put) {
-          return Util.log(put);
+          return Util.log('Res.subscribeToResKey', resKey, put);
         };
       })(this));
     };
@@ -46,11 +46,11 @@
     };
 
     Res.prototype.updateRooms = function(resvs) {
-      var dayId, res, resDay, resId, resRoom, results, room, roomDay, roomId;
+      var dayId, res, resDay, resKey, resRoom, results, room, roomDay, roomId;
       results = [];
-      for (resId in resvs) {
-        if (!hasProp.call(resvs, resId)) continue;
-        res = resvs[resId];
+      for (resKey in resvs) {
+        if (!hasProp.call(resvs, resKey)) continue;
+        res = resvs[resKey];
         results.push((function() {
           var ref, results1;
           ref = res.rooms;
@@ -69,7 +69,7 @@
                 roomDay = room.days[dayId];
                 roomDay = roomDay != null ? roomDay : {};
                 roomDay.status = res.status;
-                roomDay.resId = resId;
+                roomDay.resKey = resKey;
                 results2.push(room.days[dayId] = roomDay);
               }
               return results2;
@@ -84,13 +84,13 @@
     Res.prototype.createRes = function(total, status, method, phone, roomUIs, payments) {
       var res, roomId, roomUI;
       res = {};
-      res.id = this.genResId(roomUIs);
+      res.key = this.genResKey(roomUIs);
       res.total = total;
       res.paid = 0;
       res.balance = 0;
       res.status = status;
       res.method = method;
-      res.custId = this.Data.genCustId(phone);
+      res.custKey = this.Data.genCustKey(phone);
       res.rooms = {};
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
@@ -100,28 +100,27 @@
         }
       }
       res.payments = payments;
+      this.subscribeToResKey(res.key);
       return res;
     };
 
-    Res.prototype.genResId = function(roomUIs) {
-      var days, resId, roomId, roomUI;
-      resId = "";
-      Util.log('Res.genResId() 1', roomUIs);
+    Res.prototype.genResKey = function(roomUIs) {
+      var days, resKey, roomId, roomUI;
+      resKey = "";
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
         roomUI = roomUIs[roomId];
         if (!(roomUI.numDays > 0)) {
           continue;
         }
-        Util.log('Res.genResId() 2', roomId, roomUI.numDays, roomUI.resRoom.days);
         days = Object.keys(roomUI.resRoom.days).sort();
-        resId = this.Data.genResId(roomId, days[0]);
+        resKey = this.Data.genResKey(roomId, days[0]);
         break;
       }
-      if (!Util.isStr(resId)) {
-        Util.error('Res.genResId() resId blank');
+      if (!Util.isStr(resKey)) {
+        Util.error('Res.genResKey() resKey blank');
       }
-      return resId;
+      return resKey;
     };
 
     Res.prototype.add = function(id, res) {

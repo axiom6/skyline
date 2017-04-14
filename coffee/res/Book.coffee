@@ -147,22 +147,30 @@ class Book
     [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com' )
     ok =   @totals > 0 and fv and lv and pv and ev
     Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
-    return @totals > 0 and fv and lv and pv and ev
+    tv = @totals > 0
+    [tv,fv,lv,pv,ev]
 
   onGoToPay:( e ) =>
     e.preventDefault()
-    ok = @getNamesPhoneEmail()
-    if ok
+    [tv,fv,lv,pv,ev] = @getNamesPhoneEmail()
+    if tv and fv and lv and pv and ev
       $('.NameER').hide()
       $('#Book').hide()
       res = @createRes()
       res.total = @totals
       @pay.showConfirmPay( res )
     else
-      alert('Correct Errors')
+      alert( @onGoToMsg( tv,fv,lv,pv,ev ) )
     return
 
-  new
+  onGoToMsg:( tv,fv,lv,pv,ev ) ->
+    msg  = ""
+    msg += "Total is 0. Need to so select rooms\n" if not tv
+    msg += "Need to enter First name\n"            if not fv
+    msg += "Need to enter Last  name\n"            if not lv
+    msg += "Need to enter Phone number\n"          if not pv
+    msg += "Need to enter Email\n"                 if not ev
+    msg
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
@@ -273,7 +281,7 @@ class Book
   createRes:() =>
     res = @res.createRes( @totals, 'hold', @method, @pay.phone, @roomUIs, {} )
     res.payments = {}
-    @res.add( res.id, res )
+    @res.add( res.key, res )
     Util.log( 'Book.createRes()', res )
     for own roomId, room of res.rooms
       onAdd = {}
@@ -313,7 +321,7 @@ class Book
     else
       roomUI.numDays -= 1 if roomUI.numDays > 0
       delete roomUI.resRoom.days[date]
-    Util.log('Book.onCellBook()', roomId, date, status, roomUI.resRoom.days )
+    #Util.log('Book.onCellBook()', roomId, date, status, roomUI.resRoom.days )
     @updateTotal( roomId  )
 
   onAlloc:( alloc, roomId ) =>
@@ -338,13 +346,3 @@ class Book
 
   insert:() => @store.insert( 'Room', @rooms )
 
-  ###
-    switch name
-      when 'First' then Util.isStr( value )
-      when 'Last'  then Util.isStr( value )
-      when 'Phone' then Util.isStr( value )
-      when 'EMail' then Util.isStr( value )
-      else
-        Util.error( "Book.isValid() unknown #id", name )
-        Util.isStr( value )
-   ###

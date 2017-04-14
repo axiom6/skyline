@@ -24,10 +24,10 @@
         stream = new Stream([]);
         store = new Firestore(stream, "skytest", Data.configSkytest);
         room = new Room(stream, store, Data);
-        cust = new Cust(stream, store);
+        cust = new Cust(stream, store, Data);
         home = new Home(stream, store, room, pict);
         res = new Res(stream, store, room, Data);
-        pay = new Pay(stream, store, room, cust, res, Data);
+        pay = new Pay(stream, store, room, cust, res, home, Data);
         book = new Book(stream, store, room, cust, res, pay, pict, Data);
         return home.ready(book);
       });

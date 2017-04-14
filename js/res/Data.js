@@ -56,21 +56,21 @@
 
     Data.stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs";
 
-    Data.genCustId = function(phone) {
-      var custId;
-      custId = Util.padEnd(phone.substr(0, 10), 10, '_');
+    Data.genCustKey = function(phone) {
+      var custKey;
+      custKey = Util.padEnd(phone.substr(0, 10), 10, '_');
       if (Data.testing) {
-        return Data.randomCustId();
+        return Data.randomCustKey();
       } else {
-        return custId;
+        return custKey;
       }
     };
 
-    Data.randomCustId = function() {
+    Data.randomCustKey = function() {
       return Math.floor(Math.random() * (9999999999 - 1000000000)) + 1000000000;
     };
 
-    Data.genResId = function(roomId, date) {
+    Data.genResKey = function(roomId, date) {
       return roomId + date;
     };
 

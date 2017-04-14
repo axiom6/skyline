@@ -4,17 +4,17 @@ class Cust
   module.exports = Cust
   Cust.Data      = require( 'data/Cust.json' )
 
-  constructor:( @stream, @store ) ->
+  constructor:( @stream, @store, @Data ) ->
 
   createCust:( first, last, phone, email, source ) ->
     cust = {}
-    cust.id     = @Data.genCustId( phone )
+    cust.key    = @Data.genCustKey( phone )
     cust.first  = first
     cust.last   = last
     cust.phone  = phone
     cust.email  = email
     cust.source = source
-    @add( cust.id, cust )
+    @add( cust.key, cust )
     cust
 
   add:( id, cust ) -> @store.add( 'Cust', id, cust )

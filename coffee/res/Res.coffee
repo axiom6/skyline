@@ -7,9 +7,9 @@ class Res
     @testResvs = Res.Resvs
     @insertTestResvs() if @Data.testing
 
-  subscribeToResId:( resId ) =>
-    @store.subscribe( 'Res', resId, 'add', (add)  => Util.log(add)  )
-    @store.subscribe( 'Res', resId, 'put', (put)  => Util.log(put)  )
+  subscribeToResKey:( resKey ) =>
+    @store.subscribe( 'Res', resKey, 'add', (add)  => Util.log('Res.subscribeToResKey', resKey, add ) )
+    @store.subscribe( 'Res', resKey, 'put', (put)  => Util.log('Res.subscribeToResKey', resKey, put ) )
 
   insertTestResvs:() ->
     @store.subscribe( 'Res', 'none', 'make',  (make) => @store.insert( 'Res', @testResvs ); Util.noop(make)  )
@@ -17,43 +17,44 @@ class Res
     @updateRooms( @testResvs )
     return
 
-  # Need to clear out obsolete resIds in rooms
+  # Need to clear out obsolete resKeys in rooms
   updateRooms:( resvs ) ->
-    for own     resId, res     of resvs
+    for own    resKey, res     of resvs
       for own  roomId, resRoom of res.rooms
         room =  @room.rooms[roomId]
         for own dayId, resDay  of resRoom.days
           roomDay = room.days[dayId]
           roomDay = if roomDay? then roomDay else {}
           roomDay.status   = res.status
-          roomDay.resId    = resId
+          roomDay.resKey   = resKey
           room.days[dayId] = roomDay
 
   createRes:( total, status, method, phone, roomUIs, payments ) ->
     res          = {}
-    res.id       = @genResId( roomUIs )
+    res.key      = @genResKey( roomUIs )
     res.total    = total
     res.paid     = 0
     res.balance  = 0
     res.status   = status
     res.method   = method
-    res.custId   = @Data.genCustId( phone )
+    res.custKey  = @Data.genCustKey( phone )
     res.rooms    = {}
     for own roomId, roomUI of roomUIs when roomUI.numDays > 0
       res.rooms[roomId] = roomUI.resRoom
     res.payments = payments
+    @subscribeToResKey( res.key )
     res
 
-  genResId:( roomUIs ) ->
-    resId = ""
-    Util.log( 'Res.genResId() 1', roomUIs )
+  genResKey:( roomUIs ) ->
+    resKey = ""
+    #Util.log( 'Res.genResKey() 1', roomUIs )
     for own roomId, roomUI of roomUIs when roomUI.numDays > 0
-      Util.log( 'Res.genResId() 2', roomId, roomUI.numDays, roomUI.resRoom.days )
-      days  = Object.keys(roomUI.resRoom.days).sort()
-      resId = @Data.genResId( roomId, days[0] )
+      #Util.log( 'Res.genResKey() 2', roomId, roomUI.numDays, roomUI.resRoom.days )
+      days   = Object.keys(roomUI.resRoom.days).sort()
+      resKey = @Data.genResKey( roomId, days[0] )
       break
-    Util.error('Res.genResId() resId blank' ) if not Util.isStr(resId)
-    resId
+    Util.error('Res.genResKey() resKey blank' ) if not Util.isStr(resKey)
+    resKey
 
   add:( id, res ) -> @store.add( 'Res', id, res )
 

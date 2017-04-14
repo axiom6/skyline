@@ -5,22 +5,20 @@ class Pay
 
   module.exports = Pay
 
-  constructor:( @stream, @store, @room, @cust, @res, @Data ) ->
+  constructor:( @stream, @store, @room, @cust, @res, @home, @Data ) ->
     @uri  = "https://api.stripe.com/v1/"
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
     @myRes   = {}
-    @myCust  = {}
     @created = false
     @first   = ''
     @last    = ''
     @phone   = ''
     @email   = ''
 
-
-  showConfirmPay:( myRes ) ->
-    @myRes = res
-    @cust  = @cust.createCust( @first, @last, @phone, @email, 'site' )
+  showConfirmPay:( myRes ) =>
+    @myRes         = myRes
+    @myRes['cust'] = @cust.createCust( @first, @last, @phone, @email, 'site' )
     if @created
       $('#ConfirmTitle').remove()
       $('#ConfirmTable').remove()
@@ -51,9 +49,9 @@ class Pay
     #pf    = str.replace(/[^-.0-9]/g,'')
     #px    = /^(?:(\d{2})\-)?(\d{3})\-(\d{4})\-(\d{3})$/
     #ph    = '('+@phone.substr(0,3)+')-'+@phone.substr(3,3)+'-'+@phone.substr(6,4)
-    htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation # #{myRes.id}</div>"""
+    htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation # #{myRes.key}</div>"""
     htm  += """<div   id="ConfirmName">
-                  <span>For: #{@first} </span><span>#{@last} </span><span>Id: #{myRes.custId} </span><span>EMail: #{@email} </span>
+                  <span>For: #{@first} </span><span>#{@last} </span>
                </div>"""
     htm  += """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
@@ -63,7 +61,7 @@ class Pay
       num    = days.length
       arrive = @confirmDate( days[0],     "", false )  # from 3:00-8:00PM
       depart = @confirmDate( days[num-1], "", true  )  # by 10:00AM
-      htm  += """<tr><td>#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
+      htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
     htm  += """<tr><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td class="room-total">$#{myRes.total}</td></tr>"""
     htm  += """</tbody></table>"""
     htm  += """<div style="text-align:center;"><button class="btn btn-primary" id="cc-bak">Change Reservation</button></div>"""
@@ -71,7 +69,8 @@ class Pay
     htm
 
   confirmBody:() ->
-    body = """.      Confirmation# #{@myRes.id} for:#{@first} #{@last} Id:#{@myRes.custId}\n\n"""
+    body  = """.      Confirmation# #{@myRes.key}\n"""
+    body += """.      For: #{@first} #{@last}\n"""
     for own roomId, r of @myRes.rooms
       room   = Util.padEnd( r.name, 24, '-' )
       days   = Object.keys(r.days).sort()
@@ -84,9 +83,8 @@ class Pay
     body
 
   confirmEmail:() ->
-    email = "Thomas.Edmund.Flaherty@gmail.com"
-    window.open("""mailto:#{email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
-    #win.close() if win? and not win.closed
+    win = window.open("""mailto:#{@email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
+    win.close() if win? and not win.closed
     return
 
   departDate:( monthI, dayI, weekdayI ) ->
@@ -215,9 +213,10 @@ class Pay
       $('#cc-bak'  ).hide()
       $('#MakePay' ).hide()
       $('#PayDiv'  ).hide()
-      $('#Approval').text('Approved: A Confirnation EMail Has Been Sent').show()
+      $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@email}").show()
+      @home.showConfirm()
       @myRes.payments[@payId()] = @createPayment()
-      @store.post( 'Res', @myRes.id, @myRes )
+      @store.put( 'Res', @myRes.key, @myRes )
     else
       $('#Approval').text('Denied'  ).show()
 

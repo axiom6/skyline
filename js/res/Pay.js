@@ -9,12 +9,13 @@
   Pay = (function() {
     module.exports = Pay;
 
-    function Pay(stream, store, room1, cust, res1, Data) {
+    function Pay(stream, store, room1, cust, res, home, Data) {
       this.stream = stream;
       this.store = store;
       this.room = room1;
       this.cust = cust;
-      this.res = res1;
+      this.res = res;
+      this.home = home;
       this.Data = Data;
       this.onError = bind(this.onError, this);
       this.onCharge = bind(this.onCharge, this);
@@ -22,6 +23,7 @@
       this.submitPayment = bind(this.submitPayment, this);
       this.initPayment = bind(this.initPayment, this);
       this.onBack = bind(this.onBack, this);
+      this.showConfirmPay = bind(this.showConfirmPay, this);
       this.uri = "https://api.stripe.com/v1/";
       this.subscribe();
       $.ajaxSetup({
@@ -30,7 +32,6 @@
         }
       });
       this.myRes = {};
-      this.myCust = {};
       this.created = false;
       this.first = '';
       this.last = '';
@@ -39,8 +40,8 @@
     }
 
     Pay.prototype.showConfirmPay = function(myRes) {
-      this.myRes = res;
-      this.cust = this.cust.createCust(this.first, this.last, this.phone, this.email, 'site');
+      this.myRes = myRes;
+      this.myRes['cust'] = this.cust.createCust(this.first, this.last, this.phone, this.email, 'site');
       if (this.created) {
         $('#ConfirmTitle').remove();
         $('#ConfirmTable').remove();
@@ -73,8 +74,8 @@
 
     Pay.prototype.confirmHtml = function(myRes) {
       var arrive, days, depart, htm, num, r, ref, roomId;
-      htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + myRes.id + "</div>";
-      htm += "<div   id=\"ConfirmName\">\n   <span>For: " + this.first + " </span><span>" + this.last + " </span><span>Id: " + myRes.custId + " </span><span>EMail: " + this.email + " </span>\n</div>";
+      htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + myRes.key + "</div>";
+      htm += "<div   id=\"ConfirmName\">\n   <span>For: " + this.first + " </span><span>" + this.last + " </span>\n</div>";
       htm += "<table id=\"ConfirmTable\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
@@ -86,7 +87,7 @@
         num = days.length;
         arrive = this.confirmDate(days[0], "", false);
         depart = this.confirmDate(days[num - 1], "", true);
-        htm += "<tr><td>" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + num + "</td><td class=\"room-total\">$" + r.total + "</td></tr>";
+        htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + num + "</td><td class=\"room-total\">$" + r.total + "</td></tr>";
       }
       htm += "<tr><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td class=\"room-total\">$" + myRes.total + "</td></tr>";
       htm += "</tbody></table>";
@@ -97,7 +98,8 @@
 
     Pay.prototype.confirmBody = function() {
       var arrive, body, days, depart, num, r, ref, room, roomId;
-      body = ".      Confirmation# " + this.myRes.id + " for:" + this.first + " " + this.last + " Id:" + this.myRes.custId + "\n\n";
+      body = ".      Confirmation# " + this.myRes.key + "\n";
+      body += ".      For: " + this.first + " " + this.last + "\n";
       ref = this.myRes.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
@@ -115,9 +117,11 @@
     };
 
     Pay.prototype.confirmEmail = function() {
-      var email;
-      email = "Thomas.Edmund.Flaherty@gmail.com";
-      window.open("mailto:" + email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
+      var win;
+      win = window.open("mailto:" + this.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
+      if ((win != null) && !win.closed) {
+        win.close();
+      }
     };
 
     Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
@@ -255,9 +259,10 @@
         $('#cc-bak').hide();
         $('#MakePay').hide();
         $('#PayDiv').hide();
-        $('#Approval').text('Approved: A Confirnation EMail Has Been Sent').show();
+        $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.email).show();
+        this.home.showConfirm();
         this.myRes.payments[this.payId()] = this.createPayment();
-        return this.store.post('Res', this.myRes.id, this.myRes);
+        return this.store.put('Res', this.myRes.key, this.myRes);
       } else {
         return $('#Approval').text('Denied').show();
       }

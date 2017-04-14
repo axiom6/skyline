@@ -12,6 +12,7 @@ class Home
   ready:( book ) ->
     @book = book
     $('#MakeRes').click( @onMakeRes )
+    $('#HomeBtn').click( @onHome )
     $('#MapDirs').click( () => Util.toPage('rooms/X.html') )
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
     $('#Head').append( @headHtml() )
@@ -51,11 +52,37 @@ class Home
     return
 
   hideMkt:() ->
-    $('#Navb').hide()
-    $('#Head').hide()
-    $('#View').hide()
+    $('#MakeRes').hide()
+    $('#HomeBtn').hide()
+    $('#MapDirs').hide()
+    $('#Contact').hide()
+    $('#Caption').hide()
+    $('#Head'   ).hide()
+    $('#View'   ).hide()
+
+  showMkt:() ->
+    $('#MakeRes').show()
+    $('#HomeBtn').hide()
+    $('#MapDirs').show()
+    $('#Contact').show()
+    $('#Caption').show()
+    $('#Head'   ).show()
+    $('#View'   ).show()
+
+  showConfirm:() ->
+    $('#MakeRes').hide()
+    $('#HomeBtn').show()
+    $('#MapDirs').show()
+    $('#Contact').show()
+    $('#Caption').hide()
+    $('#Head'   ).hide()
+    $('#View'   ).hide()
 
   onMakeRes:() =>
     @hideMkt()
     @book.ready()
+    return
+
+  onHome:() =>
+    @showMkt()
     return
