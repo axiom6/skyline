@@ -7,6 +7,8 @@
 
     module.exports = Data;
 
+    Data.testing = true;
+
     Data.season = ["May", "June", "July", "August", "September", "October"];
 
     Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -53,6 +55,33 @@
     Data.stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3";
 
     Data.stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs";
+
+    Data.genCustId = function(phone) {
+      var custId;
+      custId = Util.padEnd(phone.substr(0, 10), 10, '_');
+      if (Data.testing) {
+        return Data.randomCustId();
+      } else {
+        return custId;
+      }
+    };
+
+    Data.randomCustId = function() {
+      return Math.floor(Math.random() * (9999999999 - 1000000000)) + 1000000000;
+    };
+
+    Data.genResId = function(roomId, date) {
+      return roomId + date;
+    };
+
+    Data.today = function() {
+      var date, day, month, year;
+      date = new Date();
+      year = toString(date.getFullYear());
+      month = Util.padStr(date.getMonth() + 1);
+      day = Util.padStr(date.getDate());
+      return year + month + day;
+    };
 
     return Data;
 

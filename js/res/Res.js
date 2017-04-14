@@ -9,61 +9,63 @@
 
     Res.Resvs = require('data/res.json');
 
-    function Res(stream, store, room1, cust) {
+    function Res(stream, store, room1, Data) {
       this.stream = stream;
       this.store = store;
       this.room = room1;
-      this.cust = cust;
-      this.initRes = bind(this.initRes, this);
-      this.resvs = Res.Resvs;
-      this.myResId = '12';
-      this.myCustId = '12';
-      this.initRes();
-      this.updateRooms();
+      this.Data = Data;
+      this.subscribeToResId = bind(this.subscribeToResId, this);
+      this.testResvs = Res.Resvs;
+      if (this.Data.testing) {
+        this.insertTestResvs();
+      }
     }
 
-    Res.prototype.initRes = function() {
-      this.store.subscribe('Res', this.myResId, 'add', (function(_this) {
+    Res.prototype.subscribeToResId = function(resId) {
+      this.store.subscribe('Res', resId, 'add', (function(_this) {
         return function(add) {
           return Util.log(add);
         };
       })(this));
-      this.store.subscribe('Res', this.myResId, 'put', (function(_this) {
+      return this.store.subscribe('Res', resId, 'put', (function(_this) {
         return function(put) {
           return Util.log(put);
         };
       })(this));
+    };
+
+    Res.prototype.insertTestResvs = function() {
       this.store.subscribe('Res', 'none', 'make', (function(_this) {
         return function(make) {
-          _this.store.insert('Res', _this.resvs);
+          _this.store.insert('Res', _this.testResvs);
           return Util.noop(make);
         };
       })(this));
-      return this.store.make('Res');
+      this.store.make('Res');
+      this.updateRooms(this.testResvs);
     };
 
-    Res.prototype.updateRooms = function() {
-      var dayId, ref, res, resDay, resId, resRoom, results, room, roomDay, roomId;
-      ref = this.resvs;
+    Res.prototype.updateRooms = function(resvs) {
+      var dayId, res, resDay, resId, resRoom, results, room, roomDay, roomId;
       results = [];
-      for (resId in ref) {
-        if (!hasProp.call(ref, resId)) continue;
-        res = ref[resId];
+      for (resId in resvs) {
+        if (!hasProp.call(resvs, resId)) continue;
+        res = resvs[resId];
         results.push((function() {
-          var ref1, results1;
-          ref1 = res.rooms;
+          var ref, results1;
+          ref = res.rooms;
           results1 = [];
-          for (roomId in ref1) {
-            if (!hasProp.call(ref1, roomId)) continue;
-            resRoom = ref1[roomId];
+          for (roomId in ref) {
+            if (!hasProp.call(ref, roomId)) continue;
+            resRoom = ref[roomId];
             room = this.room.rooms[roomId];
             results1.push((function() {
-              var ref2, results2;
-              ref2 = resRoom.days;
+              var ref1, results2;
+              ref1 = resRoom.days;
               results2 = [];
-              for (dayId in ref2) {
-                if (!hasProp.call(ref2, dayId)) continue;
-                resDay = ref2[dayId];
+              for (dayId in ref1) {
+                if (!hasProp.call(ref1, dayId)) continue;
+                resDay = ref1[dayId];
                 roomDay = room.days[dayId];
                 roomDay = roomDay != null ? roomDay : {};
                 roomDay.status = res.status;
@@ -79,15 +81,16 @@
       return results;
     };
 
-    Res.prototype.createHold = function(total, status, method, custId, roomUIs, payments) {
+    Res.prototype.createRes = function(total, status, method, phone, roomUIs, payments) {
       var res, roomId, roomUI;
       res = {};
+      res.id = this.genResId(roomUIs);
       res.total = total;
       res.paid = 0;
       res.balance = 0;
       res.status = status;
       res.method = method;
-      res.custId = custId;
+      res.custId = this.Data.genCustId(phone);
       res.rooms = {};
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
@@ -98,6 +101,27 @@
       }
       res.payments = payments;
       return res;
+    };
+
+    Res.prototype.genResId = function(roomUIs) {
+      var days, resId, roomId, roomUI;
+      resId = "";
+      Util.log('Res.genResId() 1', roomUIs);
+      for (roomId in roomUIs) {
+        if (!hasProp.call(roomUIs, roomId)) continue;
+        roomUI = roomUIs[roomId];
+        if (!(roomUI.numDays > 0)) {
+          continue;
+        }
+        Util.log('Res.genResId() 2', roomId, roomUI.numDays, roomUI.resRoom.days);
+        days = Object.keys(roomUI.resRoom.days).sort();
+        resId = this.Data.genResId(roomId, days[0]);
+        break;
+      }
+      if (!Util.isStr(resId)) {
+        Util.error('Res.genResId() resId blank');
+      }
+      return resId;
     };
 
     Res.prototype.add = function(id, res) {
@@ -131,19 +155,5 @@
     return Res;
 
   })();
-
-
-  /*
-      "1":{ "total":250, "paid":250, "balance":0,
-      "rooms":  { "1":{ "total":250, "price":125, "guests":2,"pets":1, "spa":false, "days":{"20170709":{},"20170710":{} } } },
-      "payments":{"1":{ "amount":250,"date":"20170517", "with":"check", "num":"4028" } },
-      "status":"book", "method":"site", "custId":"1" },
-  onAlloc:( alloc, roomId ) =>
-    room = @rooms[roomId]
-    for own day, obj of alloc.days
-      room.days[day] =  alloc.days[day]
-    @store.put( 'Room', roomId, room )
-    return
-   */
 
 }).call(this);

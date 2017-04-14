@@ -26,7 +26,7 @@
         room = new Room(stream, store, Data);
         cust = new Cust(stream, store);
         home = new Home(stream, store, room, pict);
-        res = new Res(stream, store, room, cust);
+        res = new Res(stream, store, room, Data);
         pay = new Pay(stream, store, room, cust, res, Data);
         book = new Book(stream, store, room, cust, res, pay, pict, Data);
         return home.ready(book);

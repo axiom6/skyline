@@ -3,6 +3,8 @@ class Data
 
   module.exports = Data
 
+  @testing     = true # Use Res test data
+
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
   @numDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
@@ -33,4 +35,20 @@ class Data
   @stripeLiveKey = "sk_live_CCbj5oirIeHwTlyKVXJnbrgt"
   @stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3"
   @stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs"
+
+  @genCustId:( phone ) ->
+    custId = Util.padEnd( phone.substr(0,10), 10, '_' )
+    if Data.testing then Data.randomCustId() else custId
+
+  @randomCustId:() ->
+    Math.floor( Math.random() * (9999999999-1000000000)) + 1000000000
+
+  @genResId:(  roomId, date ) ->  roomId + date
+
+  @today:() ->
+    date = new Date()
+    year  = toString( date.getFullYear()   )
+    month = Util.padStr( date.getMonth()+1 )
+    day   = Util.padStr( date.getDate()    )
+    year + month + day
 

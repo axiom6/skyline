@@ -19,11 +19,8 @@ class Book
     @begMay      = 15
     @begDay      = if @month is 'May' then @begMay else 1
     @$cells      = []
-    @myResId     = @res.myResId
-    @myCustId    = @res.myCustId
     @totals      = 0
     @method      = 'site'
-    @myRes       = null
 
   ready:() ->
     $('#Book'   ).append( @bookHtml()  )
@@ -135,17 +132,19 @@ class Book
     </form>
     """
 
-  isValid:( name ) ->
+  isValid:( name, test ) ->
     value = $('#'+name).val()
     valid = Util.isStr( value )
+    value = test if @Data.testing and not valid
+    valid = true if @Data.testing
     $('#'+name+'ER').show() if not valid
     [value,valid]
 
   getNamesPhoneEmail:() ->
-    [@pay.first,fv] = @isValid('First')
-    [@pay.last, lv] = @isValid('Last' )
-    [@pay.phone,pv] = @isValid('Phone')
-    [@pay.email,ev] = @isValid('EMail')
+    [@pay.first,fv] = @isValid('First', 'Samuel')
+    [@pay.last, lv] = @isValid('Last',  'Hosendecker' )
+    [@pay.phone,pv] = @isValid('Phone', '3037977129')
+    [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com' )
     ok =   @totals > 0 and fv and lv and pv and ev
     Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
     return @totals > 0 and fv and lv and pv and ev
@@ -156,13 +155,14 @@ class Book
     if ok
       $('.NameER').hide()
       $('#Book').hide()
-      @onHold()
-      @myRes.total = @totals
-      @pay.showConfirmPay( @myRes )
-      @pay.confirmEmail()
+      res = @createRes()
+      res.total = @totals
+      @pay.showConfirmPay( res )
     else
       alert('Correct Errors')
     return
+
+  new
 
   createCell:( roomId, room, date ) ->
     status = @room.dayBooked( room, date )
@@ -270,28 +270,31 @@ class Book
     Util.log( 'Book.onTest()' )
     @store.insert( 'Alloc', Alloc.Allocs )
 
-  onHold:() =>
-    @myRes = @res.createHold( @totals, 'hold', @method, @myCustId, @roomUIs, {} )
-    #@res.add( @myResId, @myRes )
-    Util.log( 'Book.onHold()', @myRes )
-    for own roomId, room of @myRes.rooms
+  createRes:() =>
+    res = @res.createRes( @totals, 'hold', @method, @pay.phone, @roomUIs, {} )
+    res.payments = {}
+    @res.add( res.id, res )
+    Util.log( 'Book.createRes()', res )
+    for own roomId, room of res.rooms
       onAdd = {}
       onAdd.days = room.days
       @store.add( 'Alloc', roomId, onAdd )
-    return
+    res
 
+  ###
   onBook:() =>
-    @onHold() if not @myRes?
-    @myRes.payments      = {}
-    @myRes.payments['1'] = @res.resPay()
-    #@res.put( @myResId, @myRes )
-    for own roomId, room of @myRes.rooms
+    res = @createRes()
+    res.payments      = {}
+    res.payments['1'] = @res.resPay()
+    #@res.put( res.id, res )
+    for own roomId, room of res.rooms
       day.status = 'book' for own date, day of room.days
       onPut = {}
       onPut.days = room.days
       @store.put( 'Alloc', roomId, onPut )
-    Util.log( 'Book.onBook()', @myRes )
+    Util.log( 'Book.onBook()', res )
     return
+    ###
     
   onCellBook:( event ) =>
     $cell  = $(event.target)

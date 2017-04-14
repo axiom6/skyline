@@ -9,15 +9,18 @@ class Pay
     @uri  = "https://api.stripe.com/v1/"
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
-    @myRes = {}
+    @myRes   = {}
+    @myCust  = {}
     @created = false
-    @first = ''
-    @last  = ''
-    @phone = ''
-    @email = ''
+    @first   = ''
+    @last    = ''
+    @phone   = ''
+    @email   = ''
+
 
   showConfirmPay:( myRes ) ->
-    @myRes = myRes
+    @myRes = res
+    @cust  = @cust.createCust( @first, @last, @phone, @email, 'site' )
     if @created
       $('#ConfirmTitle').remove()
       $('#ConfirmTable').remove()
@@ -32,7 +35,7 @@ class Pay
       window.$ = $
       Util.loadScript( "../js/res/payment.js", @initPayment )  # payment.js need jQuery global
       #@initPayment()
-      $('#cc-amt').text('$'+myRes.total)
+      $('#cc-amt').text('$'+@myRes.total)
       $('#cc-bak').click( (e) => @onBack(e) )
       @created = true
     return
@@ -47,10 +50,10 @@ class Pay
   confirmHtml:( myRes ) ->
     #pf    = str.replace(/[^-.0-9]/g,'')
     #px    = /^(?:(\d{2})\-)?(\d{3})\-(\d{4})\-(\d{3})$/
-    ph    = '('+@phone.substr(0,3)+')-'+@phone.substr(3,3)+'-'+@phone.substr(6,4)
-    htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation</div>"""
+    #ph    = '('+@phone.substr(0,3)+')-'+@phone.substr(3,3)+'-'+@phone.substr(6,4)
+    htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation # #{myRes.id}</div>"""
     htm  += """<div   id="ConfirmName">
-                  <span>For: #{@first} </span><span>#{@last} </span><span>Phone: #{ph} </span><span>EMail: #{@email} </span>
+                  <span>For: #{@first} </span><span>#{@last} </span><span>Id: #{myRes.custId} </span><span>EMail: #{@email} </span>
                </div>"""
     htm  += """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
@@ -68,30 +71,21 @@ class Pay
     htm
 
   confirmBody:() ->
-    first = 'Tom' # @first
-    last  = 'Hosendecker' #@last
-    phone = '(303)-797-7129' #@phone
-    email = "Thomas.Edmund.Flaherty@gmail.com"
-    body = """
-                  Confirmation\n
-    \n
-    For:#{first} #{last}     Phone:#{phone}  Email:#{email}\n
-    \n
-    """
-    body  += """    Cottage        Guests       Pets      Price     Arrive      Depart     Nights       Total\n"""
+    body = """.      Confirmation# #{@myRes.id} for:#{@first} #{@last} Id:#{@myRes.custId}\n\n"""
     for own roomId, r of @myRes.rooms
+      room   = Util.padEnd( r.name, 24, '-' )
       days   = Object.keys(r.days).sort()
       num    = days.length
       arrive = @confirmDate( days[0],     "", false )  # from 3:00-8:00PM
       depart = @confirmDate( days[num-1], "", true  )  # by 10:00AM
-      body  += """  {r.name}   #{r.guests}  {r.pets} $#{r.price} #{arrive}   #{depart}   #{num}   $#{r.total} \n"""
-    body += """\n
-                  Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n"""
+      body  += """#{room} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{num}-Nights $#{r.total}\n"""
+    body += """\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n"""
+    body = escape(body)
     body
 
   confirmEmail:() ->
-
-    win = window.open("""mailto:#{@email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
+    email = "Thomas.Edmund.Flaherty@gmail.com"
+    window.open("""mailto:#{email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
     #win.close() if win? and not win.closed
     return
 
@@ -182,8 +176,8 @@ class Pay
     $('.cc-msg').addClass($('.has-error').length ? 'text-danger' : 'text-success')
     if numerr is '' and experr is '' and cvcerr is ''
       $('#er-sub' ).text("Waiting For Approval")
-
       @token( num, mon, yer, cvc )
+      @last4 = num.substr( 11, 4 )
     else
       $('#er-num').text(numerr)
       $('#er-exp').text(experr)
@@ -222,8 +216,22 @@ class Pay
       $('#MakePay' ).hide()
       $('#PayDiv'  ).hide()
       $('#Approval').text('Approved: A Confirnation EMail Has Been Sent').show()
+      @myRes.payments[@payId()] = @createPayment()
+      @store.post( 'Res', @myRes.id, @myRes )
     else
       $('#Approval').text('Denied'  ).show()
+
+  payId:() ->
+    pays   = Object.keys(@myRes.payments).sort()
+    if pays.length > 0 then toString(parseInt(pays[pays.length-1])+1)  else '1'
+
+  createPayment:() ->
+    payment = {}
+    payment.amount = @myRes.total
+    payment.date   = @Data.today()
+    payment.method = 'card'
+    payment.with   = @last4
+    payment
 
   onError:(obj) =>
     Util.error( 'StoreRest.onError()', obj )

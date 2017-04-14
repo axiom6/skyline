@@ -416,6 +416,13 @@ class Util
     else
       Util.error( "Util.firstTok() str is not at string", str )
       ''
+
+  @padEnd:( str, len, ch=' ' ) ->
+    pad = ""
+    for [str.length...len]
+      pad += ch
+    str + pad
+
   ###
     parse = document.createElement('a')
     parse.href =  "http://example.com:3000/dir1/dir2/file.ext?search=test#hash"

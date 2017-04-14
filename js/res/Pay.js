@@ -9,12 +9,12 @@
   Pay = (function() {
     module.exports = Pay;
 
-    function Pay(stream, store, room, cust, res, Data) {
+    function Pay(stream, store, room1, cust, res1, Data) {
       this.stream = stream;
       this.store = store;
-      this.room = room;
+      this.room = room1;
       this.cust = cust;
-      this.res = res;
+      this.res = res1;
       this.Data = Data;
       this.onError = bind(this.onError, this);
       this.onCharge = bind(this.onCharge, this);
@@ -30,6 +30,7 @@
         }
       });
       this.myRes = {};
+      this.myCust = {};
       this.created = false;
       this.first = '';
       this.last = '';
@@ -38,7 +39,8 @@
     }
 
     Pay.prototype.showConfirmPay = function(myRes) {
-      this.myRes = myRes;
+      this.myRes = res;
+      this.cust = this.cust.createCust(this.first, this.last, this.phone, this.email, 'site');
       if (this.created) {
         $('#ConfirmTitle').remove();
         $('#ConfirmTable').remove();
@@ -52,7 +54,7 @@
         $('#Pays').show();
         window.$ = $;
         Util.loadScript("../js/res/payment.js", this.initPayment);
-        $('#cc-amt').text('$' + myRes.total);
+        $('#cc-amt').text('$' + this.myRes.total);
         $('#cc-bak').click((function(_this) {
           return function(e) {
             return _this.onBack(e);
@@ -70,10 +72,9 @@
     };
 
     Pay.prototype.confirmHtml = function(myRes) {
-      var arrive, days, depart, htm, num, ph, r, ref, roomId;
-      ph = '(' + this.phone.substr(0, 3) + ')-' + this.phone.substr(3, 3) + '-' + this.phone.substr(6, 4);
-      htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation</div>";
-      htm += "<div   id=\"ConfirmName\">\n   <span>For: " + this.first + " </span><span>" + this.last + " </span><span>Phone: " + ph + " </span><span>EMail: " + this.email + " </span>\n</div>";
+      var arrive, days, depart, htm, num, r, ref, roomId;
+      htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + myRes.id + "</div>";
+      htm += "<div   id=\"ConfirmName\">\n   <span>For: " + this.first + " </span><span>" + this.last + " </span><span>Id: " + myRes.custId + " </span><span>EMail: " + this.email + " </span>\n</div>";
       htm += "<table id=\"ConfirmTable\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
@@ -95,30 +96,28 @@
     };
 
     Pay.prototype.confirmBody = function() {
-      var arrive, body, days, depart, email, first, last, num, phone, r, ref, roomId;
-      first = 'Tom';
-      last = 'Hosendecker';
-      phone = '(303)-797-7129';
-      email = "Thomas.Edmund.Flaherty@gmail.com";
-      body = "              Confirmation\n\n\n\nFor:" + first + " " + last + "     Phone:" + phone + "  Email:" + email + "\n\n\n";
-      body += "    Cottage        Guests       Pets      Price     Arrive      Depart     Nights       Total\n";
+      var arrive, body, days, depart, num, r, ref, room, roomId;
+      body = ".      Confirmation# " + this.myRes.id + " for:" + this.first + " " + this.last + " Id:" + this.myRes.custId + "\n\n";
       ref = this.myRes.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
         r = ref[roomId];
+        room = Util.padEnd(r.name, 24, '-');
         days = Object.keys(r.days).sort();
         num = days.length;
         arrive = this.confirmDate(days[0], "", false);
         depart = this.confirmDate(days[num - 1], "", true);
-        body += "  {r.name}   " + r.guests + "  {r.pets} $" + r.price + " " + arrive + "   " + depart + "   " + num + "   $" + r.total + " \n";
+        body += room + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + num + "-Nights $" + r.total + "\n";
       }
-      body += "\n\nArrival is from 3:00-8:00PM   Checkout is before 10:00AM\n";
+      body += "\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n";
+      body = escape(body);
       return body;
     };
 
     Pay.prototype.confirmEmail = function() {
-      var win;
-      win = window.open("mailto:" + this.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
+      var email;
+      email = "Thomas.Edmund.Flaherty@gmail.com";
+      window.open("mailto:" + email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
     };
 
     Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
@@ -198,6 +197,7 @@
       if (numerr === '' && experr === '' && cvcerr === '') {
         $('#er-sub').text("Waiting For Approval");
         this.token(num, mon, yer, cvc);
+        this.last4 = num.substr(11, 4);
       } else {
         $('#er-num').text(numerr);
         $('#er-exp').text(experr);
@@ -255,10 +255,32 @@
         $('#cc-bak').hide();
         $('#MakePay').hide();
         $('#PayDiv').hide();
-        return $('#Approval').text('Approved: A Confirnation EMail Has Been Sent').show();
+        $('#Approval').text('Approved: A Confirnation EMail Has Been Sent').show();
+        this.myRes.payments[this.payId()] = this.createPayment();
+        return this.store.post('Res', this.myRes.id, this.myRes);
       } else {
         return $('#Approval').text('Denied').show();
       }
+    };
+
+    Pay.prototype.payId = function() {
+      var pays;
+      pays = Object.keys(this.myRes.payments).sort();
+      if (pays.length > 0) {
+        return toString(parseInt(pays[pays.length - 1]) + 1);
+      } else {
+        return '1';
+      }
+    };
+
+    Pay.prototype.createPayment = function() {
+      var payment;
+      payment = {};
+      payment.amount = this.myRes.total;
+      payment.date = this.Data.today();
+      payment.method = 'card';
+      payment["with"] = this.last4;
+      return payment;
     };
 
     Pay.prototype.onError = function(obj) {

@@ -202,9 +202,9 @@ Util = (function() {
   };
 
   Util.dependsOn = function() {
-    var arg, has, j, len, ok;
+    var arg, has, j, len1, ok;
     ok = true;
-    for (j = 0, len = arguments.length; j < len; j++) {
+    for (j = 0, len1 = arguments.length; j < len1; j++) {
       arg = arguments[j];
       has = Util.hasGlobal(arg, false) || Util.hasModule(arg, false) || Util.hasPlugin(arg, false);
       if (!has) {
@@ -244,10 +244,10 @@ Util = (function() {
   };
 
   Util.toStrArgs = function(prefix, args) {
-    var arg, j, len, str;
+    var arg, j, len1, str;
     Util.logStackNum = 0;
     str = Util.isStr(prefix) ? prefix + " " : "";
-    for (j = 0, len = args.length; j < len; j++) {
+    for (j = 0, len1 = args.length; j < len1; j++) {
       arg = args[j];
       str += Util.toStr(arg) + " ";
     }
@@ -274,13 +274,13 @@ Util = (function() {
   };
 
   Util.toStrObj = function(arg) {
-    var a, j, key, len, str, val;
+    var a, j, key, len1, str, val;
     str = "";
     if (arg == null) {
       str += "null";
     } else if (Util.isArray(arg)) {
       str += "[ ";
-      for (j = 0, len = arg.length; j < len; j++) {
+      for (j = 0, len1 = arg.length; j < len1; j++) {
         a = arg[j];
         str += Util.toStr(a) + ",";
       }
@@ -490,8 +490,8 @@ Util = (function() {
   };
 
   Util.isDefs = function() {
-    var arg, j, len;
-    for (j = 0, len = arguments.length; j < len; j++) {
+    var arg, j, len1;
+    for (j = 0, len1 = arguments.length; j < len1; j++) {
       arg = arguments[j];
       if (arg == null) {
         return false;
@@ -668,6 +668,18 @@ Util = (function() {
     }
   };
 
+  Util.padEnd = function(str, len, ch) {
+    var j, pad, ref, ref1;
+    if (ch == null) {
+      ch = ' ';
+    }
+    pad = "";
+    for (j = ref = str.length, ref1 = len; ref <= ref1 ? j < ref1 : j > ref1; ref <= ref1 ? j++ : j--) {
+      pad += ch;
+    }
+    return str + pad;
+  };
+
 
   /*
     parse = document.createElement('a')
@@ -698,7 +710,7 @@ Util = (function() {
   };
 
   Util.parseURI = function(uri) {
-    var a, j, len, name, nameValue, nameValues, parse, ref, value;
+    var a, j, len1, name, nameValue, nameValues, parse, ref, value;
     parse = {};
     parse.params = {};
     a = document.createElement('a');
@@ -716,7 +728,7 @@ Util = (function() {
     parse.query = Util.isStr(a.search) ? a.search.substring(1) : '';
     nameValues = parse.query.split('&');
     if (Util.isArray(nameValues)) {
-      for (j = 0, len = nameValues.length; j < len; j++) {
+      for (j = 0, len1 = nameValues.length; j < len1; j++) {
         nameValue = nameValues[j];
         ref = nameValue.split('='), name = ref[0], value = ref[1];
         parse.params[name] = value;
@@ -732,9 +744,9 @@ Util = (function() {
     }
     head = array.pop();
     small = (function() {
-      var j, len, results;
+      var j, len1, results;
       results = [];
-      for (j = 0, len = array.length; j < len; j++) {
+      for (j = 0, len1 = array.length; j < len1; j++) {
         a = array[j];
         if (a <= head) {
           results.push(a);
@@ -743,9 +755,9 @@ Util = (function() {
       return results;
     })();
     large = (function() {
-      var j, len, results;
+      var j, len1, results;
       results = [];
-      for (j = 0, len = array.length; j < len; j++) {
+      for (j = 0, len1 = array.length; j < len1; j++) {
         a = array[j];
         if (a > head) {
           results.push(a);
@@ -861,7 +873,7 @@ Util = (function() {
   };
 
   Util.toArray = function(objects, whereIn, keyField) {
-    var array, j, key, len, object, where;
+    var array, j, key, len1, object, where;
     if (whereIn == null) {
       whereIn = null;
     }
@@ -873,7 +885,7 @@ Util = (function() {
     };
     array = [];
     if (Util.isArray(objects)) {
-      for (j = 0, len = array.length; j < len; j++) {
+      for (j = 0, len1 = array.length; j < len1; j++) {
         object = array[j];
         if (!(where(object))) {
           continue;
@@ -898,7 +910,7 @@ Util = (function() {
   };
 
   Util.toObjects = function(rows, whereIn, keyProp) {
-    var j, key, len, objects, row, where;
+    var j, key, len1, objects, row, where;
     if (whereIn == null) {
       whereIn = null;
     }
@@ -910,7 +922,7 @@ Util = (function() {
     };
     objects = {};
     if (Util.isArray(rows)) {
-      for (j = 0, len = rows.length; j < len; j++) {
+      for (j = 0, len1 = rows.length; j < len1; j++) {
         row = rows[j];
         if (where(row)) {
           if (row[keyProp] != null) {
@@ -933,7 +945,7 @@ Util = (function() {
   };
 
   Util.toKeys = function(rows, whereIn, keyProp) {
-    var j, key, keys, len, row, where;
+    var j, key, keys, len1, row, where;
     if (whereIn == null) {
       whereIn = null;
     }
@@ -945,7 +957,7 @@ Util = (function() {
     };
     keys = [];
     if (Util.isArray(rows)) {
-      for (j = 0, len = rows.length; j < len; j++) {
+      for (j = 0, len1 = rows.length; j < len1; j++) {
         row = rows[j];
         if (where(row)) {
           if (row[keyProp] != null) {
