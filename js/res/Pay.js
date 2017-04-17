@@ -21,8 +21,10 @@
       this.onCharge = bind(this.onCharge, this);
       this.onToken = bind(this.onToken, this);
       this.submitPayment = bind(this.submitPayment, this);
-      this.initPayment = bind(this.initPayment, this);
-      this.onBack = bind(this.onBack, this);
+      this.initCCPayment = bind(this.initCCPayment, this);
+      this.onMakePayment = bind(this.onMakePayment, this);
+      this.onMakeDeposit = bind(this.onMakeDeposit, this);
+      this.onChangeReser = bind(this.onChangeReser, this);
       this.showConfirmPay = bind(this.showConfirmPay, this);
       this.uri = "https://api.stripe.com/v1/";
       this.subscribe();
@@ -37,7 +39,24 @@
       this.last = '';
       this.phone = '';
       this.email = '';
+      this.spas = false;
+      this.purpose = 'PayInFull';
+      this.testing = true;
+      this.errored = false;
     }
+
+    Pay.prototype.showSpa = function(myRes) {
+      var ref, room, roomId;
+      ref = myRes.rooms;
+      for (roomId in ref) {
+        if (!hasProp.call(ref, roomId)) continue;
+        room = ref[roomId];
+        if (this.room.hasSpa(roomId)) {
+          return true;
+        }
+      }
+      return false;
+    };
 
     Pay.prototype.showConfirmPay = function(myRes) {
       this.myRes = myRes;
@@ -54,30 +73,70 @@
         $('#Pays').append(this.payHtml());
         $('#Pays').show();
         window.$ = $;
-        Util.loadScript("../js/res/payment.js", this.initPayment);
+        Util.loadScript("../js/res/payment.js", this.initCCPayment);
         $('#cc-amt').text('$' + this.myRes.total);
-        $('#cc-bak').click((function(_this) {
+        $('#ChangeReser').click((function(_this) {
           return function(e) {
-            return _this.onBack(e);
+            return _this.onChangeReser(e);
+          };
+        })(this));
+        $('#MakeDeposit').click((function(_this) {
+          return function(e) {
+            return _this.onMakeDeposit(e);
+          };
+        })(this));
+        $('#MakePayment').click((function(_this) {
+          return function(e) {
+            return _this.onMakePayment(e);
+          };
+        })(this));
+        $('.SpaCheck').change((function(_this) {
+          return function(e) {
+            return _this.onSpa(e);
           };
         })(this));
         this.created = true;
       }
+      if (this.testing) {
+        this.testPop();
+      }
     };
 
-    Pay.prototype.onBack = function(e) {
+    Pay.prototype.testPop = function() {
+      $('#cc-num').val('4242424242424242');
+      $('#cc-exp').val('10 / 19');
+      return $('#cc-cvc').val('555');
+    };
+
+    Pay.prototype.onChangeReser = function(e) {
       e.preventDefault();
       $('#Make').text('Change Reservation');
       $('#Pays').hide();
       $('#Book').show();
     };
 
+    Pay.prototype.onMakeDeposit = function(e) {
+      e.preventDefault();
+      this.purpose = 'Deposit';
+      $("#cc-amt").text('$' + this.myRes.deposit);
+      return $('#MakePay').text('Make 50% Deposit');
+    };
+
+    Pay.prototype.onMakePayment = function(e) {
+      e.preventDefault();
+      this.purpose = 'PayInFull';
+      $("#cc-amt").text('$' + this.myRes.total);
+      return $('#MakePay').text('Make Payment');
+    };
+
     Pay.prototype.confirmHtml = function(myRes) {
-      var arrive, days, depart, htm, num, r, ref, roomId;
+      var arrive, days, depart, htm, num, r, ref, roomId, spaTH;
+      this.spas = this.showSpa(this.myRes);
+      spaTH = this.spas ? "Spa" : "";
       htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + myRes.key + "</div>";
       htm += "<div   id=\"ConfirmName\">\n   <span>For: " + this.first + " </span><span>" + this.last + " </span>\n</div>";
-      htm += "<table id=\"ConfirmTable\"><thead>";
-      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
+      htm += "<div class=\"DivCenter\"><table id=\"ConfirmTable\"><thead>";
+      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>" + spaTH + "</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
       ref = myRes.rooms;
       for (roomId in ref) {
@@ -87,13 +146,41 @@
         num = days.length;
         arrive = this.confirmDate(days[0], "", false);
         depart = this.confirmDate(days[num - 1], "", true);
-        htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + num + "</td><td class=\"room-total\">$" + r.total + "</td></tr>";
+        htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + num + "</td><td class=\"room-total\">$" + r.total + "</td></tr>";
       }
-      htm += "<tr><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td class=\"room-total\">$" + myRes.total + "</td></tr>";
-      htm += "</tbody></table>";
-      htm += "<div style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"cc-bak\">Change Reservation</button></div>";
+      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td class=\"room-total\">$" + myRes.total + "</td></tr>";
+      htm += "</tbody></table></div>";
+      htm += "<div class=\"PayBtns\">";
+      htm += "  <button class=\"btn btn-primary\" id=\"ChangeReser\">Change Reservation</button>";
+      if (this.canMakeDeposit(this.myRes)) {
+        htm += "  <button class=\"btn btn-primary\" id=\"MakeDeposit\">Make 50% Deposit</button>";
+      }
+      htm += "  <button class=\"btn btn-primary\" id=\"MakePayment\">Make Payment</button>";
+      htm += "</div>";
       htm += "<div id=\"MakePay\" class=\"Title\">Make Payment</div>";
       return htm;
+    };
+
+    Pay.prototype.canMakeDeposit = function(myRes) {
+      return this.myRes.arrive >= this.Data.advanceDate(this.myRes.booked, 7);
+    };
+
+    Pay.prototype.spa = function(roomId) {
+      Util.log("Util.spa()", roomId, this.room.hasSpa(roomId));
+      if (this.room.hasSpa(roomId)) {
+        return "<input id=\"" + roomId + "SpaCheck\" class=\"SpaCheck\" type=\"checkbox\" value=\"" + roomId + "\" checked>";
+      } else {
+        return "";
+      }
+    };
+
+    Pay.prototype.onSpa = function(event) {
+      var $elem, checked, roomId, spaFee;
+      $elem = $(event.target);
+      roomId = $elem.attr('id').charAt(0);
+      checked = $elem.is(':checked');
+      spaFee = checked ? 20 : -20;
+      this.myRes.rooms[roomId].total += spaFee;
     };
 
     Pay.prototype.confirmBody = function() {
@@ -170,7 +257,7 @@
       return msg;
     };
 
-    Pay.prototype.initPayment = function() {
+    Pay.prototype.initCCPayment = function() {
       $('.cc-num').payment('formatCardNumber');
       $('.cc-exp').payment('formatCardExpiry');
       $('.cc-cvc').payment('formatCardCVC');
@@ -285,6 +372,7 @@
       payment.date = this.Data.today();
       payment.method = 'card';
       payment["with"] = this.last4;
+      payment.purpose = this.purpose;
       return payment;
     };
 

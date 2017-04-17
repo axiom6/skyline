@@ -37,10 +37,14 @@ class Res
     res.balance  = 0
     res.status   = status
     res.method   = method
+    res.booked   = '20170516' # @Data.today()
+    res.arrive   = "99999999"
     res.custKey  = @Data.genCustKey( phone )
     res.rooms    = {}
     for own roomId, roomUI of roomUIs when roomUI.numDays > 0
       res.rooms[roomId] = roomUI.resRoom
+      for own day, obj of roomUI.resRoom.days
+        res.arrive = day if day < res.arrive
     res.payments = payments
     @subscribeToResKey( res.key )
     res

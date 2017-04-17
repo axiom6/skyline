@@ -6,21 +6,19 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-* Prepopulate Forms for Test
-* Improve confirm alert
-* Post and Test customer
-* Post and Test Reservations
-* Post and Test Payments
-* Model Payment Status and display it
-* Deposit
-* Reservation Instructions
-* Home buttons jQuery in Rooms
-* Spa opt out
-* Improve Less Styling - Contact
-* Refine Owner site
-* Improve Confirm and Maybe Pay Errors
+### [.black]#Feature#
+* Change reservation
+* Reservation Instruction
+* Limit Credit Cards
 * Update text with Sue
 * Terms and Conditions
+
+### [.black]#Test#
+
+* Test Pop, Deposit, Spa Opt Out
+* Post and Test Reservations, Payments Customers
+
+### [.black]#Deploy#
 * Move domain from GoDaddy
 * Consider Owner reservation - maybe just a link
 * Package Slide.js and payment.coffee
@@ -28,6 +26,7 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Owner Site#
 
+* Refine Owner site
 * Master Calendar
 * Confirmation
 * Booking.com
@@ -43,7 +42,13 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets#
 
 ## [.black]#Guest Site Completed#
-
+* Improve Less Styling - Contact
+* Prepopulate Forms for Test
+* Deposit and Payment Status
+* Spa opt out
+* Improve Confirm and Maybe Pay Errors
+* Improve confirm alert
+* Home buttons jQuery in Rooms
 * Contact, Map and Directions
 * Home buttons jQuery in Rooms
 * Compose and Send Confirmation EMail with confirmation #

@@ -15,6 +15,15 @@ class Pay
     @last    = ''
     @phone   = ''
     @email   = ''
+    @spas    = false
+    @purpose = 'PayInFull' # or 'Deposit'
+    @testing = true
+    @errored = false
+
+  showSpa:( myRes ) ->
+    for own roomId, room of myRes.rooms
+      return true if @room.hasSpa(roomId)
+    false
 
   showConfirmPay:( myRes ) =>
     @myRes         = myRes
@@ -31,42 +40,80 @@ class Pay
       $('#Pays').append( @payHtml() )
       $('#Pays').show()
       window.$ = $
-      Util.loadScript( "../js/res/payment.js", @initPayment )  # payment.js need jQuery global
-      #@initPayment()
-      $('#cc-amt').text('$'+@myRes.total)
-      $('#cc-bak').click( (e) => @onBack(e) )
+      Util.loadScript( "../js/res/payment.js", @initCCPayment )  # payment.js need jQuery global
+      $('#cc-amt' ).text('$'+@myRes.total)
+      $('#ChangeReser').click(  (e) => @onChangeReser( e ) )
+      $('#MakeDeposit').click(  (e) => @onMakeDeposit( e ) )
+      $('#MakePayment').click(  (e) => @onMakePayment( e ) )
+      $('.SpaCheck'   ).change( (e) => @onSpa(         e ) )
       @created = true
+    @testPop() if @testing
     return
 
-  onBack:( e ) =>
+  testPop:() ->
+    $('#cc-num').val( '4242424242424242' )
+    $('#cc-exp').val( '10 / 19'          )
+    $('#cc-cvc').val( '555'              )
+
+  onChangeReser:( e ) =>
     e.preventDefault()
     $('#Make').text( 'Change Reservation')
     $('#Pays').hide()
     $('#Book').show()
     return
+
+  onMakeDeposit:( e ) =>
+    e.preventDefault()
+    @purpose = 'Deposit'
+    $("#cc-amt" ).text('$'+@myRes.deposit)
+    $('#MakePay').text('Make 50% Deposit')
+
+  onMakePayment:( e ) =>
+    e.preventDefault()
+    @purpose = 'PayInFull'
+    $("#cc-amt" ).text('$'+@myRes.total)
+    $('#MakePay').text('Make Payment')
  
   confirmHtml:( myRes ) ->
-    #pf    = str.replace(/[^-.0-9]/g,'')
-    #px    = /^(?:(\d{2})\-)?(\d{3})\-(\d{4})\-(\d{3})$/
-    #ph    = '('+@phone.substr(0,3)+')-'+@phone.substr(3,3)+'-'+@phone.substr(6,4)
+    @spas = @showSpa( @myRes )
+    spaTH = if @spas then "Spa" else ""
     htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation # #{myRes.key}</div>"""
     htm  += """<div   id="ConfirmName">
                   <span>For: #{@first} </span><span>#{@last} </span>
                </div>"""
-    htm  += """<table id="ConfirmTable"><thead>"""
-    htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
+    htm  += """<div class="DivCenter"><table id="ConfirmTable"><thead>"""
+    htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>#{spaTH}</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
     for own roomId, r of myRes.rooms
       days   = Object.keys(r.days).sort()
       num    = days.length
       arrive = @confirmDate( days[0],     "", false )  # from 3:00-8:00PM
       depart = @confirmDate( days[num-1], "", true  )  # by 10:00AM
-      htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
-    htm  += """<tr><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td class="room-total">$#{myRes.total}</td></tr>"""
-    htm  += """</tbody></table>"""
-    htm  += """<div style="text-align:center;"><button class="btn btn-primary" id="cc-bak">Change Reservation</button></div>"""
+      htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td class="room-total">$#{r.total}</td></tr>"""
+    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td class="room-total">$#{myRes.total}</td></tr>"""
+    htm  += """</tbody></table></div>"""
+    htm  += """<div class="PayBtns">"""
+    htm  += """  <button class="btn btn-primary" id="ChangeReser">Change Reservation</button>"""
+    htm  += """  <button class="btn btn-primary" id="MakeDeposit">Make 50% Deposit</button>""" if @canMakeDeposit( @myRes )
+    htm  += """  <button class="btn btn-primary" id="MakePayment">Make Payment</button>"""
+    htm  += """</div>"""
     htm  += """<div id="MakePay" class="Title">Make Payment</div>"""
     htm
+
+  canMakeDeposit:( myRes ) ->
+    @myRes.arrive >= @Data.advanceDate( @myRes.booked, 7 )
+
+  spa:( roomId ) ->
+    Util.log("Util.spa()", roomId, @room.hasSpa(roomId) )
+    if @room.hasSpa(roomId) then """<input id="#{roomId}SpaCheck" class="SpaCheck" type="checkbox" value="#{roomId}" checked>""" else ""
+
+  onSpa:( event ) ->
+    $elem   = $(event.target)
+    roomId  = $elem.attr('id').charAt(0)
+    checked = $elem.is(':checked')
+    spaFee  = if checked then 20 else -20
+    @myRes.rooms[roomId].total += spaFee
+    return
 
   confirmBody:() ->
     body  = """.      Confirmation# #{@myRes.key}\n"""
@@ -152,7 +199,7 @@ class Pay
         when 'CVC' then """CVC?"""
     msg
 
-  initPayment:() =>
+  initCCPayment:() =>
     $('.cc-num').payment('formatCardNumber')
     $('.cc-exp').payment('formatCardExpiry')
     $('.cc-cvc').payment('formatCardCVC'   )
@@ -226,10 +273,11 @@ class Pay
 
   createPayment:() ->
     payment = {}
-    payment.amount = @myRes.total
-    payment.date   = @Data.today()
-    payment.method = 'card'
-    payment.with   = @last4
+    payment.amount  = @myRes.total
+    payment.date    = @Data.today()
+    payment.method  = 'card'
+    payment.with    = @last4
+    payment.purpose = @purpose
     payment
 
   onError:(obj) =>
@@ -259,3 +307,7 @@ class Pay
   toJSON:(     obj  ) -> if obj? then JSON.stringify(obj) else ''
 
   toObject:(   json ) -> if json then JSON.parse(json) else {}
+
+  #pf    = str.replace(/[^-.0-9]/g,'')
+  #px    = /^(?:(\d{2})\-)?(\d{3})\-(\d{4})\-(\d{3})$/
+  #ph    = '('+@phone.substr(0,3)+')-'+@phone.substr(3,3)+'-'+@phone.substr(6,4)

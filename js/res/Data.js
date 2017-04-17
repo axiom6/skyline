@@ -77,9 +77,25 @@
     Data.today = function() {
       var date, day, month, year;
       date = new Date();
-      year = toString(date.getFullYear());
+      year = date.getFullYear().toString();
       month = Util.padStr(date.getMonth() + 1);
       day = Util.padStr(date.getDate());
+      Util.log('Data.today', year, month, day, year + month + day);
+      return year + month + day;
+    };
+
+    Data.advanceDate = function(resDate, numDays) {
+      var day, dayInt, month, monthIdx, year;
+      year = resDate.substr(0, 4);
+      monthIdx = parseInt(resDate.substr(4, 2)) - 1;
+      dayInt = parseInt(resDate.substr(6, 2)) + numDays;
+      if (dayInt > this.numDayMonth[monthIdx]) {
+        dayInt = dayInt - this.numDayMonth[monthIdx];
+        monthIdx++;
+      }
+      day = Util.padStr(dayInt);
+      month = Util.padStr(monthIdx + 1);
+      Util.log('Data.advanceDate', resDate, year + month + day);
       return year + month + day;
     };
 

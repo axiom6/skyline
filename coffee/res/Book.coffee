@@ -31,6 +31,8 @@ class Book
     $('.pets'   ).change( @onPets    )
     $('#Months' ).change( @onMonth   )
     $('#Days'   ).change( @onDay     )
+    $('#Pop'    ).click(  @onPop     )
+    $('#Err'    ).click(  @onErr     )
     #$('#GoToPay').click(  @onGoToPay ).prop('disabled',true)
     $('#FormName').submit( (e) => @onGoToPay(e) ).prop('disabled',true)
     $('#Navb').hide()
@@ -41,6 +43,7 @@ class Book
     """
     <div id="Make" class="Title">Make Your Reservation</div>
     <div id="Inits"></div>
+    <div id="Xxxx"></div>
     <div id="Rooms"></div>
     <div id="Guest"></div>
     """
@@ -67,9 +70,11 @@ class Book
     """
 
   initsHtml:() ->
-    htm     = """<label for="Months" class="init-font">Arrive:#{ @htmlSelect( "Months", @Data.season, @month,  'months' ) }</label>"""
-    htm    += """<label for="Days"   class="init-font">       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
-    htm    += """<label class="init-font">&nbsp;&nbsp;#{@year}</label>"""
+    htm  = """<label for="Months" class="InitIp">Arrive:#{ @htmlSelect( "Months", @Data.season, @month,  'months' ) }</label>"""
+    htm += """<label for="Days"   class="InitIp">       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
+    htm += """<label class="InitIp">&nbsp;&nbsp;#{@year}</label>"""
+    htm += """<span  id="Pop" class="Test">Pop</span>"""
+    htm += """<span  id="Err" class="Test">Err</span>"""
     htm
 
   seeRoom:( roomId, room ) ->
@@ -88,7 +93,7 @@ class Book
       htm += "<th>#{@dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
-      htm += """<tr id="#{roomId}"><td>#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
+      htm += """<tr id="#{roomId}"><td class="td-left">#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
       for day in [1..numDays]
         htm += @createCell( roomId, room, @toDateStr(day) )
       htm += """<td class="room-total" id="#{roomId}T"></td></tr>"""
@@ -132,19 +137,21 @@ class Book
     </form>
     """
 
-  isValid:( name, test ) ->
+  isValid:( name, test, testing=false ) ->
     value = $('#'+name).val()
     valid = Util.isStr( value )
-    value = test if @Data.testing and not valid
-    valid = true if @Data.testing
-    $('#'+name+'ER').show() if not valid
+    if testing
+      $('#'+name).val(test)
+      value = test
+      valid = true
+    #$('#'+name+'ER').show() if not valid
     [value,valid]
 
-  getNamesPhoneEmail:() ->
-    [@pay.first,fv] = @isValid('First', 'Samuel')
-    [@pay.last, lv] = @isValid('Last',  'Hosendecker' )
-    [@pay.phone,pv] = @isValid('Phone', '3037977129')
-    [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com' )
+  getNamesPhoneEmail:( testing=false ) ->
+    [@pay.first,fv] = @isValid('First', 'Samuel',      testing )
+    [@pay.last, lv] = @isValid('Last',  'Hosendecker', testing )
+    [@pay.phone,pv] = @isValid('Phone', '3037977129',  testing )
+    [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing )
     ok =   @totals > 0 and fv and lv and pv and ev
     Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
     tv = @totals > 0
@@ -157,7 +164,8 @@ class Book
       $('.NameER').hide()
       $('#Book').hide()
       res = @createRes()
-      res.total = @totals
+      res.total   = @totals
+      res.deposit = Math.round( @totals * 50 ) / 100
       @pay.showConfirmPay( res )
     else
       alert( @onGoToMsg( tv,fv,lv,pv,ev ) )
@@ -274,9 +282,15 @@ class Book
     $('#Rooms').append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
     @roomsJQuery()
 
-  onTest:() =>
-    Util.log( 'Book.onTest()' )
-    @store.insert( 'Alloc', Alloc.Allocs )
+  onPop:() =>
+    Util.log( 'Book.onPop()'  )
+    @getNamesPhoneEmail( true )
+    @pay.testing = true
+    return
+
+  onErr:() =>
+    Util.log( 'Book.onErr()' )
+    return
 
   createRes:() =>
     res = @res.createRes( @totals, 'hold', @method, @pay.phone, @roomUIs, {} )

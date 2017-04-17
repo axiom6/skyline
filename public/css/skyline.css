@@ -135,7 +135,22 @@ img.center {
   height: 100%;
 }
 #Book {
+  text-align: center;
   display: none;
+}
+#Inits {
+  display: inline-block;
+  font-size: 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+#Rooms {
+  display: inline-block;
+}
+.Test {
+  background-color: black;
+  color: white;
+  border-radius: 12px;
 }
 #View {
   position: relative;
@@ -188,9 +203,6 @@ img.center {
 }
 .RoomLI a {
   color: white;
-}
-.init-font {
-  font-size: 12px;
 }
 .guests {
   text-align: center;
@@ -544,7 +556,11 @@ img.center {
   display: none;
 }
 #PayDiv {
+  display: inline-block;
+}
+.PayBtns {
   text-align: center;
+  margin-top: 30px;
 }
 #Approval {
   text-align: center;
@@ -569,6 +585,27 @@ img.center {
   font-weight: bold;
   margin-top: 12px;
   margin-bottom: 12px;
+}
+.CenterAlign {
+  text-align: center;
+}
+.DivCenter {
+  display: inline-block;
+}
+.ContactCenter {
+  display: inline-block;
+  text-align: left;
+  font-size: 24px;
+  nargin-top: 8px;
+}
+.ContactLabel {
+  display: inline-block;
+  width: 180px;
+  font-weight: bold;
+}
+.ContactOwner {
+  font-weight: bold;
+  margin-top: 24px;
 }
 .dir-center {
   width: 650px;

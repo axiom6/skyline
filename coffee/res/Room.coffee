@@ -25,9 +25,12 @@ class Room
       resRoom.price   = 0
       resRoom.guests  = 2
       resRoom.pets    = 0
-      resRoom.spa     = false
+      resRoom.spa     = room.spa
       resRoom.days    = {}
     roomUIs
+
+  hasSpa:( roomId ) ->
+    @rooms[roomId].spa > 0
 
   # { "total":0, "price":0, "guests":2,"pets":0, "spa":false, "days":{} },
 

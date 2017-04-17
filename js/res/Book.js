@@ -25,7 +25,8 @@
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
       this.createRes = bind(this.createRes, this);
-      this.onTest = bind(this.onTest, this);
+      this.onErr = bind(this.onErr, this);
+      this.onPop = bind(this.onPop, this);
       this.onDay = bind(this.onDay, this);
       this.onMonth = bind(this.onMonth, this);
       this.onPets = bind(this.onPets, this);
@@ -58,6 +59,8 @@
       $('.pets').change(this.onPets);
       $('#Months').change(this.onMonth);
       $('#Days').change(this.onDay);
+      $('#Pop').click(this.onPop);
+      $('#Err').click(this.onErr);
       $('#FormName').submit((function(_this) {
         return function(e) {
           return _this.onGoToPay(e);
@@ -69,7 +72,7 @@
     };
 
     Book.prototype.bookHtml = function() {
-      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
+      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Xxxx\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
     };
 
     Book.prototype.bookHtml2 = function() {
@@ -78,9 +81,11 @@
 
     Book.prototype.initsHtml = function() {
       var htm;
-      htm = "<label for=\"Months\" class=\"init-font\">Arrive:" + (this.htmlSelect("Months", this.Data.season, this.month, 'months')) + "</label>";
-      htm += "<label for=\"Days\"   class=\"init-font\">       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
-      htm += "<label class=\"init-font\">&nbsp;&nbsp;" + this.year + "</label>";
+      htm = "<label for=\"Months\" class=\"InitIp\">Arrive:" + (this.htmlSelect("Months", this.Data.season, this.month, 'months')) + "</label>";
+      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
+      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + this.year + "</label>";
+      htm += "<span  id=\"Pop\" class=\"Test\">Pop</span>";
+      htm += "<span  id=\"Err\" class=\"Test\">Err</span>";
       return htm;
     };
 
@@ -106,7 +111,7 @@
       for (roomId in ref2) {
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
-        htm += "<tr id=\"" + roomId + "\"><td>" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
+        htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
         for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
           htm += this.createCell(roomId, room, this.toDateStr(day));
         }
@@ -125,28 +130,30 @@
       return "<form novalidate autocomplete=\"on\" method=\"POST\" id=\"FormName\">\n  <div id=\"Names\">\n    <span class=\"SpanIp\">\n      <label for=\"First\" class=\"control-label\">First Name</label>\n      <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n      <div   id= \"FirstER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Last\" class=\"control-label\">Last Name</label>\n      <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n      <div   id= \"LastER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Phone\" class=\"control-label\">Phone</label>\n      <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" autocomplete=\"off\" placeholder=\"••• ••• ••••\" required>\n      <div   id= \"PhoneER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"EMail\"   class=\"control-label\">Email</label>\n      <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n      <div   id= \"EMailER\" class=\"NameER\">* Required</div>\n    </span>\n  </div>\n  <div id=\"GoToDiv\" style=\"text-align:center;\">\n   <button class=\"btn btn-primary\" type=\"submit\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n  </div>\n</form>";
     };
 
-    Book.prototype.isValid = function(name, test) {
+    Book.prototype.isValid = function(name, test, testing) {
       var valid, value;
+      if (testing == null) {
+        testing = false;
+      }
       value = $('#' + name).val();
       valid = Util.isStr(value);
-      if (this.Data.testing && !valid) {
+      if (testing) {
+        $('#' + name).val(test);
         value = test;
-      }
-      if (this.Data.testing) {
         valid = true;
-      }
-      if (!valid) {
-        $('#' + name + 'ER').show();
       }
       return [value, valid];
     };
 
-    Book.prototype.getNamesPhoneEmail = function() {
+    Book.prototype.getNamesPhoneEmail = function(testing) {
       var ev, fv, lv, ok, pv, ref, ref1, ref2, ref3, tv;
-      ref = this.isValid('First', 'Samuel'), this.pay.first = ref[0], fv = ref[1];
-      ref1 = this.isValid('Last', 'Hosendecker'), this.pay.last = ref1[0], lv = ref1[1];
-      ref2 = this.isValid('Phone', '3037977129'), this.pay.phone = ref2[0], pv = ref2[1];
-      ref3 = this.isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com'), this.pay.email = ref3[0], ev = ref3[1];
+      if (testing == null) {
+        testing = false;
+      }
+      ref = this.isValid('First', 'Samuel', testing), this.pay.first = ref[0], fv = ref[1];
+      ref1 = this.isValid('Last', 'Hosendecker', testing), this.pay.last = ref1[0], lv = ref1[1];
+      ref2 = this.isValid('Phone', '3037977129', testing), this.pay.phone = ref2[0], pv = ref2[1];
+      ref3 = this.isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing), this.pay.email = ref3[0], ev = ref3[1];
       ok = this.totals > 0 && fv && lv && pv && ev;
       Util.log('Book.getNamesPhoneEmail()', this.pay.first, fv, this.pay.last, lv, this.pay.phone, pv, this.pay.email, ev, ok);
       tv = this.totals > 0;
@@ -162,6 +169,7 @@
         $('#Book').hide();
         res = this.createRes();
         res.total = this.totals;
+        res.deposit = Math.round(this.totals * 50) / 100;
         this.pay.showConfirmPay(res);
       } else {
         alert(this.onGoToMsg(tv, fv, lv, pv, ev));
@@ -352,9 +360,14 @@
       return this.roomsJQuery();
     };
 
-    Book.prototype.onTest = function() {
-      Util.log('Book.onTest()');
-      return this.store.insert('Alloc', Alloc.Allocs);
+    Book.prototype.onPop = function() {
+      Util.log('Book.onPop()');
+      this.getNamesPhoneEmail(true);
+      this.pay.testing = true;
+    };
+
+    Book.prototype.onErr = function() {
+      Util.log('Book.onErr()');
     };
 
     Book.prototype.createRes = function() {

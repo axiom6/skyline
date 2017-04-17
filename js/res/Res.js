@@ -82,7 +82,7 @@
     };
 
     Res.prototype.createRes = function(total, status, method, phone, roomUIs, payments) {
-      var res, roomId, roomUI;
+      var day, obj, ref, res, roomId, roomUI;
       res = {};
       res.key = this.genResKey(roomUIs);
       res.total = total;
@@ -90,13 +90,24 @@
       res.balance = 0;
       res.status = status;
       res.method = method;
+      res.booked = '20170516';
+      res.arrive = "99999999";
       res.custKey = this.Data.genCustKey(phone);
       res.rooms = {};
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
         roomUI = roomUIs[roomId];
-        if (roomUI.numDays > 0) {
-          res.rooms[roomId] = roomUI.resRoom;
+        if (!(roomUI.numDays > 0)) {
+          continue;
+        }
+        res.rooms[roomId] = roomUI.resRoom;
+        ref = roomUI.resRoom.days;
+        for (day in ref) {
+          if (!hasProp.call(ref, day)) continue;
+          obj = ref[day];
+          if (day < res.arrive) {
+            res.arrive = day;
+          }
         }
       }
       res.payments = payments;

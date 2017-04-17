@@ -39,10 +39,14 @@
         resRoom.price = 0;
         resRoom.guests = 2;
         resRoom.pets = 0;
-        resRoom.spa = false;
+        resRoom.spa = room.spa;
         resRoom.days = {};
       }
       return roomUIs;
+    };
+
+    Room.prototype.hasSpa = function(roomId) {
+      return this.rooms[roomId].spa > 0;
     };
 
     Room.prototype.initRooms = function() {
