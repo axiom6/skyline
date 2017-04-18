@@ -39,7 +39,6 @@
 
     Firestore.prototype.init = function(config) {
       Store.Firebase.initializeApp(config);
-      Util.log('Firestore.init', config);
       return Store.Firebase;
     };
 

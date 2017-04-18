@@ -69,7 +69,6 @@ Util = (function() {
     }
     Util.root = root;
     Util.rootJS = Util.root + 'js/';
-    Util.log("Util.init() rootJS", Util.rootJS);
     Util.resetModuleExports(prj);
     Util.fixTestGlobals();
     if (Util.isCommonJS && (moduleCommonJS != null)) {
@@ -124,7 +123,6 @@ Util = (function() {
     if (Util.isCommonJS) {
       Util.module = require('module');
       Util.module.globalPaths.push("/Users/ax/Documents/prj/" + prj + "/");
-      Util.log("Node Module Paths", Util.module.globalPaths);
     }
   };
 

@@ -95,7 +95,6 @@
       }
       day = Util.padStr(dayInt);
       month = Util.padStr(monthIdx + 1);
-      Util.log('Data.advanceDate', resDate, year + month + day);
       return year + month + day;
     };
 

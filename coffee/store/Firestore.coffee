@@ -17,7 +17,7 @@ class Firestore extends Store
 
   init:( config ) ->
     Store.Firebase.initializeApp(config)
-    Util.log( 'Firestore.init', config )
+    #Util.log( 'Firestore.init', config )
     Store.Firebase
 
   add:( t, id, object  ) ->

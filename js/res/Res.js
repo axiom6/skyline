@@ -111,7 +111,6 @@
         }
       }
       res.payments = payments;
-      this.subscribeToResKey(res.key);
       return res;
     };
 

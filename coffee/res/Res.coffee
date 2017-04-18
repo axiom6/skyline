@@ -46,7 +46,7 @@ class Res
       for own day, obj of roomUI.resRoom.days
         res.arrive = day if day < res.arrive
     res.payments = payments
-    @subscribeToResKey( res.key )
+    #@subscribeToResKey( res.key )
     res
 
   genResKey:( roomUIs ) ->

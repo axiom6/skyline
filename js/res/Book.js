@@ -128,7 +128,9 @@
     };
 
     Book.prototype.guestHtml = function() {
-      return "<form novalidate autocomplete=\"on\" method=\"POST\" id=\"FormName\">\n  <div id=\"Names\">\n    <span class=\"SpanIp\">\n      <label for=\"First\" class=\"control-label\">First Name</label>\n      <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n      <div   id= \"FirstER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Last\" class=\"control-label\">Last Name</label>\n      <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n      <div   id= \"LastER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Phone\" class=\"control-label\">Phone</label>\n      <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" autocomplete=\"off\" placeholder=\"••• ••• ••••\" required>\n      <div   id= \"PhoneER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"EMail\"   class=\"control-label\">Email</label>\n      <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n      <div   id= \"EMailER\" class=\"NameER\">* Required</div>\n    </span>\n  </div>\n  <div id=\"GoToDiv\" style=\"text-align:center;\">\n   <button class=\"btn btn-primary\" type=\"submit\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n  </div>\n</form>";
+      var phPtn;
+      phPtn = "\(\d{3}\) \d{3}\-\d{4}";
+      return "<form novalidate autocomplete=\"on\" method=\"POST\" id=\"FormName\">\n  <div id=\"Names\">\n    <span class=\"SpanIp\">\n      <label for=\"First\" class=\"control-label\">First Name</label>\n      <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n      <div   id= \"FirstER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Last\" class=\"control-label\">Last Name</label>\n      <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n      <div   id= \"LastER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Phone\" class=\"control-label\">Phone</label>\n      <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" placeholder=\"(•••) •••-••••\" pattern=\"" + phPtn + "\" required>\n      <div   id= \"PhoneER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"EMail\"   class=\"control-label\">Email</label>\n      <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n      <div   id= \"EMailER\" class=\"NameER\">* Required</div>\n    </span>\n  </div>\n  <div id=\"GoToDiv\" style=\"text-align:center;\">\n   <button class=\"btn btn-primary\" type=\"submit\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n  </div>\n</form>";
     };
 
     Book.prototype.isValid = function(name, test, testing) {
@@ -156,7 +158,6 @@
       ref2 = this.isValid('Phone', '3037977129', testing), this.pay.phone = ref2[0], pv = ref2[1];
       ref3 = this.isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing), this.pay.email = ref3[0], ev = ref3[1];
       ok = this.totals > 0 && fv && lv && pv && ev;
-      Util.log('Book.getNamesPhoneEmail()', this.pay.first, fv, this.pay.last, lv, this.pay.phone, pv, this.pay.email, ev, ok);
       tv = this.totals > 0;
       return [tv, fv, lv, pv, ev];
     };
@@ -365,9 +366,8 @@
     };
 
     Book.prototype.onPop = function() {
-      Util.log('Book.onPop()');
       this.getNamesPhoneEmail(true);
-      this.pay.testing = true;
+      this.pay.testing = false;
     };
 
     Book.prototype.onErr = function() {
@@ -379,7 +379,6 @@
       res = this.res.createRes(this.totals, 'hold', this.method, this.pay.phone, this.roomUIs, {});
       res.payments = {};
       this.res.add(res.key, res);
-      Util.log('Book.createRes()', res);
       ref = res.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;

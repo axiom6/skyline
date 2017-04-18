@@ -37,7 +37,7 @@ class Util
   @init:( moduleCommonJS=undefined, moduleWebPack=undefined, root=Util.root, prj="ui" ) ->
     Util.root   = root
     Util.rootJS = Util.root + 'js/'
-    Util.log( "Util.init() rootJS", Util.rootJS )
+    #Util.log( "Util.init() rootJS", Util.rootJS )
     Util.resetModuleExports( prj )
     Util.fixTestGlobals()
     if     Util.isCommonJS and moduleCommonJS?
@@ -89,7 +89,7 @@ class Util
        Util.module = require('module')
        Util.module.globalPaths.push("/Users/ax/Documents/prj/#{prj}/")
        #window.global = window
-       Util.log( "Node Module Paths", Util.module.globalPaths )
+       #Util.log( "Node Module Paths", Util.module.globalPaths )
     return
 
   @ready:( fn ) ->

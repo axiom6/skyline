@@ -62,6 +62,6 @@ class Data
        monthIdx++
     day   = Util.padStr( dayInt     )
     month = Util.padStr( monthIdx+1 )
-    Util.log( 'Data.advanceDate', resDate, year + month + day )
+    #Util.log( 'Data.advanceDate', resDate, year + month + day )
     year + month + day
 

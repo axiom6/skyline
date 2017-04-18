@@ -7,8 +7,9 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 ### [.black]#Feature#
+
 * Change reservation
-* Continous Resevation Clicks
+* Continuous Resevation Clicks
 * Update text with Sue
 * Terms and Conditions
 
@@ -19,6 +20,7 @@ include::../dir/inc/DefBook.adoc[]
 
 ### [.black]#Deploy#
 * Move domain from GoDaddy
+* Bank Account
 * Consider Owner reservation - maybe just a link
 * Package Slide.js and payment.coffee
 * Deploy to Firebase
@@ -39,6 +41,7 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets#
 
 ## [.black]#Guest Site Completed#
+* Spa Adjust
 * Limit Credit Cards
 * Reservation Instruction
 * Improve Less Styling - Contact

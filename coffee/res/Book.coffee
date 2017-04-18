@@ -93,6 +93,7 @@ class Book
     htm
 
   guestHtml:() ->
+    phPtn = "\(\d{3}\) \d{3}\-\d{4}"
     """
     <form novalidate autocomplete="on" method="POST" id="FormName">
       <div id="Names">
@@ -110,7 +111,7 @@ class Book
 
         <span class="SpanIp">
           <label for="Phone" class="control-label">Phone</label>
-          <input id= "Phone" type="tel" class="input-lg form-control" autocomplete="off" placeholder="••• ••• ••••" required>
+          <input id= "Phone" type="tel" class="input-lg form-control" placeholder="(•••) •••-••••" pattern="#{phPtn}" required>
           <div   id= "PhoneER" class="NameER">* Required</div>
         </span>
 
@@ -142,7 +143,7 @@ class Book
     [@pay.phone,pv] = @isValid('Phone', '3037977129',  testing )
     [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing )
     ok =   @totals > 0 and fv and lv and pv and ev
-    Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
+    #Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
     tv = @totals > 0
     [tv,fv,lv,pv,ev]
 
@@ -273,9 +274,9 @@ class Book
     @roomsJQuery()
 
   onPop:() =>
-    Util.log( 'Book.onPop()'  )
+    #Util.log( 'Book.onPop()'  )
     @getNamesPhoneEmail( true )
-    @pay.testing = true
+    @pay.testing = false
     return
 
   onErr:() =>
@@ -286,7 +287,7 @@ class Book
     res = @res.createRes( @totals, 'hold', @method, @pay.phone, @roomUIs, {} )
     res.payments = {}
     @res.add( res.key, res )
-    Util.log( 'Book.createRes()', res )
+    #Util.log( 'Book.createRes()', res )
     for own roomId, room of res.rooms
       onAdd = {}
       onAdd.days = room.days
