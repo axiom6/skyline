@@ -8,15 +8,14 @@ include::../dir/inc/DefBook.adoc[]
 
 ### [.black]#Feature#
 * Change reservation
-* Reservation Instruction
-* Limit Credit Cards
+* Continous Resevation Clicks
 * Update text with Sue
 * Terms and Conditions
 
 ### [.black]#Test#
-
-* Test Pop, Deposit, Spa Opt Out
+* Test Pop, Deposit, Spa Opt Out, CC Limit
 * Post and Test Reservations, Payments Customers
+* Populate Beth Reservations into Skyline
 
 ### [.black]#Deploy#
 * Move domain from GoDaddy
@@ -25,7 +24,6 @@ include::../dir/inc/DefBook.adoc[]
 * Deploy to Firebase
 
 ## [.black]#Owner Site#
-
 * Refine Owner site
 * Master Calendar
 * Confirmation
@@ -35,13 +33,14 @@ include::../dir/inc/DefBook.adoc[]
 * Customer - Marking
 
 ## [.black]#Marketing#
-
 * Google Search
 * Visit Estes Park
 * EstesPark.com#
 * Trips With Pets#
 
 ## [.black]#Guest Site Completed#
+* Limit Credit Cards
+* Reservation Instruction
 * Improve Less Styling - Contact
 * Prepopulate Forms for Test
 * Deposit and Payment Status

@@ -24,6 +24,7 @@ class Book
 
   ready:() ->
     $('#Book'   ).append( @bookHtml()  )
+    $('#Insts'  ).append( @instructHtml() )
     $('#Inits'  ).append( @initsHtml() )
     $('#Rooms'  ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
     $('#Guest'  ).append( @guestHtml() )
@@ -42,31 +43,19 @@ class Book
   bookHtml:() ->
     """
     <div id="Make" class="Title">Make Your Reservation</div>
+    <div id="Insts"></div>
     <div id="Inits"></div>
-    <div id="Xxxx"></div>
     <div id="Rooms"></div>
     <div id="Guest"></div>
     """
 
-  bookHtml2:() ->
+  instructHtml:() ->
     """
     <div   class="Instruct">
-      <ul  class="Instruct1">
-        <li>For each room select:</li>
-      </ul>
-      <ul class="Instruct2">
-        <li>Number of Guests</li>
-      </ul>
-      <ul class="Instruct3">
-        <li>Number of Pets</li>
-      </ul>
-      <ul class="Instruct4">
-        <li>Click the days you want</li>
-      </ul>
+      <div>1. Select Month and Day of Arrival 2. Then for each Room Select:</div>
+      <div style="padding-left:16px;">3. Number of Guests 4. Number of Pets 5. Click the Days</div>
+      <div>6. Enter Contact Information: First Last Names, Phone and EMail</div>
     </div>
-    <div id="Inits"></div>
-    <div id="Rooms"></div>
-    <div id="Confirm"></div>
     """
 
   initsHtml:() ->
@@ -173,11 +162,12 @@ class Book
 
   onGoToMsg:( tv,fv,lv,pv,ev ) ->
     msg  = ""
-    msg += "Total is 0. Need to so select rooms\n" if not tv
-    msg += "Need to enter First name\n"            if not fv
-    msg += "Need to enter Last  name\n"            if not lv
-    msg += "Need to enter Phone number\n"          if not pv
-    msg += "Need to enter Email\n"                 if not ev
+    msg += "Total is 0\n"           if not tv
+    msg += "Need to Click Rooms\n"  if not tv
+    msg += "Enter First Name\n"     if not fv
+    msg += "Enter Last  Name\n"     if not lv
+    msg += "Enter Phone Number\n"   if not pv
+    msg += "Enter Email\n"          if not ev
     msg
 
   createCell:( roomId, room, date ) ->

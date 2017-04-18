@@ -92,51 +92,13 @@ img.center {
   top: 0;
   height: 100%;
 }
-.Instruct {
-  position: relative;
-  left: 0;
-  width: 100%;
-  top: 0;
-  height: 70px;
-}
-.Instruct1 {
-  position: absolute;
-  left: 0;
-  width: 20%;
-  top: 0;
-  height: 100%;
-}
-.Instruct2 {
-  position: absolute;
-  left: 22%;
-  width: 20%;
-  top: 0;
-  height: 100%;
-}
-.Instruct3 {
-  position: absolute;
-  left: 40%;
-  width: 20%;
-  top: 0;
-  height: 100%;
-}
-.Instruct4 {
-  position: absolute;
-  left: 60%;
-  width: 20%;
-  top: 0;
-  height: 100%;
-}
-.InstructA {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  top: 0;
-  height: 100%;
-}
 #Book {
   text-align: center;
   display: none;
+}
+.Instruct {
+  display: inline-block;
+  text-align: left;
 }
 #Inits {
   display: inline-block;
@@ -151,6 +113,7 @@ img.center {
   background-color: black;
   color: white;
   border-radius: 12px;
+  margin-left: 10px;
 }
 #View {
   position: relative;
@@ -596,7 +559,7 @@ img.center {
   display: inline-block;
   text-align: left;
   font-size: 24px;
-  nargin-top: 8px;
+  margin-top: 8px;
 }
 .ContactLabel {
   display: inline-block;

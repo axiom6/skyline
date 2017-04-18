@@ -30,10 +30,12 @@ class Pay
     @myRes['cust'] = @cust.createCust( @first, @last, @phone, @email, 'site' )
     if @created
       $('#ConfirmTitle').remove()
-      $('#ConfirmTable').remove()
-      $('#Confirm').prepend( @confirmHtml( @myRes ) )
+      $('#ConfirmName' ).remove()
+      $('#ConfirmBlock').remove()
+      $('.PayBtns'     ).remove()
+      $('#MakePay'     ).remove()
+      $('#Pays').prepend( @confirmHtml( @myRes ) )
       $('#cc-amt').text('$'+@myRes.total)
-      $('#form-pay').show()
       $('#Pays').show()
     else
       $('#Pays').append( @confirmHtml( @myRes ) )
@@ -47,7 +49,7 @@ class Pay
       $('#MakePayment').click(  (e) => @onMakePayment( e ) )
       $('.SpaCheck'   ).change( (e) => @onSpa(         e ) )
       @created = true
-    @testPop() if @testing
+    #@testPop() if @testing
     return
 
   testPop:() ->
@@ -72,16 +74,17 @@ class Pay
     e.preventDefault()
     @purpose = 'PayInFull'
     $("#cc-amt" ).text('$'+@myRes.total)
-    $('#MakePay').text('Make Payment')
+    $('#MakePay').text('Make Payment with Visa Mastercard or Discover')
  
   confirmHtml:( myRes ) ->
     @spas = @showSpa( @myRes )
+    canDeposit = @canMakeDeposit( @myRes )
     spaTH = if @spas then "Spa" else ""
     htm   = """<div   id="ConfirmTitle" class= "Title">Confirmation # #{myRes.key}</div>"""
     htm  += """<div   id="ConfirmName">
                   <span>For: #{@first} </span><span>#{@last} </span>
                </div>"""
-    htm  += """<div class="DivCenter"><table id="ConfirmTable"><thead>"""
+    htm  += """<div id="ConfirmBlock" class="DivCenter"><table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>#{spaTH}</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
     for own roomId, r of myRes.rooms
@@ -94,8 +97,8 @@ class Pay
     htm  += """</tbody></table></div>"""
     htm  += """<div class="PayBtns">"""
     htm  += """  <button class="btn btn-primary" id="ChangeReser">Change Reservation</button>"""
-    htm  += """  <button class="btn btn-primary" id="MakeDeposit">Make 50% Deposit</button>""" if @canMakeDeposit( @myRes )
-    htm  += """  <button class="btn btn-primary" id="MakePayment">Make Payment</button>"""
+    htm  += """  <button class="btn btn-primary" id="MakeDeposit">Make 50% Deposit</button>""" if canDeposit
+    htm  += """  <button class="btn btn-primary" id="MakePayment">Make Payment</button>"""     if canDeposit
     htm  += """</div>"""
     htm  += """<div id="MakePay" class="Title">Make Payment</div>"""
     htm
@@ -157,7 +160,7 @@ class Pay
       <form novalidate autocomplete="on" method="POST" id="form-pay">
 
         <span class="form-group">
-          <label for="cc-num" class="control-label">Card Number<span class="text-muted">  [<span class="cc-com"></span>]</span></label>
+          <label for="cc-num" class="control-label">Card Number<span class="text-muted">  [<span class="cc-com">/span>]</span></label>
           <input id= "cc-num" type="tel" class="input-lg form-control cc-num" autocomplete="cc-num" placeholder="•••• •••• •••• ••••" required>
           <div   id= "er-num" class="cc-msg"></div>
         </span>
@@ -213,14 +216,17 @@ class Pay
     yer = '20'+exp.substr(5,2)
     cvc = $('.cc-cvc').val()
     cardType = $.payment.cardType(num)
-    numerr = @toggleInputError( 'Num', $.payment.validateCardNumber( $('.cc-num').val()) )
+    numerr = @toggleInputError( 'Num', $.payment.validateCardNumber( num ) and @cardAccept(cardType) )
     experr = @toggleInputError( 'Exp', $.payment.validateCardExpiry( $('.cc-exp').payment('cardExpiryVal')) )
     cvcerr = @toggleInputError( 'CVC', $.payment.validateCardCVC(    $('.cc-cvc').val(), cardType ) )
     $('.cc-com').text(cardType);
     $('.cc-msg').removeClass('text-danger text-success')
     $('.cc-msg').addClass($('.has-error').length ? 'text-danger' : 'text-success')
     if numerr is '' and experr is '' and cvcerr is ''
-      $('#er-sub' ).text("Waiting For Approval")
+      $('#MakePay' ).hide()
+      $('#PayDiv'  ).hide()
+      $('.PayBtns' ).hide()
+      $('#Approval').text("Waiting For Approval...").show()
       @token( num, mon, yer, cvc )
       @last4 = num.substr( 11, 4 )
     else
@@ -230,8 +236,11 @@ class Pay
       $('#er-sub').text("Fix?")
       $('#cc-sub').text("Try Again")
 
-    Util.log( 'Pay.submitPayment()', { num:num, exp:exp, cvc:cvc, mon:mon, yer:yer } )
+    # Util.log( 'Pay.submitPayment()', { num:num, exp:exp, cvc:cvc, mon:mon, yer:yer } )
     return
+
+  cardAccept:( cardType ) ->
+    cardType is 'Visa' or cardType is 'Mastercard' or cardType is 'Discover'
 
   subscribe:() ->
     @stream.subscribe( 'tokens',  @onToken,  @onError )
@@ -251,16 +260,16 @@ class Pay
     Util.log( 'StoreRest.onToken()', obj )
     @tokenId  = obj.id
     @cardId   = obj.card.id
-    @charge( @tokenId, @myRes.total, 'usd', 'First Test Charge' )
+    @charge( @tokenId, @myRes.total, 'usd', @first + " " + @last )
 
   onCharge:(obj) =>
     Util.log( 'StoreRest.onCharge()', obj )
-    if obj.outcome.type is 'authorized'
+    if obj['outcome'].type is 'authorized'
       @confirmEmail()
-      $('#cc-bak'  ).hide()
+      $('.PayBtns' ).hide()
       $('#MakePay' ).hide()
       $('#PayDiv'  ).hide()
-      $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@email}").show()
+      $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@email}")
       @home.showConfirm()
       @myRes.payments[@payId()] = @createPayment()
       @store.put( 'Res', @myRes.key, @myRes )

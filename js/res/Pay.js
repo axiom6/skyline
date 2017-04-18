@@ -63,10 +63,12 @@
       this.myRes['cust'] = this.cust.createCust(this.first, this.last, this.phone, this.email, 'site');
       if (this.created) {
         $('#ConfirmTitle').remove();
-        $('#ConfirmTable').remove();
-        $('#Confirm').prepend(this.confirmHtml(this.myRes));
+        $('#ConfirmName').remove();
+        $('#ConfirmBlock').remove();
+        $('.PayBtns').remove();
+        $('#MakePay').remove();
+        $('#Pays').prepend(this.confirmHtml(this.myRes));
         $('#cc-amt').text('$' + this.myRes.total);
-        $('#form-pay').show();
         $('#Pays').show();
       } else {
         $('#Pays').append(this.confirmHtml(this.myRes));
@@ -97,9 +99,6 @@
         })(this));
         this.created = true;
       }
-      if (this.testing) {
-        this.testPop();
-      }
     };
 
     Pay.prototype.testPop = function() {
@@ -126,16 +125,17 @@
       e.preventDefault();
       this.purpose = 'PayInFull';
       $("#cc-amt").text('$' + this.myRes.total);
-      return $('#MakePay').text('Make Payment');
+      return $('#MakePay').text('Make Payment with Visa Mastercard or Discover');
     };
 
     Pay.prototype.confirmHtml = function(myRes) {
-      var arrive, days, depart, htm, num, r, ref, roomId, spaTH;
+      var arrive, canDeposit, days, depart, htm, num, r, ref, roomId, spaTH;
       this.spas = this.showSpa(this.myRes);
+      canDeposit = this.canMakeDeposit(this.myRes);
       spaTH = this.spas ? "Spa" : "";
       htm = "<div   id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + myRes.key + "</div>";
       htm += "<div   id=\"ConfirmName\">\n   <span>For: " + this.first + " </span><span>" + this.last + " </span>\n</div>";
-      htm += "<div class=\"DivCenter\"><table id=\"ConfirmTable\"><thead>";
+      htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"><table id=\"ConfirmTable\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>" + spaTH + "</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
       ref = myRes.rooms;
@@ -152,10 +152,12 @@
       htm += "</tbody></table></div>";
       htm += "<div class=\"PayBtns\">";
       htm += "  <button class=\"btn btn-primary\" id=\"ChangeReser\">Change Reservation</button>";
-      if (this.canMakeDeposit(this.myRes)) {
+      if (canDeposit) {
         htm += "  <button class=\"btn btn-primary\" id=\"MakeDeposit\">Make 50% Deposit</button>";
       }
-      htm += "  <button class=\"btn btn-primary\" id=\"MakePayment\">Make Payment</button>";
+      if (canDeposit) {
+        htm += "  <button class=\"btn btn-primary\" id=\"MakePayment\">Make Payment</button>";
+      }
       htm += "</div>";
       htm += "<div id=\"MakePay\" class=\"Title\">Make Payment</div>";
       return htm;
@@ -236,7 +238,7 @@
     };
 
     Pay.prototype.payHtml = function() {
-      return "<div id=\"PayDiv\">\n  <form novalidate autocomplete=\"on\" method=\"POST\" id=\"form-pay\">\n\n    <span class=\"form-group\">\n      <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\">  [<span class=\"cc-com\"></span>]</span></label>\n      <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num\" autocomplete=\"cc-num\" placeholder=\"•••• •••• •••• ••••\" required>\n      <div   id= \"er-num\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n      <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp\" autocomplete=\"cc-exp\" placeholder=\"mm / yy\" required>\n      <div   id= \"er-exp\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n      <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc\" autocomplete=\"off\" placeholder=\"•••\" required>\n      <div   id= \"er-cvc\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n      <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n      <div   id= \"er-amt\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n      <button  id=\"cc-sub\" type=\"submit\" class=\"btn btn-lg btn-primary\">Pay</button>\n      <div    id= \"er-sub\" class=\"cc-msg\"></div>\n    </span>\n  </form>\n</div>\n<div id=\"Approval\"></div>";
+      return "<div id=\"PayDiv\">\n  <form novalidate autocomplete=\"on\" method=\"POST\" id=\"form-pay\">\n\n    <span class=\"form-group\">\n      <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\">  [<span class=\"cc-com\">/span>]</span></label>\n      <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num\" autocomplete=\"cc-num\" placeholder=\"•••• •••• •••• ••••\" required>\n      <div   id= \"er-num\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n      <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp\" autocomplete=\"cc-exp\" placeholder=\"mm / yy\" required>\n      <div   id= \"er-exp\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n      <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc\" autocomplete=\"off\" placeholder=\"•••\" required>\n      <div   id= \"er-cvc\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n      <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n      <div   id= \"er-amt\" class=\"cc-msg\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n      <button  id=\"cc-sub\" type=\"submit\" class=\"btn btn-lg btn-primary\">Pay</button>\n      <div    id= \"er-sub\" class=\"cc-msg\"></div>\n    </span>\n  </form>\n</div>\n<div id=\"Approval\"></div>";
     };
 
     Pay.prototype.toggleInputError = function(field, valid) {
@@ -277,7 +279,7 @@
       yer = '20' + exp.substr(5, 2);
       cvc = $('.cc-cvc').val();
       cardType = $.payment.cardType(num);
-      numerr = this.toggleInputError('Num', $.payment.validateCardNumber($('.cc-num').val()));
+      numerr = this.toggleInputError('Num', $.payment.validateCardNumber(num) && this.cardAccept(cardType));
       experr = this.toggleInputError('Exp', $.payment.validateCardExpiry($('.cc-exp').payment('cardExpiryVal')));
       cvcerr = this.toggleInputError('CVC', $.payment.validateCardCVC($('.cc-cvc').val(), cardType));
       $('.cc-com').text(cardType);
@@ -286,7 +288,10 @@
         'text-danger': 'text-success'
       });
       if (numerr === '' && experr === '' && cvcerr === '') {
-        $('#er-sub').text("Waiting For Approval");
+        $('#MakePay').hide();
+        $('#PayDiv').hide();
+        $('.PayBtns').hide();
+        $('#Approval').text("Waiting For Approval...").show();
         this.token(num, mon, yer, cvc);
         this.last4 = num.substr(11, 4);
       } else {
@@ -296,13 +301,10 @@
         $('#er-sub').text("Fix?");
         $('#cc-sub').text("Try Again");
       }
-      Util.log('Pay.submitPayment()', {
-        num: num,
-        exp: exp,
-        cvc: cvc,
-        mon: mon,
-        yer: yer
-      });
+    };
+
+    Pay.prototype.cardAccept = function(cardType) {
+      return cardType === 'Visa' || cardType === 'Mastercard' || cardType === 'Discover';
     };
 
     Pay.prototype.subscribe = function() {
@@ -336,17 +338,17 @@
       Util.log('StoreRest.onToken()', obj);
       this.tokenId = obj.id;
       this.cardId = obj.card.id;
-      return this.charge(this.tokenId, this.myRes.total, 'usd', 'First Test Charge');
+      return this.charge(this.tokenId, this.myRes.total, 'usd', this.first + " " + this.last);
     };
 
     Pay.prototype.onCharge = function(obj) {
       Util.log('StoreRest.onCharge()', obj);
-      if (obj.outcome.type === 'authorized') {
+      if (obj['outcome'].type === 'authorized') {
         this.confirmEmail();
-        $('#cc-bak').hide();
+        $('.PayBtns').hide();
         $('#MakePay').hide();
         $('#PayDiv').hide();
-        $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.email).show();
+        $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.email);
         this.home.showConfirm();
         this.myRes.payments[this.payId()] = this.createPayment();
         return this.store.put('Res', this.myRes.key, this.myRes);

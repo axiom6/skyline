@@ -52,6 +52,7 @@
 
     Book.prototype.ready = function() {
       $('#Book').append(this.bookHtml());
+      $('#Insts').append(this.instructHtml());
       $('#Inits').append(this.initsHtml());
       $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
       $('#Guest').append(this.guestHtml());
@@ -72,11 +73,11 @@
     };
 
     Book.prototype.bookHtml = function() {
-      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Xxxx\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
+      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Insts\"></div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
     };
 
-    Book.prototype.bookHtml2 = function() {
-      return "<div   class=\"Instruct\">\n  <ul  class=\"Instruct1\">\n    <li>For each room select:</li>\n  </ul>\n  <ul class=\"Instruct2\">\n    <li>Number of Guests</li>\n  </ul>\n  <ul class=\"Instruct3\">\n    <li>Number of Pets</li>\n  </ul>\n  <ul class=\"Instruct4\">\n    <li>Click the days you want</li>\n  </ul>\n</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+    Book.prototype.instructHtml = function() {
+      return "<div   class=\"Instruct\">\n  <div>1. Select Month and Day of Arrival 2. Then for each Room Select:</div>\n  <div style=\"padding-left:16px;\">3. Number of Guests 4. Number of Pets 5. Click the Days</div>\n  <div>6. Enter Contact Information: First Last Names, Phone and EMail</div>\n</div>";
     };
 
     Book.prototype.initsHtml = function() {
@@ -180,19 +181,22 @@
       var msg;
       msg = "";
       if (!tv) {
-        msg += "Total is 0. Need to so select rooms\n";
+        msg += "Total is 0\n";
+      }
+      if (!tv) {
+        msg += "Need to Click Rooms\n";
       }
       if (!fv) {
-        msg += "Need to enter First name\n";
+        msg += "Enter First Name\n";
       }
       if (!lv) {
-        msg += "Need to enter Last  name\n";
+        msg += "Enter Last  Name\n";
       }
       if (!pv) {
-        msg += "Need to enter Phone number\n";
+        msg += "Enter Phone Number\n";
       }
       if (!ev) {
-        msg += "Need to enter Email\n";
+        msg += "Enter Email\n";
       }
       return msg;
     };
