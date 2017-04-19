@@ -93,9 +93,9 @@ class Book
     htm
 
   guestHtml:() ->
-    phPtn = "\(\d{3}\) \d{3}\-\d{4}"
+    phPtn = "\(\d{3}\) \d{3}\-\d{4}" # pattern="#{phPtn}"
     """
-    <form novalidate autocomplete="on" method="POST" id="FormName">
+    <form autocomplete="on" method="POST" id="FormName">
       <div id="Names">
         <span class="SpanIp">
           <label for="First" class="control-label">First Name</label>
@@ -111,7 +111,7 @@ class Book
 
         <span class="SpanIp">
           <label for="Phone" class="control-label">Phone</label>
-          <input id= "Phone" type="tel" class="input-lg form-control" placeholder="(•••) •••-••••" pattern="#{phPtn}" required>
+          <input id= "Phone" type="tel" class="input-lg form-control" placeholder="(•••) •••-••••"  required>
           <div   id= "PhoneER" class="NameER">* Required</div>
         </span>
 

@@ -71,6 +71,7 @@
         $('#PayDiv').append(this.payHtml());
         $('#form-pay').get(0).reset();
         $('#cc-amt').text('$' + this.myRes.total);
+        this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-sub', 'cc-com', 'er-sub');
         $('#Pays').show();
       } else {
         $('#Pays').append(this.confirmHead());
@@ -110,13 +111,12 @@
           return _this.submitPayment(e);
         };
       })(this));
-      return this.credit.ready();
     };
 
     Pay.prototype.testPop = function() {
       $('#cc-num').val('4242424242424242');
       $('#cc-exp').val('10/19');
-      return $('#cc-cvc').val('555');
+      $('#cc-cvc').val('555');
     };
 
     Pay.prototype.onChangeReser = function(e) {
@@ -277,7 +277,7 @@
       numPtn = "\d{4} \d{4} \d{4} \d{4}";
       expPtn = "(1[0-2]|0[1-9])\/\d\d";
       cvcPtn = "\d{3}";
-      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\">  [<span class=\"cc-com\">/span>]</span></label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n</div>";
+      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\"><span id=\"cc-com\" class=\"cc-com\"></span></label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n</div>";
     };
 
     Pay.prototype.submitPayment = function(e) {

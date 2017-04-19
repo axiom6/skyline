@@ -37,6 +37,7 @@ class Pay
       $('#PayDiv'      ).append( @payHtml()      )
       $('#form-pay').get(0).reset()
       $('#cc-amt').text('$'+@myRes.total)
+      @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-sub', 'cc-com', 'er-sub' )
       $('#Pays').show()
     else
       $('#Pays'        ).append( @confirmHead()  )
@@ -56,13 +57,13 @@ class Pay
     $('#MakePayment').click(  (e) => @onMakePayment( e ) )
     $('.SpaCheck'   ).change( (e) => @onSpa(         e ) )
     $('#cc-sub').click( (e) => @submitPayment(e) )
-    @credit.ready()
-    #window.masking.init()
+    return
 
   testPop:() ->
     $('#cc-num').val( '4242424242424242' )
     $('#cc-exp').val( '10/19'            )
     $('#cc-cvc').val( '555'              )
+    return
 
   onChangeReser:( e ) =>
     e.preventDefault()
@@ -185,7 +186,7 @@ class Pay
     """
     <div id="form-pay">
       <span class="form-group">
-        <label for="cc-num" class="control-label">Card Number<span class="text-muted">  [<span class="cc-com">/span>]</span></label>
+        <label for="cc-num" class="control-label">Card Number<span class="text-muted"><span id="cc-com" class="cc-com"></span></label>
         <input id= "cc-num" type="tel" class="input-lg form-control cc-num masked" placeholder="•••• •••• •••• ••••" pattern="#{numPtn}" required>
         <div   id= "er-num" class="cc-msg"></div>
       </span>
