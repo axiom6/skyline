@@ -5,27 +5,48 @@
     indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   Credit = (function() {
-    module.exports = Credit;
-
     window.Credit = Credit;
 
     Credit.defaultFormat = /(\d{1,4})/g;
 
+    Credit.UnknownCard = {
+      type: 'unknown',
+      pattern: /^U/,
+      format: Credit.defaultFormat,
+      length: [16],
+      cvcLength: [3],
+      luhn: true
+    };
+
     function Credit() {
-      this.restrictCVC = bind(this.restrictCVC, this);
-      this.restrictExpiry = bind(this.restrictExpiry, this);
-      this.restrictCardNumber = bind(this.restrictCardNumber, this);
-      this.restrictNumeric = bind(this.restrictNumeric, this);
-      this.reFormatCVC = bind(this.reFormatCVC, this);
-      this.formatBackExpiry = bind(this.formatBackExpiry, this);
-      this.formatForwardSlashAndSpace = bind(this.formatForwardSlashAndSpace, this);
-      this.formatForwardExpiry = bind(this.formatForwardExpiry, this);
       this.formatCardExpiry = bind(this.formatCardExpiry, this);
-      this.reFormatExpiry = bind(this.reFormatExpiry, this);
-      this.formatBackCardNumber = bind(this.formatBackCardNumber, this);
       this.formatCardNumber = bind(this.formatCardNumber, this);
-      this.reFormatCardNumber = bind(this.reFormatCardNumber, this);
+      this.parseCardType = bind(this.parseCardType, this);
+      this.validateCardCVC = bind(this.validateCardCVC, this);
+      this.validateCardExpiry = bind(this.validateCardExpiry, this);
+      this.validateCardNumber = bind(this.validateCardNumber, this);
+      this.parseCardExpiry = bind(this.parseCardExpiry, this);
+      this.numericInput = bind(this.numericInput, this);
+      this.cardNumberInput = bind(this.cardNumberInput, this);
+      this.expiryInput = bind(this.expiryInput, this);
+      this.cvcInput = bind(this.cvcInput, this);
+      this.restrictCVCIp = bind(this.restrictCVCIp, this);
+      this.restrictExpiryIp = bind(this.restrictExpiryIp, this);
+      this.restrictCardNumberIp = bind(this.restrictCardNumberIp, this);
+      this.restrictNumericIp = bind(this.restrictNumericIp, this);
+      this.reFormatCVCIp = bind(this.reFormatCVCIp, this);
+      this.formatBackExpiryIp = bind(this.formatBackExpiryIp, this);
+      this.formatForwardSlashAndSpaceIp = bind(this.formatForwardSlashAndSpaceIp, this);
+      this.formatForwardExpiryIp = bind(this.formatForwardExpiryIp, this);
+      this.formatCardExpiryIp = bind(this.formatCardExpiryIp, this);
+      this.reFormatExpiryIp = bind(this.reFormatExpiryIp, this);
+      this.formatBackCardNumberIp = bind(this.formatBackCardNumberIp, this);
+      this.formatCardNumberIp = bind(this.formatCardNumberIp, this);
+      this.reFormatCardNumberIp = bind(this.reFormatCardNumberIp, this);
+      this.replaceFullWidthChars = bind(this.replaceFullWidthChars, this);
+      this.eventNormalize = bind(this.eventNormalize, this);
       this.fieldStatus = bind(this.fieldStatus, this);
+      this.delay = 0;
     }
 
     Credit.prototype.init = function(numId, expId, cvcId, subId, typId, resId) {
@@ -45,7 +66,6 @@
           cardType = _this.parseCardType(e.target.value);
           msg = cardType || 'invalid';
           typ.innerHTML = msg;
-          Util.log('Credit.init() updateType', num.value, exp.value, cvc.value, msg);
         };
       })(this);
       num.addEventListener('input', updateType);
@@ -88,34 +108,32 @@
     };
 
     Credit.prototype.cardFromNumber = function(num) {
-      var card, i, len, ref, ven;
+      var card, i, len, ref;
       num = (num + '').replace(/\D/g, '');
-      ven = {};
       ref = Credit.cards;
       for (i = 0, len = ref.length; i < len; i++) {
         card = ref[i];
-        if (!(card.pattern.test(num))) {
-          continue;
+        if (card.pattern.test(num)) {
+          return card;
         }
-        ven = card;
-        break;
       }
-      return ven;
+      return Credit.UnknownCard;
     };
 
     Credit.prototype.cardFromType = function(type) {
-      var card, i, len, ref, ven;
-      ven = {};
+      var card, i, len, ref;
       ref = Credit.cards;
       for (i = 0, len = ref.length; i < len; i++) {
         card = ref[i];
-        if (!(card.type === type)) {
-          continue;
+        if (card.type === type) {
+          return card;
         }
-        ven = card;
-        break;
       }
-      return ven;
+      return Credit.UnknownCard;
+    };
+
+    Credit.prototype.isCard = function(card) {
+      return (card != null) && card.type !== 'unknown';
     };
 
     Credit.prototype.getCaretPos = function(ele) {
@@ -149,7 +167,7 @@
       };
     };
 
-    Credit.prototype.listen = function(ele, event, listener) {
+    Credit.prototype.doListen = function(ele, event, listener) {
       listener = this.eventNormalize(listener);
       if (ele.addEventListener != null) {
         return ele.addEventListener(event, listener, false);
@@ -271,12 +289,20 @@
     Credit.prototype.replaceFullWidthChars = function(str) {
       var char, chars, fullWidth, halfWidth, i, idx, len, value;
       if (str == null) {
-        str = "";
+        str = '';
+      }
+      console.log('replaceFullOne', {
+        str: "|" + str + "|"
+      });
+      if (!Util.isStr(str) || str === 'keypress') {
+        console.log('replaceKeypress');
+        Util.trace('replaceKeypress');
+        return '';
       }
       fullWidth = '\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19';
       halfWidth = '0123456789';
       value = '';
-      chars = Util.isStr(str) ? str.split('') : [];
+      chars = str.split('');
       for (i = 0, len = chars.length; i < len; i++) {
         char = chars[i];
         idx = fullWidth.indexOf(char);
@@ -285,10 +311,15 @@
         }
         value += char;
       }
+      console.log('replaceFullTwo', {
+        str: str,
+        value: value,
+        chars: chars
+      });
       return value;
     };
 
-    Credit.prototype.reFormatCardNumber = function(e) {
+    Credit.prototype.reFormatCardNumberIp = function(e) {
       var cursor;
       cursor = this.getCaretPos(e.target);
       e.target.value = this.formatCardNumber(e.target.value);
@@ -297,7 +328,7 @@
       }
     };
 
-    Credit.prototype.formatCardNumber = function(e) {
+    Credit.prototype.formatCardNumberIp = function(e) {
       var card, cursor, digit, fn, length, re, upperLength, value;
       digit = String.fromCharCode(e.which);
       if (!/^\d+$/.test(digit)) {
@@ -307,7 +338,7 @@
       card = this.cardFromNumber(value + digit);
       length = (value.replace(/\D/g, '') + digit).length;
       upperLength = 16;
-      if (card) {
+      if (this.isCard(card)) {
         upperLength = card.length[card.length.length - 1];
       }
       if (length >= upperLength) {
@@ -317,24 +348,27 @@
       if (cursor && cursor !== value.length) {
         return;
       }
-      if (card && card.type === 'amex') {
+      if (this.isCard(card) && card.type === 'amex') {
         re = /^(\d{4}|\d{4}\s\d{6})$/;
       } else {
         re = /(?:^|\s)(\d{4})$/;
       }
-      fn = function() {
-        return e.target.value = value + " " + digit;
-      };
       if (re.test(value)) {
         e.preventDefault();
-        return setTimeout(fn, 1000);
+        fn = function() {
+          return e.target.value = value + " " + digit;
+        };
+        return setTimeout(fn, this.delay);
       } else if (re.test(value + digit)) {
         e.preventDefault();
-        return setTimeout(fn, 1000);
+        fn = function() {
+          return e.target.value = (value + digit) + " ";
+        };
+        return setTimeout(fn, this.delay);
       }
     };
 
-    Credit.prototype.formatBackCardNumber = function(e) {
+    Credit.prototype.formatBackCardNumberIp = function(e) {
       var cursor, fn, value;
       value = e.target.value;
       if (e.which !== 8) {
@@ -349,17 +383,17 @@
         fn = function() {
           return e.target.value = value.replace(/\d\s$/, '');
         };
-        return setTimeout(fn, 1000);
+        return setTimeout(fn, this.delay);
       } else if (/\s\d?$/.test(value)) {
         e.preventDefault();
         fn = function() {
           return e.target.value = value.replace(/\d$/, '');
         };
-        return setTimeout(fn, 1000);
+        return setTimeout(fn, this.delay);
       }
     };
 
-    Credit.prototype.reFormatExpiry = function(e) {
+    Credit.prototype.reFormatExpiryIp = function(e) {
       var cursor;
       cursor = this.getCaretPos(e.target);
       e.target.value = this.formatCardExpiry(e.target.value);
@@ -368,26 +402,29 @@
       }
     };
 
-    Credit.prototype.formatCardExpiry = function(e) {
+    Credit.prototype.formatCardExpiryIp = function(e) {
       var digit, fn, val;
       digit = String.fromCharCode(e.which);
       if (!/^\d+$/.test(digit)) {
         return;
       }
       val = e.target.value + digit;
-      fn = function() {
-        return e.target.value = "0" + val + " / ";
-      };
       if (/^\d$/.test(val) && (val !== '0' && val !== '1')) {
         e.preventDefault();
-        return setTimeout(fn, 1000);
+        fn = function() {
+          return e.target.value = "0" + val + " / ";
+        };
+        return setTimeout(fn, this.delay);
       } else if (/^\d\d$/.test(val)) {
         e.preventDefault();
-        return setTimeout(fn, 1000);
+        fn = function() {
+          return e.target.value = val + " / ";
+        };
+        return setTimeout(fn, this.delay);
       }
     };
 
-    Credit.prototype.formatForwardExpiry = function(e) {
+    Credit.prototype.formatForwardExpiryIp = function(e) {
       var digit, val;
       digit = String.fromCharCode(e.which);
       if (!/^\d+$/.test(digit)) {
@@ -399,7 +436,7 @@
       }
     };
 
-    Credit.prototype.formatForwardSlashAndSpace = function(e) {
+    Credit.prototype.formatForwardSlashAndSpaceIp = function(e) {
       var val, which;
       which = String.fromCharCode(e.which);
       if (!(which === '/' || which === ' ')) {
@@ -411,7 +448,7 @@
       }
     };
 
-    Credit.prototype.formatBackExpiry = function(e) {
+    Credit.prototype.formatBackExpiryIp = function(e) {
       var cursor, fn, value;
       value = e.target.value;
       if (e.which !== 8) {
@@ -426,11 +463,11 @@
         fn = function() {
           return e.target.value = value.replace(/\d\s\/\s$/, '');
         };
-        return setTimeout(fn, 1000);
+        return setTimeout(fn, this.delay);
       }
     };
 
-    Credit.prototype.reFormatCVC = function(e) {
+    Credit.prototype.reFormatCVCIp = function(e) {
       var cursor;
       cursor = this.getCaretPos(e.target);
       e.target.value = this.replaceFullWidthChars(e.target.value).replace(/\D/g, '').slice(0, 4);
@@ -439,7 +476,7 @@
       }
     };
 
-    Credit.prototype.restrictNumeric = function(e) {
+    Credit.prototype.restrictNumericIp = function(e) {
       var input;
       if (e.metaKey || e.ctrlKey) {
         return;
@@ -456,7 +493,7 @@
       }
     };
 
-    Credit.prototype.restrictCardNumber = function(e) {
+    Credit.prototype.restrictCardNumberIp = function(e) {
       var card, digit, value;
       digit = String.fromCharCode(e.which);
       if (!/^\d+$/.test(digit)) {
@@ -467,14 +504,14 @@
       }
       value = (e.target.value + digit).replace(/\D/g, '');
       card = this.cardFromNumber(value);
-      if (card && value.length > card.length[card.length.length - 1]) {
+      if (this.isCard(card) && value.length > card.length[card.length.length - 1]) {
         return e.preventDefault();
       } else if (value.length > 16) {
         return e.preventDefault();
       }
     };
 
-    Credit.prototype.restrictExpiry = function(e) {
+    Credit.prototype.restrictExpiryIp = function(e) {
       var digit, value;
       digit = String.fromCharCode(e.which);
       if (!/^\d+$/.test(digit)) {
@@ -490,7 +527,7 @@
       }
     };
 
-    Credit.prototype.restrictCVC = function(e) {
+    Credit.prototype.restrictCVCIp = function(e) {
       var digit, val;
       digit = String.fromCharCode(e.which);
       if (!/^\d+$/.test(digit)) {
@@ -506,39 +543,39 @@
     };
 
     Credit.prototype.cvcInput = function(input) {
-      this.listen(input, 'keypress', this.restrictNumeric);
-      this.listen(input, 'keypress', this.restrictCVC);
-      this.listen(input, 'paste', this.reFormatCVC);
-      this.listen(input, 'change', this.reFormatCVC);
-      return this.listen(input, 'input', this.reFormatCVC);
+      this.doListen(input, 'keypress', this.restrictNumericIp);
+      this.doListen(input, 'keypress', this.restrictCVCIp);
+      this.doListen(input, 'paste', this.reFormatCVCIp);
+      this.doListen(input, 'change', this.reFormatCVCIp);
+      return this.doListen(input, 'input', this.reFormatCVCIp);
     };
 
     Credit.prototype.expiryInput = function(input) {
-      this.listen(input, 'keypress', this.restrictNumeric);
-      this.listen(input, 'keypress', this.restrictExpiry);
-      this.listen(input, 'keypress', this.formatCardExpiry);
-      this.listen(input, 'keypress', this.formatForwardSlashAndSpace);
-      this.listen(input, 'keypress', this.formatForwardExpiry);
-      this.listen(input, 'keydown', this.formatBackExpiry);
-      this.listen(input, 'change', this.reFormatExpiry);
-      return this.listen(input, 'input', this.reFormatExpiry);
+      this.doListen(input, 'keypress', this.restrictNumericIp);
+      this.doListen(input, 'keypress', this.restrictExpiryIp);
+      this.doListen(input, 'keypress', this.formatCardExpiryIp);
+      this.doListen(input, 'keypress', this.formatForwardSlashAndSpaceIp);
+      this.doListen(input, 'keypress', this.formatForwardExpiryIp);
+      this.doListen(input, 'keydown', this.formatBackExpiryIp);
+      this.doListen(input, 'change', this.reFormatExpiryIp);
+      return this.doListen(input, 'input', this.reFormatExpiryIp);
     };
 
     Credit.prototype.cardNumberInput = function(input) {
-      this.listen(input, 'keypress', this.restrictNumeric);
-      this.listen(input, 'keypress', this.restrictCardNumber);
-      this.listen(input, 'keypress', this.formatCardNumber);
-      this.listen(input, 'keydown', this.formatBackCardNumber);
-      this.listen(input, 'paste', this.reFormatCardNumber);
-      this.listen(input, 'change', this.reFormatCardNumber);
-      return this.listen(input, 'input', this.reFormatCardNumber);
+      this.doListen(input, 'keypress', this.restrictNumericIp);
+      this.doListen(input, 'keypress', this.restrictCardNumberIp);
+      this.doListen(input, 'keypress', this.formatCardNumberIp);
+      this.doListen(input, 'keydown', this.formatBackCardNumberIp);
+      this.doListen(input, 'paste', this.reFormatCardNumberIp);
+      this.doListen(input, 'change', this.reFormatCardNumberIp);
+      return this.doListen(input, 'input', this.reFormatCardNumberIp);
     };
 
     Credit.prototype.numericInput = function(input) {
-      this.listen(input, 'keypress', this.restrictNumeric);
-      this.listen(input, 'paste', this.restrictNumeric);
-      this.listen(input, 'change', this.restrictNumeric);
-      return this.listen(input, 'input', this.restrictNumeric);
+      this.doListen(input, 'keypress', this.restrictNumericIp);
+      this.doListen(input, 'paste', this.restrictNumericIp);
+      this.doListen(input, 'change', this.restrictNumericIp);
+      return this.doListen(input, 'input', this.restrictNumericIp);
     };
 
     Credit.prototype.parseCardExpiry = function(value) {
@@ -564,11 +601,11 @@
       if (!/^\d+$/.test(num)) {
         return false;
       }
-      card = cardFromNumber(num);
-      if (!card) {
+      card = this.cardFromNumber(num);
+      if (!this.isCard(card)) {
         return false;
       }
-      return (ref = num.length, indexOf.call(card.length, ref) >= 0) && (card.luhn === false || luhnCheck(num));
+      return (ref = num.length, indexOf.call(card.length, ref) >= 0) && (card.luhn === false || this.luhnCheck(num));
     };
 
     Credit.prototype.validateCardExpiry = function(month, year) {
@@ -614,7 +651,7 @@
         return false;
       }
       card = this.cardFromType(type);
-      if (card != null) {
+      if (this.isCard(card)) {
         return ref = cvc.length, indexOf.call(card.cvcLength, ref) >= 0;
       } else {
         return cvc.length >= 3 && cvc.length <= 4;
@@ -622,24 +659,31 @@
     };
 
     Credit.prototype.parseCardType = function(num) {
-      var ref;
+      var card;
       if (!num) {
         return null;
       }
-      return ((ref = this.cardFromNumber(num)) != null ? ref.type : void 0) || null;
+      card = this.cardFromNumber(num);
+      if (this.isCard(card)) {
+        return card.type;
+      } else {
+        return null;
+      }
     };
 
     Credit.prototype.formatCardNumber = function(num) {
       var card, groups, ref, upperLength;
+      if (!Util.isStr(num)) {
+        return '';
+      }
       num = this.replaceFullWidthChars(num);
       num = num.replace(/\D/g, '');
       card = this.cardFromNumber(num);
-      if (!card) {
+      if (!this.isCard(card)) {
         return num;
       }
       upperLength = card.length[card.length.length - 1];
       num = num.slice(0, upperLength);
-      console.log('Credit.formatCardNumber()', card.type, card.format.toString(), num);
       if (card.format.global) {
         return (ref = num.match(card.format)) != null ? ref.join(' ') : void 0;
       } else {

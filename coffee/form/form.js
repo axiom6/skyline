@@ -7,26 +7,26 @@
     submit  = document.getElementById('submit'),
     result  = document.getElementById('result');
 
-  var credit = new window.Credit();
-  credit.cardNumberInput(ccnum);
-  credit.expiryInput(expiry);
-  credit.cvcInput(cvc);
+  //var credit = new window.Credit();
+  payform.cardNumberInput(ccnum);
+  payform.expiryInput(expiry);
+  payform.cvcInput(cvc);
 
   ccnum.addEventListener('input',   updateType);
 
   submit.addEventListener('click', function() {
     var valid     = [],
-      expiryObj = credit.parseCardExpiry(expiry.value);
+      expiryObj = payform.parseCardExpiry(expiry.value);
 
-    valid.push(fieldStatus(ccnum,  credit.validateCardNumber(ccnum.value)));
-    valid.push(fieldStatus(expiry, credit.validateCardExpiry(expiryObj)));
-    valid.push(fieldStatus(cvc,    credit.validateCardCVC(cvc.value, type.innerHTML)));
+    valid.push(fieldStatus(ccnum,  payform.validateCardNumber(ccnum.value)));
+    valid.push(fieldStatus(expiry, payform.validateCardExpiry(expiryObj)));
+    valid.push(fieldStatus(cvc,    payform.validateCardCVC(cvc.value, type.innerHTML)));
 
     result.className = 'emoji ' + (valid.every(Boolean) ? 'valid' : 'invalid');
   });
 
   function updateType(e) {
-    var cardType = credit.parseCardType(e.target.value);
+    var cardType = payform.parseCardType(e.target.value);
     type.innerHTML = cardType || 'invalid';
   }
 

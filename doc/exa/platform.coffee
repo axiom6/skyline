@@ -1,86 +1,21 @@
+###
+  Payform Javascript Library
 
-#$ = require('jquery')
+  URL: https://github.com/jondavidjohn/payform
+  Author: Jonathan D. Johnson <me@jondavidjohn.com>
+  License: MIT
+  Version: 1.2.1
+###
+((name, definition) ->
+  if module?
+    module.exports = definition()
+  else if typeof define is 'function' and typeof define.amd is 'object'
+    define(name, definition)
+  else
+    this[name] = definition()
+)('payform', ->
 
-class Credit
-
-  #module.exports = Credit
-  window.Credit  = Credit
-
-  @defaultFormat = /(\d{1,4})/g # new RegExp('(\d{1,4})', 'g') #  /(\d{1,4})/g
-  @UnknownCard   =  { type:'unknown', pattern: /^U/, format:Credit.defaultFormat, length:[16], cvcLength:[3], luhn:true }
-
-  constructor:() ->
-    @delay = 0
-
-  init:( numId, expId, cvcId, subId, typId, resId ) ->
-
-    num = document.getElementById(numId)
-    exp = document.getElementById(expId)
-    cvc = document.getElementById(cvcId)
-    sub = document.getElementById(subId)
-    typ = document.getElementById(subId)
-    res = document.getElementById(resId)
-
-    @cardNumberInput( num )
-    @expiryInput(     exp )
-    @cvcInput(        cvc )
-
-    updateType = (e) =>
-      cardType = @parseCardType(e.target.value)
-      msg      = cardType || 'invalid'
-      typ.innerHTML = msg
-      #Util.log( 'Credit.init() updateType', num.value, exp.value, cvc.value, msg )
-      return
-    num.addEventListener( 'input', updateType )
-
-    validate = (e) =>
-      Util.noop( e )
-      valid     = []
-      expiryObj = @parseCardExpiry( exp.value )
-      valid.push( @fieldStatus( num, @validateCardNumber( num.value ) ) )
-      valid.push( @fieldStatus( exp, @validateCardExpiry( expiryObj ) ) )
-      valid.push( @fieldStatus( cvc, @validateCardCVC( cvc.value, typ.innerHTML ) ) )
-      msg = if valid.every(Boolean) then 'valid' else  'invalid'
-      res.innerHTML = msg
-      Util.log( 'Credit.init() validate', num.value, exp.value, cvc.value, msg )
-      return
-    sub.addEventListener('click', validate )
-
-
-  fieldStatus:( input, valid ) =>
-    if valid
-      @removeClass( input.parentNode, 'error' )
-    else
-      @addClass(    input.parentNode, 'error' )
-    valid
-
-  addClass:( elem, klass) ->
-    if elem.className.indexOf(klass) is -1
-       elem.className += ' ' + klass
-    return
-
-  removeClass:( elem, klass ) ->
-    if elem.className.indexOf(klass) isnt -1
-       elem.className = elem.className.replace( klass, '' )
-    return
-
-  cardFromNumber: (num) ->
-    num = (num + '').replace(/\D/g, '')
-    for card in Credit.cards when card.pattern.test(num)
-      return card
-    #console.log( 'Credit.cardFromNumber()', num, ven.type )
-    Credit.UnknownCard
-
-  cardFromType: (type) ->
-    for card in Credit.cards when card.type is type
-      return card
-    #console.log( 'Credit.cardFromType()', type, ven.type )
-    Credit.UnknownCard
-
-  isCard:( card ) ->
-    card? and card.type isnt 'unknown'
-    
-  getCaretPos: (ele) ->
+  _getCaretPos = (ele) ->
     if ele.selectionStart?
       return ele.selectionStart
     else if document.selection?
@@ -92,28 +27,34 @@ class Credit
       rc.setEndPoint('EndToStart', re)
       return rc.text.length
 
-  eventNormalize:( listener ) =>
+  _eventNormalize = (listener) ->
     return (e = window.event) ->
       e.target = e.target or e.srcElement
-      e.which  = e.which  or e.keyCode
+      e.which = e.which or e.keyCode
       unless e.preventDefault?
         e.preventDefault = -> this.returnValue = false
       listener(e)
 
-  doListen:( ele, event, listener ) ->
-    listener = @eventNormalize(listener)
+  _on = (ele, event, listener) ->
+    listener = _eventNormalize(listener)
     if ele.addEventListener?
-       ele.addEventListener(event, listener, false)
+      ele.addEventListener(event, listener, false)
     else
-       ele.attachEvent("on#{event}", listener)
+      ele.attachEvent("on#{event}", listener)
 
-  @cards = [
+  payform = {}
+
+  # Utils
+
+  defaultFormat = /(\d{1,4})/g
+
+  payform.cards = [
     # Debit cards must come first, since they have more
     # specific patterns than their credit-card equivalents.
     {
       type: 'visaelectron'
       pattern: /^4(026|17500|405|508|844|91[37])/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [16]
       cvcLength: [3]
       luhn: true
@@ -121,7 +62,7 @@ class Credit
     {
       type: 'maestro'
       pattern: /^(5(018|0[23]|[68])|6(39|7))/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [12..19]
       cvcLength: [3]
       luhn: true
@@ -129,7 +70,7 @@ class Credit
     {
       type: 'forbrugsforeningen'
       pattern: /^600/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [16]
       cvcLength: [3]
       luhn: true
@@ -137,7 +78,7 @@ class Credit
     {
       type: 'dankort'
       pattern: /^5019/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [16]
       cvcLength: [3]
       luhn: true
@@ -146,7 +87,7 @@ class Credit
     {
       type: 'visa'
       pattern: /^4/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [13, 16]
       cvcLength: [3]
       luhn: true
@@ -154,7 +95,7 @@ class Credit
     {
       type: 'mastercard'
       pattern: /^(5[1-5]|2[2-7])/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [16]
       cvcLength: [3]
       luhn: true
@@ -178,7 +119,7 @@ class Credit
     {
       type: 'discover'
       pattern: /^6([045]|22)/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [16]
       cvcLength: [3]
       luhn: true
@@ -186,7 +127,7 @@ class Credit
     {
       type: 'unionpay'
       pattern: /^(62|88)/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [16..19]
       cvcLength: [3]
       luhn: false
@@ -194,14 +135,21 @@ class Credit
     {
       type: 'jcb'
       pattern: /^35/
-      format: Credit.defaultFormat
+      format: defaultFormat
       length: [16]
       cvcLength: [3]
       luhn: true
     }
   ]
 
-  luhnCheck:(num) ->
+  cardFromNumber = (num) ->
+    num = (num + '').replace(/\D/g, '')
+    return card for card in payform.cards when card.pattern.test(num)
+
+  cardFromType = (type) ->
+    return card for card in payform.cards when card.type is type
+
+  luhnCheck = (num) ->
     odd = true
     sum = 0
 
@@ -215,7 +163,7 @@ class Credit
 
     sum % 10 == 0
 
-  hasTextSelected:(target) ->
+  hasTextSelected = (target) ->
     # If some text is selected in IE
     if document?.selection?.createRange?
       return true if document.selection.createRange().text
@@ -225,13 +173,8 @@ class Credit
 
   # Replace Full-Width Chars
 
-  replaceFullWidthChars:( str = '' ) =>
-    console.log( 'replaceFullOne', { str:"|#{str}|" } )
-    if not Util.isStr(str) or str is 'keypress'
-      console.log( 'replaceKeypress' )
-      Util.trace(  'replaceKeypress' )
-      return ''
-
+  replaceFullWidthChars = (str = '') ->
+    console.log( 'replaceFullOne', { str:str } )
     fullWidth = '\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19'
     halfWidth = '0123456789'
 
@@ -239,7 +182,7 @@ class Credit
     chars = str.split('')
 
     for char in chars
-      idx  = fullWidth.indexOf(char)
+      idx = fullWidth.indexOf(char)
       char = halfWidth[idx] if idx > -1
       value += char
 
@@ -248,32 +191,31 @@ class Credit
 
   # Format Card Number
 
-  reFormatCardNumberIp:(e) =>
-    cursor = @getCaretPos(e.target)
-    e.target.value = @formatCardNumber(e.target.value)
+  reFormatCardNumber = (e) ->
+    cursor = _getCaretPos(e.target)
+    e.target.value = payform.formatCardNumber(e.target.value)
     if cursor? and e.type isnt 'change'
       e.target.setSelectionRange(cursor, cursor)
 
-  formatCardNumberIp:(e) =>
+  formatCardNumber = (e) ->
     # Only format if input is a number
     digit = String.fromCharCode(e.which)
     return unless /^\d+$/.test(digit)
 
     value  = e.target.value
-    card   = @cardFromNumber(value + digit)
-    #console.log('Credit.formatCardNumber()', value, card )
+    card   = cardFromNumber(value + digit)
     length = (value.replace(/\D/g, '') + digit).length
 
     upperLength = 16
-    upperLength = card.length[card.length.length - 1] if @isCard(card)
+    upperLength = card.length[card.length.length - 1] if card
     return if length >= upperLength
 
     # Return if focus isn't at the end of the text
-    cursor = @getCaretPos(e.target)
-    #console.log( 'Cursor', { value:value, len:value.length, cursor:cursor } )
+    cursor = _getCaretPos(e.target)
+    console.log( 'Cursor', { value:value, len:value.length, cursor:cursor } )
     return if cursor and cursor isnt value.length
 
-    if @isCard(card) and card.type is 'amex'
+    if card && card.type is 'amex'
       # AMEX cards are formatted differently
       re = /^(\d{4}|\d{4}\s\d{6})$/
     else
@@ -282,45 +224,41 @@ class Credit
     # If '4242' + 4
     if re.test(value)
       e.preventDefault()
-      fn  = () -> (e.target.value = "#{value} #{digit}")
-      setTimeout( fn, @delay  )
+      setTimeout -> e.target.value = "#{value} #{digit}"
 
     # If '424' + 2
     else if re.test(value + digit)
       e.preventDefault()
-      fn  = () -> (e.target.value = "#{value + digit} ")
-      setTimeout( fn, @delay  )
+      setTimeout -> e.target.value = "#{value + digit} "
 
-  formatBackCardNumberIp:(e) =>
+  formatBackCardNumber = (e) ->
     value = e.target.value
 
     # Return unless backspacing
     return unless e.which is 8
 
     # Return if focus isn't at the end of the text
-    cursor = @getCaretPos(e.target)
+    cursor = _getCaretPos(e.target)
     return if cursor and cursor isnt value.length
 
     # Remove the digit + trailing space
     if /\d\s$/.test(value)
       e.preventDefault()
-      fn = () -> e.target.value = value.replace( /\d\s$/, '' )
-      setTimeout( fn, @delay  )
+      setTimeout -> e.target.value = value.replace /\d\s$/, ''
     # Remove digit if ends in space + digit
     else if /\s\d?$/.test(value)
       e.preventDefault()
-      fn = () -> e.target.value = value.replace( /\d$/, '' )
-      setTimeout( fn, @delay  )
+      setTimeout -> e.target.value = value.replace /\d$/, ''
 
   # Format Expiry
 
-  reFormatExpiryIp:(e) =>
-    cursor = @getCaretPos(e.target)
-    e.target.value = @formatCardExpiry(e.target.value)
+  reFormatExpiry = (e) ->
+    cursor = _getCaretPos(e.target)
+    e.target.value = payform.formatCardExpiry(e.target.value)
     if cursor? and e.type isnt 'change'
       e.target.setSelectionRange(cursor, cursor)
 
-  formatCardExpiryIp:(e) =>
+  formatCardExpiry = (e) ->
     # Only format if input is a number
     digit = String.fromCharCode(e.which)
     return unless /^\d+$/.test(digit)
@@ -329,55 +267,52 @@ class Credit
 
     if /^\d$/.test(val) and val not in ['0', '1']
       e.preventDefault()
-      fn  = () -> e.target.value = "0#{val} / "
-      setTimeout( fn, @delay )
+      setTimeout -> e.target.value = "0#{val} / "
 
     else if /^\d\d$/.test(val)
       e.preventDefault()
-      fn  = () -> e.target.value = "#{val} / "
-      setTimeout( fn, @delay )
+      setTimeout -> e.target.value = "#{val} / "
 
-  formatForwardExpiryIp:(e) =>
+  formatForwardExpiry = (e) ->
     digit = String.fromCharCode(e.which)
     return unless /^\d+$/.test(digit)
     val = e.target.value
     if /^\d\d$/.test(val)
       e.target.value = "#{val} / "
 
-  formatForwardSlashAndSpaceIp:(e) =>
+  formatForwardSlashAndSpace = (e) ->
     which = String.fromCharCode(e.which)
     return unless which is '/' or which is ' '
     val = e.target.value
     if /^\d$/.test(val) and val isnt '0'
       e.target.value = "0#{val} / "
 
-  formatBackExpiryIp:(e) =>
+  formatBackExpiry = (e) ->
     value = e.target.value
 
     # Return unless backspacing
     return unless e.which is 8
 
     # Return if focus isn't at the end of the text
-    cursor = @getCaretPos(e.target)
+    cursor = _getCaretPos(e.target)
     return if cursor and cursor isnt value.length
 
     # Remove the trailing space + last digit
     if /\d\s\/\s$/.test(value)
       e.preventDefault()
-      fn = () -> e.target.value = value.replace(/\d\s\/\s$/, '')
-      setTimeout( fn, @delay )
+      setTimeout -> e.target.value = value.replace(/\d\s\/\s$/, '')
 
   # Format CVC
 
-  reFormatCVCIp:(e) =>
-    cursor = @getCaretPos(e.target)
-    e.target.value = @replaceFullWidthChars(e.target.value).replace(/\D/g, '')[0...4]
+  reFormatCVC = (e) ->
+    cursor = _getCaretPos(e.target)
+    e.target.value = replaceFullWidthChars(e.target.value).replace(/\D/g, '')[0...4]
     if cursor? and e.type isnt 'change'
       e.target.setSelectionRange(cursor, cursor)
 
   # Restrictions
 
-  restrictNumericIp:(e) =>
+  restrictNumeric = (e) ->
     # Key event is for a browser shortcut
     return if e.metaKey or e.ctrlKey
 
@@ -393,26 +328,26 @@ class Credit
     unless /^\d+$/.test(input)
       e.preventDefault()
 
-  restrictCardNumberIp:(e) =>
+  restrictCardNumber = (e) ->
     digit  = String.fromCharCode(e.which)
     return unless /^\d+$/.test(digit)
 
-    return if @hasTextSelected(e.target)
+    return if hasTextSelected(e.target)
 
     # Restrict number of digits
     value = (e.target.value + digit).replace(/\D/g, '')
-    card  = @cardFromNumber(value)
+    card  = cardFromNumber(value)
 
-    if @isCard(card) and value.length > card.length[card.length.length - 1]
+    if card and value.length > card.length[card.length.length - 1]
       e.preventDefault()
     else if value.length > 16
       e.preventDefault()
 
-  restrictExpiryIp:(e) =>
+  restrictExpiry = (e) ->
     digit  = String.fromCharCode(e.which)
     return unless /^\d+$/.test(digit)
 
-    return if @hasTextSelected(e.target)
+    return if hasTextSelected(e.target)
 
     value = e.target.value + digit
     value = value.replace(/\D/g, '')
@@ -420,49 +355,53 @@ class Credit
     if value.length > 6
       e.preventDefault()
 
-  restrictCVCIp:(e) =>
+  restrictCVC = (e) ->
     digit  = String.fromCharCode(e.which)
     return unless /^\d+$/.test(digit)
-    return if @hasTextSelected(e.target)
+    return if hasTextSelected(e.target)
     val = e.target.value + digit
     if val.length > 4
       e.preventDefault()
 
-  cvcInput:(input) =>
-    @doListen(input, 'keypress', @restrictNumericIp)
-    @doListen(input, 'keypress', @restrictCVCIp)
-    @doListen(input, 'paste',    @reFormatCVCIp)
-    @doListen(input, 'change',   @reFormatCVCIp)
-    @doListen(input, 'input',    @reFormatCVCIp)
+  # Public
 
-  expiryInput:(input) =>
-    @doListen(input, 'keypress', @restrictNumericIp)
-    @doListen(input, 'keypress', @restrictExpiryIp)
-    @doListen(input, 'keypress', @formatCardExpiryIp)
-    @doListen(input, 'keypress', @formatForwardSlashAndSpaceIp)
-    @doListen(input, 'keypress', @formatForwardExpiryIp)
-    @doListen(input, 'keydown',  @formatBackExpiryIp)
-    @doListen(input, 'change',   @reFormatExpiryIp)
-    @doListen(input, 'input',    @reFormatExpiryIp)
+  # Formatting
 
-  cardNumberInput:(input) =>
-    @doListen(input, 'keypress', @restrictNumericIp)
-    @doListen(input, 'keypress', @restrictCardNumberIp)
-    @doListen(input, 'keypress', @formatCardNumberIp)
-    @doListen(input, 'keydown',  @formatBackCardNumberIp)
-    @doListen(input, 'paste',    @reFormatCardNumberIp)
-    @doListen(input, 'change',   @reFormatCardNumberIp)
-    @doListen(input, 'input',    @reFormatCardNumberIp)
+  payform.cvcInput = (input) ->
+    _on(input, 'keypress', restrictNumeric)
+    _on(input, 'keypress', restrictCVC)
+    _on(input, 'paste',    reFormatCVC)
+    _on(input, 'change',   reFormatCVC)
+    _on(input, 'input',    reFormatCVC)
 
-  numericInput:(input) =>
-    @doListen(input, 'keypress', @restrictNumericIp)
-    @doListen(input, 'paste',    @restrictNumericIp)
-    @doListen(input, 'change',   @restrictNumericIp)
-    @doListen(input, 'input',    @restrictNumericIp)
+  payform.expiryInput = (input) ->
+    _on(input, 'keypress', restrictNumeric)
+    _on(input, 'keypress', restrictExpiry)
+    _on(input, 'keypress', formatCardExpiry)
+    _on(input, 'keypress', formatForwardSlashAndSpace)
+    _on(input, 'keypress', formatForwardExpiry)
+    _on(input, 'keydown',  formatBackExpiry)
+    _on(input, 'change',   reFormatExpiry)
+    _on(input, 'input',    reFormatExpiry)
+
+  payform.cardNumberInput = (input) ->
+    _on(input, 'keypress', restrictNumeric)
+    _on(input, 'keypress', restrictCardNumber)
+    _on(input, 'keypress', formatCardNumber)
+    _on(input, 'keydown',  formatBackCardNumber)
+    _on(input, 'paste',    reFormatCardNumber)
+    _on(input, 'change',   reFormatCardNumber)
+    _on(input, 'input',    reFormatCardNumber)
+
+  payform.numericInput = (input) ->
+    _on(input, 'keypress', restrictNumeric)
+    _on(input, 'paste',    restrictNumeric)
+    _on(input, 'change',   restrictNumeric)
+    _on(input, 'input',    restrictNumeric)
 
   # Validations
 
-  parseCardExpiry:(value) =>
+  payform.parseCardExpiry = (value) ->
     value = value.replace(/\s/g, '')
     [month, year] = value.split('/', 2)
 
@@ -477,17 +416,17 @@ class Credit
 
     month: month, year: year
 
-  validateCardNumber:(num) =>
+  payform.validateCardNumber = (num) ->
     num = (num + '').replace(/\s+|-/g, '')
     return false unless /^\d+$/.test(num)
 
-    card = @cardFromNumber(num)
-    return false unless @isCard(card)
+    card = cardFromNumber(num)
+    return false unless card
 
     num.length in card.length and
-      (card.luhn is false or @luhnCheck(num))
+      (card.luhn is false or luhnCheck(num))
 
-  validateCardExpiry:(month, year) =>
+  payform.validateCardExpiry = (month, year) ->
     # Allow passing an object
     if typeof month is 'object' and 'month' of month
       {month, year} = month
@@ -522,30 +461,27 @@ class Credit
 
     expiry > currentTime
 
-  validateCardCVC:(cvc, type) =>
+  payform.validateCardCVC = (cvc, type) ->
     cvc = String(cvc).trim()
     return false unless /^\d+$/.test(cvc)
 
-    card = @cardFromType(type)
-    if @isCard(card)
+    card = cardFromType(type)
+    if card?
       # Check against a explicit card type
       cvc.length in card.cvcLength
     else
       # Check against all types
       cvc.length >= 3 and cvc.length <= 4
 
-  parseCardType:(num) =>
+  payform.parseCardType = (num) ->
     return null unless num
-    card = @cardFromNumber(num)
-    if @isCard(card) then card.type else null
+    cardFromNumber(num)?.type or null
 
-  formatCardNumber:(num) =>
-    return '' if not Util.isStr(num)
-    num  = @replaceFullWidthChars(num)
-    num  = num.replace(/\D/g, '')
-    card = @cardFromNumber(num)
-    #console.log( 'Credit.formatCardNumber()', num, card  )
-    return num unless @isCard(card)
+  payform.formatCardNumber = (num) ->
+    num = replaceFullWidthChars(num)
+    num = num.replace(/\D/g, '')
+    card = cardFromNumber(num)
+    return num unless card
 
     upperLength = card.length[card.length.length - 1]
     num = num[0...upperLength]
@@ -559,8 +495,8 @@ class Credit
       groups = groups.filter(Boolean)
       groups.join(' ')
 
-  formatCardExpiry:(expiry) =>
-    expiry = @replaceFullWidthChars(expiry)
+  payform.formatCardExpiry = (expiry) ->
+    expiry = replaceFullWidthChars(expiry)
     parts = expiry.match(/^\D*(\d{1,2})(\D+)?(\d{1,4})?/)
     return '' unless parts
 
@@ -584,3 +520,5 @@ class Credit
 
     return mon + sep + year
 
+  payform
+)
