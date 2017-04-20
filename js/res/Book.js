@@ -51,6 +51,8 @@
     }
 
     Book.prototype.ready = function() {
+      $('#Book').empty();
+      $('#Pays').empty();
       $('#Book').append(this.bookHtml());
       $('#Insts').append(this.instructHtml());
       $('#Inits').append(this.initsHtml());

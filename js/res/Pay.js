@@ -22,13 +22,16 @@
       this.onError = bind(this.onError, this);
       this.onCharge = bind(this.onCharge, this);
       this.onToken = bind(this.onToken, this);
+      this.onChargeError = bind(this.onChargeError, this);
+      this.onTokenError = bind(this.onTokenError, this);
       this.submitPayment = bind(this.submitPayment, this);
       this.onMakePayment = bind(this.onMakePayment, this);
       this.onMakeDeposit = bind(this.onMakeDeposit, this);
+      this.onCancel = bind(this.onCancel, this);
       this.onChangeReser = bind(this.onChangeReser, this);
       this.initCCPayment = bind(this.initCCPayment, this);
       this.showConfirmPay = bind(this.showConfirmPay, this);
-      this.credit = new Credit('.masked');
+      this.credit = new Credit();
       this.uri = "https://api.stripe.com/v1/";
       this.subscribe();
       $.ajaxSetup({
@@ -37,7 +40,6 @@
         }
       });
       this.myRes = {};
-      this.created = false;
       this.first = '';
       this.last = '';
       this.phone = '';
@@ -64,25 +66,14 @@
     Pay.prototype.showConfirmPay = function(myRes) {
       this.myRes = myRes;
       this.myRes['cust'] = this.cust.createCust(this.first, this.last, this.phone, this.email, 'site');
-      if (this.created) {
-        $('#ConfirmTable').remove();
-        $('#form-pay').remove();
-        $('#ConfirmBlock').append(this.confirmTable());
-        $('#PayDiv').append(this.payHtml());
-        $('#form-pay').get(0).reset();
-        $('#cc-amt').text('$' + this.myRes.total);
-        this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
-        $('#Pays').show();
-      } else {
-        $('#Pays').append(this.confirmHead());
-        $('#ConfirmBlock').append(this.confirmTable());
-        $('#Pays').append(this.confirmBtns());
-        $('#PayDiv').append(this.payHtml());
-        this.initCCPayment();
-        this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
-        $('#Pays').show();
-        this.created = true;
-      }
+      $('#Pays').empty();
+      $('#Pays').append(this.confirmHead());
+      $('#ConfirmBlock').append(this.confirmTable());
+      $('#Pays').append(this.confirmBtns());
+      $('#PayDiv').append(this.payHtml());
+      this.initCCPayment();
+      this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
+      $('#Pays').show();
     };
 
     Pay.prototype.initCCPayment = function() {
@@ -113,6 +104,11 @@
           return _this.submitPayment(e);
         };
       })(this));
+      $('#cc-can').click((function(_this) {
+        return function(e) {
+          return _this.onCancel(e);
+        };
+      })(this));
     };
 
     Pay.prototype.hideCCErrors = function() {
@@ -134,6 +130,11 @@
       $('#Make').text('Change Reservation');
       $('#Pays').hide();
       $('#Book').show();
+    };
+
+    Pay.prototype.onCancel = function(e) {
+      e.preventDefault();
+      this.home.onHome();
     };
 
     Pay.prototype.onMakeDeposit = function(e) {
@@ -159,7 +160,7 @@
     Pay.prototype.confirmHead = function() {
       var htm;
       htm = "<div id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + this.myRes.key + "</div>";
-      htm += "<div id=\"ConfirmName\"><span>For: " + this.first + " </span><span>" + this.last + " </span></div>";
+      htm += "<div><div id=\"ConfirmName\"><span>For: " + this.first + " </span><span>" + this.last + " </span></div></div>";
       htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"></div>";
       return htm;
     };
@@ -287,7 +288,7 @@
       numPtn = "\d{4} \d{4} \d{4} \d{4}";
       expPtn = "(1[0-2]|0[1-9])\/\d\d";
       cvcPtn = "\d{3}";
-      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\" id=\"cc-com\">Card Number</label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\">Invalid Number</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\">Invalid MM/YY</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\">Invalid CVC</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n</div>";
+      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\" id=\"cc-com\">Card Number</label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\">Invalid Number</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\">Invalid MM/YY</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\">Invalid CVC</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-can\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-can\" class=\"btn btn-lg btn-primary\">Cancel</button>\n    <div    id= \"er-can\" class=\"cc-msg\"></div>\n  </span>\n</div>";
     };
 
     Pay.prototype.submitPayment = function(e) {
@@ -306,9 +307,7 @@
       mon = exp.substr(0, 2);
       yer = '20' + exp.substr(5, 2);
       if (ne && ee && ce && accept) {
-        $('#MakePay').hide();
-        $('#PayDiv').hide();
-        $('.PayBtns').hide();
+        this.hidePay();
         $('#Approval').text("Waiting For Approval...").show();
         this.token(num, mon, yer, cvc);
         this.last4 = num.substr(11, 4);
@@ -327,16 +326,18 @@
           $('#er-cvc').show();
         }
       }
-      Util.log('Pay.submitPayment()', {
-        num: num,
-        ne: ne,
-        exp: exp,
-        ee: ee,
-        cvc: cvc,
-        ce: ce,
-        mon: mon,
-        yer: yer
-      });
+    };
+
+    Pay.prototype.hidePay = function() {
+      $('#MakePay').hide();
+      $('#PayDiv').hide();
+      return $('.PayBtns').hide();
+    };
+
+    Pay.prototype.showPay = function() {
+      $('#MakePay').show();
+      $('#PayDiv').show();
+      return $('.PayBtns').show();
     };
 
     Pay.prototype.isValid = function(name, test, testing) {
@@ -371,7 +372,7 @@
         "card[exp_year]": exp_year,
         "card[cvc]": cvc
       };
-      this.ajaxRest("tokens", 'post', input);
+      this.ajaxRest("tokens", 'post', input, this.onTokenError);
     };
 
     Pay.prototype.charge = function(token, amount, currency, description) {
@@ -382,29 +383,38 @@
         currency: currency,
         description: description
       };
-      this.ajaxRest("charges", 'post', input);
+      this.ajaxRest("charges", 'post', input, this.onChargeError);
+    };
+
+    Pay.prototype.onTokenError = function(error, status) {
+      Util.noop(error, status);
+      this.showPay();
+      $('#Approval').text("Unable to Verify Card").show();
+    };
+
+    Pay.prototype.onChargeError = function(error, status) {
+      Util.noop(error, status);
+      this.showPay();
+      $('#Approval').text("Payment Denied").show();
     };
 
     Pay.prototype.onToken = function(obj) {
-      Util.log('StoreRest.onToken()', obj);
       this.tokenId = obj.id;
       this.cardId = obj.card.id;
       return this.charge(this.tokenId, this.myRes.total, 'usd', this.first + " " + this.last);
     };
 
     Pay.prototype.onCharge = function(obj) {
-      Util.log('StoreRest.onCharge()', obj);
       if (obj['outcome'].type === 'authorized') {
         this.confirmEmail();
-        $('.PayBtns').hide();
-        $('#MakePay').hide();
-        $('#PayDiv').hide();
+        this.hidePay();
         $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.email);
         this.home.showConfirm();
         this.myRes.payments[this.payId()] = this.createPayment();
         return this.store.put('Res', this.myRes.key, this.myRes);
       } else {
-        return $('#Approval').text('Denied').show();
+        this.showPay();
+        return $('#Approval').text('Payment Denied').show();
       }
     };
 
@@ -433,7 +443,7 @@
       return Util.error('StoreRest.onError()', obj);
     };
 
-    Pay.prototype.ajaxRest = function(table, op, input) {
+    Pay.prototype.ajaxRest = function(table, op, input, onError) {
       var settings, url;
       url = this.uri + table;
       settings = {
@@ -447,16 +457,13 @@
       settings.success = (function(_this) {
         return function(result, status, jqXHR) {
           _this.stream.publish(table, result);
-          return Util.noop(jqXHR, status);
+          Util.noop(jqXHR, status);
         };
       })(this);
       settings.error = (function(_this) {
         return function(jqXHR, status, error) {
-          Util.error('StoreRest.ajaxRest()', {
-            status: status,
-            error: error
-          });
-          return Util.noop(jqXHR);
+          Util.noop(jqXHR);
+          return onError(status, error);
         };
       })(this);
       $.ajax(settings);

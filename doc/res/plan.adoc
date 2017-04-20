@@ -7,14 +7,15 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 ### [.black]#Feature#
-
+* Booking 2rd reservation
 * Change reservation
+* Model Payment Reservation Status
 * Continuous Resevation Clicks
 * Update text with Sue
 * Terms and Conditions
 
 ### [.black]#Test#
-* Test Pop, Deposit, Spa Opt Out, CC Limit
+* Test Pop, Deposit, Spa Opt Out, Payment
 * Post and Test Reservations, Payments Customers
 * Populate Beth Reservations into Skyline
 
@@ -22,7 +23,6 @@ include::../dir/inc/DefBook.adoc[]
 * Move domain from GoDaddy
 * Bank Account
 * Consider Owner reservation - maybe just a link
-* Package Slide.js and payment.coffee
 * Deploy to Firebase
 
 ## [.black]#Owner Site#
@@ -41,6 +41,7 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets#
 
 ## [.black]#Guest Site Completed#
+* Package Slide.js
 * Spa Adjust
 * Limit Credit Cards
 * Reservation Instruction

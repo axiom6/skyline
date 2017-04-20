@@ -7,12 +7,11 @@ class Pay
   module.exports = Pay
 
   constructor:( @stream, @store, @room, @cust, @res, @home, @Data ) ->
-    @credit = new Credit( '.masked' )
+    @credit = new Credit()
     @uri    = "https://api.stripe.com/v1/"
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
     @myRes   = {}
-    @created = false
     @first   = ''
     @last    = ''
     @phone   = ''
@@ -30,24 +29,14 @@ class Pay
   showConfirmPay:( myRes ) =>
     @myRes         = myRes
     @myRes['cust'] = @cust.createCust( @first, @last, @phone, @email, 'site' )
-    if @created
-      $('#ConfirmTable').remove()
-      $('#form-pay'    ).remove()
-      $('#ConfirmBlock').append( @confirmTable() )
-      $('#PayDiv'      ).append( @payHtml()      )
-      $('#form-pay').get(0).reset()
-      $('#cc-amt').text('$'+@myRes.total)
-      @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
-      $('#Pays').show()
-    else
-      $('#Pays'        ).append( @confirmHead()  )
-      $('#ConfirmBlock').append( @confirmTable() )
-      $('#Pays'        ).append( @confirmBtns()  )
-      $('#PayDiv'      ).append( @payHtml()      )
-      @initCCPayment()
-      @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
-      $('#Pays').show()
-      @created = true
+    $('#Pays'        ).empty()
+    $('#Pays'        ).append( @confirmHead()  )
+    $('#ConfirmBlock').append( @confirmTable() )
+    $('#Pays'        ).append( @confirmBtns()  )
+    $('#PayDiv'      ).append( @payHtml()      )
+    @initCCPayment()
+    @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
+    $('#Pays').show()
     #@testPop() if @testing
     return
 
@@ -58,7 +47,8 @@ class Pay
     $('#MakeDeposit').click(  (e) => @onMakeDeposit( e ) )
     $('#MakePayment').click(  (e) => @onMakePayment( e ) )
     $('.SpaCheck'   ).change( (e) => @onSpa(         e ) )
-    $('#cc-sub').click( (e) => @submitPayment(e) )
+    $('#cc-sub'     ).click(  (e) => @submitPayment( e ) )
+    $('#cc-can'     ).click(  (e) => @onCancel(      e ) )
     return
 
   hideCCErrors:() ->
@@ -81,6 +71,11 @@ class Pay
     $('#Book').show()
     return
 
+  onCancel:( e ) =>
+    e.preventDefault()
+    @home.onHome()
+    return
+
   onMakeDeposit:( e ) =>
     e.preventDefault()
     @purpose = 'Deposit'
@@ -100,7 +95,7 @@ class Pay
 
   confirmHead:() ->
     htm   = """<div id="ConfirmTitle" class= "Title">Confirmation # #{@myRes.key}</div>"""
-    htm  += """<div id="ConfirmName"><span>For: #{@first} </span><span>#{@last} </span></div>"""
+    htm  += """<div><div id="ConfirmName"><span>For: #{@first} </span><span>#{@last} </span></div></div>"""
     htm  += """<div id="ConfirmBlock" class="DivCenter"></div>"""
     htm
  
@@ -223,6 +218,12 @@ class Pay
         <button id= "cc-sub" class="btn btn-lg btn-primary">Pay</button>
         <div    id= "er-sub" class="cc-msg"></div>
       </span>
+
+      <span class="form-group">
+        <label  for="cc-can" class="control-label">&nbsp;</label>
+        <button id= "cc-can" class="btn btn-lg btn-primary">Cancel</button>
+        <div    id= "er-can" class="cc-msg"></div>
+      </span>
     </div>
     """
 
@@ -245,9 +246,7 @@ class Pay
     mon =      exp.substr(0,2)
     yer = '20'+exp.substr(5,2)
     if ne and ee and ce and accept
-      $('#MakePay' ).hide()
-      $('#PayDiv'  ).hide()
-      $('.PayBtns' ).hide()
+      @hidePay()
       $('#Approval').text("Waiting For Approval...").show()
       @token( num, mon, yer, cvc )
       @last4 = num.substr( 11, 4 )
@@ -258,8 +257,18 @@ class Pay
       $('#er-exp').show()   if not ee
       $('#er-cvc').show()   if not ce
 
-    Util.log( 'Pay.submitPayment()', { num:num, ne:ne, exp:exp, ee:ee, cvc:cvc, ce:ce, mon:mon, yer:yer } )
+    #Util.log( 'Pay.submitPayment()', { num:num, ne:ne, exp:exp, ee:ee, cvc:cvc, ce:ce, mon:mon, yer:yer } )
     return
+
+  hidePay:() ->
+    $('#MakePay' ).hide()
+    $('#PayDiv'  ).hide()
+    $('.PayBtns' ).hide()
+
+  showPay:() ->
+    $('#MakePay' ).show()
+    $('#PayDiv'  ).show()
+    $('.PayBtns' ).show()
 
   isValid:( name, test, testing=false ) ->
     value = $('#'+name).val()
@@ -280,33 +289,44 @@ class Pay
 
   token:( number, exp_month, exp_year, cvc ) ->
     input = { "card[number]":number, "card[exp_month]":exp_month, "card[exp_year]":exp_year, "card[cvc]":cvc }
-    @ajaxRest( "tokens", 'post', input )
+    @ajaxRest( "tokens", 'post', input, @onTokenError )
     return
 
   charge:( token, amount, currency, description ) ->
     input = { source:token, amount:amount, currency:currency, description:description }
-    @ajaxRest( "charges", 'post', input )
+    @ajaxRest( "charges", 'post', input, @onChargeError )
+    return
+
+  onTokenError:( error, status ) =>
+    Util.noop(   error, status )
+    @showPay()
+    $('#Approval').text("Unable to Verify Card").show()
+    return
+
+  onChargeError:( error, status ) =>
+    Util.noop(    error, status )
+    @showPay()
+    $('#Approval').text("Payment Denied").show()
     return
 
   onToken:(obj) =>
-    Util.log( 'StoreRest.onToken()', obj )
+    #Util.log( 'StoreRest.onToken()', obj )
     @tokenId  = obj.id
     @cardId   = obj.card.id
     @charge( @tokenId, @myRes.total, 'usd', @first + " " + @last )
 
   onCharge:(obj) =>
-    Util.log( 'StoreRest.onCharge()', obj )
+    #Util.log( 'StoreRest.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
       @confirmEmail()
-      $('.PayBtns' ).hide()
-      $('#MakePay' ).hide()
-      $('#PayDiv'  ).hide()
+      @hidePay()
       $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@email}")
       @home.showConfirm()
       @myRes.payments[@payId()] = @createPayment()
       @store.put( 'Res', @myRes.key, @myRes )
     else
-      $('#Approval').text('Denied'  ).show()
+      @showPay()
+      $('#Approval').text('Payment Denied').show()
 
   payId:() ->
     pays   = Object.keys(@myRes.payments).sort()
@@ -324,7 +344,7 @@ class Pay
   onError:(obj) =>
     Util.error( 'StoreRest.onError()', obj )
 
-  ajaxRest:( table, op, input  ) ->
+  ajaxRest:( table, op, input, onError ) ->
     url       = @uri + table
     settings  = { url:url, type:op }
     settings.headers = { Authorization: 'Bearer '+ @Data.stripeTestKey }
@@ -332,9 +352,10 @@ class Pay
     settings.success = ( result,  status, jqXHR ) =>
       @stream.publish( table, result )
       Util.noop( jqXHR, status )
+      return
     settings.error   = ( jqXHR, status, error ) =>
-      Util.error( 'StoreRest.ajaxRest()', { status:status, error:error } )
       Util.noop( jqXHR )
+      onError( status, error )
     $.ajax( settings )
     return
 
@@ -348,7 +369,3 @@ class Pay
   toJSON:(     obj  ) -> if obj? then JSON.stringify(obj) else ''
 
   toObject:(   json ) -> if json then JSON.parse(json) else {}
-
-  #pf    = str.replace(/[^-.0-9]/g,'')
-  #px    = /^(?:(\d{2})\-)?(\d{3})\-(\d{4})\-(\d{3})$/
-  #ph    = '('+@phone.substr(0,3)+')-'+@phone.substr(3,3)+'-'+@phone.substr(6,4)

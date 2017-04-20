@@ -23,6 +23,8 @@ class Book
     @method      = 'site'
 
   ready:() ->
+    $('#Book'   ).empty()
+    $('#Pays'   ).empty()
     $('#Book'   ).append( @bookHtml()  )
     $('#Insts'  ).append( @instructHtml() )
     $('#Inits'  ).append( @initsHtml() )

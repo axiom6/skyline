@@ -1,13 +1,10 @@
 
-if Util.isCommonJS
-  $   = require( 'jquery'        )
-else
-  Util.loadScript "../../node_module/jquery/dist/jquery.js", () ->
-    Img = $.getJSON( "../../data/Img.json" )
+
+$ = require('jquery')
 
 class Pict
 
-  module.exports = Pict
+  module.exports = Pict if module? and module.exports?
   window.Pict    = Pict
 
   @page:( title, prev, curr, next ) ->
@@ -15,6 +12,7 @@ class Pict
     Util.ready () ->
       pict.roomPageHtml( title, prev, next )
       pict.createSlideShow( curr, 600, 600 )
+      return
     return
 
   constructor:() ->
@@ -33,13 +31,15 @@ class Pict
 
   createSlideShow:( roomId, w,  h ) ->
     $('#Slides').append( @wrapperHtml() )
-    htm = ""
-    Img = if roomId is 'M' then require( 'data/Img.json' ) else require( '../../data/Img.json' )
-    dir = Img[roomId].dir
-    for pic in Img[roomId].pics
-      htm += @li( pic, dir )
-    $('#slideshow').append( htm )
-    @initTINY( w, h )
+    images = (Img) =>
+      htm = ""
+      dir = Img[roomId].dir
+      for pic in Img[roomId].pics
+        htm += @li( pic, dir )
+      $('#slideshow').append( htm )
+      @initTINY( w, h )
+    url = if roomId is 'M' then "../data/Img.json" else "../../data/Img.json"
+    $.getJSON( url, images )
     return
 
   li:( pic, dir ) ->

@@ -65,15 +65,15 @@
 	        Pict = __webpack_require__(360);
 	        Res = __webpack_require__(362);
 	        Pay = __webpack_require__(364);
-	        Book = __webpack_require__(365);
+	        Book = __webpack_require__(366);
 	        pict = new Pict();
 	        stream = new Stream([]);
 	        store = new Firestore(stream, "skytest", Data.configSkytest);
 	        room = new Room(stream, store, Data);
-	        cust = new Cust(stream, store);
+	        cust = new Cust(stream, store, Data);
 	        home = new Home(stream, store, room, pict);
-	        res = new Res(stream, store, room, cust);
-	        pay = new Pay(stream, store, room, cust, res, Data);
+	        res = new Res(stream, store, room, Data);
+	        pay = new Pay(stream, store, room, cust, res, home, Data);
 	        book = new Book(stream, store, room, cust, res, pay, pict, Data);
 	        return home.ready(book);
 	      });
@@ -30090,7 +30090,6 @@
 
 	    Firestore.prototype.init = function(config) {
 	      Store.Firebase.initializeApp(config);
-	      Util.log('Firestore.init', config);
 	      return Store.Firebase;
 	    };
 
@@ -32011,6 +32010,8 @@
 
 	    module.exports = Data;
 
+	    Data.testing = true;
+
 	    Data.season = ["May", "June", "July", "August", "September", "October"];
 
 	    Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -32057,6 +32058,48 @@
 	    Data.stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3";
 
 	    Data.stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs";
+
+	    Data.genCustKey = function(phone) {
+	      var custKey;
+	      custKey = Util.padEnd(phone.substr(0, 10), 10, '_');
+	      if (Data.testing) {
+	        return Data.randomCustKey();
+	      } else {
+	        return custKey;
+	      }
+	    };
+
+	    Data.randomCustKey = function() {
+	      return Math.floor(Math.random() * (9999999999 - 1000000000)) + 1000000000;
+	    };
+
+	    Data.genResKey = function(roomId, date) {
+	      return roomId + date;
+	    };
+
+	    Data.today = function() {
+	      var date, day, month, year;
+	      date = new Date();
+	      year = date.getFullYear().toString();
+	      month = Util.padStr(date.getMonth() + 1);
+	      day = Util.padStr(date.getDate());
+	      Util.log('Data.today', year, month, day, year + month + day);
+	      return year + month + day;
+	    };
+
+	    Data.advanceDate = function(resDate, numDays) {
+	      var day, dayInt, month, monthIdx, year;
+	      year = resDate.substr(0, 4);
+	      monthIdx = parseInt(resDate.substr(4, 2)) - 1;
+	      dayInt = parseInt(resDate.substr(6, 2)) + numDays;
+	      if (dayInt > this.numDayMonth[monthIdx]) {
+	        dayInt = dayInt - this.numDayMonth[monthIdx];
+	        monthIdx++;
+	      }
+	      day = Util.padStr(dayInt);
+	      month = Util.padStr(monthIdx + 1);
+	      return year + month + day;
+	    };
 
 	    return Data;
 
@@ -32110,10 +32153,14 @@
 	        resRoom.price = 0;
 	        resRoom.guests = 2;
 	        resRoom.pets = 0;
-	        resRoom.spa = false;
+	        resRoom.spa = room.spa;
 	        resRoom.days = {};
 	      }
 	      return roomUIs;
+	    };
+
+	    Room.prototype.hasSpa = function(roomId) {
+	      return this.rooms[roomId].spa > 0;
 	    };
 
 	    Room.prototype.initRooms = function() {
@@ -32262,7 +32309,7 @@
 			"name": "#7 Western Spa",
 			"total": 0,
 			"pet": 12,
-			"spa": 0,
+			"spa": 20,
 			"max": 4,
 			"price": 0
 		},
@@ -32320,7 +32367,40 @@
 
 	    Cust.Data = __webpack_require__(358);
 
-	    function Cust() {}
+	    function Cust(stream, store, Data) {
+	      this.stream = stream;
+	      this.store = store;
+	      this.Data = Data;
+	    }
+
+	    Cust.prototype.createCust = function(first, last, phone, email, source) {
+	      var cust;
+	      cust = {};
+	      cust.key = this.Data.genCustKey(phone);
+	      cust.first = first;
+	      cust.last = last;
+	      cust.phone = phone;
+	      cust.email = email;
+	      cust.source = source;
+	      this.add(cust.key, cust);
+	      return cust;
+	    };
+
+	    Cust.prototype.add = function(id, cust) {
+	      return this.store.add('Cust', id, cust);
+	    };
+
+	    Cust.prototype.get = function(id) {
+	      return this.store.get('Cust', id);
+	    };
+
+	    Cust.prototype.put = function(id, cust) {
+	      return this.store.put('Cust', id, cust);
+	    };
+
+	    Cust.prototype.del = function(id) {
+	      return this.store.del('Cust', id);
+	    };
 
 	    return Cust;
 
@@ -32334,115 +32414,82 @@
 /***/ function(module, exports) {
 
 	module.exports = {
-		"1": {
-			"first": "Luke",
-			"middle": "",
-			"last": "Johnson",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"2": {
-			"first": "Mark",
-			"middle": "",
-			"last": "Ryan",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"3": {
-			"first": "Luke",
-			"middle": "",
-			"last": "Johnson",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"4": {
-			"first": "John",
-			"middle": "",
-			"last": "Abrams",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"5": {
+		"3037084232": {
 			"first": "Clyde",
-			"middle": "",
 			"last": "Horn",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
+			"phone": "3037084232",
+			"email": "tef@eazy.net",
+			"source": "expedia"
 		},
-		"6": {
-			"first": "Teressa",
-			"middle": "",
-			"last": "May",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"7": {
-			"first": "Susan",
-			"middle": "",
-			"last": "Anthony",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"8": {
-			"first": "Gretchen",
-			"middle": "",
-			"last": "Menn",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"9": {
-			"first": "Fabio",
-			"middle": "",
-			"last": "Sosa",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
-		},
-		"10": {
+		"3037984231": {
 			"first": "Marcus",
-			"middle": "",
 			"last": "Allen",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
+			"phone": "3037984231",
+			"email": "tef@eazy.net",
+			"source": "bookings"
 		},
-		"11": {
+		"3037984232": {
+			"first": "Luke",
+			"last": "Johnson",
+			"phone": "3037984232",
+			"email": "tef@eazy.net",
+			"source": "site"
+		},
+		"3037984233": {
 			"first": "Dan",
-			"middle": "",
 			"last": "Marks",
-			"source": "",
-			"contact": {
-				"cell": "",
-				"email": ""
-			}
+			"phone": "3037984233",
+			"email": "tef@eazy.net",
+			"source": "site"
+		},
+		"3037984242": {
+			"first": "Fabio",
+			"last": "Sosa",
+			"phone": "3037984242",
+			"email": "tef@eazy.net",
+			"source": "walkin"
+		},
+		"3037984332": {
+			"first": "Gretchen",
+			"last": "Menn",
+			"phone": "3037984332",
+			"email": "tef@eazy.net",
+			"source": "bookings"
+		},
+		"3037985232": {
+			"first": "Susan",
+			"last": "Anthony",
+			"phone": "3037985232",
+			"email": "tef@eazy.net",
+			"source": "site"
+		},
+		"3037994232": {
+			"first": "Teressa",
+			"last": "May",
+			"phone": "3037994232",
+			"email": "tef@eazy.net",
+			"source": "bookings"
+		},
+		"3038984232": {
+			"first": "John",
+			"last": "Abrams",
+			"phone": "3038984232",
+			"email": "tef@eazy.net",
+			"source": "bookings"
+		},
+		"3047984232": {
+			"first": "Luke",
+			"last": "Johnson",
+			"phone": "3047984232",
+			"email": "tef@eazy.net",
+			"source": "site"
+		},
+		"3137984232": {
+			"first": "Mark",
+			"last": "Ryan",
+			"phone": "3137984232",
+			"email": "tef@eazy.net",
+			"source": "walkin"
 		}
 	};
 
@@ -32466,6 +32513,7 @@
 	      this.store = store;
 	      this.room = room1;
 	      this.pict = pict;
+	      this.onHome = bind(this.onHome, this);
 	      this.onMakeRes = bind(this.onMakeRes, this);
 	      this.rooms = this.room.rooms;
 	      this.roomUIs = this.room.roomUIs;
@@ -32474,6 +32522,7 @@
 	    Home.prototype.ready = function(book) {
 	      this.book = book;
 	      $('#MakeRes').click(this.onMakeRes);
+	      $('#HomeBtn').click(this.onHome);
 	      $('#MapDirs').click((function(_this) {
 	        return function() {
 	          return Util.toPage('rooms/X.html');
@@ -32509,21 +32558,46 @@
 	        htm += "<li class=\"RoomLI\"><a href=\"rooms/" + roomId + ".html\">" + room.name + "</a></li>";
 	      }
 	      htm += "</ul>";
-	      $("#Viewer").append(htm);
+	      $("#View").append(htm);
 	    };
 
 	    Home.prototype.hideMkt = function() {
 	      $('#MakeRes').hide();
+	      $('#HomeBtn').hide();
 	      $('#MapDirs').hide();
 	      $('#Contact').hide();
-	      $('#State').hide();
+	      $('#Caption').hide();
 	      $('#Head').hide();
-	      return $('#Viewer').hide();
+	      return $('#View').hide();
+	    };
+
+	    Home.prototype.showMkt = function() {
+	      $('#MakeRes').show();
+	      $('#HomeBtn').hide();
+	      $('#MapDirs').show();
+	      $('#Contact').show();
+	      $('#Caption').show();
+	      $('#Head').show();
+	      return $('#View').show();
+	    };
+
+	    Home.prototype.showConfirm = function() {
+	      $('#MakeRes').hide();
+	      $('#HomeBtn').show();
+	      $('#MapDirs').show();
+	      $('#Contact').show();
+	      $('#Caption').hide();
+	      $('#Head').hide();
+	      return $('#View').hide();
 	    };
 
 	    Home.prototype.onMakeRes = function() {
 	      this.hideMkt();
 	      this.book.ready();
+	    };
+
+	    Home.prototype.onHome = function() {
+	      this.showMkt();
 	    };
 
 	    return Home;
@@ -32537,21 +32611,16 @@
 /* 360 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// Generated by CoffeeScript 1.12.2
+	/* WEBPACK VAR INJECTION */(function(module) {// Generated by CoffeeScript 1.12.2
 	(function() {
 	  var $, Pict;
 
-	  if (Util.isCommonJS) {
-	    $ = __webpack_require__(2);
-	  } else {
-	    Util.loadScript("../../node_module/jquery/dist/jquery.js", function() {
-	      var Img;
-	      return Img = $.getJSON("../../data/Img.json");
-	    });
-	  }
+	  $ = __webpack_require__(2);
 
 	  Pict = (function() {
-	    module.exports = Pict;
+	    if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
+	      module.exports = Pict;
+	    }
 
 	    window.Pict = Pict;
 
@@ -32560,7 +32629,7 @@
 	      pict = new Pict();
 	      Util.ready(function() {
 	        pict.roomPageHtml(title, prev, next);
-	        return pict.createSlideShow(curr, 600, 600);
+	        pict.createSlideShow(curr, 600, 600);
 	      });
 	    };
 
@@ -32575,18 +32644,24 @@
 	    };
 
 	    Pict.prototype.createSlideShow = function(roomId, w, h) {
-	      var Img, dir, htm, i, len, pic, ref;
+	      var images, url;
 	      $('#Slides').append(this.wrapperHtml());
-	      htm = "";
-	      Img = roomId === 'M' ? __webpack_require__(361) : __webpack_require__(361);
-	      dir = Img[roomId].dir;
-	      ref = Img[roomId].pics;
-	      for (i = 0, len = ref.length; i < len; i++) {
-	        pic = ref[i];
-	        htm += this.li(pic, dir);
-	      }
-	      $('#slideshow').append(htm);
-	      this.initTINY(w, h);
+	      images = (function(_this) {
+	        return function(Img) {
+	          var dir, htm, i, len, pic, ref;
+	          htm = "";
+	          dir = Img[roomId].dir;
+	          ref = Img[roomId].pics;
+	          for (i = 0, len = ref.length; i < len; i++) {
+	            pic = ref[i];
+	            htm += _this.li(pic, dir);
+	          }
+	          $('#slideshow').append(htm);
+	          return _this.initTINY(w, h);
+	        };
+	      })(this);
+	      url = roomId === 'M' ? "../data/Img.json" : "../../data/Img.json";
+	      $.getJSON(url, images);
 	    };
 
 	    Pict.prototype.li = function(pic, dir) {
@@ -32647,308 +32722,23 @@
 
 	}).call(this);
 
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(361)(module)))
 
 /***/ },
 /* 361 */
 /***/ function(module, exports) {
 
-	module.exports = {
-		"1": {
-			"dir": "../img/r1/",
-			"pics": [
-				{
-					"src": "SL-Cabin001.jpg",
-					"name": "Bed",
-					"p": "Bed and Living Room"
-				}
-			]
-		},
-		"2": {
-			"dir": "../img/r2/",
-			"pics": [
-				{
-					"src": "SL-4046-300.jpg",
-					"name": "Bedroom",
-					"p": "Serta Perfect Sleeper queen bed, double and single sofabeds"
-				},
-				{
-					"src": "SL-4044-300.jpg",
-					"name": "Spa",
-					"p": "Snuggle into cozy cabin in your luxurious mountain spa"
-				},
-				{
-					"src": "SL-4048-300.jpg",
-					"name": "Kitchen",
-					"p": "Full electric kitchen. Moose china and pine cone shelves."
-				},
-				{
-					"src": "SL-4050-300.jpg",
-					"name": "Dining",
-					"p": "Dining Area"
-				}
-			]
-		},
-		"3": {
-			"dir": "../img/r3/",
-			"pics": [
-				{
-					"src": "SL-0003-300.jpg",
-					"name": "Front View",
-					"p": "Down River"
-				},
-				{
-					"src": "SL-1002-300.jpg",
-					"name": "Living Room",
-					"p": "Living Room with Fireplace"
-				},
-				{
-					"src": "SL-1003-300.jpg",
-					"name": "Spa",
-					"p": "Full Size Spa"
-				},
-				{
-					"src": "SL-1004-300.jpg",
-					"name": "Kitchen",
-					"p": "Kitchen with Dining Area"
-				},
-				{
-					"src": "SL-1006-300.jpg",
-					"name": "First Floor",
-					"p": "First Floor from Kitchen"
-				},
-				{
-					"src": "SL-1008-300.jpg",
-					"name": "First Bedroom",
-					"p": "First Bedroom"
-				},
-				{
-					"src": "SL-1012-300.jpg",
-					"name": "Second Bedroom",
-					"p": "Second Bedroom"
-				},
-				{
-					"src": "SL-1014-300.jpg",
-					"name": "Living Room",
-					"p": "Second Floor Living Room"
-				},
-				{
-					"src": "SL-1016-300.jpg",
-					"name": "Front Balcony",
-					"p": "Front Balcony"
-				},
-				{
-					"src": "SL-1017-300.jpg",
-					"name": "Back Patio",
-					"p": "Back Patio"
-				}
-			]
-		},
-		"4": {
-			"dir": "../img/r4/",
-			"pics": [
-				{
-					"src": "SL-3012-400.jpg",
-					"name": "Fireplace",
-					"p": "elax w/fire and color cable TV in bed or sofa"
-				},
-				{
-					"src": "SL-3008-300.jpg",
-					"name": "Bedroom",
-					"p": "Serta Perfect Sleeper queen bed and trundle sofabed"
-				},
-				{
-					"src": "SL-3010-300.jpg",
-					"name": "Kitchen",
-					"p": "All electric kitchen."
-				}
-			]
-		},
-		"5": {
-			"dir": "../img/r5/",
-			"pics": [
-				{
-					"src": "SL-Unit5LRoom001.jpg",
-					"name": "Room Views",
-					"p": "Fabulous view of river & mountain"
-				},
-				{
-					"src": "SL-Unit5LivingRoom003.jpg",
-					"name": "Living Room",
-					"p": "Spacious Windows"
-				},
-				{
-					"src": "SC-Unit5View003.jpg",
-					"name": "Window",
-					"p": "Close to Natures"
-				}
-			]
-		},
-		"6": {
-			"dir": "../img/r6/",
-			"pics": [
-				{
-					"src": "SC-Unit6LivingRoom.jpg",
-					"name": "Living Room",
-					"p": "Perfect for Large Groups"
-				},
-				{
-					"src": "SC-Unit6DiningRoom001.jpg",
-					"name": "Dining Kitchen",
-					"p": "Huge kitchen - can be extended to seat 16 at once!"
-				},
-				{
-					"src": "SC-Unit6BedRoom2001.jpg",
-					"name": "Bedroom",
-					"p": "Serta Perfect Sleeper, queen-size bed and single in each bedroom"
-				}
-			]
-		},
-		"7": {
-			"dir": "../img/r7/",
-			"pics": [
-				{
-					"src": "SC-Unit7SpaAndFireplace.jpg",
-					"name": "Spa with Fireplace",
-					"p": "Relax in luxurious spa in front of a crackling fire"
-				},
-				{
-					"src": "SC-Unit7BedRoom001.jpg",
-					"name": "Bedroom",
-					"p": "Serta Perfect Sleeper queen bed under chili pepper fan."
-				},
-				{
-					"src": "SC-Unit7LivingRoom.jpg",
-					"name": "Living and Kitchen",
-					"p": "Full electric kitchen. Cozy fireplace."
-				},
-				{
-					"src": "SC-Unit7Patio.jpg",
-					"name": "Patio",
-					"p": "Enjoy private deck with dappled sunlight."
-				}
-			]
-		},
-		"8": {
-			"dir": "../img/r8/",
-			"pics": [
-				{
-					"src": "SC-Unit8001.jpg",
-					"name": "Living, Bedroom Kitchen",
-					"p": "Serta queen bed and loveseat sleeper."
-				}
-			]
-		},
-		"M": {
-			"dir": "img/scenic/",
-			"pics": [
-				{
-					"src": "SC-DownRiver.jpg",
-					"name": "Down River",
-					"p": "Down River"
-				},
-				{
-					"src": "SC-Patio001.jpg",
-					"name": "Patio",
-					"p": "Patio"
-				},
-				{
-					"src": "SC-RiverWalk-East.jpg",
-					"name": "River Walk East",
-					"p": "River Walk East"
-				},
-				{
-					"src": "SC-RiverWithLongs.jpg",
-					"name": "River With Longs",
-					"p": "River With Longs"
-				},
-				{
-					"src": "SLC-BigFish001.jpg",
-					"name": "Big Fish",
-					"p": "Big Fish"
-				},
-				{
-					"src": "SLC-ElkInYard.jpg",
-					"name": "Elk In Yard",
-					"p": "Elk In Yard"
-				},
-				{
-					"src": "SLC-ElkWithRedChair.jpg",
-					"name": "Elk Red Chair",
-					"p": "Elk Red Chair"
-				},
-				{
-					"src": "SLC-RiverWalk.jpg",
-					"name": "River Walk",
-					"p": "River Walk"
-				}
-			]
-		},
-		"X": {
-			"dir": "img/scenic/",
-			"pics": [
-				{
-					"src": "SC-Sign.gif",
-					"name": "Sign",
-					"p": "Sign at 1752 Highway 66"
-				},
-				{
-					"src": "SC-Map-EstesPark.gif",
-					"name": "Map",
-					"p": "Estes Park Map"
-				}
-			]
-		},
-		"N": {
-			"dir": "../img/rn/",
-			"pics": [
-				{
-					"src": "SL-2003-300x200.jpg",
-					"name": "Secluded Cabin",
-					"p": "500 sq.ft. cabin bordering Rocky Mountain National Park."
-				},
-				{
-					"src": "SL-2004-300x200.jpg",
-					"name": "Living Room",
-					"p": "Color-cable TV and queen sofabed."
-				},
-				{
-					"src": "SL-2005-300x200.jpg",
-					"name": "Kitchen",
-					"p": "Full electric kitchen."
-				},
-				{
-					"src": "SL-2006-300x200.jpg",
-					"name": "Bedroom",
-					"p": "Large bedroom with Serta Perfect Sleeper queen bed"
-				}
-			]
-		},
-		"S": {
-			"dir": "../img/rs/",
-			"pics": [
-				{
-					"src": "SL-2001-300x200.jpg",
-					"name": "Secluded Cabin",
-					"p": "400 sq.ft. cabin bordering Rocky Mountain National Park."
-				},
-				{
-					"src": "SL-2013-300x200.jpg",
-					"name": "Living Room",
-					"p": "All the comforts of home!"
-				},
-				{
-					"src": "SL-2014-300x200.jpg",
-					"name": "Kitchen",
-					"p": "Full electric kitchen."
-				},
-				{
-					"src": "SL-2008-300x200.jpg",
-					"name": "Bedroom",
-					"p": "Large bedroom with Serta Perfect Sleeper queen bed"
-				}
-			]
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
 		}
-	};
+		return module;
+	}
+
 
 /***/ },
 /* 362 */
@@ -32965,65 +32755,67 @@
 
 	    Res.Resvs = __webpack_require__(363);
 
-	    function Res(stream, store, room1, cust) {
+	    function Res(stream, store, room1, Data) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.room = room1;
-	      this.cust = cust;
-	      this.initRes = bind(this.initRes, this);
-	      this.resvs = Res.Resvs;
-	      this.myResId = '12';
-	      this.myCustId = '12';
-	      this.initRes();
-	      this.updateRooms();
+	      this.Data = Data;
+	      this.subscribeToResKey = bind(this.subscribeToResKey, this);
+	      this.testResvs = Res.Resvs;
+	      if (this.Data.testing) {
+	        this.insertTestResvs();
+	      }
 	    }
 
-	    Res.prototype.initRes = function() {
-	      this.store.subscribe('Res', this.myResId, 'add', (function(_this) {
+	    Res.prototype.subscribeToResKey = function(resKey) {
+	      this.store.subscribe('Res', resKey, 'add', (function(_this) {
 	        return function(add) {
-	          return Util.log(add);
+	          return Util.log('Res.subscribeToResKey', resKey, add);
 	        };
 	      })(this));
-	      this.store.subscribe('Res', this.myResId, 'put', (function(_this) {
+	      return this.store.subscribe('Res', resKey, 'put', (function(_this) {
 	        return function(put) {
-	          return Util.log(put);
+	          return Util.log('Res.subscribeToResKey', resKey, put);
 	        };
 	      })(this));
+	    };
+
+	    Res.prototype.insertTestResvs = function() {
 	      this.store.subscribe('Res', 'none', 'make', (function(_this) {
 	        return function(make) {
-	          _this.store.insert('Res', _this.resvs);
+	          _this.store.insert('Res', _this.testResvs);
 	          return Util.noop(make);
 	        };
 	      })(this));
-	      return this.store.make('Res');
+	      this.store.make('Res');
+	      this.updateRooms(this.testResvs);
 	    };
 
-	    Res.prototype.updateRooms = function() {
-	      var dayId, ref, res, resDay, resId, resRoom, results, room, roomDay, roomId;
-	      ref = this.resvs;
+	    Res.prototype.updateRooms = function(resvs) {
+	      var dayId, res, resDay, resKey, resRoom, results, room, roomDay, roomId;
 	      results = [];
-	      for (resId in ref) {
-	        if (!hasProp.call(ref, resId)) continue;
-	        res = ref[resId];
+	      for (resKey in resvs) {
+	        if (!hasProp.call(resvs, resKey)) continue;
+	        res = resvs[resKey];
 	        results.push((function() {
-	          var ref1, results1;
-	          ref1 = res.rooms;
+	          var ref, results1;
+	          ref = res.rooms;
 	          results1 = [];
-	          for (roomId in ref1) {
-	            if (!hasProp.call(ref1, roomId)) continue;
-	            resRoom = ref1[roomId];
+	          for (roomId in ref) {
+	            if (!hasProp.call(ref, roomId)) continue;
+	            resRoom = ref[roomId];
 	            room = this.room.rooms[roomId];
 	            results1.push((function() {
-	              var ref2, results2;
-	              ref2 = resRoom.days;
+	              var ref1, results2;
+	              ref1 = resRoom.days;
 	              results2 = [];
-	              for (dayId in ref2) {
-	                if (!hasProp.call(ref2, dayId)) continue;
-	                resDay = ref2[dayId];
+	              for (dayId in ref1) {
+	                if (!hasProp.call(ref1, dayId)) continue;
+	                resDay = ref1[dayId];
 	                roomDay = room.days[dayId];
 	                roomDay = roomDay != null ? roomDay : {};
 	                roomDay.status = res.status;
-	                roomDay.resId = resId;
+	                roomDay.resKey = resKey;
 	                results2.push(room.days[dayId] = roomDay);
 	              }
 	              return results2;
@@ -33035,25 +32827,56 @@
 	      return results;
 	    };
 
-	    Res.prototype.createHold = function(total, status, method, custId, roomUIs, payments) {
-	      var res, roomId, roomUI;
+	    Res.prototype.createRes = function(total, status, method, phone, roomUIs, payments) {
+	      var day, obj, ref, res, roomId, roomUI;
 	      res = {};
+	      res.key = this.genResKey(roomUIs);
 	      res.total = total;
 	      res.paid = 0;
 	      res.balance = 0;
 	      res.status = status;
 	      res.method = method;
-	      res.custId = custId;
+	      res.booked = '20170516';
+	      res.arrive = "99999999";
+	      res.custKey = this.Data.genCustKey(phone);
 	      res.rooms = {};
 	      for (roomId in roomUIs) {
 	        if (!hasProp.call(roomUIs, roomId)) continue;
 	        roomUI = roomUIs[roomId];
-	        if (roomUI.numDays > 0) {
-	          res.rooms[roomId] = roomUI.resRoom;
+	        if (!(roomUI.numDays > 0)) {
+	          continue;
+	        }
+	        res.rooms[roomId] = roomUI.resRoom;
+	        ref = roomUI.resRoom.days;
+	        for (day in ref) {
+	          if (!hasProp.call(ref, day)) continue;
+	          obj = ref[day];
+	          if (day < res.arrive) {
+	            res.arrive = day;
+	          }
 	        }
 	      }
 	      res.payments = payments;
 	      return res;
+	    };
+
+	    Res.prototype.genResKey = function(roomUIs) {
+	      var days, resKey, roomId, roomUI;
+	      resKey = "";
+	      for (roomId in roomUIs) {
+	        if (!hasProp.call(roomUIs, roomId)) continue;
+	        roomUI = roomUIs[roomId];
+	        if (!(roomUI.numDays > 0)) {
+	          continue;
+	        }
+	        days = Object.keys(roomUI.resRoom.days).sort();
+	        resKey = this.Data.genResKey(roomId, days[0]);
+	        break;
+	      }
+	      if (!Util.isStr(resKey)) {
+	        Util.error('Res.genResKey() resKey blank');
+	      }
+	      return resKey;
 	    };
 
 	    Res.prototype.add = function(id, res) {
@@ -33087,20 +32910,6 @@
 	    return Res;
 
 	  })();
-
-
-	  /*
-	      "1":{ "total":250, "paid":250, "balance":0,
-	      "rooms":  { "1":{ "total":250, "price":125, "guests":2,"pets":1, "spa":false, "days":{"20170709":{},"20170710":{} } } },
-	      "payments":{"1":{ "amount":250,"date":"20170517", "with":"check", "num":"4028" } },
-	      "status":"book", "method":"site", "custId":"1" },
-	  onAlloc:( alloc, roomId ) =>
-	    room = @rooms[roomId]
-	    for own day, obj of alloc.days
-	      room.days[day] =  alloc.days[day]
-	    @store.put( 'Room', roomId, room )
-	    return
-	   */
 
 	}).call(this);
 
@@ -33408,28 +33217,38 @@
 
 	// Generated by CoffeeScript 1.12.2
 	(function() {
-	  var $, Pay,
+	  var $, Credit, Pay,
 	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
 	    hasProp = {}.hasOwnProperty;
 
 	  $ = __webpack_require__(2);
 
+	  Credit = __webpack_require__(365);
+
 	  Pay = (function() {
 	    module.exports = Pay;
 
-	    function Pay(stream, store, room, cust, res, Data) {
+	    function Pay(stream, store, room1, cust, res, home, Data) {
 	      this.stream = stream;
 	      this.store = store;
-	      this.room = room;
+	      this.room = room1;
 	      this.cust = cust;
 	      this.res = res;
+	      this.home = home;
 	      this.Data = Data;
 	      this.onError = bind(this.onError, this);
 	      this.onCharge = bind(this.onCharge, this);
 	      this.onToken = bind(this.onToken, this);
+	      this.onChargeError = bind(this.onChargeError, this);
+	      this.onTokenError = bind(this.onTokenError, this);
 	      this.submitPayment = bind(this.submitPayment, this);
-	      this.initPayment = bind(this.initPayment, this);
-	      this.onBack = bind(this.onBack, this);
+	      this.onMakePayment = bind(this.onMakePayment, this);
+	      this.onMakeDeposit = bind(this.onMakeDeposit, this);
+	      this.onCancel = bind(this.onCancel, this);
+	      this.onChangeReser = bind(this.onChangeReser, this);
+	      this.initCCPayment = bind(this.initCCPayment, this);
+	      this.showConfirmPay = bind(this.showConfirmPay, this);
+	      this.credit = new Credit();
 	      this.uri = "https://api.stripe.com/v1/";
 	      this.subscribe();
 	      $.ajaxSetup({
@@ -33438,46 +33257,139 @@
 	        }
 	      });
 	      this.myRes = {};
-	      this.created = false;
+	      this.first = '';
+	      this.last = '';
+	      this.phone = '';
+	      this.email = '';
+	      this.spas = false;
+	      this.purpose = 'PayInFull';
+	      this.testing = true;
+	      this.errored = false;
 	    }
+
+	    Pay.prototype.showSpa = function(myRes) {
+	      var ref, room, roomId;
+	      ref = myRes.rooms;
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        room = ref[roomId];
+	        if (this.room.hasSpa(roomId)) {
+	          return true;
+	        }
+	      }
+	      return false;
+	    };
 
 	    Pay.prototype.showConfirmPay = function(myRes) {
 	      this.myRes = myRes;
-	      if (this.created) {
-	        $('#Confirms').remove();
-	        $('#Confirm').prepend(this.confirmHtml(this.myRes));
-	        return $('#form-pay').show();
-	      } else {
-	        $('#Confirm').append(this.confirmHtml(this.myRes));
-	        $('#Confirm').append(this.payHtml());
-	        window.$ = $;
-	        Util.loadScript("../js/res/payment.js", this.initPayment);
-	        $('#cc-amt').text('$' + myRes.total);
-	        $('#cc-bak').click((function(_this) {
-	          return function(e) {
-	            return _this.onBack(e);
-	          };
-	        })(this));
-	        return this.created = true;
-	      }
+	      this.myRes['cust'] = this.cust.createCust(this.first, this.last, this.phone, this.email, 'site');
+	      $('#Pays').empty();
+	      $('#Pays').append(this.confirmHead());
+	      $('#ConfirmBlock').append(this.confirmTable());
+	      $('#Pays').append(this.confirmBtns());
+	      $('#PayDiv').append(this.payHtml());
+	      this.initCCPayment();
+	      this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
+	      $('#Pays').show();
 	    };
 
-	    Pay.prototype.onBack = function(e) {
+	    Pay.prototype.initCCPayment = function() {
+	      this.hideCCErrors();
+	      $('#cc-amt').text('$' + this.myRes.total);
+	      $('#ChangeReser').click((function(_this) {
+	        return function(e) {
+	          return _this.onChangeReser(e);
+	        };
+	      })(this));
+	      $('#MakeDeposit').click((function(_this) {
+	        return function(e) {
+	          return _this.onMakeDeposit(e);
+	        };
+	      })(this));
+	      $('#MakePayment').click((function(_this) {
+	        return function(e) {
+	          return _this.onMakePayment(e);
+	        };
+	      })(this));
+	      $('.SpaCheck').change((function(_this) {
+	        return function(e) {
+	          return _this.onSpa(e);
+	        };
+	      })(this));
+	      $('#cc-sub').click((function(_this) {
+	        return function(e) {
+	          return _this.submitPayment(e);
+	        };
+	      })(this));
+	      $('#cc-can').click((function(_this) {
+	        return function(e) {
+	          return _this.onCancel(e);
+	        };
+	      })(this));
+	    };
+
+	    Pay.prototype.hideCCErrors = function() {
+	      $('#er-num').text('Invalid Number');
+	      $('#er-num').hide();
+	      $('#er-exp').hide();
+	      $('#er-cvc').hide();
+	      return $('#er-sub').hide();
+	    };
+
+	    Pay.prototype.testPop = function() {
+	      $('#cc-num').val('4242424242424242');
+	      $('#cc-exp').val('10/19');
+	      $('#cc-cvc').val('555');
+	    };
+
+	    Pay.prototype.onChangeReser = function(e) {
 	      e.preventDefault();
-	      $('#Confirms').hide();
-	      $('#form-pay').hide();
-	      $('#Inits').show();
-	      $('#Rooms').show();
-	      $('#MakeRes').show();
+	      $('#Make').text('Change Reservation');
+	      $('#Pays').hide();
+	      $('#Book').show();
 	    };
 
-	    Pay.prototype.confirmHtml = function(myRes) {
-	      var arrive, days, depart, htm, num, r, ref, roomId;
-	      htm = "<div class= \"ConfirmPay\">Confirmation</div>";
-	      htm += "<table id=\"Confirms\"><thead>";
-	      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
+	    Pay.prototype.onCancel = function(e) {
+	      e.preventDefault();
+	      this.home.onHome();
+	    };
+
+	    Pay.prototype.onMakeDeposit = function(e) {
+	      e.preventDefault();
+	      this.purpose = 'Deposit';
+	      $("#cc-amt").text('$' + this.myRes.deposit);
+	      return $('#MakePay').text('Make 50% Deposit');
+	    };
+
+	    Pay.prototype.onMakePayment = function(e) {
+	      e.preventDefault();
+	      this.purpose = 'PayInFull';
+	      $("#cc-amt").text('$' + this.myRes.total);
+	      return $('#MakePay').text('Make Payment with Visa Mastercard or Discover');
+	    };
+
+	    Pay.prototype.ccAmt = function() {
+	      var amt;
+	      amt = this.purpose === 'Deposit' ? this.myRes.deposit : this.myRes.total;
+	      $("#cc-amt").text('$' + amt);
+	    };
+
+	    Pay.prototype.confirmHead = function() {
+	      var htm;
+	      htm = "<div id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + this.myRes.key + "</div>";
+	      htm += "<div><div id=\"ConfirmName\"><span>For: " + this.first + " </span><span>" + this.last + " </span></div></div>";
+	      htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"></div>";
+	      return htm;
+	    };
+
+	    Pay.prototype.confirmTable = function() {
+	      var arrive, days, depart, htm, num, r, ref, roomId, spaTH;
+	      this.spas = this.showSpa(this.myRes);
+	      spaTH = this.spas ? "Spa" : "";
+	      htm = "<table id=\"ConfirmTable\"><thead>";
+	      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>" + spaTH + "</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
 	      htm += "</thead><tbody>";
-	      ref = myRes.rooms;
+	      ref = this.myRes.rooms;
 	      for (roomId in ref) {
 	        if (!hasProp.call(ref, roomId)) continue;
 	        r = ref[roomId];
@@ -33485,12 +33397,83 @@
 	        num = days.length;
 	        arrive = this.confirmDate(days[0], "", false);
 	        depart = this.confirmDate(days[num - 1], "", true);
-	        htm += "<tr><td>" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + num + "</td><td class=\"room-total\">$" + r.total + "</td></tr>";
+	        htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + num + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
 	      }
-	      htm += "<tr><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td class=\"room-total\">$" + myRes.total + "</td></tr>";
+	      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.myRes.total + "</td></tr>";
 	      htm += "</tbody></table>";
-	      htm += "<div class=\"ConfirmPay\">Payment</div>";
 	      return htm;
+	    };
+
+	    Pay.prototype.confirmBtns = function() {
+	      var canDeposit, htm;
+	      canDeposit = this.canMakeDeposit(this.myRes);
+	      htm = "<div class=\"PayBtns\">";
+	      htm += "  <button class=\"btn btn-primary\" id=\"ChangeReser\">Change Reservation</button>";
+	      if (canDeposit) {
+	        htm += "  <button class=\"btn btn-primary\" id=\"MakeDeposit\">Make 50% Deposit</button>";
+	      }
+	      if (canDeposit) {
+	        htm += "  <button class=\"btn btn-primary\" id=\"MakePayment\">Make Payment</button>";
+	      }
+	      htm += "</div>";
+	      htm += "<div id=\"MakePay\" class=\"Title\">Make Payment</div>";
+	      htm += "<div id=\"PayDiv\"></div>";
+	      htm += "<div id=\"Approval\"></div>";
+	      return htm;
+	    };
+
+	    Pay.prototype.canMakeDeposit = function(myRes) {
+	      return this.myRes.arrive >= this.Data.advanceDate(this.myRes.booked, 7);
+	    };
+
+	    Pay.prototype.spa = function(roomId) {
+	      if (this.room.hasSpa(roomId)) {
+	        return "<input id=\"" + roomId + "SpaCheck\" class=\"SpaCheck\" type=\"checkbox\" value=\"" + roomId + "\" checked>";
+	      } else {
+	        return "";
+	      }
+	    };
+
+	    Pay.prototype.onSpa = function(event) {
+	      var $elem, checked, roomId, spaFee;
+	      $elem = $(event.target);
+	      roomId = $elem.attr('id').charAt(0);
+	      checked = $elem.is(':checked');
+	      spaFee = checked ? 20 : -20;
+	      this.myRes.rooms[roomId].total += spaFee;
+	      this.myRes.total += spaFee;
+	      this.myRes.deposit += spaFee / 2;
+	      $('#' + roomId + 'TR').text('$' + this.myRes.rooms[roomId].total);
+	      $('#TT').text('$' + this.myRes.total);
+	      this.ccAmt();
+	    };
+
+	    Pay.prototype.confirmBody = function() {
+	      var arrive, body, days, depart, num, r, ref, room, roomId;
+	      body = ".      Confirmation# " + this.myRes.key + "\n";
+	      body += ".      For: " + this.first + " " + this.last + "\n";
+	      ref = this.myRes.rooms;
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        r = ref[roomId];
+	        room = Util.padEnd(r.name, 24, '-');
+	        days = Object.keys(r.days).sort();
+	        num = days.length;
+	        arrive = this.confirmDate(days[0], "", false);
+	        depart = this.confirmDate(days[num - 1], "", true);
+	        body += room + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + num + "-Nights $" + r.total + "\n";
+	      }
+	      body += "\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n";
+	      body = escape(body);
+	      return body;
+	    };
+
+	    Pay.prototype.confirmEmail = function() {
+	      var win;
+	      win = window.open("mailto:" + this.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
+	      if ((win != null) && !win.closed) {
+	        win.close();
+	      }
 	    };
 
 	    Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
@@ -33518,53 +33501,79 @@
 	    };
 
 	    Pay.prototype.payHtml = function() {
-	      return "<form novalidate autocomplete=\"on\" method=\"POST\" id=\"form-pay\">\n\n    <span class=\"form-group\">\n      <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\">  [<span class=\"cc-com\"></span>]</span></label>\n      <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num\" autocomplete=\"cc-num\" placeholder=\"•••• •••• •••• ••••\" required>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n      <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp\" autocomplete=\"cc-exp\" placeholder=\"mm / yy\" required>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n      <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc\" autocomplete=\"off\" placeholder=\"•••\" required>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n      <div  id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    </span>\n\n    <span class=\"form-group\">\n      <label class=\"control-label\">&nbsp;</label>\n      <button type=\"submit\" class=\"btn btn-lg btn-primary\" id=\"cc-sub\">Pay</button>\n    </span>\n\n    <span class=\"form-group\">\n      <label class=\"control-label\">&nbsp;</label>\n      <button class=\"btn btn-lg btn-primary\" id=\"cc-bak\">Go Back</button>\n    </span>\n\n    <span class=\"form-group\">\n      <label for=\"cc-msg\"   class=\"control-label\">Message</label>\n      <div  id= \"cc-msg\" class=\"input-lg form-control cc-msg\"></div>\n    </span>\n</form>";
-	    };
-
-	    Pay.prototype.toggleInputError = function(field, status) {
-	      var text;
-	      text = (function() {
-	        switch (field) {
-	          case 'Num':
-	            return 'Invalid Card Number';
-	          case 'Exp':
-	            return 'Invalid Expiration';
-	          case 'CVC':
-	            return 'Invalid CVC';
-	          default:
-	            return '';
-	        }
-	      })();
-	      if (status) {
-	        $("#cc-msg").text(text);
-	      }
-	      return this;
-	    };
-
-	    Pay.prototype.initPayment = function() {
-	      $('.cc-num').payment('formatCardNumber');
-	      $('.cc-exp').payment('formatCardExpiry');
-	      $('.cc-cvc').payment('formatCardCVC');
-	      return $('form').submit((function(_this) {
-	        return function(e) {
-	          return _this.submitPayment(e);
-	        };
-	      })(this));
+	      var cvcPtn, expPtn, numPtn;
+	      numPtn = "\d{4} \d{4} \d{4} \d{4}";
+	      expPtn = "(1[0-2]|0[1-9])\/\d\d";
+	      cvcPtn = "\d{3}";
+	      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\" id=\"cc-com\">Card Number</label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\">Invalid Number</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\">Invalid MM/YY</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\">Invalid CVC</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-can\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-can\" class=\"btn btn-lg btn-primary\">Cancel</button>\n    <div    id= \"er-can\" class=\"cc-msg\"></div>\n  </span>\n</div>";
 	    };
 
 	    Pay.prototype.submitPayment = function(e) {
-	      var cardType, ref;
+	      var accept, ae, card, ce, cvc, ee, exp, iry, mon, ne, num, yer;
 	      e.preventDefault();
-	      cardType = $.payment.cardType($('.cc-num').val());
-	      this.toggleInputError('Num', !$.payment.validateCardNumber($('.cc-num').val()));
-	      this.toggleInputError('Exp', !$.payment.validateCardExpiry($('.cc-exp').payment('cardExpiryVal')));
-	      this.toggleInputError('CVC', !$.payment.validateCardCVC($('.cc-cvc').val(), cardType));
-	      $('.cc-com').text(cardType);
-	      $('.cc-msg').removeClass('text-danger text-success');
-	      $('.cc-msg').addClass((ref = $('.has-error').length) != null ? ref : {
-	        'text-danger': 'text-success'
-	      });
-	      $('#cc-sub').text("Approved");
+	      this.hideCCErrors();
+	      num = $('#cc-num').val();
+	      exp = $('#cc-exp').val();
+	      cvc = $('#cc-cvc').val();
+	      card = this.credit.cardFromNumber(num);
+	      iry = this.credit.parseCardExpiry(exp);
+	      accept = this.cardAccept(card.type);
+	      ne = this.credit.validateCardNumber(num);
+	      ee = this.credit.validateCardExpiry(iry);
+	      ce = this.credit.validateCardCVC(cvc, card.type);
+	      mon = exp.substr(0, 2);
+	      yer = '20' + exp.substr(5, 2);
+	      if (ne && ee && ce && accept) {
+	        this.hidePay();
+	        $('#Approval').text("Waiting For Approval...").show();
+	        this.token(num, mon, yer, cvc);
+	        this.last4 = num.substr(11, 4);
+	      } else {
+	        ae = card.type + ' not accepted';
+	        if (!accept) {
+	          $('#er-num').text(ae);
+	        }
+	        if (!ne || !accept) {
+	          $('#er-num').show();
+	        }
+	        if (!ee) {
+	          $('#er-exp').show();
+	        }
+	        if (!ce) {
+	          $('#er-cvc').show();
+	        }
+	      }
+	    };
+
+	    Pay.prototype.hidePay = function() {
+	      $('#MakePay').hide();
+	      $('#PayDiv').hide();
+	      return $('.PayBtns').hide();
+	    };
+
+	    Pay.prototype.showPay = function() {
+	      $('#MakePay').show();
+	      $('#PayDiv').show();
+	      return $('.PayBtns').show();
+	    };
+
+	    Pay.prototype.isValid = function(name, test, testing) {
+	      var valid, value;
+	      if (testing == null) {
+	        testing = false;
+	      }
+	      value = $('#' + name).val();
+	      valid = Util.isStr(value);
+	      if (testing) {
+	        $('#' + name).val(test);
+	        value = test;
+	        valid = true;
+	      }
+	      return [value, valid];
+	    };
+
+	    Pay.prototype.cardAccept = function(cardType) {
+	      return cardType === 'Visa' || cardType === 'Mastercard' || cardType === 'Discover';
 	    };
 
 	    Pay.prototype.subscribe = function() {
@@ -33580,7 +33589,7 @@
 	        "card[exp_year]": exp_year,
 	        "card[cvc]": cvc
 	      };
-	      return this.ajaxRest("tokens", 'post', input);
+	      this.ajaxRest("tokens", 'post', input, this.onTokenError);
 	    };
 
 	    Pay.prototype.charge = function(token, amount, currency, description) {
@@ -33591,25 +33600,67 @@
 	        currency: currency,
 	        description: description
 	      };
-	      return this.ajaxRest("charges", 'post', input);
+	      this.ajaxRest("charges", 'post', input, this.onChargeError);
+	    };
+
+	    Pay.prototype.onTokenError = function(error, status) {
+	      Util.noop(error, status);
+	      this.showPay();
+	      $('#Approval').text("Unable to Verify Card").show();
+	    };
+
+	    Pay.prototype.onChargeError = function(error, status) {
+	      Util.noop(error, status);
+	      this.showPay();
+	      $('#Approval').text("Payment Denied").show();
 	    };
 
 	    Pay.prototype.onToken = function(obj) {
-	      Util.log('StoreRest.onToken()', obj);
-	      this.token = obj.id;
+	      this.tokenId = obj.id;
 	      this.cardId = obj.card.id;
-	      return this.charge(this.token, 800, 'usd', 'First Test Charge');
+	      return this.charge(this.tokenId, this.myRes.total, 'usd', this.first + " " + this.last);
 	    };
 
 	    Pay.prototype.onCharge = function(obj) {
-	      return Util.log('StoreRest.onCharge()', obj);
+	      if (obj['outcome'].type === 'authorized') {
+	        this.confirmEmail();
+	        this.hidePay();
+	        $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.email);
+	        this.home.showConfirm();
+	        this.myRes.payments[this.payId()] = this.createPayment();
+	        return this.store.put('Res', this.myRes.key, this.myRes);
+	      } else {
+	        this.showPay();
+	        return $('#Approval').text('Payment Denied').show();
+	      }
+	    };
+
+	    Pay.prototype.payId = function() {
+	      var pays;
+	      pays = Object.keys(this.myRes.payments).sort();
+	      if (pays.length > 0) {
+	        return toString(parseInt(pays[pays.length - 1]) + 1);
+	      } else {
+	        return '1';
+	      }
+	    };
+
+	    Pay.prototype.createPayment = function() {
+	      var payment;
+	      payment = {};
+	      payment.amount = this.myRes.total;
+	      payment.date = this.Data.today();
+	      payment.method = 'card';
+	      payment["with"] = this.last4;
+	      payment.purpose = this.purpose;
+	      return payment;
 	    };
 
 	    Pay.prototype.onError = function(obj) {
 	      return Util.error('StoreRest.onError()', obj);
 	    };
 
-	    Pay.prototype.ajaxRest = function(table, op, input) {
+	    Pay.prototype.ajaxRest = function(table, op, input, onError) {
 	      var settings, url;
 	      url = this.uri + table;
 	      settings = {
@@ -33623,16 +33674,13 @@
 	      settings.success = (function(_this) {
 	        return function(result, status, jqXHR) {
 	          _this.stream.publish(table, result);
-	          return Util.noop(jqXHR, status);
+	          Util.noop(jqXHR, status);
 	        };
 	      })(this);
 	      settings.error = (function(_this) {
 	        return function(jqXHR, status, error) {
-	          Util.error('StoreRest.ajaxRest()', {
-	            status: status,
-	            error: error
-	          });
-	          return Util.noop(jqXHR);
+	          Util.noop(jqXHR);
+	          return onError(status, error);
 	        };
 	      })(this);
 	      $.ajax(settings);
@@ -33679,6 +33727,753 @@
 /* 365 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function(module) {// Generated by CoffeeScript 1.12.2
+	(function() {
+	  var $, Credit,
+	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+	    indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+	  $ = __webpack_require__(2);
+
+	  Credit = (function() {
+	    if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
+	      module.exports = Credit;
+	    }
+
+	    window.Credit = Credit;
+
+	    Credit.defaultFormat = /(\d{1,4})/g;
+
+	    Credit.UnknownCard = {
+	      type: 'Unknown',
+	      pattern: /^U/,
+	      format: Credit.defaultFormat,
+	      length: [16],
+	      cvcLength: [3],
+	      luhn: true
+	    };
+
+	    function Credit() {
+	      this.formatCardExpiry = bind(this.formatCardExpiry, this);
+	      this.formatCardNumber = bind(this.formatCardNumber, this);
+	      this.parseCardType = bind(this.parseCardType, this);
+	      this.validateCardCVC = bind(this.validateCardCVC, this);
+	      this.validateCardExpiry = bind(this.validateCardExpiry, this);
+	      this.validateCardNumber = bind(this.validateCardNumber, this);
+	      this.parseCardExpiry = bind(this.parseCardExpiry, this);
+	      this.numericInput = bind(this.numericInput, this);
+	      this.cardNumberInput = bind(this.cardNumberInput, this);
+	      this.expiryInput = bind(this.expiryInput, this);
+	      this.cvcInput = bind(this.cvcInput, this);
+	      this.restrictCVCIp = bind(this.restrictCVCIp, this);
+	      this.restrictExpiryIp = bind(this.restrictExpiryIp, this);
+	      this.restrictCardNumberIp = bind(this.restrictCardNumberIp, this);
+	      this.restrictNumericIp = bind(this.restrictNumericIp, this);
+	      this.reFormatCVCIp = bind(this.reFormatCVCIp, this);
+	      this.formatBackExpiryIp = bind(this.formatBackExpiryIp, this);
+	      this.formatForwardSlashAndSpaceIp = bind(this.formatForwardSlashAndSpaceIp, this);
+	      this.formatForwardExpiryIp = bind(this.formatForwardExpiryIp, this);
+	      this.formatCardExpiryIp = bind(this.formatCardExpiryIp, this);
+	      this.reFormatExpiryIp = bind(this.reFormatExpiryIp, this);
+	      this.formatBackCardNumberIp = bind(this.formatBackCardNumberIp, this);
+	      this.formatCardNumberIp = bind(this.formatCardNumberIp, this);
+	      this.reFormatCardNumberIp = bind(this.reFormatCardNumberIp, this);
+	      this.replaceFullWidthChars = bind(this.replaceFullWidthChars, this);
+	      this.eventNormalize = bind(this.eventNormalize, this);
+	      this.fieldStatus = bind(this.fieldStatus, this);
+	      this.delay = 0;
+	    }
+
+	    Credit.prototype.init = function(numId, expId, cvcId, typId) {
+	      var cvc, exp, num, typ, updateType, validate, validateF;
+	      num = document.getElementById(numId);
+	      exp = document.getElementById(expId);
+	      cvc = document.getElementById(cvcId);
+	      typ = document.getElementById(typId);
+	      this.cardNumberInput(num);
+	      this.expiryInput(exp);
+	      this.cvcInput(cvc);
+	      updateType = (function(_this) {
+	        return function(e) {
+	          var cardType, msg;
+	          cardType = _this.parseCardType(e.target.value);
+	          msg = (cardType != null) && cardType !== '' ? cardType : '';
+	          typ.innerHTML = msg + ' Card Number';
+	        };
+	      })(this);
+	      num.addEventListener('input', updateType);
+	      validate = (function(_this) {
+	        return function(e) {
+	          var card, expiryObj;
+	          Util.noop(e);
+	          card = _this.cardFromNumber(num.value);
+	          expiryObj = _this.parseCardExpiry(exp.value);
+	          if (!_this.validateCardNumber(num.value)) {
+	            $('#er-num').show();
+	          }
+	          if (!_this.validateCardExpiry(expiryObj)) {
+	            $('#er-exp').show();
+	          }
+	          if (!_this.validateCardCVC(cvc.value, card.type)) {
+	            $('#er-exp').show();
+	          }
+	        };
+	      })(this);
+	      validateF = (function(_this) {
+	        return function(e) {
+	          var expiryObj, msg, valid;
+	          Util.noop(e);
+	          valid = [];
+	          expiryObj = _this.parseCardExpiry(exp.value);
+	          valid.push(_this.fieldStatus(num, _this.validateCardNumber(num.value)));
+	          valid.push(_this.fieldStatus(exp, _this.validateCardExpiry(expiryObj)));
+	          valid.push(_this.fieldStatus(cvc, _this.validateCardCVC(cvc.value, typ.innerHTML)));
+	          msg = valid.every(Boolean) ? 'valid' : 'invalid';
+	          res.innerHTML = msg;
+	          Util.log('Credit.init() validate', num.value, exp.value, cvc.value, msg);
+	        };
+	      })(this);
+	      return Util.noop(validateF);
+	    };
+
+	    Credit.prototype.fieldStatus = function(input, valid) {
+	      if (valid) {
+	        this.removeClass(input.parentNode, 'error');
+	      } else {
+	        this.addClass(input.parentNode, 'error');
+	      }
+	      return valid;
+	    };
+
+	    Credit.prototype.addClass = function(elem, klass) {
+	      if (elem.className.indexOf(klass) === -1) {
+	        elem.className += ' ' + klass;
+	      }
+	    };
+
+	    Credit.prototype.removeClass = function(elem, klass) {
+	      if (elem.className.indexOf(klass) !== -1) {
+	        elem.className = elem.className.replace(klass, '');
+	      }
+	    };
+
+	    Credit.prototype.cardFromNumber = function(num) {
+	      var card, i, len, ref;
+	      num = (num + '').replace(/\D/g, '');
+	      ref = Credit.cards;
+	      for (i = 0, len = ref.length; i < len; i++) {
+	        card = ref[i];
+	        if (card.pattern.test(num)) {
+	          return card;
+	        }
+	      }
+	      return Credit.UnknownCard;
+	    };
+
+	    Credit.prototype.cardFromType = function(type) {
+	      var card, i, len, ref;
+	      ref = Credit.cards;
+	      for (i = 0, len = ref.length; i < len; i++) {
+	        card = ref[i];
+	        if (card.type === type) {
+	          return card;
+	        }
+	      }
+	      return Credit.UnknownCard;
+	    };
+
+	    Credit.prototype.isCard = function(card) {
+	      return (card != null) && card.type !== 'Unknown';
+	    };
+
+	    Credit.prototype.getCaretPos = function(ele) {
+	      var r, rc, re;
+	      if (ele.selectionStart != null) {
+	        return ele.selectionStart;
+	      } else if (document.selection != null) {
+	        ele.focus();
+	        r = document.selection.createRange();
+	        re = ele.createTextRange();
+	        rc = re.duplicate();
+	        re.moveToBookmark(r.getBookmark());
+	        rc.setEndPoint('EndToStart', re);
+	        return rc.text.length;
+	      }
+	    };
+
+	    Credit.prototype.eventNormalize = function(listener) {
+	      return function(e) {
+	        if (e == null) {
+	          e = window.event;
+	        }
+	        e.target = e.target || e.srcElement;
+	        e.which = e.which || e.keyCode;
+	        if (e.preventDefault == null) {
+	          e.preventDefault = function() {
+	            return this.returnValue = false;
+	          };
+	        }
+	        return listener(e);
+	      };
+	    };
+
+	    Credit.prototype.doListen = function(ele, event, listener) {
+	      listener = this.eventNormalize(listener);
+	      if (ele.addEventListener != null) {
+	        return ele.addEventListener(event, listener, false);
+	      } else {
+	        return ele.attachEvent("on" + event, listener);
+	      }
+	    };
+
+	    Credit.cards = [
+	      {
+	        type: 'VisaElectron',
+	        pattern: /^4(026|17500|405|508|844|91[37])/,
+	        format: Credit.defaultFormat,
+	        length: [16],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'Maestro',
+	        pattern: /^(5(018|0[23]|[68])|6(39|7))/,
+	        format: Credit.defaultFormat,
+	        length: [12, 13, 14, 15, 16, 17, 18, 19],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'Forbrugsforeningen',
+	        pattern: /^600/,
+	        format: Credit.defaultFormat,
+	        length: [16],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'Dankort',
+	        pattern: /^5019/,
+	        format: Credit.defaultFormat,
+	        length: [16],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'Visa',
+	        pattern: /^4/,
+	        format: Credit.defaultFormat,
+	        length: [13, 16],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'Mastercard',
+	        pattern: /^(5[1-5]|2[2-7])/,
+	        format: Credit.defaultFormat,
+	        length: [16],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'Amex',
+	        pattern: /^3[47]/,
+	        format: /(\d{1,4})(\d{1,6})?(\d{1,5})?/,
+	        length: [15],
+	        cvcLength: [3, 4],
+	        luhn: true
+	      }, {
+	        type: 'DinersClub',
+	        pattern: /^3[0689]/,
+	        format: /(\d{1,4})(\d{1,4})?(\d{1,4})?(\d{1,2})?/,
+	        length: [14],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'Discover',
+	        pattern: /^6([045]|22)/,
+	        format: Credit.defaultFormat,
+	        length: [16],
+	        cvcLength: [3],
+	        luhn: true
+	      }, {
+	        type: 'UnionPay',
+	        pattern: /^(62|88)/,
+	        format: Credit.defaultFormat,
+	        length: [16, 17, 18, 19],
+	        cvcLength: [3],
+	        luhn: false
+	      }, {
+	        type: 'JCB',
+	        pattern: /^35/,
+	        format: Credit.defaultFormat,
+	        length: [16],
+	        cvcLength: [3],
+	        luhn: true
+	      }
+	    ];
+
+	    Credit.prototype.luhnCheck = function(num) {
+	      var digit, digits, i, len, odd, sum;
+	      odd = true;
+	      sum = 0;
+	      digits = (num + '').split('').reverse();
+	      for (i = 0, len = digits.length; i < len; i++) {
+	        digit = digits[i];
+	        digit = parseInt(digit, 10);
+	        if ((odd = !odd)) {
+	          digit *= 2;
+	        }
+	        if (digit > 9) {
+	          digit -= 9;
+	        }
+	        sum += digit;
+	      }
+	      return sum % 10 === 0;
+	    };
+
+	    Credit.prototype.hasTextSelected = function(target) {
+	      var ref;
+	      if ((typeof document !== "undefined" && document !== null ? (ref = document.selection) != null ? ref.createRange : void 0 : void 0) != null) {
+	        if (document.selection.createRange().text) {
+	          return true;
+	        }
+	      }
+	      return (target.selectionStart != null) && target.selectionStart !== target.selectionEnd;
+	    };
+
+	    Credit.prototype.replaceFullWidthChars = function(str) {
+	      var char, chars, fullWidth, halfWidth, i, idx, len, value;
+	      if (str == null) {
+	        str = '';
+	      }
+	      if (!Util.isStr(str) || str === 'keypress') {
+	        Util.trace('replaceKeypress', str);
+	        return '';
+	      }
+	      fullWidth = '\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19';
+	      halfWidth = '0123456789';
+	      value = '';
+	      chars = str.split('');
+	      for (i = 0, len = chars.length; i < len; i++) {
+	        char = chars[i];
+	        idx = fullWidth.indexOf(char);
+	        if (idx > -1) {
+	          char = halfWidth[idx];
+	        }
+	        value += char;
+	      }
+	      return value;
+	    };
+
+	    Credit.prototype.reFormatCardNumberIp = function(e) {
+	      var cursor;
+	      cursor = this.getCaretPos(e.target);
+	      e.target.value = this.formatCardNumber(e.target.value);
+	      if ((cursor != null) && e.type !== 'change') {
+	        return e.target.setSelectionRange(cursor, cursor);
+	      }
+	    };
+
+	    Credit.prototype.formatCardNumberIp = function(e) {
+	      var card, cursor, digit, fn, length, re, upperLength, value;
+	      digit = String.fromCharCode(e.which);
+	      if (!/^\d+$/.test(digit)) {
+	        return;
+	      }
+	      value = e.target.value;
+	      card = this.cardFromNumber(value + digit);
+	      length = (value.replace(/\D/g, '') + digit).length;
+	      upperLength = 16;
+	      if (this.isCard(card)) {
+	        upperLength = card.length[card.length.length - 1];
+	      }
+	      if (length >= upperLength) {
+	        return;
+	      }
+	      cursor = this.getCaretPos(e.target);
+	      if (cursor && cursor !== value.length) {
+	        return;
+	      }
+	      if (this.isCard(card) && card.type === 'amex') {
+	        re = /^(\d{4}|\d{4}\s\d{6})$/;
+	      } else {
+	        re = /(?:^|\s)(\d{4})$/;
+	      }
+	      if (re.test(value)) {
+	        e.preventDefault();
+	        fn = function() {
+	          return e.target.value = value + " " + digit;
+	        };
+	        return setTimeout(fn, this.delay);
+	      } else if (re.test(value + digit)) {
+	        e.preventDefault();
+	        fn = function() {
+	          return e.target.value = (value + digit) + " ";
+	        };
+	        return setTimeout(fn, this.delay);
+	      }
+	    };
+
+	    Credit.prototype.formatBackCardNumberIp = function(e) {
+	      var cursor, fn, value;
+	      value = e.target.value;
+	      if (e.which !== 8) {
+	        return;
+	      }
+	      cursor = this.getCaretPos(e.target);
+	      if (cursor && cursor !== value.length) {
+	        return;
+	      }
+	      if (/\d\s$/.test(value)) {
+	        e.preventDefault();
+	        fn = function() {
+	          return e.target.value = value.replace(/\d\s$/, '');
+	        };
+	        return setTimeout(fn, this.delay);
+	      } else if (/\s\d?$/.test(value)) {
+	        e.preventDefault();
+	        fn = function() {
+	          return e.target.value = value.replace(/\d$/, '');
+	        };
+	        return setTimeout(fn, this.delay);
+	      }
+	    };
+
+	    Credit.prototype.reFormatExpiryIp = function(e) {
+	      var cursor;
+	      cursor = this.getCaretPos(e.target);
+	      e.target.value = this.formatCardExpiry(e.target.value);
+	      if ((cursor != null) && e.type !== 'change') {
+	        return e.target.setSelectionRange(cursor, cursor);
+	      }
+	    };
+
+	    Credit.prototype.formatCardExpiryIp = function(e) {
+	      var digit, fn, val;
+	      digit = String.fromCharCode(e.which);
+	      if (!/^\d+$/.test(digit)) {
+	        return;
+	      }
+	      val = e.target.value + digit;
+	      if (/^\d$/.test(val) && (val !== '0' && val !== '1')) {
+	        e.preventDefault();
+	        fn = function() {
+	          return e.target.value = "0" + val + " / ";
+	        };
+	        return setTimeout(fn, this.delay);
+	      } else if (/^\d\d$/.test(val)) {
+	        e.preventDefault();
+	        fn = function() {
+	          return e.target.value = val + " / ";
+	        };
+	        return setTimeout(fn, this.delay);
+	      }
+	    };
+
+	    Credit.prototype.formatForwardExpiryIp = function(e) {
+	      var digit, val;
+	      digit = String.fromCharCode(e.which);
+	      if (!/^\d+$/.test(digit)) {
+	        return;
+	      }
+	      val = e.target.value;
+	      if (/^\d\d$/.test(val)) {
+	        return e.target.value = val + " / ";
+	      }
+	    };
+
+	    Credit.prototype.formatForwardSlashAndSpaceIp = function(e) {
+	      var val, which;
+	      which = String.fromCharCode(e.which);
+	      if (!(which === '/' || which === ' ')) {
+	        return;
+	      }
+	      val = e.target.value;
+	      if (/^\d$/.test(val) && val !== '0') {
+	        return e.target.value = "0" + val + " / ";
+	      }
+	    };
+
+	    Credit.prototype.formatBackExpiryIp = function(e) {
+	      var cursor, fn, value;
+	      value = e.target.value;
+	      if (e.which !== 8) {
+	        return;
+	      }
+	      cursor = this.getCaretPos(e.target);
+	      if (cursor && cursor !== value.length) {
+	        return;
+	      }
+	      if (/\d\s\/\s$/.test(value)) {
+	        e.preventDefault();
+	        fn = function() {
+	          return e.target.value = value.replace(/\d\s\/\s$/, '');
+	        };
+	        return setTimeout(fn, this.delay);
+	      }
+	    };
+
+	    Credit.prototype.reFormatCVCIp = function(e) {
+	      var cursor;
+	      cursor = this.getCaretPos(e.target);
+	      e.target.value = this.replaceFullWidthChars(e.target.value).replace(/\D/g, '').slice(0, 4);
+	      if ((cursor != null) && e.type !== 'change') {
+	        return e.target.setSelectionRange(cursor, cursor);
+	      }
+	    };
+
+	    Credit.prototype.restrictNumericIp = function(e) {
+	      var input;
+	      if (e.metaKey || e.ctrlKey) {
+	        return;
+	      }
+	      if (e.which === 0) {
+	        return;
+	      }
+	      if (e.which < 33) {
+	        return;
+	      }
+	      input = String.fromCharCode(e.which);
+	      if (!/^\d+$/.test(input)) {
+	        return e.preventDefault();
+	      }
+	    };
+
+	    Credit.prototype.restrictCardNumberIp = function(e) {
+	      var card, digit, value;
+	      digit = String.fromCharCode(e.which);
+	      if (!/^\d+$/.test(digit)) {
+	        return;
+	      }
+	      if (this.hasTextSelected(e.target)) {
+	        return;
+	      }
+	      value = (e.target.value + digit).replace(/\D/g, '');
+	      card = this.cardFromNumber(value);
+	      if (this.isCard(card) && value.length > card.length[card.length.length - 1]) {
+	        return e.preventDefault();
+	      } else if (value.length > 16) {
+	        return e.preventDefault();
+	      }
+	    };
+
+	    Credit.prototype.restrictExpiryIp = function(e) {
+	      var digit, value;
+	      digit = String.fromCharCode(e.which);
+	      if (!/^\d+$/.test(digit)) {
+	        return;
+	      }
+	      if (this.hasTextSelected(e.target)) {
+	        return;
+	      }
+	      value = e.target.value + digit;
+	      value = value.replace(/\D/g, '');
+	      if (value.length > 6) {
+	        return e.preventDefault();
+	      }
+	    };
+
+	    Credit.prototype.restrictCVCIp = function(e) {
+	      var digit, val;
+	      digit = String.fromCharCode(e.which);
+	      if (!/^\d+$/.test(digit)) {
+	        return;
+	      }
+	      if (this.hasTextSelected(e.target)) {
+	        return;
+	      }
+	      val = e.target.value + digit;
+	      if (val.length > 4) {
+	        return e.preventDefault();
+	      }
+	    };
+
+	    Credit.prototype.cvcInput = function(input) {
+	      this.doListen(input, 'keypress', this.restrictNumericIp);
+	      this.doListen(input, 'keypress', this.restrictCVCIp);
+	      this.doListen(input, 'paste', this.reFormatCVCIp);
+	      this.doListen(input, 'change', this.reFormatCVCIp);
+	      return this.doListen(input, 'input', this.reFormatCVCIp);
+	    };
+
+	    Credit.prototype.expiryInput = function(input) {
+	      this.doListen(input, 'keypress', this.restrictNumericIp);
+	      this.doListen(input, 'keypress', this.restrictExpiryIp);
+	      this.doListen(input, 'keypress', this.formatCardExpiryIp);
+	      this.doListen(input, 'keypress', this.formatForwardSlashAndSpaceIp);
+	      this.doListen(input, 'keypress', this.formatForwardExpiryIp);
+	      this.doListen(input, 'keydown', this.formatBackExpiryIp);
+	      this.doListen(input, 'change', this.reFormatExpiryIp);
+	      return this.doListen(input, 'input', this.reFormatExpiryIp);
+	    };
+
+	    Credit.prototype.cardNumberInput = function(input) {
+	      this.doListen(input, 'keypress', this.restrictNumericIp);
+	      this.doListen(input, 'keypress', this.restrictCardNumberIp);
+	      this.doListen(input, 'keypress', this.formatCardNumberIp);
+	      this.doListen(input, 'keydown', this.formatBackCardNumberIp);
+	      this.doListen(input, 'paste', this.reFormatCardNumberIp);
+	      this.doListen(input, 'change', this.reFormatCardNumberIp);
+	      return this.doListen(input, 'input', this.reFormatCardNumberIp);
+	    };
+
+	    Credit.prototype.numericInput = function(input) {
+	      this.doListen(input, 'keypress', this.restrictNumericIp);
+	      this.doListen(input, 'paste', this.restrictNumericIp);
+	      this.doListen(input, 'change', this.restrictNumericIp);
+	      return this.doListen(input, 'input', this.restrictNumericIp);
+	    };
+
+	    Credit.prototype.parseCardExpiry = function(value) {
+	      var month, prefix, ref, year;
+	      value = value.replace(/\s/g, '');
+	      ref = value.split('/', 2), month = ref[0], year = ref[1];
+	      if ((year != null ? year.length : void 0) === 2 && /^\d+$/.test(year)) {
+	        prefix = (new Date).getFullYear();
+	        prefix = prefix.toString().slice(0, 2);
+	        year = prefix + year;
+	      }
+	      month = parseInt(month, 10);
+	      year = parseInt(year, 10);
+	      return {
+	        month: month,
+	        year: year
+	      };
+	    };
+
+	    Credit.prototype.validateCardNumber = function(num) {
+	      var card, ref;
+	      num = (num + '').replace(/\s+|-/g, '');
+	      if (!/^\d+$/.test(num)) {
+	        return false;
+	      }
+	      card = this.cardFromNumber(num);
+	      if (!this.isCard(card)) {
+	        return false;
+	      }
+	      return (ref = num.length, indexOf.call(card.length, ref) >= 0) && (card.luhn === false || this.luhnCheck(num));
+	    };
+
+	    Credit.prototype.validateCardExpiry = function(month, year) {
+	      var currentTime, expiry, ref;
+	      if (typeof month === 'object' && 'month' in month) {
+	        ref = month, month = ref.month, year = ref.year;
+	      }
+	      if (!(month && year)) {
+	        return false;
+	      }
+	      month = String(month).trim();
+	      year = String(year).trim();
+	      if (!/^\d+$/.test(month)) {
+	        return false;
+	      }
+	      if (!/^\d+$/.test(year)) {
+	        return false;
+	      }
+	      if (!((1 <= month && month <= 12))) {
+	        return false;
+	      }
+	      if (year.length === 2) {
+	        if (year < 70) {
+	          year = "20" + year;
+	        } else {
+	          year = "19" + year;
+	        }
+	      }
+	      if (year.length !== 4) {
+	        return false;
+	      }
+	      expiry = new Date(year, month);
+	      currentTime = new Date;
+	      expiry.setMonth(expiry.getMonth() - 1);
+	      expiry.setMonth(expiry.getMonth() + 1, 1);
+	      return expiry > currentTime;
+	    };
+
+	    Credit.prototype.validateCardCVC = function(cvc, type) {
+	      var card, ref;
+	      cvc = String(cvc).trim();
+	      if (!/^\d+$/.test(cvc)) {
+	        return false;
+	      }
+	      card = this.cardFromType(type);
+	      if (this.isCard(card)) {
+	        return ref = cvc.length, indexOf.call(card.cvcLength, ref) >= 0;
+	      } else {
+	        return cvc.length >= 3 && cvc.length <= 4;
+	      }
+	    };
+
+	    Credit.prototype.parseCardType = function(num) {
+	      var card;
+	      if (!num) {
+	        return '';
+	      }
+	      card = this.cardFromNumber(num);
+	      if (this.isCard(card)) {
+	        return card.type;
+	      } else {
+	        return '';
+	      }
+	    };
+
+	    Credit.prototype.formatCardNumber = function(num) {
+	      var card, groups, ref, upperLength;
+	      if (!Util.isStr(num)) {
+	        return '';
+	      }
+	      num = this.replaceFullWidthChars(num);
+	      num = num.replace(/\D/g, '');
+	      card = this.cardFromNumber(num);
+	      if (!this.isCard(card)) {
+	        return num;
+	      }
+	      upperLength = card.length[card.length.length - 1];
+	      num = num.slice(0, upperLength);
+	      if (card.format.global) {
+	        return (ref = num.match(card.format)) != null ? ref.join(' ') : void 0;
+	      } else {
+	        groups = card.format.exec(num);
+	        if (groups == null) {
+	          return;
+	        }
+	        groups.shift();
+	        groups = groups.filter(Boolean);
+	        return groups.join(' ');
+	      }
+	    };
+
+	    Credit.prototype.formatCardExpiry = function(expiry) {
+	      var mon, parts, sep, year;
+	      expiry = this.replaceFullWidthChars(expiry);
+	      parts = expiry.match(/^\D*(\d{1,2})(\D+)?(\d{1,4})?/);
+	      if (!parts) {
+	        return '';
+	      }
+	      mon = parts[1] || '';
+	      sep = parts[2] || '';
+	      year = parts[3] || '';
+	      if (year.length > 0) {
+	        sep = ' / ';
+	      } else if (sep === ' /') {
+	        mon = mon.substring(0, 1);
+	        sep = '';
+	      } else if (mon.length === 2 || sep.length > 0) {
+	        sep = ' / ';
+	      } else if (mon.length === 1 && (mon !== '0' && mon !== '1')) {
+	        mon = "0" + mon;
+	        sep = ' / ';
+	      }
+	      return mon + sep + year;
+	    };
+
+	    return Credit;
+
+	  })();
+
+	}).call(this);
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(361)(module)))
+
+/***/ },
+/* 366 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// Generated by CoffeeScript 1.12.2
 	(function() {
 	  var $, Alloc, Book,
@@ -33687,34 +34482,34 @@
 
 	  $ = __webpack_require__(2);
 
-	  Alloc = __webpack_require__(366);
+	  Alloc = __webpack_require__(367);
 
 	  Book = (function() {
 	    module.exports = Book;
 
-	    function Book(stream, store, room1, cust, res, pay, pict, Data) {
+	    function Book(stream, store, room1, cust, res1, pay, pict, Data) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.room = room1;
 	      this.cust = cust;
-	      this.res = res;
+	      this.res = res1;
 	      this.pay = pay;
 	      this.pict = pict;
 	      this.Data = Data;
 	      this.insert = bind(this.insert, this);
 	      this.make = bind(this.make, this);
-	      this.onGoToPay = bind(this.onGoToPay, this);
 	      this.onAlloc = bind(this.onAlloc, this);
 	      this.onCellBook = bind(this.onCellBook, this);
-	      this.onBook = bind(this.onBook, this);
-	      this.onHold = bind(this.onHold, this);
-	      this.onTest = bind(this.onTest, this);
+	      this.createRes = bind(this.createRes, this);
+	      this.onErr = bind(this.onErr, this);
+	      this.onPop = bind(this.onPop, this);
 	      this.onDay = bind(this.onDay, this);
 	      this.onMonth = bind(this.onMonth, this);
 	      this.onPets = bind(this.onPets, this);
 	      this.onGuests = bind(this.onGuests, this);
 	      this.updatePrice = bind(this.updatePrice, this);
 	      this.calcPrice = bind(this.calcPrice, this);
+	      this.onGoToPay = bind(this.onGoToPay, this);
 	      this.rooms = this.room.rooms;
 	      this.roomUIs = this.room.roomUIs;
 	      this.myDays = 0;
@@ -33727,40 +34522,45 @@
 	      this.begMay = 15;
 	      this.begDay = this.month === 'May' ? this.begMay : 1;
 	      this.$cells = [];
-	      this.myResId = this.res.myResId;
-	      this.myCustId = this.res.myCustId;
 	      this.totals = 0;
 	      this.method = 'site';
-	      this.myRes = null;
 	    }
 
 	    Book.prototype.ready = function() {
+	      $('#Book').empty();
+	      $('#Pays').empty();
 	      $('#Book').append(this.bookHtml());
+	      $('#Insts').append(this.instructHtml());
 	      $('#Inits').append(this.initsHtml());
 	      $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
-	      $('#Confirm').append(this.goToPayHtml());
+	      $('#Guest').append(this.guestHtml());
 	      $('.guests').change(this.onGuests);
 	      $('.pets').change(this.onPets);
 	      $('#Months').change(this.onMonth);
 	      $('#Days').change(this.onDay);
-	      $('#GoToPay').click(this.onGoToPay).hide();
+	      $('#Pop').click(this.onPop);
+	      $('#Err').click(this.onErr);
+	      $('#GoToPay').click(this.onGoToPay);
+	      $('#Navb').hide();
 	      $('#Book').show();
 	      return this.roomsJQuery();
 	    };
 
 	    Book.prototype.bookHtml = function() {
-	      return "<div class=\"ConfirmPay\">Make Your Reservation</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+	      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Insts\"></div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
 	    };
 
-	    Book.prototype.bookHtml2 = function() {
-	      return "<div   class=\"Instruct\">\n  <div class=\"ConfirmPay\">Make Your Reservation</div>\n  <ul  class=\"Instruct1\">\n    <li>For each room select:</li>\n  </ul>\n  <ul class=\"Instruct2\">\n    <li>Number of Guests</li>\n  </ul>\n  <ul class=\"Instruct3\">\n    <li>Number of Pets</li>\n  </ul>\n  <ul class=\"Instruct4\">\n    <li>Click the days you want</li>\n  </ul>\n</div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Confirm\"></div>";
+	    Book.prototype.instructHtml = function() {
+	      return "<div   class=\"Instruct\">\n  <div>1. Select Month and Day of Arrival 2. Then for each Room Select:</div>\n  <div style=\"padding-left:16px;\">3. Number of Guests 4. Number of Pets 5. Click the Days</div>\n  <div>6. Enter Contact Information: First Last Names, Phone and EMail</div>\n</div>";
 	    };
 
 	    Book.prototype.initsHtml = function() {
 	      var htm;
-	      htm = "<label for=\"Months\" class=\"init-font\">Arrive:" + (this.htmlSelect("Months", this.Data.season, this.month, 'months')) + "</label>";
-	      htm += "<label for=\"Days\"   class=\"init-font\">       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
-	      htm += "<label class=\"init-font\">&nbsp;&nbsp;" + this.year + "</label>";
+	      htm = "<label for=\"Months\" class=\"InitIp\">Arrive:" + (this.htmlSelect("Months", this.Data.season, this.month, 'months')) + "</label>";
+	      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
+	      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + this.year + "</label>";
+	      htm += "<span  id=\"Pop\" class=\"Test\">Pop</span>";
+	      htm += "<span  id=\"Err\" class=\"Test\">Err</span>";
 	      return htm;
 	    };
 
@@ -33786,7 +34586,7 @@
 	      for (roomId in ref2) {
 	        if (!hasProp.call(ref2, roomId)) continue;
 	        room = ref2[roomId];
-	        htm += "<tr id=\"" + roomId + "\"><td>" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
+	        htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
 	        for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
 	          htm += this.createCell(roomId, room, this.toDateStr(day));
 	        }
@@ -33801,10 +34601,78 @@
 	      return htm;
 	    };
 
-	    Book.prototype.roomLink = function(roomId, room) {};
+	    Book.prototype.guestHtml = function() {
+	      var phPtn;
+	      phPtn = "\d{3} \d{3} \d{4}";
+	      return "<form autocomplete=\"on\" method=\"POST\" id=\"FormName\">\n  <div id=\"Names\">\n    <span class=\"SpanIp\">\n      <label for=\"First\" class=\"control-label\">First Name</label>\n      <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n      <div   id= \"FirstER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Last\" class=\"control-label\">Last Name</label>\n      <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n      <div   id= \"LastER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Phone\" class=\"control-label\">Phone</label>\n      <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" placeholder=\"••• ••• ••••\"  pattern=\"" + phPtn + "\" required>\n      <div   id= \"PhoneER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"EMail\"   class=\"control-label\">Email</label>\n      <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n      <div   id= \"EMailER\" class=\"NameER\">* Required</div>\n    </span>\n  </div>\n  <div id=\"GoToDiv\" style=\"text-align:center;\">\n   <button class=\"btn btn-primary\" type=\"submit\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n  </div>\n</form>";
+	    };
 
-	    Book.prototype.goToPayHtml = function() {
-	      return "<div id=\"GoToDiv\" style=\"text-align:center;\"><button class=\"btn btn-primary\" id=\"GoToPay\">Go To Confirmation and Payment</button></div>";
+	    Book.prototype.isValid = function(name, test, testing) {
+	      var valid, value;
+	      if (testing == null) {
+	        testing = false;
+	      }
+	      value = $('#' + name).val();
+	      valid = Util.isStr(value);
+	      if (testing) {
+	        $('#' + name).val(test);
+	        value = test;
+	        valid = true;
+	      }
+	      return [value, valid];
+	    };
+
+	    Book.prototype.getNamesPhoneEmail = function(testing) {
+	      var ev, fv, lv, pv, ref, ref1, ref2, ref3, tv;
+	      if (testing == null) {
+	        testing = false;
+	      }
+	      ref = this.isValid('First', 'Samuel', testing), this.pay.first = ref[0], fv = ref[1];
+	      ref1 = this.isValid('Last', 'Hosendecker', testing), this.pay.last = ref1[0], lv = ref1[1];
+	      ref2 = this.isValid('Phone', '3037977129', testing), this.pay.phone = ref2[0], pv = ref2[1];
+	      ref3 = this.isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing), this.pay.email = ref3[0], ev = ref3[1];
+	      tv = this.totals > 0;
+	      return [tv, fv, lv, pv, ev];
+	    };
+
+	    Book.prototype.onGoToPay = function(e) {
+	      var ev, fv, lv, pv, ref, res, tv;
+	      e.preventDefault();
+	      ref = this.getNamesPhoneEmail(), tv = ref[0], fv = ref[1], lv = ref[2], pv = ref[3], ev = ref[4];
+	      if (tv && fv && lv && pv && ev) {
+	        $('.NameER').hide();
+	        $('#Book').hide();
+	        res = this.createRes();
+	        res.total = this.totals;
+	        res.deposit = Math.round(this.totals * 50) / 100;
+	        this.pay.showConfirmPay(res);
+	      } else {
+	        alert(this.onGoToMsg(tv, fv, lv, pv, ev));
+	      }
+	    };
+
+	    Book.prototype.onGoToMsg = function(tv, fv, lv, pv, ev) {
+	      var msg;
+	      msg = "";
+	      if (!tv) {
+	        msg += "Total is 0\n";
+	      }
+	      if (!tv) {
+	        msg += "Need to Click Rooms\n";
+	      }
+	      if (!fv) {
+	        msg += "Enter First Name\n";
+	      }
+	      if (!lv) {
+	        msg += "Enter Last  Name\n";
+	      }
+	      if (!pv) {
+	        msg += "Enter Phone Number\n";
+	      }
+	      if (!ev) {
+	        msg += "Enter Email\n";
+	      }
+	      return msg;
 	    };
 
 	    Book.prototype.createCell = function(roomId, room, date) {
@@ -33883,7 +34751,7 @@
 	      text = this.totals === 0 ? '' : '$' + this.totals;
 	      $('#Totals').text(text);
 	      if (this.totals > 0) {
-	        $('#GoToPay').show();
+	        $('#GoToPay').prop('disabled', false);
 	      }
 	    };
 
@@ -33970,16 +34838,21 @@
 	      return this.roomsJQuery();
 	    };
 
-	    Book.prototype.onTest = function() {
-	      Util.log('Book.onTest()');
-	      return this.store.insert('Alloc', Alloc.Allocs);
+	    Book.prototype.onPop = function() {
+	      this.getNamesPhoneEmail(true);
+	      this.pay.testing = false;
 	    };
 
-	    Book.prototype.onHold = function() {
-	      var onAdd, ref, room, roomId;
-	      this.myRes = this.res.createHold(this.totals, 'hold', this.method, this.myCustId, this.roomUIs, {});
-	      Util.log('Book.onHold()', this.myRes);
-	      ref = this.myRes.rooms;
+	    Book.prototype.onErr = function() {
+	      Util.log('Book.onErr()');
+	    };
+
+	    Book.prototype.createRes = function() {
+	      var onAdd, ref, res, room, roomId;
+	      res = this.res.createRes(this.totals, 'hold', this.method, this.pay.phone, this.roomUIs, {});
+	      res.payments = {};
+	      this.res.add(res.key, res);
+	      ref = res.rooms;
 	      for (roomId in ref) {
 	        if (!hasProp.call(ref, roomId)) continue;
 	        room = ref[roomId];
@@ -33987,31 +34860,24 @@
 	        onAdd.days = room.days;
 	        this.store.add('Alloc', roomId, onAdd);
 	      }
+	      return res;
 	    };
 
-	    Book.prototype.onBook = function() {
-	      var date, day, onPut, ref, ref1, room, roomId;
-	      if (this.myRes == null) {
-	        this.onHold();
-	      }
-	      this.myRes.payments = {};
-	      this.myRes.payments['1'] = this.res.resPay();
-	      ref = this.myRes.rooms;
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        room = ref[roomId];
-	        ref1 = room.days;
-	        for (date in ref1) {
-	          if (!hasProp.call(ref1, date)) continue;
-	          day = ref1[date];
-	          day.status = 'book';
-	        }
-	        onPut = {};
-	        onPut.days = room.days;
-	        this.store.put('Alloc', roomId, onPut);
-	      }
-	      Util.log('Book.onBook()', this.myRes);
-	    };
+
+	    /*
+	    onBook:() =>
+	      res = @createRes()
+	      res.payments      = {}
+	      res.payments['1'] = @res.resPay()
+	      #@res.put( res.id, res )
+	      for own roomId, room of res.rooms
+	        day.status = 'book' for own date, day of room.days
+	        onPut = {}
+	        onPut.days = room.days
+	        @store.put( 'Alloc', roomId, onPut )
+	      Util.log( 'Book.onBook()', res )
+	      return
+	     */
 
 	    Book.prototype.onCellBook = function(event) {
 	      var $cell, date, roomId, roomUI, status;
@@ -34037,7 +34903,6 @@
 	        }
 	        delete roomUI.resRoom.days[date];
 	      }
-	      Util.log('Book.onCellBook()', roomId, date, status, roomUI.resRoom.days);
 	      return this.updateTotal(roomId);
 	    };
 
@@ -34049,17 +34914,6 @@
 	        obj = ref[day];
 	        this.allocCell(day, obj.status, roomId);
 	      }
-	    };
-
-	    Book.prototype.onGoToPay = function(e) {
-	      e.preventDefault();
-	      $('.Instruct').hide();
-	      $('#Inits').hide();
-	      $('#Rooms').hide();
-	      $('#GoToDiv').hide();
-	      this.onHold();
-	      this.myRes.total = this.totals;
-	      return this.pay.showConfirmPay(this.myRes);
 	    };
 
 	    Book.prototype.allocCell = function(day, status, roomId) {
@@ -34100,7 +34954,7 @@
 
 
 /***/ },
-/* 366 */
+/* 367 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -34111,7 +34965,7 @@
 	  Alloc = (function() {
 	    module.exports = Alloc;
 
-	    Alloc.Allocs = __webpack_require__(367);
+	    Alloc.Allocs = __webpack_require__(368);
 
 	    function Alloc(stream, store, room, cust, res, master, book) {
 	      this.stream = stream;
@@ -34177,7 +35031,7 @@
 
 
 /***/ },
-/* 367 */
+/* 368 */
 /***/ function(module, exports) {
 
 	module.exports = {
