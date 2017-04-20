@@ -62,11 +62,7 @@
       $('#Days').change(this.onDay);
       $('#Pop').click(this.onPop);
       $('#Err').click(this.onErr);
-      $('#FormName').submit((function(_this) {
-        return function(e) {
-          return _this.onGoToPay(e);
-        };
-      })(this)).prop('disabled', true);
+      $('#GoToPay').click(this.onGoToPay);
       $('#Navb').hide();
       $('#Book').show();
       return this.roomsJQuery();
@@ -129,8 +125,8 @@
 
     Book.prototype.guestHtml = function() {
       var phPtn;
-      phPtn = "\(\d{3}\) \d{3}\-\d{4}";
-      return "<form autocomplete=\"on\" method=\"POST\" id=\"FormName\">\n  <div id=\"Names\">\n    <span class=\"SpanIp\">\n      <label for=\"First\" class=\"control-label\">First Name</label>\n      <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n      <div   id= \"FirstER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Last\" class=\"control-label\">Last Name</label>\n      <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n      <div   id= \"LastER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Phone\" class=\"control-label\">Phone</label>\n      <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" placeholder=\"(•••) •••-••••\"  required>\n      <div   id= \"PhoneER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"EMail\"   class=\"control-label\">Email</label>\n      <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n      <div   id= \"EMailER\" class=\"NameER\">* Required</div>\n    </span>\n  </div>\n  <div id=\"GoToDiv\" style=\"text-align:center;\">\n   <button class=\"btn btn-primary\" type=\"submit\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n  </div>\n</form>";
+      phPtn = "\d{3} \d{3} \d{4}";
+      return "<form autocomplete=\"on\" method=\"POST\" id=\"FormName\">\n  <div id=\"Names\">\n    <span class=\"SpanIp\">\n      <label for=\"First\" class=\"control-label\">First Name</label>\n      <input id= \"First\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"given-name\" required>\n      <div   id= \"FirstER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Last\" class=\"control-label\">Last Name</label>\n      <input id= \"Last\" type=\"text\" class=\"input-lg form-control\" autocomplete=\"family-name\" required>\n      <div   id= \"LastER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"Phone\" class=\"control-label\">Phone</label>\n      <input id= \"Phone\" type=\"tel\" class=\"input-lg form-control\" placeholder=\"••• ••• ••••\"  pattern=\"" + phPtn + "\" required>\n      <div   id= \"PhoneER\" class=\"NameER\">* Required</div>\n    </span>\n\n    <span class=\"SpanIp\">\n      <label for=\"EMail\"   class=\"control-label\">Email</label>\n      <input id= \"EMail\" type=\"email\" class=\"input-lg form-control\" autocomplete=\"email\" required>\n      <div   id= \"EMailER\" class=\"NameER\">* Required</div>\n    </span>\n  </div>\n  <div id=\"GoToDiv\" style=\"text-align:center;\">\n   <button class=\"btn btn-primary\" type=\"submit\" id=\"GoToPay\">Go To Confirmation and Payment</button>\n  </div>\n</form>";
     };
 
     Book.prototype.isValid = function(name, test, testing) {
@@ -149,7 +145,7 @@
     };
 
     Book.prototype.getNamesPhoneEmail = function(testing) {
-      var ev, fv, lv, ok, pv, ref, ref1, ref2, ref3, tv;
+      var ev, fv, lv, pv, ref, ref1, ref2, ref3, tv;
       if (testing == null) {
         testing = false;
       }
@@ -157,7 +153,6 @@
       ref1 = this.isValid('Last', 'Hosendecker', testing), this.pay.last = ref1[0], lv = ref1[1];
       ref2 = this.isValid('Phone', '3037977129', testing), this.pay.phone = ref2[0], pv = ref2[1];
       ref3 = this.isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing), this.pay.email = ref3[0], ev = ref3[1];
-      ok = this.totals > 0 && fv && lv && pv && ev;
       tv = this.totals > 0;
       return [tv, fv, lv, pv, ev];
     };

@@ -1,39 +1,51 @@
 
-#$ = require('jquery')
+$ = require('jquery')
 
 class Credit
 
-  #module.exports = Credit
+  module.exports = Credit  if module? and module.exports?
   window.Credit  = Credit
 
-  @defaultFormat = /(\d{1,4})/g # new RegExp('(\d{1,4})', 'g') #  /(\d{1,4})/g
-  @UnknownCard   =  { type:'unknown', pattern: /^U/, format:Credit.defaultFormat, length:[16], cvcLength:[3], luhn:true }
+  @defaultFormat = /(\d{1,4})/g
+  @UnknownCard   =  { type:'Unknown', pattern: /^U/, format:Credit.defaultFormat, length:[16], cvcLength:[3], luhn:true }
 
   constructor:() ->
     @delay = 0
 
-  init:( numId, expId, cvcId, subId, typId, resId ) ->
+  init:( numId, expId, cvcId, typId ) ->
 
     num = document.getElementById(numId)
     exp = document.getElementById(expId)
     cvc = document.getElementById(cvcId)
-    sub = document.getElementById(subId)
-    typ = document.getElementById(subId)
-    res = document.getElementById(resId)
+    #ub = document.getElementById(subId)
+    typ = document.getElementById(typId)
+
 
     @cardNumberInput( num )
     @expiryInput(     exp )
     @cvcInput(        cvc )
 
+    #Util.log( 'Credit.init() start', numId, expId, cvcId, subId, typId, resId )
+
     updateType = (e) =>
       cardType = @parseCardType(e.target.value)
-      msg      = cardType || 'invalid'
-      typ.innerHTML = msg
+      msg      = if cardType? and cardType isnt '' then cardType else ''
+      typ.innerHTML = msg + ' Card Number'
       #Util.log( 'Credit.init() updateType', num.value, exp.value, cvc.value, msg )
       return
     num.addEventListener( 'input', updateType )
 
     validate = (e) =>
+      Util.noop( e )
+      card      = @cardFromNumber(num.value )
+      expiryObj = @parseCardExpiry(    exp.value )
+      $('#er-num').show() if not @validateCardNumber( num.value )
+      $('#er-exp').show() if not @validateCardExpiry( expiryObj )
+      $('#er-exp').show() if not @validateCardCVC(    cvc.value, card.type )
+      return
+    #sub.addEventListener('click', validate )
+
+    validateF = (e) =>
       Util.noop( e )
       valid     = []
       expiryObj = @parseCardExpiry( exp.value )
@@ -44,7 +56,8 @@ class Credit
       res.innerHTML = msg
       Util.log( 'Credit.init() validate', num.value, exp.value, cvc.value, msg )
       return
-    sub.addEventListener('click', validate )
+    #sub.addEventListener('click', validate )
+    Util.noop( validateF )
 
 
   fieldStatus:( input, valid ) =>
@@ -78,7 +91,7 @@ class Credit
     Credit.UnknownCard
 
   isCard:( card ) ->
-    card? and card.type isnt 'unknown'
+    card? and card.type isnt 'Unknown'
     
   getCaretPos: (ele) ->
     if ele.selectionStart?
@@ -111,7 +124,7 @@ class Credit
     # Debit cards must come first, since they have more
     # specific patterns than their credit-card equivalents.
     {
-      type: 'visaelectron'
+      type: 'VisaElectron'
       pattern: /^4(026|17500|405|508|844|91[37])/
       format: Credit.defaultFormat
       length: [16]
@@ -119,7 +132,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'maestro'
+      type: 'Maestro'
       pattern: /^(5(018|0[23]|[68])|6(39|7))/
       format: Credit.defaultFormat
       length: [12..19]
@@ -127,7 +140,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'forbrugsforeningen'
+      type: 'Forbrugsforeningen'
       pattern: /^600/
       format: Credit.defaultFormat
       length: [16]
@@ -135,7 +148,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'dankort'
+      type: 'Dankort'
       pattern: /^5019/
       format: Credit.defaultFormat
       length: [16]
@@ -144,7 +157,7 @@ class Credit
     }
     # Credit cards
     {
-      type: 'visa'
+      type: 'Visa'
       pattern: /^4/
       format: Credit.defaultFormat
       length: [13, 16]
@@ -152,7 +165,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'mastercard'
+      type: 'Mastercard'
       pattern: /^(5[1-5]|2[2-7])/
       format: Credit.defaultFormat
       length: [16]
@@ -160,7 +173,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'amex'
+      type: 'Amex'
       pattern: /^3[47]/
       format: /(\d{1,4})(\d{1,6})?(\d{1,5})?/
       length: [15]
@@ -168,7 +181,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'dinersclub'
+      type: 'DinersClub'
       pattern: /^3[0689]/
       format: /(\d{1,4})(\d{1,4})?(\d{1,4})?(\d{1,2})?/
       length: [14]
@@ -176,7 +189,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'discover'
+      type: 'Discover'
       pattern: /^6([045]|22)/
       format: Credit.defaultFormat
       length: [16]
@@ -184,7 +197,7 @@ class Credit
       luhn: true
     }
     {
-      type: 'unionpay'
+      type: 'UnionPay'
       pattern: /^(62|88)/
       format: Credit.defaultFormat
       length: [16..19]
@@ -192,7 +205,7 @@ class Credit
       luhn: false
     }
     {
-      type: 'jcb'
+      type: 'JCB'
       pattern: /^35/
       format: Credit.defaultFormat
       length: [16]
@@ -226,10 +239,8 @@ class Credit
   # Replace Full-Width Chars
 
   replaceFullWidthChars:( str = '' ) =>
-    console.log( 'replaceFullOne', { str:"|#{str}|" } )
     if not Util.isStr(str) or str is 'keypress'
-      console.log( 'replaceKeypress' )
-      Util.trace(  'replaceKeypress' )
+      Util.trace(  'replaceKeypress', str )
       return ''
 
     fullWidth = '\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19'
@@ -243,7 +254,7 @@ class Credit
       char = halfWidth[idx] if idx > -1
       value += char
 
-    console.log( 'replaceFullTwo', { str:str, value:value, chars:chars } )
+    #console.log( 'replaceFullTwo', { str:str, value:value, chars:chars } )
     value
 
   # Format Card Number
@@ -535,9 +546,9 @@ class Credit
       cvc.length >= 3 and cvc.length <= 4
 
   parseCardType:(num) =>
-    return null unless num
+    return '' unless num
     card = @cardFromNumber(num)
-    if @isCard(card) then card.type else null
+    if @isCard(card) then card.type else ''
 
   formatCardNumber:(num) =>
     return '' if not Util.isStr(num)

@@ -37,7 +37,7 @@ class Pay
       $('#PayDiv'      ).append( @payHtml()      )
       $('#form-pay').get(0).reset()
       $('#cc-amt').text('$'+@myRes.total)
-      @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-sub', 'cc-com', 'er-sub' )
+      @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
       $('#Pays').show()
     else
       $('#Pays'        ).append( @confirmHead()  )
@@ -45,12 +45,14 @@ class Pay
       $('#Pays'        ).append( @confirmBtns()  )
       $('#PayDiv'      ).append( @payHtml()      )
       @initCCPayment()
+      @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
       $('#Pays').show()
       @created = true
     #@testPop() if @testing
     return
 
   initCCPayment:() =>
+    @hideCCErrors()
     $('#cc-amt' ).text('$'+@myRes.total)
     $('#ChangeReser').click(  (e) => @onChangeReser( e ) )
     $('#MakeDeposit').click(  (e) => @onMakeDeposit( e ) )
@@ -58,6 +60,13 @@ class Pay
     $('.SpaCheck'   ).change( (e) => @onSpa(         e ) )
     $('#cc-sub').click( (e) => @submitPayment(e) )
     return
+
+  hideCCErrors:() ->
+    $('#er-num').text('Invalid Number')
+    $('#er-num').hide()
+    $('#er-exp').hide()
+    $('#er-cvc').hide()
+    $('#er-sub').hide()
 
   testPop:() ->
     $('#cc-num').val( '4242424242424242' )
@@ -186,21 +195,21 @@ class Pay
     """
     <div id="form-pay">
       <span class="form-group">
-        <label for="cc-num" class="control-label">Card Number<span class="text-muted"><span id="cc-com" class="cc-com"></span></label>
+        <label for="cc-num" class="control-label" id="cc-com">Card Number</label>
         <input id= "cc-num" type="tel" class="input-lg form-control cc-num masked" placeholder="•••• •••• •••• ••••" pattern="#{numPtn}" required>
-        <div   id= "er-num" class="cc-msg"></div>
+        <div   id= "er-num" class="cc-msg">Invalid Number</div>
       </span>
 
       <span class="form-group">
         <label for="cc-exp" class="control-label">Expiration</label>
         <input id= "cc-exp" type="tel" class="input-lg form-control cc-exp masked" placeholder="MM/YY" pattern="#{expPtn}" required>
-        <div   id= "er-exp" class="cc-msg"></div>
+        <div   id= "er-exp" class="cc-msg">Invalid MM/YY</div>
       </span>
 
       <span class="form-group">
         <label for="cc-cvc" class="control-label">CVC</label>
         <input id= "cc-cvc" type="tel" class="input-lg form-control cc-cvc masked" placeholder="•••" pattern="#{cvcPtn}"  required>
-        <div   id= "er-cvc" class="cc-msg"></div>
+        <div   id= "er-cvc" class="cc-msg">Invalid CVC</div>
       </span>
 
       <span class="form-group">
@@ -219,19 +228,23 @@ class Pay
 
   submitPayment:( e ) =>
     e.preventDefault()
-    $('#er-num').hide()
-    $('#er-exp').hide()
-    $('#er-cvc').hide()
-    $('#er-sub').hide()
-    cardType = @credit.cardFromType(num)
-    #accept   = @cardAccept(cardType)
-    [num,ne] = @isValid('cc-num', '4242 4242 4242 4242', @testing )
-    [exp,ee] = @isValid('cc-exp', '10 / 19',             @testing )
-    [cvc,ce] = @isValid('cc-cvc', '555',                 @testing )
+    @hideCCErrors()
+
+    num = $('#cc-num').val()
+    exp = $('#cc-exp').val()
+    cvc = $('#cc-cvc').val()
+
+    card   = @credit.cardFromNumber(  num )
+    iry    = @credit.parseCardExpiry( exp )
+    accept = @cardAccept(card.type)
+
+    ne = @credit.validateCardNumber( num )
+    ee = @credit.validateCardExpiry( iry )
+    ce = @credit.validateCardCVC(    cvc, card.type )
+
     mon =      exp.substr(0,2)
     yer = '20'+exp.substr(5,2)
-    $('.cc-com').text(cardType)
-    if ne and ee and ce
+    if ne and ee and ce and accept
       $('#MakePay' ).hide()
       $('#PayDiv'  ).hide()
       $('.PayBtns' ).hide()
@@ -239,12 +252,13 @@ class Pay
       @token( num, mon, yer, cvc )
       @last4 = num.substr( 11, 4 )
     else
-      $('#er-num').show()
-      $('#er-exp').show()
-      $('#er-cvc').show()
-      $('#er-sub').show()
+      ae = card.type + ' not accepted'
+      $('#er-num').text(ae) if not accept
+      $('#er-num').show()   if not ne or not accept
+      $('#er-exp').show()   if not ee
+      $('#er-cvc').show()   if not ce
 
-    # Util.log( 'Pay.submitPayment()', { num:num, exp:exp, cvc:cvc, mon:mon, yer:yer } )
+    Util.log( 'Pay.submitPayment()', { num:num, ne:ne, exp:exp, ee:ee, cvc:cvc, ce:ce, mon:mon, yer:yer } )
     return
 
   isValid:( name, test, testing=false ) ->

@@ -71,7 +71,7 @@
         $('#PayDiv').append(this.payHtml());
         $('#form-pay').get(0).reset();
         $('#cc-amt').text('$' + this.myRes.total);
-        this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-sub', 'cc-com', 'er-sub');
+        this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
         $('#Pays').show();
       } else {
         $('#Pays').append(this.confirmHead());
@@ -79,12 +79,14 @@
         $('#Pays').append(this.confirmBtns());
         $('#PayDiv').append(this.payHtml());
         this.initCCPayment();
+        this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
         $('#Pays').show();
         this.created = true;
       }
     };
 
     Pay.prototype.initCCPayment = function() {
+      this.hideCCErrors();
       $('#cc-amt').text('$' + this.myRes.total);
       $('#ChangeReser').click((function(_this) {
         return function(e) {
@@ -111,6 +113,14 @@
           return _this.submitPayment(e);
         };
       })(this));
+    };
+
+    Pay.prototype.hideCCErrors = function() {
+      $('#er-num').text('Invalid Number');
+      $('#er-num').hide();
+      $('#er-exp').hide();
+      $('#er-cvc').hide();
+      return $('#er-sub').hide();
     };
 
     Pay.prototype.testPop = function() {
@@ -277,24 +287,25 @@
       numPtn = "\d{4} \d{4} \d{4} \d{4}";
       expPtn = "(1[0-2]|0[1-9])\/\d\d";
       cvcPtn = "\d{3}";
-      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\">Card Number<span class=\"text-muted\"><span id=\"cc-com\" class=\"cc-com\"></span></label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n</div>";
+      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\" id=\"cc-com\">Card Number</label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\">Invalid Number</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\">Invalid MM/YY</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\">Invalid CVC</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n</div>";
     };
 
     Pay.prototype.submitPayment = function(e) {
-      var cardType, ce, cvc, ee, exp, mon, ne, num, ref, ref1, ref2, yer;
+      var accept, ae, card, ce, cvc, ee, exp, iry, mon, ne, num, yer;
       e.preventDefault();
-      $('#er-num').hide();
-      $('#er-exp').hide();
-      $('#er-cvc').hide();
-      $('#er-sub').hide();
-      cardType = this.credit.cardFromType(num);
-      ref = this.isValid('cc-num', '4242 4242 4242 4242', this.testing), num = ref[0], ne = ref[1];
-      ref1 = this.isValid('cc-exp', '10 / 19', this.testing), exp = ref1[0], ee = ref1[1];
-      ref2 = this.isValid('cc-cvc', '555', this.testing), cvc = ref2[0], ce = ref2[1];
+      this.hideCCErrors();
+      num = $('#cc-num').val();
+      exp = $('#cc-exp').val();
+      cvc = $('#cc-cvc').val();
+      card = this.credit.cardFromNumber(num);
+      iry = this.credit.parseCardExpiry(exp);
+      accept = this.cardAccept(card.type);
+      ne = this.credit.validateCardNumber(num);
+      ee = this.credit.validateCardExpiry(iry);
+      ce = this.credit.validateCardCVC(cvc, card.type);
       mon = exp.substr(0, 2);
       yer = '20' + exp.substr(5, 2);
-      $('.cc-com').text(cardType);
-      if (ne && ee && ce) {
+      if (ne && ee && ce && accept) {
         $('#MakePay').hide();
         $('#PayDiv').hide();
         $('.PayBtns').hide();
@@ -302,11 +313,30 @@
         this.token(num, mon, yer, cvc);
         this.last4 = num.substr(11, 4);
       } else {
-        $('#er-num').show();
-        $('#er-exp').show();
-        $('#er-cvc').show();
-        $('#er-sub').show();
+        ae = card.type + ' not accepted';
+        if (!accept) {
+          $('#er-num').text(ae);
+        }
+        if (!ne || !accept) {
+          $('#er-num').show();
+        }
+        if (!ee) {
+          $('#er-exp').show();
+        }
+        if (!ce) {
+          $('#er-cvc').show();
+        }
       }
+      Util.log('Pay.submitPayment()', {
+        num: num,
+        ne: ne,
+        exp: exp,
+        ee: ee,
+        cvc: cvc,
+        ce: ce,
+        mon: mon,
+        yer: yer
+      });
     };
 
     Pay.prototype.isValid = function(name, test, testing) {

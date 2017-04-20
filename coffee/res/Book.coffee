@@ -34,8 +34,8 @@ class Book
     $('#Days'   ).change( @onDay     )
     $('#Pop'    ).click(  @onPop     )
     $('#Err'    ).click(  @onErr     )
-    #$('#GoToPay').click(  @onGoToPay ).prop('disabled',true)
-    $('#FormName').submit( (e) => @onGoToPay(e) ).prop('disabled',true)
+    $('#GoToPay').click(  @onGoToPay ) # .prop('disabled',true)
+    #$('#FormName').submit( (e) => @onGoToPay(e) ).prop('disabled',true)
     $('#Navb').hide()
     $('#Book').show()
     @roomsJQuery()
@@ -93,7 +93,7 @@ class Book
     htm
 
   guestHtml:() ->
-    phPtn = "\(\d{3}\) \d{3}\-\d{4}" # pattern="#{phPtn}"
+    phPtn = "\d{3} \d{3} \d{4}" # pattern="#{phPtn}"
     """
     <form autocomplete="on" method="POST" id="FormName">
       <div id="Names">
@@ -111,7 +111,7 @@ class Book
 
         <span class="SpanIp">
           <label for="Phone" class="control-label">Phone</label>
-          <input id= "Phone" type="tel" class="input-lg form-control" placeholder="(•••) •••-••••"  required>
+          <input id= "Phone" type="tel" class="input-lg form-control" placeholder="••• ••• ••••"  pattern="#{phPtn}" required>
           <div   id= "PhoneER" class="NameER">* Required</div>
         </span>
 
@@ -142,7 +142,7 @@ class Book
     [@pay.last, lv] = @isValid('Last',  'Hosendecker', testing )
     [@pay.phone,pv] = @isValid('Phone', '3037977129',  testing )
     [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing )
-    ok =   @totals > 0 and fv and lv and pv and ev
+    #ok =   @totals > 0 and fv and lv and pv and ev
     #Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
     tv = @totals > 0
     [tv,fv,lv,pv,ev]
