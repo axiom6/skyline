@@ -98,6 +98,19 @@
       return year + month + day;
     };
 
+    Data.weekday = function(date) {
+      var dayInt, monthIdx, weekdayIdx, year;
+      year = parseInt(date.substr(0, 4));
+      monthIdx = parseInt(date.substr(4, 2)) - 1;
+      dayInt = parseInt(date.substr(6, 2));
+      weekdayIdx = new Date(year, monthIdx, dayInt).getDay();
+      return Data.weekdays[weekdayIdx];
+    };
+
+    Data.isElem = function($elem) {
+      return !(($elem != null) && ($elem.length != null) && $elem.length === 0);
+    };
+
     return Data;
 
   })();

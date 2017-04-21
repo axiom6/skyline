@@ -37,7 +37,6 @@ class Book
     $('#Pop'    ).click(  @onPop     )
     $('#Err'    ).click(  @onErr     )
     $('#GoToPay').click(  @onGoToPay ) # .prop('disabled',true)
-    #$('#FormName').submit( (e) => @onGoToPay(e) ).prop('disabled',true)
     $('#Navb').hide()
     $('#Book').show()
     @roomsJQuery()
@@ -61,7 +60,7 @@ class Book
     """
 
   initsHtml:() ->
-    htm  = """<label for="Months" class="InitIp">Arrive:#{ @htmlSelect( "Months", @Data.season, @month,  'months' ) }</label>"""
+    htm  = """<label for="Months" class="InitIp">Start: #{ @htmlSelect( "Months", @Data.season, @month,  'months' ) }</label>"""
     htm += """<label for="Days"   class="InitIp">       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
     htm += """<label class="InitIp">&nbsp;&nbsp;#{@year}</label>"""
     htm += """<span  id="Pop" class="Test">Pop</span>"""
@@ -144,8 +143,6 @@ class Book
     [@pay.last, lv] = @isValid('Last',  'Hosendecker', testing )
     [@pay.phone,pv] = @isValid('Phone', '3037977129',  testing )
     [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing )
-    #ok =   @totals > 0 and fv and lv and pv and ev
-    #Util.log('Book.getNamesPhoneEmail()', @pay.first, fv, @pay.last, lv, @pay.phone, pv, @pay.email, ev, ok )
     tv = @totals > 0
     [tv,fv,lv,pv,ev]
 
@@ -241,14 +238,14 @@ class Book
   onGuests:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
     @roomUIs[roomId].resRoom.guests = event.target.value
-    Util.log( 'Book.onGuests', roomId, @roomUIs[roomId].guests, @calcPrice(roomId) )
+    #Util.log( 'Book.onGuests', roomId, @roomUIs[roomId].resRoom.guests, @calcPrice(roomId) )
     @updatePrice(roomId)
     return
 
   onPets:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
     @roomUIs[roomId].resRoom.pets = event.target.value
-    Util.log( 'Book.onPets', roomId, @roomUIs[roomId].pets, @calcPrice(roomId) )
+    #Util.log( 'Book.onPets', roomId, @roomUIs[roomId].resRoom.pets, @calcPrice(roomId) )
     @updatePrice(roomId)
     return
 
@@ -257,7 +254,7 @@ class Book
     @monthIdx   = @Data.months.indexOf(@month)
     @begDay     = if @month is 'May' then @begMay else 1
     $('#Days').val(@begDay.toString())
-    Util.log( 'Book.onMonth()', { monthIdx:@monthIdx, month:@month, begDay:@begDay } )
+    #Util.log( 'Book.onMonth()', { monthIdx:@monthIdx, month:@month, begDay:@begDay } )
     @resetRooms()
     return
 
@@ -295,28 +292,18 @@ class Book
       onAdd.days = room.days
       @store.add( 'Alloc', roomId, onAdd )
     res
-
-  ###
-  onBook:() =>
-    res = @createRes()
-    res.payments      = {}
-    res.payments['1'] = @res.resPay()
-    #@res.put( res.id, res )
-    for own roomId, room of res.rooms
-      day.status = 'book' for own date, day of room.days
-      onPut = {}
-      onPut.days = room.days
-      @store.put( 'Alloc', roomId, onPut )
-    Util.log( 'Book.onBook()', res )
-    return
-    ###
     
   onCellBook:( event ) =>
     $cell  = $(event.target)
+    [roomId,status] = @cellBook( $cell )
+    @fillInRooms( roomId, $cell ) if status is 'mine'
+
+  cellBook:( $cell ) ->
     status = $cell.attr('data-status')
+    tacked = $cell.attr('data-tacked')?
     if      status is 'free'
             status =  'mine'
-    else if status is 'mine'
+    else if status is 'mine' and not tacked
             status =  'free'
     @cellStatus( $cell, status )
     roomId = $cell.attr('id').substr(1,1)
@@ -325,11 +312,41 @@ class Book
     if status is 'mine'
       roomUI.numDays += 1
       roomUI.resRoom.days[date] = { "status":"hold" }
-    else
+    else if status is 'free'
       roomUI.numDays -= 1 if roomUI.numDays > 0
       delete roomUI.resRoom.days[date]
     #Util.log('Book.onCellBook()', roomId, date, status, roomUI.resRoom.days )
     @updateTotal( roomId  )
+    [roomId,status]
+
+  fillInRooms:( roomId, $last ) ->
+    roomUI  = @roomUIs[roomId]
+    days    = Object.keys(roomUI.resRoom.days).sort()
+    weekday = @Data.weekday(days[0])
+    if days.length is 1 and (weekday is 'Fri' or weekday is 'Sat')
+      nday  = @Data.advanceDate( days[0], 1 )
+      $cell = $('#R'+roomId+nday).attr('data-tacked','tacked')
+      @cellBook( $cell )
+    else if days.length is 2
+      bday = days[0]
+      eday = days[days.length-1]
+      nday = @Data.advanceDate( bday, 1 )
+      while nday < eday                      # Avoid any booked rooms
+        #Util.log( 'Book.fillInRooms() One', bday, nday, eday )
+        $cell = $('#R'+roomId+nday)
+        if not @Data.isElem($cell) or $cell.attr('data-status') isnt 'free'
+          # Free up last clicked cell because an inconsistency was detected
+          $last.attr('data-status','mine')
+          @cellBook( $last )
+          return
+        nday = @Data.advanceDate( nday, 1 )
+      nday = @Data.advanceDate( bday, 1 )
+      while nday < eday
+        #Util.log( 'Book.fillInRooms() Two', bday, nday, eday )
+        $cell = $('#R'+roomId+nday)
+        @cellBook( $cell ) if @Data.isElem( $('#R'+roomId+nday) )
+        nday = @Data.advanceDate( nday, 1 )
+    return
 
   onAlloc:( alloc, roomId ) =>
     for own day, obj of alloc.days

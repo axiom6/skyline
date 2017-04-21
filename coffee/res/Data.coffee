@@ -65,3 +65,14 @@ class Data
     #Util.log( 'Data.advanceDate', resDate, year + month + day )
     year + month + day
 
+  @weekday:( date ) ->
+    year       = parseInt( date.substr( 0,4 ) )
+    monthIdx   = parseInt( date.substr( 4,2 ) ) - 1
+    dayInt     = parseInt( date.substr( 6,2 ) )
+    weekdayIdx = new Date( year, monthIdx, dayInt ).getDay()
+    Data.weekdays[weekdayIdx]
+
+  @isElem:( $elem ) ->
+    not (  $elem? and $elem.length? and $elem.length is 0 )
+
+

@@ -166,7 +166,7 @@
     };
 
     Pay.prototype.confirmTable = function() {
-      var arrive, days, depart, htm, num, r, ref, roomId, spaTH;
+      var arrive, bday, days, depart, eday, htm, i, night, num, r, ref, roomId, spaTH, total;
       this.spas = this.showSpa(this.myRes);
       spaTH = this.spas ? "Spa" : "";
       htm = "<table id=\"ConfirmTable\"><thead>";
@@ -178,9 +178,24 @@
         r = ref[roomId];
         days = Object.keys(r.days).sort();
         num = days.length;
-        arrive = this.confirmDate(days[0], "", false);
-        depart = this.confirmDate(days[num - 1], "", true);
-        htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + num + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+        bday = days[0];
+        i = 0;
+        total = 0;
+        night = 0;
+        while (i < num) {
+          eday = days[i];
+          total += r.price;
+          night++;
+          if (i === num - 1 || days[i + 1] !== this.Data.advanceDate(eday, 1)) {
+            arrive = this.confirmDate(bday, "", false);
+            depart = this.confirmDate(eday, "", true);
+            htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + night + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + total + "</td></tr>";
+            bday = days[i + 1];
+            total = 0;
+            night = 0;
+          }
+          i++;
+        }
       }
       htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.myRes.total + "</td></tr>";
       htm += "</tbody></table>";
@@ -232,7 +247,7 @@
     };
 
     Pay.prototype.confirmBody = function() {
-      var arrive, body, days, depart, num, r, ref, room, roomId;
+      var arrive, bday, body, days, depart, eday, i, num, r, ref, room, roomId, total;
       body = ".      Confirmation# " + this.myRes.key + "\n";
       body += ".      For: " + this.first + " " + this.last + "\n";
       ref = this.myRes.rooms;
@@ -242,9 +257,18 @@
         room = Util.padEnd(r.name, 24, '-');
         days = Object.keys(r.days).sort();
         num = days.length;
-        arrive = this.confirmDate(days[0], "", false);
-        depart = this.confirmDate(days[num - 1], "", true);
-        body += room + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + num + "-Nights $" + r.total + "\n";
+        bday = days[0];
+        i = 1;
+        total = r.price;
+        while (i < num) {
+          eday = days[i];
+          if (i === num - 1 || eday !== this.Data.advance(eday, 1)) {
+            arrive = this.confirmDate(bday, "", false);
+            depart = this.confirmDate(days[num - 1], "", true);
+            body += room + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + num + "-Nights $" + total + "\n";
+          }
+          i++;
+        }
       }
       body += "\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n";
       body = escape(body);
@@ -288,7 +312,7 @@
       numPtn = "\d{4} \d{4} \d{4} \d{4}";
       expPtn = "(1[0-2]|0[1-9])\/\d\d";
       cvcPtn = "\d{3}";
-      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\" id=\"cc-com\">Card Number</label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\">Invalid Number</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\">Invalid MM/YY</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\">Invalid CVC</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-can\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-can\" class=\"btn btn-lg btn-primary\">Cancel</button>\n    <div    id= \"er-can\" class=\"cc-msg\"></div>\n  </span>\n</div>";
+      return "<div id=\"form-pay\">\n  <span class=\"form-group\">\n    <label for=\"cc-num\" class=\"control-label\" id=\"cc-com\">Card Number</label>\n    <input id= \"cc-num\" type=\"tel\" class=\"input-lg form-control cc-num masked\" placeholder=\"•••• •••• •••• ••••\" pattern=\"" + numPtn + "\" required>\n    <div   id= \"er-num\" class=\"cc-msg\">Invalid Number</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-exp\" class=\"control-label\">MM/YY Expiration</label>\n    <input id= \"cc-exp\" type=\"tel\" class=\"input-lg form-control cc-exp masked\" placeholder=\"MM/YY\" pattern=\"" + expPtn + "\" required>\n    <div   id= \"er-exp\" class=\"cc-msg\">Invalid MM/YY</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-cvc\" class=\"control-label\">CVC</label>\n    <input id= \"cc-cvc\" type=\"tel\" class=\"input-lg form-control cc-cvc masked\" placeholder=\"•••\" pattern=\"" + cvcPtn + "\"  required>\n    <div   id= \"er-cvc\" class=\"cc-msg\">Invalid CVC</div>\n  </span>\n\n  <span class=\"form-group\">\n    <label for=\"cc-amt\"   class=\"control-label\">Amount</label>\n    <div   id= \"cc-amt\" class=\"input-lg form-control cc-amt\"></div>\n    <div   id= \"er-amt\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-sub\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-sub\" class=\"btn btn-lg btn-primary\">Pay</button>\n    <div    id= \"er-sub\" class=\"cc-msg\"></div>\n  </span>\n\n  <span class=\"form-group\">\n    <label  for=\"cc-can\" class=\"control-label\">&nbsp;</label>\n    <button id= \"cc-can\" class=\"btn btn-lg btn-primary\">Cancel</button>\n    <div    id= \"er-can\" class=\"cc-msg\"></div>\n  </span>\n</div>";
     };
 
     Pay.prototype.submitPayment = function(e) {

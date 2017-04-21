@@ -105,12 +105,27 @@ class Pay
     htm   = """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>#{spaTH}</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
+
     for own roomId, r of @myRes.rooms
       days   = Object.keys(r.days).sort()
       num    = days.length
-      arrive = @confirmDate( days[0],     "", false )  # from 3:00-8:00PM
-      depart = @confirmDate( days[num-1], "", true  )  # by 10:00AM
-      htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{num}</td><td id="#{roomId}TR" class="room-total">$#{r.total}</td></tr>"""
+      bday   = days[0]
+      i      = 0
+      total  = 0
+      night  = 0
+      while i < num
+        eday   = days[i]
+        total += r.price
+        night++
+        if i is num-1 or days[i+1] isnt @Data.advanceDate( eday, 1 )
+          arrive = @confirmDate( bday, "", false )
+          depart = @confirmDate( eday, "", true  )
+          htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{night}</td><td id="#{roomId}TR" class="room-total">$#{total}</td></tr>"""
+          bday  = days[i+1]
+          total = 0
+          night = 0
+        i++
+
     htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{@myRes.total}</td></tr>"""
     htm  += """</tbody></table>"""
     htm
@@ -154,9 +169,16 @@ class Pay
       room   = Util.padEnd( r.name, 24, '-' )
       days   = Object.keys(r.days).sort()
       num    = days.length
-      arrive = @confirmDate( days[0],     "", false )  # from 3:00-8:00PM
-      depart = @confirmDate( days[num-1], "", true  )  # by 10:00AM
-      body  += """#{room} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{num}-Nights $#{r.total}\n"""
+      bday   = days[0]
+      i      = 1
+      total  = r.price
+      while i < num
+        eday = days[i]
+        if i is num-1 or eday isnt @Data.advance( eday, 1 )
+          arrive = @confirmDate( bday,        "", false )
+          depart = @confirmDate( days[num-1], "", true  )
+          body  += """#{room} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{num}-Nights $#{total}\n"""
+        i++
     body += """\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n"""
     body = escape(body)
     body
@@ -196,7 +218,7 @@ class Pay
       </span>
 
       <span class="form-group">
-        <label for="cc-exp" class="control-label">Expiration</label>
+        <label for="cc-exp" class="control-label">MM/YY Expiration</label>
         <input id= "cc-exp" type="tel" class="input-lg form-control cc-exp masked" placeholder="MM/YY" pattern="#{expPtn}" required>
         <div   id= "er-exp" class="cc-msg">Invalid MM/YY</div>
       </span>

@@ -200,6 +200,12 @@ img.center {
   text-align: right;
   width: 35px;
 }
+.room-tack {
+  background-color: lightblue;
+  color: white;
+  text-align: right;
+  width: 35px;
+}
 .room-hold {
   background-color: slategray;
   color: black;

@@ -7,10 +7,8 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 ### [.black]#Feature#
-* Booking 2rd reservation
-* Change reservation
+* Maintain calendar and Fri Sat Tackon
 * Model Payment Reservation Status
-* Continuous Resevation Clicks
 * Update text with Sue
 * Terms and Conditions
 
@@ -38,9 +36,13 @@ include::../dir/inc/DefBook.adoc[]
 * Google Search
 * Visit Estes Park
 * EstesPark.com#
-* Trips With Pets#
+* Trips With Pets
 
 ## [.black]#Guest Site Completed#
+* Fri Sat Tackon
+* Continuous Resevation Clicks
+* Booking 2rd reservation
+* Change reservation
 * Package Slide.js
 * Spa Adjust
 * Limit Credit Cards
