@@ -27,19 +27,22 @@ class Room
       resRoom.pets    = 0
       resRoom.spa     = room.spa
       resRoom.days    = {}
+      resRoom.group   = {} # All days in group at maintained at the same status
     roomUIs
 
   hasSpa:( roomId ) ->
     @rooms[roomId].spa > 0
 
-  # { "total":0, "price":0, "guests":2,"pets":0, "spa":false, "days":{} },
-
   initRooms:() =>
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
     @store.make( 'Room' )
 
-  dayBooked:( room, date ) ->
+  dayBookedRm:( room, date ) ->
     day = room.days[date]
+    if day? then day.status else 'free'
+
+  dayBookedUI:( room, date ) ->
+    day = room.resRoom.days[date]
     if day? then day.status else 'free'
 
   onAlloc:( alloc, roomId ) =>

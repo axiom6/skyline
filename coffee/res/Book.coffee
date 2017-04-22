@@ -170,8 +170,11 @@ class Book
     msg += "Enter Email\n"          if not ev
     msg
 
-  createCell:( roomId, room, date ) ->
-    status = @room.dayBooked( room, date )
+  createCell:( roomId, roomRm, date ) ->
+    roomUI   = @roomUIs[roomId]
+    statusRm = @room.dayBookedRm( roomRm, date )
+    statusUI = @room.dayBookedUI( roomUI, date )
+    status   = if statusRm isnt 'free' then statusRm else statusUI
     """<td id="R#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
 
   roomsJQuery:() ->
@@ -185,6 +188,7 @@ class Book
         $cell = $('#R'+roomId+date)
         $cell.click( (event) => @onCellBook(event) )
         @$cells.push( $cell )
+        @updateTotal( roomId )
     return
 
   calcPrice:( roomId ) =>
@@ -299,53 +303,92 @@ class Book
     @fillInRooms( roomId, $cell ) if status is 'mine'
 
   cellBook:( $cell ) ->
-    status = $cell.attr('data-status')
-    tacked = $cell.attr('data-tacked')?
+    status  = $cell.attr('data-status')
+    roomId  = $cell.attr('id').substr(1,1)
+    group   = @roomUIs[roomId].resRoom.group
+    isEmpty = Util.isObjEmpty(group)
     if      status is 'free'
-            status =  'mine'
-    else if status is 'mine' and not tacked
-            status =  'free'
-    @cellStatus( $cell, status )
+      status = 'mine'
+      @updateCellStatus( $cell, 'mine' )
+    else if status is 'mine' and     isEmpty
+      status = 'free'
+      @updateCellStatus( $cell, 'free' )
+    else if status is 'mine' and not isEmpty
+      status = 'free'
+      @updateCellGroup( roomId, group, 'free' )
+    [roomId,status]
+
+  updateCellGroup:( roomId, group, status ) ->
+    for own day,obj of group
+      $cell = $('#R'+roomId+day)
+      Util.log( 'Book.updateCellGroup()', { day:day,  group } )
+      @updateCellStatus( $cell, status )
+    return
+
+  updateCellStatus:( $cell, status ) ->
+    @cellStatus(     $cell, status )
     roomId = $cell.attr('id').substr(1,1)
     date   = $cell.attr('id').substr(2,8)
     roomUI = @roomUIs[roomId]
     if status is 'mine'
-      roomUI.numDays += 1
-      roomUI.resRoom.days[date] = { "status":"hold" }
+      roomUI.numDays++
+      roomUI.resRoom.days[date] = { "status":status }
+      #Util.log( 'Book.updateCellStatus() mine', roomUI.numDays )
     else if status is 'free'
-      roomUI.numDays -= 1 if roomUI.numDays > 0
-      delete roomUI.resRoom.days[date]
-    #Util.log('Book.onCellBook()', roomId, date, status, roomUI.resRoom.days )
+      roomUI.numDays-- if roomUI.numDays > 0
+      delete roomUI.resRoom.days[ date]
+      delete roomUI.resRoom.group[date] if roomUI.resRoom.group[date]?
+      #Util.log( 'Book.updateCellStatus() free', roomUI.numDays )
     @updateTotal( roomId  )
     [roomId,status]
 
+  # Only status of 'mine' is supported
   fillInRooms:( roomId, $last ) ->
     roomUI  = @roomUIs[roomId]
     days    = Object.keys(roomUI.resRoom.days).sort()
+    bday    = days[0]
     weekday = @Data.weekday(days[0])
-    if days.length is 1 and (weekday is 'Fri' or weekday is 'Sat')
-      nday  = @Data.advanceDate( days[0], 1 )
-      $cell = $('#R'+roomId+nday).attr('data-tacked','tacked')
-      @cellBook( $cell )
-    else if days.length is 2
-      bday = days[0]
-      eday = days[days.length-1]
-      nday = @Data.advanceDate( bday, 1 )
-      while nday < eday                      # Avoid any booked rooms
-        #Util.log( 'Book.fillInRooms() One', bday, nday, eday )
-        $cell = $('#R'+roomId+nday)
-        if not @Data.isElem($cell) or $cell.attr('data-status') isnt 'free'
-          # Free up last clicked cell because an inconsistency was detected
-          $last.attr('data-status','mine')
-          @cellBook( $last )
-          return
-        nday = @Data.advanceDate( nday, 1 )
-      nday = @Data.advanceDate( bday, 1 )
-      while nday < eday
-        #Util.log( 'Book.fillInRooms() Two', bday, nday, eday )
-        $cell = $('#R'+roomId+nday)
-        @cellBook( $cell ) if @Data.isElem( $('#R'+roomId+nday) )
-        nday = @Data.advanceDate( nday, 1 )
+    weekend = weekday is 'Fri' or weekday is 'Sat'
+    if      days.length is 1 and  weekend
+      @fillInWeekend( roomId, bday )
+    else if days.length is 2  and @fillIsConsistent( roomId, days, $last )
+      @doFillInRooms( roomId, days )
+    return
+
+  fillInWeekend:( roomId, bday ) ->
+    nday  = @Data.advanceDate( bday, 1 )
+    if $('#R'+roomId+nday).attr('data-status') is 'free'
+      group = @roomUIs[roomId].resRoom.group
+      group[bday] = { status:'mine' }
+      group[nday] = { status:'mine' }
+      #Util.log( 'Book.fillInRooms()', { bday:bday, nday:nday, group })
+      @updateCellStatus( $('#R'+roomId+nday), 'mine' )
+    return
+
+  fillIsConsistent:( roomId, days, $last ) ->
+    bday = days[0]
+    eday = days[days.length-1]
+    nday = @Data.advanceDate( bday, 1 )
+    while nday < eday                      # Avoid any booked rooms
+      #Util.log( 'Book.fillInConsistent()', bday, nday, eday )
+      $cell = $('#R'+roomId+nday)
+      if not @Data.isElem($cell) or $cell.attr('data-status') isnt 'free'
+        # Free up last clicked cell because an inconsistency was detected
+        $last.attr('data-status','mine')
+        @cellBook( $last )
+        return false
+      nday = @Data.advanceDate( nday, 1 )
+    true
+
+  doFillInRooms:( roomId, days ) ->
+    bday = days[0]
+    nday = @Data.advanceDate( bday, 1 )
+    eday = days[days.length-1]
+    while nday < eday
+      #Util.log( 'Book.fillInRooms() Two', bday, nday, eday )
+      $cell = $('#R'+roomId+nday)
+      @cellBook( $cell ) if @Data.isElem( $('#R'+roomId+nday) )
+      nday = @Data.advanceDate( nday, 1 )
     return
 
   onAlloc:( alloc, roomId ) =>
@@ -369,4 +412,3 @@ class Book
   make:()   => @store.make(   'Room' )
 
   insert:() => @store.insert( 'Room', @rooms )
-

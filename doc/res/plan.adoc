@@ -7,13 +7,12 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 ### [.black]#Feature#
-* Maintain calendar and Fri Sat Tackon
-* Model Payment Reservation Status
 * Update text with Sue
 * Terms and Conditions
 
 ### [.black]#Test#
-* Test Pop, Deposit, Spa Opt Out, Payment
+* Test Weekend, Pop, Deposit, Spa Opt Out, Payment
+* Test Suite
 * Post and Test Reservations, Payments Customers
 * Populate Beth Reservations into Skyline
 
@@ -39,7 +38,9 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets
 
 ## [.black]#Guest Site Completed#
-* Fri Sat Tackon
+* Fri Sat Block and clean up Book.fillInRooms()
+* Update   reservation mine
+* Maintain reservation calendar, status
 * Continuous Resevation Clicks
 * Booking 2rd reservation
 * Change reservation

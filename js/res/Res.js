@@ -105,6 +105,9 @@
         for (day in ref) {
           if (!hasProp.call(ref, day)) continue;
           obj = ref[day];
+          if (day.status === 'mine') {
+            day.status = status;
+          }
           if (day < res.arrive) {
             res.arrive = day;
           }

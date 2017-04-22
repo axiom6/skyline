@@ -41,6 +41,7 @@
         resRoom.pets = 0;
         resRoom.spa = room.spa;
         resRoom.days = {};
+        resRoom.group = {};
       }
       return roomUIs;
     };
@@ -59,9 +60,19 @@
       return this.store.make('Room');
     };
 
-    Room.prototype.dayBooked = function(room, date) {
+    Room.prototype.dayBookedRm = function(room, date) {
       var day;
       day = room.days[date];
+      if (day != null) {
+        return day.status;
+      } else {
+        return 'free';
+      }
+    };
+
+    Room.prototype.dayBookedUI = function(room, date) {
+      var day;
+      day = room.resRoom.days[date];
       if (day != null) {
         return day.status;
       } else {

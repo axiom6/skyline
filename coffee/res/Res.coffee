@@ -44,7 +44,8 @@ class Res
     for own roomId, roomUI of roomUIs when roomUI.numDays > 0
       res.rooms[roomId] = roomUI.resRoom
       for own day, obj of roomUI.resRoom.days
-        res.arrive = day if day < res.arrive
+        day.status = status if day.status is 'mine'
+        res.arrive = day    if day < res.arrive
     res.payments = payments
     #@subscribeToResKey( res.key )
     res
