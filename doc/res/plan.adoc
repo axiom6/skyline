@@ -11,6 +11,7 @@ include::../dir/inc/DefBook.adoc[]
 * Terms and Conditions
 
 ### [.black]#Test#
+* Weekend group popup
 * Test Weekend, Pop, Deposit, Spa Opt Out, Payment
 * Test Suite
 * Post and Test Reservations, Payments Customers

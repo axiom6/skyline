@@ -45,6 +45,31 @@ class Pict
   li:( pic, dir ) ->
     """<li><h3>#{pic.name}</h3><span>#{dir}#{pic.src}</span><p>#{pic.p}</p><a href="#"><img src="#{dir}#{pic.src}" width="100" height="70" alt="#{pic.name}"/></a></li>"""
 
+  viewVideo:( src ) =>
+    Util.log('Pict.viewVideo()', src )
+    $('#Slides' ).hide()
+    $('#Video'  ).attr('src', src )
+    $('#ViewVid').show()
+    return
+
+  # https://www.youtube.com/watch?v=MsUfGee7kYY
+  # https://www.youtube.com/embed?v=MsUfGee7kYY
+  onVideo:( e ) =>
+    Util.log('Pict.onVideo()' )
+    Util.noop( e )
+    #viewVideo(        "//www.youtube.com/embed/MsUfGee7kYY")
+    @viewVideo( "https://www.youtube.com/embed?v=MsUfGee7kYY")
+    $('#VideoSee').text('View Slides').click( @onSlides )
+    return
+
+  onSlides:( e ) =>
+    Util.log('Pict.onSlides()' )
+    Util.noop( e )
+    $('#ViewVid' ).hide()
+    $('#Slides'  ).show()
+    $('#VideoSee').text('View Video').click( @onVideo )
+    return
+
   wrapperHtml:() ->
     """
     <ul id="slideshow"></ul>

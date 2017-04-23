@@ -18,6 +18,7 @@ class Home
     $('#Head').append( @headHtml() )
     @listRooms()
     @pict.createSlideShow('M', 600, 600 )
+    $('#VideoSee').click( @pict.onVideo )
     return
 
   headHtml:() ->
@@ -29,14 +30,17 @@ class Home
     <ul class="Head2">
       <li>Near YMCA</li>
       <li>Hiking</li>
+      <li>Cable TV</li>
     </ul>
     <ul class="Head3">
-      <li>Free Parking</li>
+      <li>Private Parking Spaces</li>
       <li>3 Private Spas</li>
+      <li>Owner On Site</li>
     </ul>
     <ul class="Head4">
-      <li>WiFi in Cabins 1-8</li>
+      <li>Free WiFi in Cabins 1-8</li>
       <li>All Non-Smoking Cabins</li>
+      <li>Wood Burning Fireplaces</li>
     </ul>
     """
 
@@ -44,11 +48,13 @@ class Home
     $('#Slides').css( { left:"22%", width:"78%" })
     htm  = """<div class="HomeSee">Enjoy Everything Skyline Has to Offer</div>"""
     htm += """<div class="RoomSee">See Our Cottages</div>"""
+    htm += """<div class="FootSee">Skyline Cottages Where the River Meets the Mountains</div>"""
     htm += """<ul  class="RoomUL">"""
     for own roomId, room of @rooms
       htm += """<li class="RoomLI"><a href="rooms/#{roomId}.html">#{room.name}</a></li>"""
     htm += """</ul>"""
     $("#View").append( htm )
+    $("#View").append("""<button id="VideoSee" class="btn btn-primary"">View Video</button>""")
     return
 
   hideMkt:() ->
