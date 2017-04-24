@@ -7,16 +7,17 @@ class Guest
 
     Util.ready ->
 
-      Stream     = require( 'js/store/Stream'    )
-      Firestore  = require( 'js/store/Firestore' )
-      Data       = require( 'js/res/Data'        )
-      Room       = require( 'js/res/Room'        )
-      Cust       = require( 'js/res/Cust'        )
-      Home       = require( 'js/res/Home'        )
-      Pict       = require( 'js/res/Pict'        )
-      Res        = require( 'js/res/Res'         )
-      Pay        = require( 'js/res/Pay'         )
-      Book       = require( 'js/res/Book'        )
+      Util.jquery = require( 'jquery'             ) # Allows Pick cto be called outside of CommonJS
+      Stream      = require( 'js/store/Stream'    )
+      Firestore   = require( 'js/store/Firestore' )
+      Data        = require( 'js/res/Data'        )
+      Room        = require( 'js/res/Room'        )
+      Cust        = require( 'js/res/Cust'        )
+      Home        = require( 'js/res/Home'        )
+      Pict        = require( 'js/res/Pict'        )
+      Res         = require( 'js/res/Res'         )
+      Pay         = require( 'js/res/Pay'         )
+      Book        = require( 'js/res/Book'        )
 
       pict       = new Pict()
       stream     = new Stream( [] )

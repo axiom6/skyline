@@ -13,7 +13,6 @@ class Util
     Util.isCommonJS = true
   else
     Util.isWebPack  = true
-
   Util.Load          = null
   Util.ModuleGlobals = []
   Util.app           = {}
@@ -49,6 +48,29 @@ class Util
       Util.error( """Bad arguments for Util.init() isCommonJS=#{Util.isCommonJS},
         root=#{root}, moduleCommonJS=#{moduleCommonJS?}, moduleWebPack=#{moduleWebPack}""" )
     return
+
+  # Questionable but needed to support Electron + Webpack + Simple Browser which is not advised
+  @requireModule:( module, prj=null ) ->
+    if Util[module]?
+       #til.log('Util[module]?')
+       Util[module]
+    else if Util.isCommonJS
+      Util.resetModuleExports( prj ) if not Util.module? and prj?
+      #Util.log('Util.isCommonJS' )
+      require(module)
+    else if require?
+      #Util.log('Util require', Util.isCommonJS )
+      require(module)
+    else if module is 'jquery' and window['jQuery']?
+      #Util.log('Util  window[jQuery]')
+      window['jQuery']
+    else if window[module]?
+      #Util.log('Util  window[module]?')
+      window[module]?
+    else
+      #msg = { $:window.$?, jquery:window.jquery?, jQuery:window.jQuery?, isCommonJS: Util.isCommonJS  }
+      Util.error( 'Util.requireModule() module not found', module )
+      null
 
   @initJasime:() ->
     Util.resetModuleExports()

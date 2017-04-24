@@ -10,6 +10,7 @@
     Guest.init = function() {
       return Util.ready(function() {
         var Book, Cust, Data, Firestore, Home, Pay, Pict, Res, Room, Stream, book, cust, home, pay, pict, res, room, store, stream;
+        Util.jquery = require('jquery');
         Stream = require('js/store/Stream');
         Firestore = require('js/store/Firestore');
         Data = require('js/res/Data');

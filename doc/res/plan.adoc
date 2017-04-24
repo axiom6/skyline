@@ -7,7 +7,9 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 ### [.black]#Feature#
-* Update text with Sue
+* Home Page Text and Sizing
+* Rooms 1-8 N S
+* Video
 * Terms and Conditions
 
 ### [.black]#Test#

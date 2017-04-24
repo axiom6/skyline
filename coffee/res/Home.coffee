@@ -17,7 +17,7 @@ class Home
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
     $('#Head').append( @headHtml() )
     @listRooms()
-    @pict.createSlideShow('M', 600, 600 )
+    @pict.createSlideShow('Slides', 'M', 600, 600 )
     $('#VideoSee').click( @pict.onVideo )
     return
 
@@ -26,6 +26,7 @@ class Home
     <ul class="Head1">
      <li>Trout Fishing</li>
      <li>Bring your Pet</li>
+     <li>Free WiFi</li>
     </ul>
     <ul class="Head2">
       <li>Near YMCA</li>
@@ -38,7 +39,7 @@ class Home
       <li>Owner On Site</li>
     </ul>
     <ul class="Head4">
-      <li>Free WiFi in Cabins 1-8</li>
+      <li>Private Barbecue Grills</li>
       <li>All Non-Smoking Cabins</li>
       <li>Wood Burning Fireplaces</li>
     </ul>

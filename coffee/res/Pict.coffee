@@ -1,6 +1,5 @@
 
-
-$ = require('jquery')
+$ = Util.requireModule('jquery','skyline')
 
 class Pict
 
@@ -11,11 +10,12 @@ class Pict
     pict = new Pict()
     Util.ready () ->
       pict.roomPageHtml( title, prev, next )
-      pict.createSlideShow( curr, 600, 600 )
+      pict.createSlideShow( 'RoomSlides', curr, 600, 600 )
       return
     return
 
   constructor:() ->
+    
 
   roomPageHtml:( title, prev, next ) ->
     prevPage = """ '#{prev}.html' """
@@ -29,8 +29,8 @@ class Pict
     $('#top').append( htm )
     return
 
-  createSlideShow:( roomId, w,  h ) ->
-    $('#Slides').append( @wrapperHtml() )
+  createSlideShow:( parentId, roomId, w,  h ) ->
+    $('#'+parentId).append( @wrapperHtml() )
     images = (Img) =>
       htm = ""
       dir = Img[roomId].dir
@@ -95,6 +95,7 @@ class Pict
     """
 
   initTINY:( w, h ) ->
+    Util.noop( w, h )
     TINY.ElemById('slideshow').style.display='none'
     TINY.ElemById('wrapper'  ).style.display='block'
     window.slideshow=new TINY.slideshow("slideshow")

@@ -81,6 +81,29 @@ Util = (function() {
     }
   };
 
+  Util.requireModule = function(module, prj) {
+    if (prj == null) {
+      prj = null;
+    }
+    if (Util[module] != null) {
+      return Util[module];
+    } else if (Util.isCommonJS) {
+      if ((Util.module == null) && (prj != null)) {
+        Util.resetModuleExports(prj);
+      }
+      return require(module);
+    } else if (typeof require !== "undefined" && require !== null) {
+      return require(module);
+    } else if (module === 'jquery' && (window['jQuery'] != null)) {
+      return window['jQuery'];
+    } else if (window[module] != null) {
+      return window[module] != null;
+    } else {
+      Util.error('Util.requireModule() module not found', module);
+      return null;
+    }
+  };
+
   Util.initJasime = function() {
     Util.resetModuleExports();
     if (!Util.isCommonJS) {

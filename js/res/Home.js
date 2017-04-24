@@ -36,12 +36,12 @@
       })(this));
       $('#Head').append(this.headHtml());
       this.listRooms();
-      this.pict.createSlideShow('M', 600, 600);
+      this.pict.createSlideShow('Slides', 'M', 600, 600);
       $('#VideoSee').click(this.pict.onVideo);
     };
 
     Home.prototype.headHtml = function() {
-      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Near YMCA</li>\n  <li>Hiking</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>3 Private Spas</li>\n  <li>Owner On Site</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Free WiFi in Cabins 1-8</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
+      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Free WiFi</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Near YMCA</li>\n  <li>Hiking</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>3 Private Spas</li>\n  <li>Owner On Site</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
     };
 
     Home.prototype.listRooms = function() {

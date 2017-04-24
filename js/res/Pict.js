@@ -3,7 +3,7 @@
   var $, Pict,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  $ = require('jquery');
+  $ = Util.requireModule('jquery', 'skyline');
 
   Pict = (function() {
     if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
@@ -17,7 +17,7 @@
       pict = new Pict();
       Util.ready(function() {
         pict.roomPageHtml(title, prev, next);
-        pict.createSlideShow(curr, 600, 600);
+        pict.createSlideShow('RoomSlides', curr, 600, 600);
       });
     };
 
@@ -35,9 +35,9 @@
       $('#top').append(htm);
     };
 
-    Pict.prototype.createSlideShow = function(roomId, w, h) {
+    Pict.prototype.createSlideShow = function(parentId, roomId, w, h) {
       var images, url;
-      $('#Slides').append(this.wrapperHtml());
+      $('#' + parentId).append(this.wrapperHtml());
       images = (function(_this) {
         return function(Img) {
           var dir, htm, i, len, pic, ref;
@@ -88,6 +88,7 @@
 
     Pict.prototype.initTINY = function(w, h) {
       var slideshow;
+      Util.noop(w, h);
       TINY.ElemById('slideshow').style.display = 'none';
       TINY.ElemById('wrapper').style.display = 'block';
       window.slideshow = new TINY.slideshow("slideshow");
