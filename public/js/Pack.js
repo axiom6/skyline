@@ -32701,17 +32701,15 @@
 	      return "<li><h3>" + pic.name + "</h3><span>" + dir + pic.src + "</span><p>" + pic.p + "</p><a href=\"#\"><img src=\"" + dir + pic.src + "\" width=\"100\" height=\"70\" alt=\"" + pic.name + "\"/></a></li>";
 	    };
 
-	    Pict.prototype.viewVideo = function(src) {
-	      Util.log('Pict.viewVideo()', src);
+	    Pict.prototype.viewVideo = function() {
 	      $('#Slides').hide();
-	      $('#Video').attr('src', src);
+	      $('#Video').show();
 	      $('#ViewVid').show();
 	    };
 
 	    Pict.prototype.onVideo = function(e) {
-	      Util.log('Pict.onVideo()');
 	      Util.noop(e);
-	      this.viewVideo("https://www.youtube.com/embed?v=MsUfGee7kYY");
+	      this.viewVideo();
 	      $('#VideoSee').text('View Slides').click(this.onSlides);
 	    };
 

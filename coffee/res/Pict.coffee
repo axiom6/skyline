@@ -34,7 +34,7 @@ class Pict
     images = (Img) =>
       htm = ""
       dir = Img[roomId].dir
-      for pic in Img[roomId].pics
+      for pic in Img[roomId]['pics']
         htm += @li( pic, dir )
       $('#slideshow').append( htm )
       @initTINY( w, h )
@@ -45,28 +45,18 @@ class Pict
   li:( pic, dir ) ->
     """<li><h3>#{pic.name}</h3><span>#{dir}#{pic.src}</span><p>#{pic.p}</p><a href="#"><img src="#{dir}#{pic.src}" width="100" height="70" alt="#{pic.name}"/></a></li>"""
 
-  viewVideo:( src ) =>
-    Util.log('Pict.viewVideo()', src )
-    $('#Slides' ).hide()
-    $('#Video'  ).attr('src', src )
-    $('#ViewVid').show()
-    return
-
-  # https://www.youtube.com/watch?v=MsUfGee7kYY
-  # https://www.youtube.com/embed?v=MsUfGee7kYY
-  onVideo:( e ) =>
-    Util.log('Pict.onVideo()' )
-    Util.noop( e )
-    #viewVideo(        "//www.youtube.com/embed/MsUfGee7kYY")
-    @viewVideo( "https://www.youtube.com/embed?v=MsUfGee7kYY")
+  onVideo:() =>
+    window.slideshow.auto=false
+    $('#Slides'  ).hide()
+    $('#Video'   ).show()
+    $('#ViewVid' ).show()
     $('#VideoSee').text('View Slides').click( @onSlides )
     return
 
-  onSlides:( e ) =>
-    Util.log('Pict.onSlides()' )
-    Util.noop( e )
+  onSlides:(  ) =>
     $('#ViewVid' ).hide()
     $('#Slides'  ).show()
+    window.slideshow.auto=true
     $('#VideoSee').text('View Video').click( @onVideo )
     return
 
@@ -98,10 +88,10 @@ class Pict
     Util.noop( w, h )
     TINY.ElemById('slideshow').style.display='none'
     TINY.ElemById('wrapper'  ).style.display='block'
-    window.slideshow=new TINY.slideshow("slideshow")
+    window.slideshow =  new TINY.slideshow("slideshow")
     slideshow = window.slideshow
-    slideshow.auto=true
-    slideshow.speed=5
+    slideshow.auto=false #true
+    slideshow.speed=10
     slideshow.link="linkhover"
     slideshow.info="information"
     slideshow.thumbs="slider"

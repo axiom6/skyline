@@ -7,10 +7,9 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 ### [.black]#Feature#
-* Home Page Text and Sizing
-* Rooms 1-8 N S
-* Video
+* Rooms M 1-8 N S
 * Terms and Conditions
+* Stripe Reader
 
 ### [.black]#Test#
 * Weekend group popup
@@ -41,6 +40,9 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets
 
 ## [.black]#Guest Site Completed#
+* Video
+* Fixed require
+* Home Page Text and Sizing
 * Fri Sat Block and clean up Book.fillInRooms()
 * Update   reservation mine
 * Maintain reservation calendar, status

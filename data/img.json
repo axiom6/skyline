@@ -1,13 +1,14 @@
 {
   "M": { "dir":"img/scenic/", "pics":[
-    { "src":"SC-DownRiver.jpg",        "name":"Down River",       "p":"Down River"       },
-    { "src":"SC-Patio001.jpg",         "name":"Patio",            "p":"Patio"            },
-    { "src":"SC-RiverWalk-East.jpg",   "name":"River Walk East",  "p":"River Walk East"  },
-    { "src":"SC-RiverWithLongs.jpg",   "name":"River With Longs", "p":"River With Longs" },
-    { "src":"SLC-BigFish001.jpg",      "name":"Big Fish",         "p":"Big Fish"         },
-    { "src":"SLC-ElkInYard.jpg",       "name":"Elk In Yard",      "p":"Elk In Yard"      },
-    { "src":"SLC-ElkWithRedChair.jpg", "name":"Elk Red Chair",    "p":"Elk Red Chair"    },
-    { "src":"SLC-RiverWalk.jpg",       "name":"River Walk",       "p":"River Walk"       } ] },
+    { "src":"SC-Sign.jpg",             "name":"Sign in Front",    "p":"Look for Sign on Highway 67"       },
+    { "src":"SC-DownRiver.jpg",        "name":"Down River",       "p":"Looking Downstream from Skyline Cottages" },
+    { "src":"SC-Patio001.jpg",         "name":"Large Deck",       "p":"Dine or Relax on Fabulous Riverside Deck</br>Fantastic View of Long's Peak and Majestic Front Range"            },
+    { "src":"SC-RiverWalk-East.jpg",   "name":"Scenic River Walk","p":"Go Down to Scenic Riverwalk Via Ponderrose Pine or Aspen Stairways"  },
+    { "src":"SLC-RiverWalk.jpg",       "name":"River Walk",       "p":"River Walk"       },
+    { "src":"SC-RiverWithLongs.jpg",   "name":"River With Longs", "p":"The Big Thompson River and Longs Peak from Skyline Cottages" },
+    { "src":"SLC-BigFish001.jpg",      "name":"Trophy Catch!",    "p":"Fish from Skyline River Walk. Fishing Rods Available at Office"   },
+    { "src":"SLC-ElkInYard.jpg",       "name":"Majestic Elk",     "p":"Photo Taken from Private Deck"      },
+    { "src":"SLC-ElkWithRedChair.jpg", "name":"Elk Red Chair",    "p":"Elk Red Chair"    } ] },
   "X": { "dir":"img/scenic/", "pics":[
     { "src":"SC-Sign.gif",             "name":"Sign",             "p":"Sign at 1752 Highway 66" },
     { "src":"SC-Map-EstesPark.gif",    "name":"Map",              "p":"Estes Park Map"   } ] },
