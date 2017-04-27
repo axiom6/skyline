@@ -34,6 +34,7 @@ class Pay
     $('#ConfirmBlock').append( @confirmTable() )
     $('#Pays'        ).append( @confirmBtns()  )
     $('#PayDiv'      ).append( @payHtml()      )
+    $('#Pays'        ).append( @termsHtml()    )
     @initCCPayment()
     @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
     $('#Pays').show()
@@ -391,3 +392,13 @@ class Pay
   toJSON:(     obj  ) -> if obj? then JSON.stringify(obj) else ''
 
   toObject:(   json ) -> if json then JSON.parse(json) else {}
+
+  termsHtml:() ->
+    """
+      <ul class="Terms">
+        <li>Deposit is 50% of total reservation.</li>
+        <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee</li>
+        <li>Less than 50-day notice, deposit is forfeited.</li>
+        <li>Short term reservations have a 3-day cancellation deadline.</li>
+      </ul>
+    """

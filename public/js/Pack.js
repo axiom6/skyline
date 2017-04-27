@@ -32665,7 +32665,6 @@
 	    function Pict() {
 	      this.onSlides = bind(this.onSlides, this);
 	      this.onVideo = bind(this.onVideo, this);
-	      this.viewVideo = bind(this.viewVideo, this);
 	    }
 
 	    Pict.prototype.roomPageHtml = function(title, prev, next) {
@@ -32684,7 +32683,7 @@
 	          var dir, htm, i, len, pic, ref;
 	          htm = "";
 	          dir = Img[roomId].dir;
-	          ref = Img[roomId].pics;
+	          ref = Img[roomId]['pics'];
 	          for (i = 0, len = ref.length; i < len; i++) {
 	            pic = ref[i];
 	            htm += _this.li(pic, dir);
@@ -32701,23 +32700,18 @@
 	      return "<li><h3>" + pic.name + "</h3><span>" + dir + pic.src + "</span><p>" + pic.p + "</p><a href=\"#\"><img src=\"" + dir + pic.src + "\" width=\"100\" height=\"70\" alt=\"" + pic.name + "\"/></a></li>";
 	    };
 
-	    Pict.prototype.viewVideo = function() {
+	    Pict.prototype.onVideo = function() {
+	      window.slideshow.auto = false;
 	      $('#Slides').hide();
 	      $('#Video').show();
 	      $('#ViewVid').show();
-	    };
-
-	    Pict.prototype.onVideo = function(e) {
-	      Util.noop(e);
-	      this.viewVideo();
 	      $('#VideoSee').text('View Slides').click(this.onSlides);
 	    };
 
-	    Pict.prototype.onSlides = function(e) {
-	      Util.log('Pict.onSlides()');
-	      Util.noop(e);
+	    Pict.prototype.onSlides = function() {
 	      $('#ViewVid').hide();
 	      $('#Slides').show();
+	      window.slideshow.auto = true;
 	      $('#VideoSee').text('View Video').click(this.onVideo);
 	    };
 
@@ -32732,8 +32726,8 @@
 	      TINY.ElemById('wrapper').style.display = 'block';
 	      window.slideshow = new TINY.slideshow("slideshow");
 	      slideshow = window.slideshow;
-	      slideshow.auto = true;
-	      slideshow.speed = 5;
+	      slideshow.auto = false;
+	      slideshow.speed = 10;
 	      slideshow.link = "linkhover";
 	      slideshow.info = "information";
 	      slideshow.thumbs = "slider";

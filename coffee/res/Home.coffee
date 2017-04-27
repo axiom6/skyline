@@ -26,17 +26,17 @@ class Home
     <ul class="Head1">
      <li>Trout Fishing</li>
      <li>Bring your Pet</li>
-     <li>Free WiFi</li>
+     <li>Owner On Site</li>
     </ul>
     <ul class="Head2">
-      <li>Near YMCA</li>
       <li>Hiking</li>
+      <li>Free WiFi</li>
       <li>Cable TV</li>
     </ul>
     <ul class="Head3">
       <li>Private Parking Spaces</li>
+      <li>Kitchens in Every Cottage</li>
       <li>3 Private Spas</li>
-      <li>Owner On Site</li>
     </ul>
     <ul class="Head4">
       <li>Private Barbecue Grills</li>

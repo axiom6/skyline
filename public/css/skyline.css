@@ -60,7 +60,7 @@ img.center {
 .Head1 {
   position: absolute;
   left: 0;
-  width: 20%;
+  width: 30%;
   top: 0;
   height: 100%;
 }
@@ -73,7 +73,7 @@ img.center {
 }
 .Head3 {
   position: absolute;
-  left: 40%;
+  left: 35%;
   width: 20%;
   top: 0;
   height: 100%;
@@ -91,6 +91,12 @@ img.center {
   width: 100%;
   top: 0;
   height: 100%;
+}
+.Rates {
+  display: inline-block;
+}
+.SpaOp {
+  display: inline-block;
 }
 #Foot {
   text-align: center;
@@ -629,6 +635,10 @@ img.center {
 .ContactOwner {
   font-weight: bold;
   margin-top: 24px;
+}
+.Terms {
+  display: inline-block;
+  text-align: left;
 }
 .dir-center {
   width: 650px;

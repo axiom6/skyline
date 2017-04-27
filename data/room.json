@@ -6,7 +6,7 @@
   "5":{ "days":{}, "name":"#5 River Cabin With View", "total":0, "pet":12,"spa": 0,"max": 6,"price":0,"1":195,"2":195,"3":195,"4":195,"5":205,"6":215 },
   "6":{ "days":{}, "name":"#6 Large River Cabin",     "total":0, "pet":12,"spa": 0,"max":12,"price":0,"1":235,"2":235,"3":235,"4":235,"5":245,"6":255,"7":269,"8":275,"9":285,"10":295,"11":305,"12":315 },
   "7":{ "days":{}, "name":"#7 Western Spa",           "total":0, "pet":12,"spa":20,"max": 4,"price":0,"1":165,"2":165,"3":175,"4":175 },
-  "8":{ "days":{}, "name":"#8 Western Unit",          "total":0, "pet":12,"spa": 0,"max": 4,"price":0,"1":100,"2":125,"3":125,"4":125 },
+  "8":{ "days":{}, "name":"#8 Western Unit",          "total":0, "pet":12,"spa": 0,"max": 4,"price":0,"1":125,"2":125,"3":135,"4":145 },
   "N":{ "days":{}, "name":"North Skyline",            "total":0, "pet":12,"spa": 0,"max": 4,"price":0,"1":145,"2":145,"3":155,"4":165 },
   "S":{ "days":{}, "name":"South Skyline",            "total":0, "pet":12,"spa": 0,"max": 4,"price":0,"1":135,"2":135,"3":145,"4":155 }
 }

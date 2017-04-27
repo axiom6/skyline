@@ -71,6 +71,7 @@
       $('#ConfirmBlock').append(this.confirmTable());
       $('#Pays').append(this.confirmBtns());
       $('#PayDiv').append(this.payHtml());
+      $('#Pays').append(this.termsHtml());
       this.initCCPayment();
       this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
       $('#Pays').show();
@@ -521,6 +522,10 @@
       } else {
         return {};
       }
+    };
+
+    Pay.prototype.termsHtml = function() {
+      return "<ul class=\"Terms\">\n  <li>Deposit is 50% of total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
     };
 
     return Pay;

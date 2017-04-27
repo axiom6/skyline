@@ -7,12 +7,12 @@ include::../dir/inc/DefBook.adoc[]
 ## [.black]#Guest Site#
 
 ### [.black]#Feature#
-* Rooms M 1-8 N S
+* Rooms M 1-8 N S, fix sign.jpg
 * Terms and Conditions
 * Stripe Reader
 
 ### [.black]#Test#
-* Weekend group popup
+* Weekend group hint
 * Test Weekend, Pop, Deposit, Spa Opt Out, Payment
 * Test Suite
 * Post and Test Reservations, Payments Customers
