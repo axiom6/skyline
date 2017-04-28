@@ -9,17 +9,17 @@
     { "src":"SLC-BigFish001.jpg",      "name":"Trophy Catch!",    "p":"Tristan Graf holding his seven-pound, 26-inch rainbow trout</br>Caught from Skyline's River Walk. Fishing Rods Available at Office"   },
     { "src":"SLC-ElkInYard.jpg",       "name":"Majestic Elk",     "p":"Photo Taken from Private Deck" } ] },
   "1": { "dir":"../img/r1/", "pics":[
-    { "src":"SL-Cabin001.jpg", "name":"Looking Over to a Cozy Fire", "p":"In a Serta Perfect Sleeper queen bed"        } ] },
+    { "src":"SL-Cabin001.jpg", "name":"Looking Over to a Cozy Fire In a Serta Perfect Sleeper Queen Bed", "p":"<br/>"       } ] },
   "2": { "dir":"../img/r2/", "pics":[
-    { "src":"SL-4044-300.jpg", "name":"Spa",     "p":"Snuggle into your luxurious mountain spa<br/>Lean back and watch the clouds or stars float by through the skylight" },
-    { "src":"SL-4046-300.jpg", "name":"Bedroom", "p":"Serta Perfect Sleeper queen bed and trundle sofabeds" },
-    { "src":"SL-4048-300.jpg", "name":"Dining",  "p":"Moose china and pine cone shelves"              },
-    { "src":"SL-4050-300.jpg", "name":"Kitchen", "p":"Full electric kitchen"   } ] },
+    { "src":"SL-4044-300.jpg", "name":"Spa", "p":"Snuggle into your luxurious mountain spa<br/>Lean back and watch the clouds or stars float by through the skylight" },
+    { "src":"SL-4046-300.jpg", "name":"Serta Perfect Sleeper Queen Bed and Trundle Sofabeds", "p":"<br/>"  },
+    { "src":"SL-4048-300.jpg", "name":"Dining Area with Moose China and Pine Cone Shelves",   "p":"<br/>"  },
+    { "src":"SL-4050-300.jpg", "name":"Full Electric Kitchen",                                "p":"<br/>"  } ] },
   "3": { "dir":"../img/r3/", "pics":[
-    { "src":"SL-0003-300.jpg", "name":"Large Two Story Cottage",    "p":"Front porch and private balcony"            },
-    { "src":"SL-1002-300.jpg", "name":"Living Room",    "p":"Comfy Living Room with Fireplace<br/>with fabulous of Long's Peak" },
+    { "src":"SL-0003-300.jpg", "name":"Large Two Story Cottage with Front Porch and Private Balcony", "p":"<br/>"            },
+    { "src":"SL-1002-300.jpg", "name":"Comfy Living Room with a Fireplace and a Fabulous View of Long's Peak", "p":"<br/>"  },
     { "src":"SL-1003-300.jpg", "name":"A Full Size Spa", "p":"Soak away your tension in the rustic charm of the Southwest Spa<br/>Open the window. sniff the fresh air and listen to the birds"              },
-    { "src":"SL-1004-300.jpg", "name":"Large Kitchen with Dining", "p":"Gracious dining at solid oak table<br/>Convient half bathroom off kitchen"   },
+    { "src":"SL-1004-300.jpg", "name":"Large Kitchen with Dining", "p":"Gracious dining at solid oak table. Has a convenient half bathroom off kitchen"   },
     { "src":"SL-1006-300.jpg", "name":"Roomy Kitchen and Living Room 8-1/2' ceilings", "p":"Spacious warmth in your fully appointed kitchen<br/>Ample 12 foot dining counter with comfortable cane bistro stools"   },
     { "src":"SL-1008-300.jpg", "name":"Master Bedroom (10' x 17')",  "p":"Cable TV and Serta Perfect Sleeper queen bed<br/>Window view of Long's Peak and Ram's Horn Mountain"              },
     { "src":"SL-1012-300.jpg", "name":"Second Bedroom (10' x 12')", "p":"Mountain view and balcony door with private shower bath<br/>Serta Perfect Sleeper queen bed and Cable TV" },
@@ -37,23 +37,23 @@
   "6": { "dir":"../img/r6/", "pics":[
     { "src":"SC-Unit6LivingRoom.jpg",    "name":"Extra Large Living Room. Perfect for Large Groups",                "p":"<br/>" },
     { "src":"SC-Unit6DiningRoom001.jpg", "name":"Dining Room Table Can be Extended to Seat 16 at Once!",            "p":"<br/>" },
-    { "src":"SC-Unit6BedRoom2001.jpg",   "name":"Serta Perfect Sleeper, Queen-Size bed and Single in each Bedroom", "p":"<br/>" } ] },
+    { "src":"SC-Unit6BedRoom2001.jpg",   "name":"Serta Perfect Sleeper, Queen-Size Bed and Single in each Bedroom", "p":"<br/>" } ] },
   "7": { "dir":"../img/r7/", "pics":[
     { "src":"SC-Unit7SpaAndFireplace.jpg", "name":"Relax in Luxurious Spa in Front of a Crackling Fire",    "p":"<br/>" },
     { "src":"SC-Unit7BedRoom001.jpg",      "name":"Serta Perfect Sleeper Queen Bed Under Chili Pepper Fan", "p":"<br/>" },
-    { "src":"SC-Unit7LivingRoom.jpg",      "name":"Full Electric Kitchen and Cozy fireplace",               "p":"<br/>" },
+    { "src":"SC-Unit7LivingRoom.jpg",      "name":"Full Electric Kitchen and Cozy Fireplace",               "p":"<br/>" },
     { "src":"SC-Unit7Patio.jpg",           "name":"Enjoy Private Deck with Dappled Sunlight",               "p":"<br/>" } ] },
   "8": { "dir":"../img/r8/", "pics":[
     { "src":"SC-Unit8001.jpg", "name":"Serta Queen Bed and Loveseat Sleeper", "p":"<br/>" } ] },
   "N": { "dir":"../img/rn/", "pics":[
-    { "src":"SL-2003-300x200.jpg", "name":"Secluded Cabin", "p":"500 sq.ft. cabin bordering Rocky Mountain National Park."  },
-    { "src":"SL-2004-300x200.jpg", "name":"Living Room",    "p":"Color-cable TV and queen sofabed." },
-    { "src":"SL-2005-300x200.jpg", "name":"Kitchen",        "p":"Full electric kitchen."              },
-    { "src":"SL-2006-300x200.jpg", "name":"Bedroom",        "p":"Large bedroom with Serta Perfect Sleeper queen bed"   } ] },
+    { "src":"SL-2003-300x200.jpg", "name":"Secluded Cottage 500 sq.ft. Bordering Rocky Mountain National Park", "p":"<br/>" },
+    { "src":"SL-2004-300x200.jpg", "name":"Living Room with Cable TV and Queen Sofabed",                        "p":"<br/>" },
+    { "src":"SL-2005-300x200.jpg", "name":"Full Electric Kitchen" ,                                             "p":"<br/>" },
+    { "src":"SL-2006-300x200.jpg", "name":"Large Bedroom with Serta Perfect Sleeper Queen Bed" ,                "p":"<br/>" } ] },
   "S": { "dir":"../img/rs/", "pics":[
-    { "src":"SL-2001-300x200.jpg", "name":"Secluded Cabin", "p":"400 sq.ft. cabin bordering Rocky Mountain National Park."  },
-    { "src":"SL-2013-300x200.jpg", "name":"Living Room",     "p":"All the comforts of home!"   },
-    { "src":"SL-2014-300x200.jpg", "name":"Kitchen",        "p":"Full electric kitchen."              },
-    { "src":"SL-2008-300x200.jpg", "name":"Bedroom",        "p":"Large bedroom with Serta Perfect Sleeper queen bed" }
+    { "src":"SL-2001-300x200.jpg", "name":"Secluded Cottage 400 sq.ft. Bordering Rocky Mountain National Park", "p":"<br/>" },
+    { "src":"SL-2013-300x200.jpg", "name":"A Living Room with All the Comforts of Home!",                       "p":"<br/>" },
+    { "src":"SL-2014-300x200.jpg", "name":"Full Electric Kitchen." ,                                            "p":"<br/>" },
+    { "src":"SL-2008-300x200.jpg", "name":"Large Bedroom with Serta Perfect Sleeper Queen Bed",                 "p":"<br/>" }
   ] }
 }

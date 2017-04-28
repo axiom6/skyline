@@ -55,7 +55,7 @@ img.center {
   left: 0;
   width: 100%;
   top: 0;
-  height: 90px;
+  height: 100%;
 }
 .Head1 {
   position: absolute;
@@ -73,7 +73,7 @@ img.center {
 }
 .Head3 {
   position: absolute;
-  left: 37%;
+  left: 39%;
   width: 20%;
   top: 0;
   height: 100%;
@@ -557,7 +557,6 @@ img.center {
   background: blue;
   color: white;
   border-radius: 8px;
-  margin-left: 78px;
 }
 .rooms .top .next {
   vertical-align: middle;
