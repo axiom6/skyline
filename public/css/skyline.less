@@ -13,8 +13,8 @@ body { color:black; }  // background-color: #333;
 .Head  { position:relative; left:0;   width:100%; top:0; height:90px; }
 .Head1 { position:absolute; left:0;   width: 30%; top:0; height:100%; }
 .Head2 { position:absolute; left:22%; width: 20%; top:0; height:100%; }
-.Head3 { position:absolute; left:35%; width: 20%; top:0; height:100%; }
-.Head4 { position:absolute; left:60%; width: 20%; top:0; height:100%; }
+.Head3 { position:absolute; left:37%; width: 20%; top:0; height:100%; }
+.Head4 { position:absolute; left:60%; width: 30%; top:0; height:100%; }
 .HeadA { position:absolute; left:0;   width:100%; top:0; height:100%; }
 .Rates { display:inline-block; }
 .SpaOp { display:inline-block; }
@@ -105,11 +105,14 @@ body { color:black; }  // background-color: #333;
 .SeptemberC { position:absolute; left:33%; top:50%;   width: 33%; height:50%; border:2px solid black; }
 .OctoberC   { position:absolute; left:66%; top:50%;   width: 33%; height:50%; border:2px solid black; }
 
+.rooms            { background:#EEE; }
 .rooms .top       { text-align:center; display:block; } // table-cell
 .rooms .top .room { vertical-align:middle; text-align:center; color:blue; margin-left:24px; margin-right:24px; font-size:24px; font-weight:bold; }   // padding-top:18px; top | right | bottom | left
-.rooms .top .prev { vertical-align:middle; margin-left:78px; }
-.rooms .top .next { vertical-align:middle; }
-.rooms .top .home { vertical-align:middle; }
+.rooms .top .home { position:absolute; left:5%;   top:12px;
+                                           background:blue; color:white; border-radius:8px;  }
+.rooms .top .prev { vertical-align:middle; background:blue; color:white; border-radius:8px; margin-left:78px; }
+.rooms .top .next { vertical-align:middle; background:blue; color:white; border-radius:8px;  }
+
 
 #Guest  {}
 #Names  { width:975px; margin:auto; height:100px; }

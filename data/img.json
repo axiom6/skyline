@@ -27,24 +27,24 @@
     { "src":"SL-1016-300.jpg", "name":"Front Balcony",  "p":"Savor morning coffee or afternoon cocktail on skywalk balcony<br/>Check out hikers on Long's Peak or Ram's Horn Mountain"              },
     { "src":"SL-1017-300.jpg", "name":"Private, Fenced Backyard (31' x 10')","p":"Propane BBQ grill and redwood umbrella table<br/>Perfect for children and pets -grownups love it too!"                 } ] },
   "4": { "dir":"../img/r4/", "pics":[
-    { "src":"SL-3012-400.jpg", "name":"Fireplace", "p":"elax w/fire and color cable TV in bed or sofa"  },
-    { "src":"SL-3008-300.jpg", "name":"Bedroom",   "p":"Serta Perfect Sleeper queen bed and trundle sofabed" },
-    { "src":"SL-3010-300.jpg", "name":"Kitchen",   "p":"All electric kitchen."    }  ] },
+    { "src":"SL-3012-400.jpg", "name":"Relax with a Wood Burning Fire",                "p":"<br/>" },
+    { "src":"SL-3008-300.jpg", "name":"Serta Perfect Queen Size Sleeper plus Sofabed", "p":"<br/>" },
+    { "src":"SL-3010-300.jpg", "name":"All Electric Kitchen",                          "p":"<br/>" }  ] },
   "5": { "dir":"../img/r5/", "pics":[
-    { "src":"SL-Unit5LRoom001.jpg",      "name":"Room Views",   "p":"Fabulous view of river & mountain"    },
-    { "src":"SL-Unit5LivingRoom003.jpg", "name":"Living Room",  "p":"Spacious Windows" },
-    { "src":"SC-Unit5View003.jpg",       "name":"Window",       "p":"Close to Natures" }  ] },
+    { "src":"SL-Unit5LRoom001.jpg",      "name":"Unparalleled Views of River & Mountains",  "p":"<br/>" },
+    { "src":"SL-Unit5LivingRoom003.jpg", "name":"A Warm Living Room with Spacious Windows", "p":"<br/>" },
+    { "src":"SC-Unit5View003.jpg",       "name":"Stay Close to Nature",                     "p":"<br/>" }  ] },
   "6": { "dir":"../img/r6/", "pics":[
-    { "src":"SC-Unit6LivingRoom.jpg",    "name":"Living Room",   "p":"Perfect for Large Groups" },
-    { "src":"SC-Unit6DiningRoom001.jpg", "name":"Dining Kitchen","p":"Huge kitchen - can be extended to seat 16 at once!" },
-    { "src":"SC-Unit6BedRoom2001.jpg",   "name":"Bedroom",       "p":"Serta Perfect Sleeper, queen-size bed and single in each bedroom"  } ] },
+    { "src":"SC-Unit6LivingRoom.jpg",    "name":"Extra Large Living Room. Perfect for Large Groups",                "p":"<br/>" },
+    { "src":"SC-Unit6DiningRoom001.jpg", "name":"Dining Room Table Can be Extended to Seat 16 at Once!",            "p":"<br/>" },
+    { "src":"SC-Unit6BedRoom2001.jpg",   "name":"Serta Perfect Sleeper, Queen-Size bed and Single in each Bedroom", "p":"<br/>" } ] },
   "7": { "dir":"../img/r7/", "pics":[
-    { "src":"SC-Unit7SpaAndFireplace.jpg", "name":"Spa with Fireplace", "p":"Relax in luxurious spa in front of a crackling fire"  },
-    { "src":"SC-Unit7BedRoom001.jpg",      "name":"Bedroom",            "p":"Serta Perfect Sleeper queen bed under chili pepper fan." },
-    { "src":"SC-Unit7LivingRoom.jpg",      "name":"Living and Kitchen", "p":"Full electric kitchen. Cozy fireplace."              },
-    { "src":"SC-Unit7Patio.jpg",           "name":"Patio",              "p":"Enjoy private deck with dappled sunlight."   } ] },
+    { "src":"SC-Unit7SpaAndFireplace.jpg", "name":"Relax in Luxurious Spa in Front of a Crackling Fire",    "p":"<br/>" },
+    { "src":"SC-Unit7BedRoom001.jpg",      "name":"Serta Perfect Sleeper Queen Bed Under Chili Pepper Fan", "p":"<br/>" },
+    { "src":"SC-Unit7LivingRoom.jpg",      "name":"Full Electric Kitchen and Cozy fireplace",               "p":"<br/>" },
+    { "src":"SC-Unit7Patio.jpg",           "name":"Enjoy Private Deck with Dappled Sunlight",               "p":"<br/>" } ] },
   "8": { "dir":"../img/r8/", "pics":[
-    { "src":"SC-Unit8001.jpg", "name":"Living, Bedroom Kitchen", "p":"Serta queen bed and loveseat sleeper." } ] },
+    { "src":"SC-Unit8001.jpg", "name":"Serta Queen Bed and Loveseat Sleeper", "p":"<br/>" } ] },
   "N": { "dir":"../img/rn/", "pics":[
     { "src":"SL-2003-300x200.jpg", "name":"Secluded Cabin", "p":"500 sq.ft. cabin bordering Rocky Mountain National Park."  },
     { "src":"SL-2004-300x200.jpg", "name":"Living Room",    "p":"Color-cable TV and queen sofabed." },
