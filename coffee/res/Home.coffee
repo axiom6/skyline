@@ -30,12 +30,12 @@ class Home
     </ul>
     <ul class="Head2">
       <li>Hiking</li>
-      <li>Free WiFi</li>
+      <li>Free Wi-Fi</li>
       <li>Cable TV</li>
     </ul>
     <ul class="Head3">
       <li>Private Parking Spaces</li>
-      <li>Kitchens in Every Cottage</li>
+      <li>Kitchens in Every Cabin</li>
       <li>3 Private Spas</li>
     </ul>
     <ul class="Head4">
@@ -48,7 +48,7 @@ class Home
   listRooms:() ->
     $('#Slides').css( { left:"22%", width:"78%" })
     htm  = """<div class="HomeSee">Enjoy Everything Skyline Has to Offer</div>"""
-    htm += """<div class="RoomSee">See Our Cottages</div>"""
+    htm += """<div class="RoomSee">See Our Cabins</div>"""
     htm += """<div class="FootSee">Skyline Cottages Where the River Meets the Mountains</div>"""
     htm += """<ul  class="RoomUL">"""
     for own roomId, room of @rooms

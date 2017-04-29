@@ -41,7 +41,7 @@
     };
 
     Home.prototype.headHtml = function() {
-      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Owner On Site</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Hiking</li>\n  <li>Free WiFi</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>Kitchens in Every Cottage</li>\n  <li>3 Private Spas</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
+      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Owner On Site</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Hiking</li>\n  <li>Free Wi-Fi</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>Kitchens in Every Cabin</li>\n  <li>3 Private Spas</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
     };
 
     Home.prototype.listRooms = function() {
@@ -51,7 +51,7 @@
         width: "78%"
       });
       htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
-      htm += "<div class=\"RoomSee\">See Our Cottages</div>";
+      htm += "<div class=\"RoomSee\">See Our Cabins</div>";
       htm += "<div class=\"FootSee\">Skyline Cottages Where the River Meets the Mountains</div>";
       htm += "<ul  class=\"RoomUL\">";
       ref = this.rooms;

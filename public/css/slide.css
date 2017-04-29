@@ -44,7 +44,7 @@
   font-size: 16px;
 }
 #information p {
-  text-align: left;
+  text-align: center;
   padding: 0 16px 8px;
 }
 #image {
@@ -82,9 +82,6 @@
   z-index: 100;
   opacity: .4;
   filter: alpha(opacity=40);
-}
-.linkhover {
-  background: url(../images/link.gif) center center no-repeat;
 }
 #thumbnails {
   margin-top: 30px;

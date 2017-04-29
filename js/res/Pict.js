@@ -30,7 +30,7 @@
       var htm, nextPage, prevPage;
       prevPage = " '" + prev + ".html' ";
       nextPage = " '" + next + ".html' ";
-      htm = "<button class=\"home\" onclick=\"Util.toPage('../index.html');\">Home Page</button>\n<button class=\"prev\" onclick=\"Util.toPage(" + prevPage + ");\"    >Prev Room</button>\n<span   class=\"room\">" + title + "</span>\n<button class=\"next\" onclick=\"Util.toPage(" + nextPage + ");\"    >Next Room</button>";
+      htm = "<button class=\"home\" onclick=\"Util.toPage('../index.html');\">Home Page</button>\n<button class=\"prev\" onclick=\"Util.toPage(" + prevPage + ");\"    >Prev Cabin</button>\n<span   class=\"room\">" + title + "</span>\n<button class=\"next\" onclick=\"Util.toPage(" + nextPage + ");\"    >Next Cabin</button>";
       $('#top').append(htm);
     };
 

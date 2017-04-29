@@ -396,8 +396,14 @@ class Pay
   termsHtml:() ->
     """
       <ul class="Terms">
+        <li>Prices have been automatically calculated.</li>
+        <li>The number of guests and pets has to be declared in the reservation.</li>
+        <li>Pricing for 1-2 guests is the same for cottages 1 2 4 7 8 N S.</li>
+        <li>Pricing for 1-4 guests is the same for cottages 3 5 6.</li>
+        <li>Additional guests are $10 per night.</li>
+        <li>Each pet is $12 per night.</li>
         <li>Deposit is 50% of total reservation.</li>
-        <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee</li>
+        <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>
         <li>Less than 50-day notice, deposit is forfeited.</li>
         <li>Short term reservations have a 3-day cancellation deadline.</li>
       </ul>

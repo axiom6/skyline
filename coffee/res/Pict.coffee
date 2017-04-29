@@ -22,9 +22,9 @@ class Pict
     nextPage = """ '#{next}.html' """
     htm = """
         <button class="home" onclick="Util.toPage('../index.html');">Home Page</button>
-        <button class="prev" onclick="Util.toPage(#{prevPage});"    >Prev Room</button>
+        <button class="prev" onclick="Util.toPage(#{prevPage});"    >Prev Cabin</button>
         <span   class="room">#{title}</span>
-        <button class="next" onclick="Util.toPage(#{nextPage});"    >Next Room</button>
+        <button class="next" onclick="Util.toPage(#{nextPage});"    >Next Cabin</button>
     """
     $('#top').append( htm )
     return

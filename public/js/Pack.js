@@ -32339,10 +32339,10 @@
 			"price": 0
 		},
 		"8": {
-			"1": 100,
+			"1": 125,
 			"2": 125,
-			"3": 125,
-			"4": 125,
+			"3": 135,
+			"4": 145,
 			"days": {},
 			"name": "#8 Western Unit",
 			"total": 0,
@@ -32357,7 +32357,7 @@
 			"3": 155,
 			"4": 165,
 			"days": {},
-			"name": "North Skyline",
+			"name": "Upper Skyline North",
 			"total": 0,
 			"pet": 12,
 			"spa": 0,
@@ -32370,7 +32370,7 @@
 			"3": 145,
 			"4": 155,
 			"days": {},
-			"name": "South Skyline",
+			"name": "Upper Skyline South",
 			"total": 0,
 			"pet": 12,
 			"spa": 0,
@@ -32565,7 +32565,7 @@
 	    };
 
 	    Home.prototype.headHtml = function() {
-	      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Free WiFi</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Near YMCA</li>\n  <li>Hiking</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>3 Private Spas</li>\n  <li>Owner On Site</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
+	      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Owner On Site</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Hiking</li>\n  <li>Free Wi-Fi</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>Kitchens in Every Cabin</li>\n  <li>3 Private Spas</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
 	    };
 
 	    Home.prototype.listRooms = function() {
@@ -32575,7 +32575,7 @@
 	        width: "78%"
 	      });
 	      htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
-	      htm += "<div class=\"RoomSee\">See Our Cottages</div>";
+	      htm += "<div class=\"RoomSee\">See Our Cabins</div>";
 	      htm += "<div class=\"FootSee\">Skyline Cottages Where the River Meets the Mountains</div>";
 	      htm += "<ul  class=\"RoomUL\">";
 	      ref = this.rooms;
@@ -32671,7 +32671,7 @@
 	      var htm, nextPage, prevPage;
 	      prevPage = " '" + prev + ".html' ";
 	      nextPage = " '" + next + ".html' ";
-	      htm = "<button class=\"prev\" onclick=\"Util.toPage(" + prevPage + ");\"    >Prev Room</button>\n<span   class=\"room\">" + title + "</span>\n<button class=\"next\" onclick=\"Util.toPage(" + nextPage + ");\"    >Next Room</button>\n<button class=\"home\" onclick=\"Util.toPage('../index.html');\">Home Page</button>";
+	      htm = "<button class=\"home\" onclick=\"Util.toPage('../index.html');\">Home Page</button>\n<button class=\"prev\" onclick=\"Util.toPage(" + prevPage + ");\"    >Prev Cabin</button>\n<span   class=\"room\">" + title + "</span>\n<button class=\"next\" onclick=\"Util.toPage(" + nextPage + ");\"    >Next Cabin</button>";
 	      $('#top').append(htm);
 	    };
 
@@ -33339,6 +33339,7 @@
 	      $('#ConfirmBlock').append(this.confirmTable());
 	      $('#Pays').append(this.confirmBtns());
 	      $('#PayDiv').append(this.payHtml());
+	      $('#Pays').append(this.termsHtml());
 	      this.initCCPayment();
 	      this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
 	      $('#Pays').show();
@@ -33789,6 +33790,10 @@
 	      } else {
 	        return {};
 	      }
+	    };
+
+	    Pay.prototype.termsHtml = function() {
+	      return "<ul class=\"Terms\">\n  <li>Prices have been automatically calculated.</li>\n  <li>The number of guests and pets has to be declared in the reservation.</li>\n  <li>Pricing for 1-2 guests is the same for cottages 1 2 4 7 8 N S.</li>\n  <li>Pricing for 1-4 guests is the same for cottages 3 5 6.</li>\n  <li>Additional guests are $10 per night.</li>\n  <li>Each pet is $12 per night.</li>\n  <li>Deposit is 50% of total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
 	    };
 
 	    return Pay;

@@ -525,7 +525,7 @@
     };
 
     Pay.prototype.termsHtml = function() {
-      return "<ul class=\"Terms\">\n  <li>Deposit is 50% of total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
+      return "<ul class=\"Terms\">\n  <li>Prices have been automatically calculated.</li>\n  <li>The number of guests and pets has to be declared in the reservation.</li>\n  <li>Pricing for 1-2 guests is the same for cottages 1 2 4 7 8 N S.</li>\n  <li>Pricing for 1-4 guests is the same for cottages 3 5 6.</li>\n  <li>Additional guests are $10 per night.</li>\n  <li>Each pet is $12 per night.</li>\n  <li>Deposit is 50% of total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
     };
 
     return Pay;
