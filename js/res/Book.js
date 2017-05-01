@@ -161,7 +161,9 @@
 
     Book.prototype.onGoToPay = function(e) {
       var ev, fv, lv, pv, ref, res, tv;
-      e.preventDefault();
+      if (e != null) {
+        e.preventDefault();
+      }
       ref = this.getNamesPhoneEmail(), tv = ref[0], fv = ref[1], lv = ref[2], pv = ref[3], ev = ref[4];
       if (tv && fv && lv && pv && ev) {
         $('.NameER').hide();

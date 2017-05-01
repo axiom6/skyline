@@ -74,6 +74,10 @@
       return roomId + date;
     };
 
+    Data.genPaymentKey = function(date, hour, min) {
+      return date + hour + min;
+    };
+
     Data.today = function() {
       var date, day, month, year;
       date = new Date();

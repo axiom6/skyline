@@ -318,7 +318,9 @@
 
     Pay.prototype.submitPayment = function(e) {
       var accept, ae, card, ce, cvc, ee, exp, iry, mon, ne, num, yer;
-      e.preventDefault();
+      if (e != null) {
+        e.preventDefault();
+      }
       this.hideCCErrors();
       num = $('#cc-num').val();
       exp = $('#cc-exp').val();

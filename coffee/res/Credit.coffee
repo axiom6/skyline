@@ -45,6 +45,7 @@ class Credit
       return
     #sub.addEventListener('click', validate )
 
+    ###
     validateF = (e) =>
       Util.noop( e )
       valid     = []
@@ -58,7 +59,7 @@ class Credit
       return
     #sub.addEventListener('click', validate )
     Util.noop( validateF )
-
+    ###
 
   fieldStatus:( input, valid ) =>
     if valid

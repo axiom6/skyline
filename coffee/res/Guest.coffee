@@ -18,6 +18,7 @@ class Guest
       Res         = require( 'js/res/Res'         )
       Pay         = require( 'js/res/Pay'         )
       Book        = require( 'js/res/Book'        )
+      Test        = require( 'js/res/Test'        )
 
       pict       = new Pict()
       stream     = new Stream( [] )
@@ -28,6 +29,8 @@ class Guest
       res        = new Res(        stream, store, room, Data )
       pay        = new Pay(        stream, store, room, cust, res, home, Data )
       book       = new Book(       stream, store, room, cust, res, pay,  pict, Data )
+      test       = new Test(       stream, store, room, cust, res, pay,  pict, book, Data )
       home.ready( book )
+      test.doTest()
 
 Guest.init()

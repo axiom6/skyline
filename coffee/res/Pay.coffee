@@ -251,7 +251,7 @@ class Pay
     """
 
   submitPayment:( e ) =>
-    e.preventDefault()
+    e.preventDefault() if e?
     @hideCCErrors()
 
     num = $('#cc-num').val()

@@ -147,7 +147,7 @@ class Book
     [tv,fv,lv,pv,ev]
 
   onGoToPay:( e ) =>
-    e.preventDefault()
+    e.preventDefault() if e?
     [tv,fv,lv,pv,ev] = @getNamesPhoneEmail()
     if tv and fv and lv and pv and ev
       $('.NameER').hide()
@@ -412,3 +412,6 @@ class Book
   make:()   => @store.make(   'Room' )
 
   insert:() => @store.insert( 'Room', @rooms )
+
+
+

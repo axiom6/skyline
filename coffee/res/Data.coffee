@@ -45,6 +45,8 @@ class Data
 
   @genResKey:(  roomId, date ) ->  roomId + date
 
+  @genPaymentKey:( date, hour, min ) -> date + hour + min
+
   @today:() ->
     date = new Date()
     year  = date.getFullYear().toString()

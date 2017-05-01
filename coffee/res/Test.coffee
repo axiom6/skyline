@@ -1,64 +1,52 @@
 
+$ = require('jquery')
+
 class Test
 
   module.exports = Test
+  Test.Data      = require( 'data/test.json' )
 
-  constructor:( @stream, @store, @room ) ->
+  constructor:( @stream, @store, @room, @cust, @res, @pay, @pict, @book, @Data ) ->
     @rooms   = @room.rooms
-    #@subscribe()
 
-  subscribe:() ->
-    @store.subscribe( 'Room', 'none', 'make',   (make)   => Util.log( 'Room.make()',   make   ); @insert() )
-    @store.subscribe( 'Room', 'none', 'insert', (insert) => Util.log( 'Room.insert()', insert ); @update() )
-    @store.subscribe( 'Room', 'none', 'update', (update) => Util.log( 'Room.update()', update ); @remove() )
-    @store.subscribe( 'Room', 'none', 'remove', (remove) => Util.log( 'Room.remove()', remove ); @select() )
-    @store.subscribe( 'Room', 'none', 'select', (select) => Util.logObjs( 'Room.select()', select ); @onAdd(); @onPut(); @onDel(); @add() )
-    @store.subscribe( 'Room', 'none', 'onAdd',  (onAdd)  => Util.log( 'Room.onAdd()',  onAdd  )  )
-    @store.subscribe( 'Room', 'none', 'onPut',  (onPut)  => Util.log( 'Room.onPut()',  onPut  )  )
-    @store.subscribe( 'Room', 'none', 'onDel',  (onDel)  => Util.log( 'Room.onDel()',  onDel  )  )
-    @store.subscribe( 'Room', 'W',    'add',    (add)    => Util.log( 'Room.add()',    add    ); @get()  )
-    @store.subscribe( 'Room', 'S',    'get',    (get)    => Util.log( 'Room.get()',    get    ); @put()  )
-    @store.subscribe( 'Room', '7',    'put',    (put)    => Util.log( 'Room.put()',    put    ); @del()  )
-    @store.subscribe( 'Room', '8',    'del',    (del)    => Util.log( 'Room.del()',    del    ); @show() )
-    @store.subscribe( 'Room', 'none', 'show',   (show)   => Util.log( 'Room.show()',   show   ) )
-    @store.subscribe( 'Room', 'none', 'drop',   (drop)   => Util.log( 'Room.drop()',   drop   ) )
+  doTest:() ->
+    for     own resId,  res  of Test.Data
+      for   own roomId, room of res
+        for own dayId,  day  of res.days
+          $cell = $('#R'+roomId+dayId)
+          @book.cellBook( $cell )
+      cust = res.cust
+      @getNamePhoneEmail( cust.first, cust.last, cust.phone, cust.email )
+      fn = () => @doGoToPay(res)
+      setTimeout( fn, 4000 )
+    return
 
-  make:() => @store.make( 'Room' )
-  show:() =>
-    @store.show( 'Room' )
-    @store.show()
-  drop:() => @store.drop( 'Room' )
+  doGoToPay:( res ) ->
+    @book.onGoToPay( null )
+    payment = Object.keys(res.payments).sort()[0]
+    @popCC( payment.cc, payment.exp, payment.cvc )
+    fn = () => @pay.submit( null )
+    setTimeout( fn, 4000 )
+    return
 
-  insert:() =>
-    #Util.log( 'Room.Data', key, room ) for own key, room of Room.Data
-    @store.insert( 'Room', @rooms )
+  getNamesPhoneEmail:( first, last, phone, email ) ->
+    [@pay.first,fv] = @pay.isValid('First', first,  true )
+    [@pay.last, lv] = @pay.isValid('Last',  last,   true )
+    [@pay.phone,pv] = @pay.isValid('Phone', phone,  true )
+    [@pay.email,ev] = @pay.isValid('EMail', email,  true )
 
-  update:() =>
-    updt = {}
-    updt['1'] = @rooms['1']
-    updt['2'] = @rooms['2']
-    updt['3'] = @rooms['3']
-    updt['1'].max = 14
-    updt['2'].max = 14
-    updt['3'].max = 14
-    @store.update( 'Room', updt )
+  popCC:( cc, exp, cvc ) ->
+    $('#cc-num').val( cc   )
+    $('#cc-exp').val( exp  )
+    $('#cc-cvc').val( cvc  )
+    return
 
-  remove:() =>
-    #where = (obj) -> Util.inArray( ['4','5','6'], obj.key )
-    @store.remove( 'Room', ['4','5','6'] )
 
-  select:() => @store.select( 'Room' )
 
-  add:()   => @store.add( 'Room', "W", @west() )
-  get:()   => @store.get( 'Room', "S" )
-  put:()   => @store.put( 'Room', "7", @west() )
-  del:()   => @store.del( 'Room', "8" )
 
-  onAdd:() => @store.on( 'Room', 'onAdd' )
-  onPut:() => @store.on( 'Room', 'onPut' )
-  onDel:() => @store.on( 'Room', 'onDel' )
 
-  west:() =>
-    { "key":"W", "name":"West Skyline", "pet":12,"spa": 0,"max": 4,"price":0,"1":135,"2":135,"3":145,"4":155 }
+
+
+
 
 

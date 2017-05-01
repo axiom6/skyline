@@ -56,7 +56,7 @@
     }
 
     Credit.prototype.init = function(numId, expId, cvcId, typId) {
-      var cvc, exp, num, typ, updateType, validate, validateF;
+      var cvc, exp, num, typ, updateType, validate;
       num = document.getElementById(numId);
       exp = document.getElementById(expId);
       cvc = document.getElementById(cvcId);
@@ -73,7 +73,7 @@
         };
       })(this);
       num.addEventListener('input', updateType);
-      validate = (function(_this) {
+      return validate = (function(_this) {
         return function(e) {
           var card, expiryObj;
           Util.noop(e);
@@ -90,21 +90,22 @@
           }
         };
       })(this);
-      validateF = (function(_this) {
-        return function(e) {
-          var expiryObj, msg, valid;
-          Util.noop(e);
-          valid = [];
-          expiryObj = _this.parseCardExpiry(exp.value);
-          valid.push(_this.fieldStatus(num, _this.validateCardNumber(num.value)));
-          valid.push(_this.fieldStatus(exp, _this.validateCardExpiry(expiryObj)));
-          valid.push(_this.fieldStatus(cvc, _this.validateCardCVC(cvc.value, typ.innerHTML)));
-          msg = valid.every(Boolean) ? 'valid' : 'invalid';
-          res.innerHTML = msg;
-          Util.log('Credit.init() validate', num.value, exp.value, cvc.value, msg);
-        };
-      })(this);
-      return Util.noop(validateF);
+
+      /*
+      validateF = (e) =>
+        Util.noop( e )
+        valid     = []
+        expiryObj = @parseCardExpiry( exp.value )
+        valid.push( @fieldStatus( num, @validateCardNumber( num.value ) ) )
+        valid.push( @fieldStatus( exp, @validateCardExpiry( expiryObj ) ) )
+        valid.push( @fieldStatus( cvc, @validateCardCVC( cvc.value, typ.innerHTML ) ) )
+        msg = if valid.every(Boolean) then 'valid' else  'invalid'
+        res.innerHTML = msg
+        Util.log( 'Credit.init() validate', num.value, exp.value, cvc.value, msg )
+        return
+      #sub.addEventListener('click', validate )
+      Util.noop( validateF )
+       */
     };
 
     Credit.prototype.fieldStatus = function(input, valid) {
