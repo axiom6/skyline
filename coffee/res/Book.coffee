@@ -6,7 +6,7 @@ class Book
 
   module.exports = Book
 
-  constructor:( @stream, @store, @room, @cust, @res, @pay, @pict, @Data ) ->
+  constructor:( @stream, @store, @room, @res, @pay, @pict, @Data ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @myDays      =  0
@@ -138,24 +138,26 @@ class Book
     #$('#'+name+'ER').show() if not valid
     [value,valid]
 
-  getNamesPhoneEmail:( testing=false ) ->
-    [@pay.first,fv] = @isValid('First', 'Samuel',      testing )
-    [@pay.last, lv] = @isValid('Last',  'Hosendecker', testing )
-    [@pay.phone,pv] = @isValid('Phone', '3037977129',  testing )
-    [@pay.email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing )
-    tv = @totals > 0
-    [tv,fv,lv,pv,ev]
+  getCust( testing=false ) ->
+    [first,fv] = @isValid('First', 'Samuel',      testing )
+    [last, lv] = @isValid('Last',  'Hosendecker', testing )
+    [phone,pv] = @isValid('Phone', '3037977129',  testing )
+    [email,ev] = @isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing )
+    tv   = @totals > 0
+    cust = @res.createCust( first, last, phone, email, "site" )
+    [tv,fv,lv,pv,ev,cust]
 
   onGoToPay:( e ) =>
     e.preventDefault() if e?
-    [tv,fv,lv,pv,ev] = @getNamesPhoneEmail()
+    [tv,fv,lv,pv,ev,cust] = @getCust()
     if tv and fv and lv and pv and ev
       $('.NameER').hide()
       $('#Book').hide()
-      res = @createRes()
+      res = @createRoomRes()
+      res.cust    = cust
       res.total   = @totals
-      res.deposit = Math.round( @totals * 50 ) / 100
-      @pay.showConfirmPay( res )
+      #@res.add( res.resId, res )
+      @pay.showConfirmPay(  res )
     else
       alert( @onGoToMsg( tv,fv,lv,pv,ev ) )
     return
@@ -286,10 +288,8 @@ class Book
     Util.log( 'Book.onErr()' )
     return
 
-  createRes:() =>
-    res = @res.createRes( @totals, 'hold', @method, @pay.phone, @roomUIs, {} )
-    res.payments = {}
-    @res.add( res.key, res )
+  createRoomRes:() =>
+    res = @res.createRoomRes( @totals, 'mine', @method, @roomUIs )
     #Util.log( 'Book.createRes()', res )
     for own roomId, room of res.rooms
       onAdd = {}

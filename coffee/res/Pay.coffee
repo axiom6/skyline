@@ -6,16 +6,12 @@ class Pay
 
   module.exports = Pay
 
-  constructor:( @stream, @store, @room, @cust, @res, @home, @Data ) ->
+  constructor:( @stream, @store, @room, @res, @home, @Data ) ->
     @credit = new Credit()
     @uri    = "https://api.stripe.com/v1/"
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
     @myRes   = {}
-    @first   = ''
-    @last    = ''
-    @phone   = ''
-    @email   = ''
     @spas    = false
     @purpose = 'PayInFull' # or 'Deposit'
     @testing = true
@@ -28,7 +24,6 @@ class Pay
 
   showConfirmPay:( myRes ) =>
     @myRes         = myRes
-    @myRes['cust'] = @cust.createCust( @first, @last, @phone, @email, 'site' )
     $('#Pays'        ).empty()
     $('#Pays'        ).append( @confirmHead()  )
     $('#ConfirmBlock').append( @confirmTable() )
@@ -77,10 +72,13 @@ class Pay
     @home.onHome()
     return
 
+  calcDeposit:() ->
+    Math.round( @myRes.total * 50 ) / 100
+
   onMakeDeposit:( e ) =>
     e.preventDefault()
     @purpose = 'Deposit'
-    $("#cc-amt" ).text('$'+@myRes.deposit)
+    $("#cc-amt" ).text('$'+@calcDeposit() )
     $('#MakePay').text('Make 50% Deposit')
 
   onMakePayment:( e ) =>
@@ -90,13 +88,13 @@ class Pay
     $('#MakePay').text('Make Payment with Visa Mastercard or Discover')
 
   ccAmt:() ->
-    amt = if @purpose is 'Deposit' then @myRes.deposit else @myRes.total
+    amt = if @purpose is 'Deposit' then @calcDeposit() else @myRes.total
     $("#cc-amt" ).text('$'+amt)
     return
 
   confirmHead:() ->
     htm   = """<div id="ConfirmTitle" class= "Title">Confirmation # #{@myRes.key}</div>"""
-    htm  += """<div><div id="ConfirmName"><span>For: #{@first} </span><span>#{@last} </span></div></div>"""
+    htm  += """<div><div id="ConfirmName"><span>For: #{@myRes.cust.first} </span><span>#{@myRes.cust.last} </span></div></div>"""
     htm  += """<div id="ConfirmBlock" class="DivCenter"></div>"""
     htm
  
@@ -157,7 +155,6 @@ class Pay
     spaFee  = if checked then 20 else -20
     @myRes.rooms[roomId].total += spaFee
     @myRes.total               += spaFee
-    @myRes.deposit             += spaFee / 2
     $('#'+roomId+'TR').text('$'+@myRes.rooms[roomId].total)
     $('#TT'          ).text('$'+@myRes.total)
     @ccAmt()
@@ -165,7 +162,7 @@ class Pay
 
   confirmBody:() ->
     body  = """.      Confirmation# #{@myRes.key}\n"""
-    body += """.      For: #{@first} #{@last}\n"""
+    body += """.      For: #{@myRes.cust.first} #{@myRes.cust.last}\n"""
     for own roomId, r of @myRes.rooms
       room   = Util.padEnd( r.name, 24, '-' )
       days   = Object.keys(r.days).sort()
@@ -185,7 +182,7 @@ class Pay
     body
 
   confirmEmail:() ->
-    win = window.open("""mailto:#{@email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
+    win = window.open("""mailto:#{@myRes.cust.email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
     win.close() if win? and not win.closed
     return
 
@@ -336,17 +333,18 @@ class Pay
     #Util.log( 'StoreRest.onToken()', obj )
     @tokenId  = obj.id
     @cardId   = obj.card.id
-    @charge( @tokenId, @myRes.total, 'usd', @first + " " + @last )
+    @charge( @tokenId, @myRes.total, 'usd', @myRes.cust.first + " " + @myRes.cust.last )
 
   onCharge:(obj) =>
     #Util.log( 'StoreRest.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
       @confirmEmail()
       @hidePay()
-      $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@email}")
+      $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@myRes.cust.email}")
       @home.showConfirm()
-      @myRes.payments[@payId()] = @createPayment()
-      @store.put( 'Res', @myRes.key, @myRes )
+      payId = Data.getPaymentId( @myRes.payments )
+      @myRes.payments[payId] = @createPayment()
+      @res.add( @myRes.resId, @myRes )
     else
       @showPay()
       $('#Approval').text('Payment Denied').show()
@@ -362,6 +360,9 @@ class Pay
     payment.method  = 'card'
     payment.with    = @last4
     payment.purpose = @purpose
+    payment.cc      = ''
+    payment.exp     = ''
+    payment.cvc     = ''
     payment
 
   onError:(obj) =>

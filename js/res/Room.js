@@ -9,7 +9,7 @@
 
     Room.Rooms = require('data/room.json');
 
-    Room.States = ["book", "depo", "hold", "free"];
+    Room.States = ["free", "mine", "depo", "book"];
 
     function Room(stream, store, Data) {
       this.stream = stream;

@@ -9,13 +9,14 @@
   Alloc = require('js/res/Alloc');
 
   Book = (function() {
+    var testing;
+
     module.exports = Book;
 
-    function Book(stream, store, room1, cust, res1, pay, pict, Data) {
+    function Book(stream, store, room1, res1, pay, pict, Data) {
       this.stream = stream;
       this.store = store;
       this.room = room1;
-      this.cust = cust;
       this.res = res1;
       this.pay = pay;
       this.pict = pict;
@@ -24,7 +25,7 @@
       this.make = bind(this.make, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
-      this.createRes = bind(this.createRes, this);
+      this.createRoomRes = bind(this.createRoomRes, this);
       this.onErr = bind(this.onErr, this);
       this.onPop = bind(this.onPop, this);
       this.onDay = bind(this.onDay, this);
@@ -146,31 +147,29 @@
       return [value, valid];
     };
 
-    Book.prototype.getNamesPhoneEmail = function(testing) {
-      var ev, fv, lv, pv, ref, ref1, ref2, ref3, tv;
-      if (testing == null) {
-        testing = false;
-      }
-      ref = this.isValid('First', 'Samuel', testing), this.pay.first = ref[0], fv = ref[1];
-      ref1 = this.isValid('Last', 'Hosendecker', testing), this.pay.last = ref1[0], lv = ref1[1];
-      ref2 = this.isValid('Phone', '3037977129', testing), this.pay.phone = ref2[0], pv = ref2[1];
-      ref3 = this.isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing), this.pay.email = ref3[0], ev = ref3[1];
+    getCust(testing = false)(function() {
+      var cust, email, ev, first, fv, last, lv, phone, pv, ref, ref1, ref2, ref3, tv;
+      ref = this.isValid('First', 'Samuel', testing), first = ref[0], fv = ref[1];
+      ref1 = this.isValid('Last', 'Hosendecker', testing), last = ref1[0], lv = ref1[1];
+      ref2 = this.isValid('Phone', '3037977129', testing), phone = ref2[0], pv = ref2[1];
+      ref3 = this.isValid('EMail', 'Thomas.Edmund.Flaherty@gmail.com', testing), email = ref3[0], ev = ref3[1];
       tv = this.totals > 0;
-      return [tv, fv, lv, pv, ev];
-    };
+      cust = this.res.createCust(first, last, phone, email, "site");
+      return [tv, fv, lv, pv, ev, cust];
+    });
 
     Book.prototype.onGoToPay = function(e) {
-      var ev, fv, lv, pv, ref, res, tv;
+      var cust, ev, fv, lv, pv, ref, res, tv;
       if (e != null) {
         e.preventDefault();
       }
-      ref = this.getNamesPhoneEmail(), tv = ref[0], fv = ref[1], lv = ref[2], pv = ref[3], ev = ref[4];
+      ref = this.getCust(), tv = ref[0], fv = ref[1], lv = ref[2], pv = ref[3], ev = ref[4], cust = ref[5];
       if (tv && fv && lv && pv && ev) {
         $('.NameER').hide();
         $('#Book').hide();
-        res = this.createRes();
+        res = this.createRoomRes();
+        res.cust = cust;
         res.total = this.totals;
-        res.deposit = Math.round(this.totals * 50) / 100;
         this.pay.showConfirmPay(res);
       } else {
         alert(this.onGoToMsg(tv, fv, lv, pv, ev));
@@ -370,11 +369,9 @@
       Util.log('Book.onErr()');
     };
 
-    Book.prototype.createRes = function() {
+    Book.prototype.createRoomRes = function() {
       var onAdd, ref, res, room, roomId;
-      res = this.res.createRes(this.totals, 'hold', this.method, this.pay.phone, this.roomUIs, {});
-      res.payments = {};
-      this.res.add(res.key, res);
+      res = this.res.createRoomRes(this.totals, 'mine', this.method, this.roomUIs);
       ref = res.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;

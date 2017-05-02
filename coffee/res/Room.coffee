@@ -3,7 +3,7 @@ class Room
 
   module.exports = Room
   Room.Rooms     = require( 'data/room.json' )
-  Room.States    = ["book","depo","hold","free"]
+  Room.States    = ["free","mine","depo","book"]
 
   constructor:( @stream, @store, @Data ) ->
     @rooms   = Room.Rooms

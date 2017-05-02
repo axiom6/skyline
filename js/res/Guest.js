@@ -9,13 +9,12 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Book, Cust, Data, Firestore, Home, Pay, Pict, Res, Room, Stream, Test, book, cust, home, pay, pict, res, room, store, stream, test;
+        var Book, Data, Firestore, Home, Pay, Pict, Res, Room, Stream, Test, book, cust, home, pay, pict, res, room, store, stream, test;
         Util.jquery = require('jquery');
         Stream = require('js/store/Stream');
         Firestore = require('js/store/Firestore');
         Data = require('js/res/Data');
         Room = require('js/res/Room');
-        Cust = require('js/res/Cust');
         Home = require('js/res/Home');
         Pict = require('js/res/Pict');
         Res = require('js/res/Res');
@@ -29,9 +28,9 @@
         cust = new Cust(stream, store, Data);
         home = new Home(stream, store, room, pict);
         res = new Res(stream, store, room, Data);
-        pay = new Pay(stream, store, room, cust, res, home, Data);
-        book = new Book(stream, store, room, cust, res, pay, pict, Data);
-        test = new Test(stream, store, room, cust, res, pay, pict, book, Data);
+        pay = new Pay(stream, store, room, res, home, Data);
+        book = new Book(stream, store, room, res, pay, pict, Data);
+        test = new Test(stream, store, room, res, pay, pict, book, Data);
         home.ready(book);
         return test.doTest();
       });

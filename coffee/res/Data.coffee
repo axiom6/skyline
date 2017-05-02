@@ -36,23 +36,33 @@ class Data
   @stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3"
   @stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs"
 
-  @genCustKey:( phone ) ->
+  genResId:( roomUIs ) ->
+    resKey = ""
+    for own roomId, roomUI of roomUIs when roomUI.numDays > 0
+      days   = Object.keys(roomUI.resRoom.days).sort()
+      resKey = @Data.genResKey( roomId, days[0] )
+      break
+    Util.error('Res.genResKey() resKey blank' ) if not Util.isStr(resKey)
+    resKey
+
+  @genCustId:( phone ) ->
     custKey = Util.padEnd( phone.substr(0,10), 10, '_' )
     if Data.testing then Data.randomCustKey() else custKey
 
+  @genPaymentId:( resId, payments ) ->
+    pays   = Object.keys(@myRes.payments).sort()
+    paySeq = if pays.length > 0 then toString(parseInt(pays[pays.length-1])+1)  else '1'
+    resId  + paySeq
+
   @randomCustKey:() ->
     Math.floor( Math.random() * (9999999999-1000000000)) + 1000000000
-
-  @genResKey:(  roomId, date ) ->  roomId + date
-
-  @genPaymentKey:( date, hour, min ) -> date + hour + min
 
   @today:() ->
     date = new Date()
     year  = date.getFullYear().toString()
     month = Util.padStr( date.getMonth()+1 )
     day   = Util.padStr( date.getDate()    )
-    Util.log( 'Data.today', year, month, day, year + month + day )
+    #Util.log( 'Data.today', year, month, day, year + month + day )
     year + month + day
 
   @advanceDate:( resDate, numDays ) ->

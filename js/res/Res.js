@@ -46,11 +46,11 @@
     };
 
     Res.prototype.updateRooms = function(resvs) {
-      var dayId, res, resDay, resKey, resRoom, results, room, roomDay, roomId;
+      var dayId, res, resDay, resId, resRoom, results, room, roomDay, roomId;
       results = [];
-      for (resKey in resvs) {
-        if (!hasProp.call(resvs, resKey)) continue;
-        res = resvs[resKey];
+      for (resId in resvs) {
+        if (!hasProp.call(resvs, resId)) continue;
+        res = resvs[resId];
         results.push((function() {
           var ref, results1;
           ref = res.rooms;
@@ -69,7 +69,7 @@
                 roomDay = room.days[dayId];
                 roomDay = roomDay != null ? roomDay : {};
                 roomDay.status = res.status;
-                roomDay.resKey = resKey;
+                roomDay.resId = resId;
                 results2.push(room.days[dayId] = roomDay);
               }
               return results2;
@@ -81,18 +81,17 @@
       return results;
     };
 
-    Res.prototype.createRes = function(total, status, method, phone, roomUIs, payments) {
+    Res.prototype.createRoomRes = function(total, status, method, roomUIs) {
       var day, obj, ref, res, roomId, roomUI;
       res = {};
-      res.key = this.genResKey(roomUIs);
+      res.resId = this.Data.genResId(roomUIs);
       res.total = total;
       res.paid = 0;
       res.balance = 0;
       res.status = status;
       res.method = method;
-      res.booked = '20170516';
-      res.arrive = "99999999";
-      res.custKey = this.Data.genCustKey(phone);
+      res.booked = this.Data.today();
+      res.arrive = res.resId.substr(1, 8);
       res.rooms = {};
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
@@ -113,27 +112,21 @@
           }
         }
       }
-      res.payments = payments;
+      res.payments = {};
+      res.cust = {};
       return res;
     };
 
-    Res.prototype.genResKey = function(roomUIs) {
-      var days, resKey, roomId, roomUI;
-      resKey = "";
-      for (roomId in roomUIs) {
-        if (!hasProp.call(roomUIs, roomId)) continue;
-        roomUI = roomUIs[roomId];
-        if (!(roomUI.numDays > 0)) {
-          continue;
-        }
-        days = Object.keys(roomUI.resRoom.days).sort();
-        resKey = this.Data.genResKey(roomId, days[0]);
-        break;
-      }
-      if (!Util.isStr(resKey)) {
-        Util.error('Res.genResKey() resKey blank');
-      }
-      return resKey;
+    Res.prototype.createCust = function(first, last, phone, email, source) {
+      var cust;
+      cust = {};
+      cust.custId = this.Data.genCustId(phone);
+      cust.first = first;
+      cust.last = last;
+      cust.phone = phone;
+      cust.email = email;
+      cust.source = source;
+      return cust;
     };
 
     Res.prototype.add = function(id, res) {

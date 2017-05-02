@@ -11,14 +11,13 @@
   Pay = (function() {
     module.exports = Pay;
 
-    function Pay(stream, store, room1, cust, res, home, Data) {
+    function Pay(stream, store, room1, res, home, Data1) {
       this.stream = stream;
       this.store = store;
       this.room = room1;
-      this.cust = cust;
       this.res = res;
       this.home = home;
-      this.Data = Data;
+      this.Data = Data1;
       this.onError = bind(this.onError, this);
       this.onCharge = bind(this.onCharge, this);
       this.onToken = bind(this.onToken, this);
@@ -40,10 +39,6 @@
         }
       });
       this.myRes = {};
-      this.first = '';
-      this.last = '';
-      this.phone = '';
-      this.email = '';
       this.spas = false;
       this.purpose = 'PayInFull';
       this.testing = true;
@@ -65,7 +60,6 @@
 
     Pay.prototype.showConfirmPay = function(myRes) {
       this.myRes = myRes;
-      this.myRes['cust'] = this.cust.createCust(this.first, this.last, this.phone, this.email, 'site');
       $('#Pays').empty();
       $('#Pays').append(this.confirmHead());
       $('#ConfirmBlock').append(this.confirmTable());
@@ -138,10 +132,14 @@
       this.home.onHome();
     };
 
+    Pay.prototype.calcDeposit = function() {
+      return Math.round(this.myRes.total * 50) / 100;
+    };
+
     Pay.prototype.onMakeDeposit = function(e) {
       e.preventDefault();
       this.purpose = 'Deposit';
-      $("#cc-amt").text('$' + this.myRes.deposit);
+      $("#cc-amt").text('$' + this.calcDeposit());
       return $('#MakePay').text('Make 50% Deposit');
     };
 
@@ -154,14 +152,14 @@
 
     Pay.prototype.ccAmt = function() {
       var amt;
-      amt = this.purpose === 'Deposit' ? this.myRes.deposit : this.myRes.total;
+      amt = this.purpose === 'Deposit' ? this.calcDeposit() : this.myRes.total;
       $("#cc-amt").text('$' + amt);
     };
 
     Pay.prototype.confirmHead = function() {
       var htm;
       htm = "<div id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + this.myRes.key + "</div>";
-      htm += "<div><div id=\"ConfirmName\"><span>For: " + this.first + " </span><span>" + this.last + " </span></div></div>";
+      htm += "<div><div id=\"ConfirmName\"><span>For: " + this.myRes.cust.first + " </span><span>" + this.myRes.cust.last + " </span></div></div>";
       htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"></div>";
       return htm;
     };
@@ -241,7 +239,6 @@
       spaFee = checked ? 20 : -20;
       this.myRes.rooms[roomId].total += spaFee;
       this.myRes.total += spaFee;
-      this.myRes.deposit += spaFee / 2;
       $('#' + roomId + 'TR').text('$' + this.myRes.rooms[roomId].total);
       $('#TT').text('$' + this.myRes.total);
       this.ccAmt();
@@ -250,7 +247,7 @@
     Pay.prototype.confirmBody = function() {
       var arrive, bday, body, days, depart, eday, i, num, r, ref, room, roomId, total;
       body = ".      Confirmation# " + this.myRes.key + "\n";
-      body += ".      For: " + this.first + " " + this.last + "\n";
+      body += ".      For: " + this.myRes.cust.first + " " + this.myRes.cust.last + "\n";
       ref = this.myRes.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
@@ -278,7 +275,7 @@
 
     Pay.prototype.confirmEmail = function() {
       var win;
-      win = window.open("mailto:" + this.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
+      win = window.open("mailto:" + this.myRes.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
       if ((win != null) && !win.closed) {
         win.close();
       }
@@ -428,17 +425,19 @@
     Pay.prototype.onToken = function(obj) {
       this.tokenId = obj.id;
       this.cardId = obj.card.id;
-      return this.charge(this.tokenId, this.myRes.total, 'usd', this.first + " " + this.last);
+      return this.charge(this.tokenId, this.myRes.total, 'usd', this.myRes.cust.first + " " + this.myRes.cust.last);
     };
 
     Pay.prototype.onCharge = function(obj) {
+      var payId;
       if (obj['outcome'].type === 'authorized') {
         this.confirmEmail();
         this.hidePay();
-        $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.email);
+        $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.myRes.cust.email);
         this.home.showConfirm();
-        this.myRes.payments[this.payId()] = this.createPayment();
-        return this.store.put('Res', this.myRes.key, this.myRes);
+        payId = Data.getPaymentId(this.myRes.payments);
+        this.myRes.payments[payId] = this.createPayment();
+        return this.res.add(this.myRes.resId, this.myRes);
       } else {
         this.showPay();
         return $('#Approval').text('Payment Denied').show();
@@ -463,6 +462,9 @@
       payment.method = 'card';
       payment["with"] = this.last4;
       payment.purpose = this.purpose;
+      payment.cc = '';
+      payment.exp = '';
+      payment.cvc = '';
       return payment;
     };
 

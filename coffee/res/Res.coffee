@@ -19,47 +19,47 @@ class Res
 
   # Need to clear out obsolete resKeys in rooms
   updateRooms:( resvs ) ->
-    for own    resKey, res     of resvs
+    for   own  resId,  res     of resvs
       for own  roomId, resRoom of res.rooms
         room =  @room.rooms[roomId]
         for own dayId, resDay  of resRoom.days
           roomDay = room.days[dayId]
           roomDay = if roomDay? then roomDay else {}
           roomDay.status   = res.status
-          roomDay.resKey   = resKey
+          roomDay.resId    = resId
           room.days[dayId] = roomDay
 
-  createRes:( total, status, method, phone, roomUIs, payments ) ->
+  createRoomRes:( total, status, method, roomUIs ) ->
     res          = {}
-    res.key      = @genResKey( roomUIs )
+    res.resId    = @Data.genResId( roomUIs )
     res.total    = total
     res.paid     = 0
     res.balance  = 0
     res.status   = status
     res.method   = method
-    res.booked   = '20170516' # @Data.today()
-    res.arrive   = "99999999"
-    res.custKey  = @Data.genCustKey( phone )
+    res.booked   = @Data.today()
+    res.arrive   = res.resId.substr(1,8)
     res.rooms    = {}
     for own roomId, roomUI of roomUIs when roomUI.numDays > 0
       res.rooms[roomId] = roomUI.resRoom
       for own day, obj of roomUI.resRoom.days
         day.status = status if day.status is 'mine'
         res.arrive = day    if day < res.arrive
-    res.payments = payments
-    #@subscribeToResKey( res.key )
+    res.payments = {}
+    res.cust     = {}
+    #@subscribeToResKey( res.resId )
     res
 
-  genResKey:( roomUIs ) ->
-    resKey = ""
-    #Util.log( 'Res.genResKey() 1', roomUIs )
-    for own roomId, roomUI of roomUIs when roomUI.numDays > 0
-      #Util.log( 'Res.genResKey() 2', roomId, roomUI.numDays, roomUI.resRoom.days )
-      days   = Object.keys(roomUI.resRoom.days).sort()
-      resKey = @Data.genResKey( roomId, days[0] )
-      break
-    Util.error('Res.genResKey() resKey blank' ) if not Util.isStr(resKey)
-    resKey
+  createCust:( first, last, phone, email, source ) ->
+    cust = {}
+    cust.custId = @Data.genCustId( phone )
+    cust.first  = first
+    cust.last   = last
+    cust.phone  = phone
+    cust.email  = email
+    cust.source = source
+    cust
+
 
   add:( id, res ) -> @store.add( 'Res', id, res )
 

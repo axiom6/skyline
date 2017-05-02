@@ -5,17 +5,13 @@ class Cust
   Cust.Data      = require( 'data/Cust.json' )
 
   constructor:( @stream, @store, @Data ) ->
+    @first  = ""
+    @last   = ""
+    @phone  = ""
+    @email  = ""
+    @source = ""
 
-  createCust:( first, last, phone, email, source ) ->
-    cust = {}
-    cust.key    = @Data.genCustKey( phone )
-    cust.first  = first
-    cust.last   = last
-    cust.phone  = phone
-    cust.email  = email
-    cust.source = source
-    @add( cust.key, cust )
-    cust
+
 
   add:( id, cust ) -> @store.add( 'Cust', id, cust )
   get:( id       ) -> @store.get( 'Cust', id       )
