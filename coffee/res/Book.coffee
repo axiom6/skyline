@@ -6,21 +6,21 @@ class Book
 
   module.exports = Book
 
-  constructor:( @stream, @store, @room, @res, @pay, @pict, @Data ) ->
-    @rooms       = @room.rooms
-    @roomUIs     = @room.roomUIs
-    @myDays      =  0
-    @today       = new Date()
-    @monthIdx    = @today.getMonth()
-    @monthIdx    = if 4 <=  @monthIdx and @monthIdx <= 9 then @monthIdx else 4
-    @year        = 2017
-    @month       = @Data.months[@monthIdx]
-    @numDays     = 15
-    @begMay      = 15
-    @begDay      = if @month is 'May' then @begMay else 1
-    @$cells      = []
-    @totals      = 0
-    @method      = 'site'
+  constructor:( @stream, @store, @Data, @room, @res, @pay, @pict ) ->
+    @rooms    = @room.rooms
+    @roomUIs  = @room.roomUIs
+    @myDays   =  0
+    @today    = new Date()
+    @monthIdx = @today.getMonth()
+    @monthIdx = if 4 <=  @monthIdx and @monthIdx <= 9 then @monthIdx else 4
+    @year     = 2017
+    @month    = @Data.months[@monthIdx]
+    @numDays  = 15
+    @begMay   = 15
+    @begDay   = if @month is 'May' then @begMay else 1
+    @$cells   = []
+    @totals   = 0
+    @method   = 'site'
 
   ready:() ->
     $('#Book'   ).empty()
@@ -153,9 +153,9 @@ class Book
     if tv and fv and lv and pv and ev
       $('.NameER').hide()
       $('#Book').hide()
-      res = @createRoomRes()
-      res.cust    = cust
-      res.total   = @totals
+      res       = @createRoomRes()
+      res.cust  = cust
+      res.total = @totals
       #@res.add( res.resId, res )
       @pay.showConfirmPay(  res )
     else
@@ -214,9 +214,6 @@ class Book
     $('#'+roomId+'T').text(text)
     @updateTotals()
     return
-
-  newCust:() ->
-    { status:'mine', days:[], total:0 }
 
   updateTotals:() ->
     @totals = 0
@@ -280,18 +277,16 @@ class Book
 
   onPop:() =>
     #Util.log( 'Book.onPop()'  )
-    @getNamesPhoneEmail( true )
+    @getCust( true )
     @pay.testing = false
-    return
-
-  onErr:() =>
-    Util.log( 'Book.onErr()' )
     return
 
   createRoomRes:() =>
     res = @res.createRoomRes( @totals, 'mine', @method, @roomUIs )
     #Util.log( 'Book.createRes()', res )
-    for own roomId, room of res.rooms
+    for   own roomId, room of res.rooms
+      for own dayId,  day  of room.days
+        day.resId = res.resId
       onAdd = {}
       onAdd.days = room.days
       @store.add( 'Alloc', roomId, onAdd )
@@ -332,7 +327,7 @@ class Book
     roomUI = @roomUIs[roomId]
     if status is 'mine'
       roomUI.numDays++
-      roomUI.resRoom.days[date] = { "status":status }
+      roomUI.resRoom.days[date] = { "status":status, "resId":"" }
       #Util.log( 'Book.updateCellStatus() mine', roomUI.numDays )
     else if status is 'free'
       roomUI.numDays-- if roomUI.numDays > 0

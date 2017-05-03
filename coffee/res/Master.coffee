@@ -1,11 +1,11 @@
 
-$    = require( 'jquery'     )
+$ = require( 'jquery'  )
 
 class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @room, @cust, @res, @Data ) ->
+  constructor:( @stream, @store, @Data, @room, @cust, @res ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
     @year        = 2017

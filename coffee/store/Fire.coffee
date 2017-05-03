@@ -2,22 +2,22 @@
 Store          = require( 'js/store/Store' )
 Store.Firebase = firebase #require( 'firebase' )
 
-class Firestore extends Store
+class Fire extends Store
 
-  module.exports   = Firestore
+  module.exports   = Fire
 
   @EventOn = { value:"onVal", child_added:"onAdd", child_changed:"onPut", child_removed:"onDel", child_moved:"onMov" }
   @OnEvent = { onVal:"value", onAdd:"child_added", onPut:"child_changed", onDel:"child_removed", onMov:"child_moved" }
 
   constructor:( stream, uri, @config ) ->
-    super( stream, uri, 'Firestore' ) # @dbName set by Store in super constructor
+    super( stream, uri, 'Fire' ) # @dbName set by Store in super constructor
     @fb = @init( @config )
     @auth() # Anonomous logins have to enabled
     @fd = Store.Firebase.database()
 
   init:( config ) ->
     Store.Firebase.initializeApp(config)
-    #Util.log( 'Firestore.init', config )
+    #Util.log( 'Fires.init', config )
     Store.Firebase
 
   add:( t, id, object  ) ->
@@ -39,7 +39,7 @@ class Firestore extends Store
         object[@keyProp] = id
         @publish( tableName, id, 'get', object )
       else
-        @onerror( tableName, id, 'get', { msg:'Firestore get error' } )
+        @onerror( tableName, id, 'get', { msg:'Fire get error' } )
     @fd.ref(tableName+'/'+id).once('value', onComplete )
     return
 
@@ -148,7 +148,7 @@ class Firestore extends Store
       else
         @onerror( table, id, onEvt, {}, { error:'error' } )
     path  = if id is 'none' then table else table + '/' + id
-    @fd.ref(path).on( Firestore.OnEvent[onEvt], onComplete )
+    @fd.ref(path).on( Fire.OnEvent[onEvt], onComplete )
     return
 
   # Sign Anonymously

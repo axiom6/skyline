@@ -5,7 +5,7 @@ class Store
   Store.Memory    = require( 'js/store/Memory'     )
   Store.IndexedDB = require( 'js/store/IndexedDB'  )
   Store.Rest      = require( 'js/store/Rest'       )
-  Store.Firestore = require( 'js/store/Firestore'  )
+  Store.Fire      = require( 'js/store/Fire'  )
   #Store.PouchDB  = require( 'js/store/PouchDB'    )
 
   @memories  = {} # Store.Memory instances create by getMemory() for in memory dbName

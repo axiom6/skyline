@@ -5,7 +5,7 @@ class Home
 
   module.exports = Home
 
-  constructor:( @stream, @store, @room, @pict ) ->
+  constructor:( @stream, @store, @Data, @room, @pict ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
 

@@ -6,7 +6,7 @@ class Pay
 
   module.exports = Pay
 
-  constructor:( @stream, @store, @room, @res, @home, @Data ) ->
+  constructor:( @stream, @store, @Data, @room, @res, @home ) ->
     @credit = new Credit()
     @uri    = "https://api.stripe.com/v1/"
     @subscribe()
@@ -338,20 +338,33 @@ class Pay
   onCharge:(obj) =>
     #Util.log( 'StoreRest.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
-      @confirmEmail()
-      @hidePay()
-      $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@myRes.cust.email}")
-      @home.showConfirm()
-      payId = Data.getPaymentId( @myRes.payments )
-      @myRes.payments[payId] = @createPayment()
-      @res.add( @myRes.resId, @myRes )
+      @doConfirm()
+      @postAllRes()
     else
-      @showPay()
-      $('#Approval').text('Payment Denied').show()
+      @doDeny()
+      #@denyAllRes()
 
-  payId:() ->
-    pays   = Object.keys(@myRes.payments).sort()
-    if pays.length > 0 then toString(parseInt(pays[pays.length-1])+1)  else '1'
+  doConfirm:() ->
+    @confirmEmail()
+    @hidePay()
+    $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@myRes.cust.email}")
+    @home.showConfirm()
+
+  doDeny:() ->
+    @showPay()
+    $('#Approval').text('Payment Denied').show()
+
+  postAllRes:() ->
+    payId = Data.getPaymentId( @myRes.payments )
+    @myRes.payments[payId] = @createPayment()
+    @res.postAllRes( @myRes.resId, @myRes )
+
+  # Not sure what we want to do here
+  denyAllRes:() ->
+    payId = Data.getPaymentId( @myRes.payments )
+    @myRes.payments[payId] = @createPayment()
+    @res.postAllRes( @myRes.resId, @myRes )
+
 
   createPayment:() ->
     payment = {}

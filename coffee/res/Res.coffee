@@ -3,19 +3,25 @@ class Res
   module.exports = Res
   Res.Resvs      = require( 'data/res.json' )
 
-  constructor:( @stream, @store, @room, @Data ) ->
+  constructor:( @stream, @store, @Data, @room ) ->
     @testResvs = Res.Resvs
     @insertTestResvs() if @Data.testing
 
-  subscribeToResKey:( resKey ) =>
-    @store.subscribe( 'Res', resKey, 'add', (add)  => Util.log('Res.subscribeToResKey', resKey, add ) )
-    @store.subscribe( 'Res', resKey, 'put', (put)  => Util.log('Res.subscribeToResKey', resKey, put ) )
+  subscribeToResId:( resId ) =>
+    @store.subscribe( 'Res', resId, 'add', (add)  => Util.log('Res.subscribeToResId', resId, add ) )
+    @store.subscribe( 'Res', resId, 'put', (put)  => Util.log('Res.subscribeToResId', resId, put ) )
 
   insertTestResvs:() ->
     @store.subscribe( 'Res', 'none', 'make',  (make) => @store.insert( 'Res', @testResvs ); Util.noop(make)  )
     @store.make( 'Res' )
     @updateRooms( @testResvs )
     return
+
+  makeAllTables:() ->
+    @store.make( 'Res'     )
+    @store.make( 'Room'    )
+    @store.make( 'Payment' )
+    @store.make( 'Cust'    )
 
   # Need to clear out obsolete resKeys in rooms
   updateRooms:( resvs ) ->
@@ -60,12 +66,9 @@ class Res
     cust.source = source
     cust
 
-
-  add:( id, res ) -> @store.add( 'Res', id, res )
-
-  put:( id, res ) -> @store.put( 'Res', id, res )
-
-  resRoom:() -> { "total":0, "price":0, "guests":2, "pets":0, "spa":false, "days":{} }
-  resPay:()  -> { "amount":0,"date":"xxxxxxxx", "with":"xxxxx", "num":"xxxx" }
-
-
+  postAllRes:( id, res ) ->
+    @updateAllRooms( res )
+    @store.add(    'Res',     id, res )
+    @store.insert( 'Room',    res.rooms )
+    @store.insert( 'Payment', res.payments )
+    @store.add(    'Cust',    res.cust.custId, res.cust )
