@@ -11,14 +11,16 @@
   Pay = (function() {
     module.exports = Pay;
 
-    function Pay(stream, store, room1, res, home, Data1) {
+    function Pay(stream, store, Data, room1, res, home) {
       this.stream = stream;
       this.store = store;
+      this.Data = Data;
       this.room = room1;
       this.res = res;
       this.home = home;
-      this.Data = Data1;
       this.onError = bind(this.onError, this);
+      this.denyRes = bind(this.denyRes, this);
+      this.postRes = bind(this.postRes, this);
       this.onCharge = bind(this.onCharge, this);
       this.onToken = bind(this.onToken, this);
       this.onChargeError = bind(this.onChargeError, this);
@@ -41,7 +43,7 @@
       this.myRes = {};
       this.spas = false;
       this.purpose = 'PayInFull';
-      this.testing = true;
+      this.testing = false;
       this.errored = false;
     }
 
@@ -69,6 +71,9 @@
       this.initCCPayment();
       this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
       $('#Pays').show();
+      if (this.testing) {
+        this.testPop();
+      }
     };
 
     Pay.prototype.initCCPayment = function() {
@@ -111,7 +116,7 @@
       $('#er-num').hide();
       $('#er-exp').hide();
       $('#er-cvc').hide();
-      return $('#er-sub').hide();
+      $('#er-sub').hide();
     };
 
     Pay.prototype.testPop = function() {
@@ -429,28 +434,56 @@
     };
 
     Pay.prototype.onCharge = function(obj) {
-      var payId;
       if (obj['outcome'].type === 'authorized') {
-        this.confirmEmail();
-        this.hidePay();
-        $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.myRes.cust.email);
-        this.home.showConfirm();
-        payId = Data.getPaymentId(this.myRes.payments);
-        this.myRes.payments[payId] = this.createPayment();
-        return this.res.add(this.myRes.resId, this.myRes);
+        this.doConfirm();
+        return this.postRes();
       } else {
-        this.showPay();
-        return $('#Approval').text('Payment Denied').show();
+        return this.doDeny();
       }
     };
 
-    Pay.prototype.payId = function() {
-      var pays;
-      pays = Object.keys(this.myRes.payments).sort();
-      if (pays.length > 0) {
-        return toString(parseInt(pays[pays.length - 1]) + 1);
-      } else {
-        return '1';
+    Pay.prototype.doConfirm = function() {
+      this.confirmEmail();
+      this.hidePay();
+      $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.myRes.cust.email);
+      return this.home.showConfirm();
+    };
+
+    Pay.prototype.doDeny = function() {
+      this.showPay();
+      return $('#Approval').text('Payment Denied').show();
+    };
+
+    Pay.prototype.postRes = function() {
+      var payId;
+      this.setResStatus('post');
+      payId = this.Data.genPaymentId(this.myRes.resId, this.myRes.payments);
+      this.myRes.payments[payId] = this.createPayment();
+      return this.res.postRes(this.myRes.resId, this.myRes);
+    };
+
+    Pay.prototype.denyRes = function() {
+      var payId;
+      this.setResStatus('deny');
+      payId = this.Data.genPaymentId(this.myRes.resId, this.myRes.payments);
+      this.myRes.payments[payId] = this.createPayment();
+      return this.res.postRes(this.myRes.resId, this.myRes);
+    };
+
+    Pay.prototype.setResStatus = function(state) {
+      if (state === 'post') {
+        if (this.purpose === 'PayInFull' || this.purpose === 'PayOffDeposit') {
+          this.myRes.status = 'book';
+        }
+        if (this.purpose === 'Deposit') {
+          this.myRes.status = 'depo';
+        }
+      } else if (state === 'deny') {
+        this.myRes.status = 'free';
+      }
+      if (!Util.inArray(['book', 'depo', 'free'], this.myRes.status)) {
+        Util.error('Pay.setResStatus() unknown status ', this.myRes.status);
+        this.myRes.status = 'free';
       }
     };
 

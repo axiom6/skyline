@@ -57,9 +57,9 @@
 
     Data.stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs";
 
-    Data.prototype.genResId = function(roomUIs) {
-      var days, resKey, roomId, roomUI;
-      resKey = "";
+    Data.genResId = function(roomUIs) {
+      var days, resId, roomId, roomUI;
+      resId = "";
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
         roomUI = roomUIs[roomId];
@@ -67,13 +67,13 @@
           continue;
         }
         days = Object.keys(roomUI.resRoom.days).sort();
-        resKey = this.Data.genResKey(roomId, days[0]);
+        resId = roomId + days[0];
         break;
       }
-      if (!Util.isStr(resKey)) {
+      if (!Util.isStr(resId)) {
         Util.error('Res.genResKey() resKey blank');
       }
-      return resKey;
+      return resId;
     };
 
     Data.genCustId = function(phone) {
@@ -88,7 +88,7 @@
 
     Data.genPaymentId = function(resId, payments) {
       var paySeq, pays;
-      pays = Object.keys(this.myRes.payments).sort();
+      pays = Object.keys(payments).sort();
       paySeq = pays.length > 0 ? toString(parseInt(pays[pays.length - 1]) + 1) : '1';
       return resId + paySeq;
     };

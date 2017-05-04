@@ -9,13 +9,13 @@
   Master = (function() {
     module.exports = Master;
 
-    function Master(stream, store, room1, cust, res, Data) {
+    function Master(stream, store, Data, room1, cust, res) {
       this.stream = stream;
       this.store = store;
+      this.Data = Data;
       this.room = room1;
       this.cust = cust;
       this.res = res;
-      this.Data = Data;
       this.onSeasonClick = bind(this.onSeasonClick, this);
       this.onMasterClick = bind(this.onMasterClick, this);
       this.onAlloc = bind(this.onAlloc, this);

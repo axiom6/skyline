@@ -14,7 +14,7 @@
 
     Store.Rest = require('js/store/Rest');
 
-    Store.Firestore = require('js/store/Firestore');
+    Store.Fire = require('js/store/Fire');
 
     Store.memories = {};
 

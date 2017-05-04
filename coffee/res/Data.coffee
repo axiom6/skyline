@@ -36,21 +36,21 @@ class Data
   @stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3"
   @stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs"
 
-  genResId:( roomUIs ) ->
-    resKey = ""
+  @genResId:( roomUIs ) ->
+    resId = ""
     for own roomId, roomUI of roomUIs when roomUI.numDays > 0
-      days   = Object.keys(roomUI.resRoom.days).sort()
-      resKey = @Data.genResKey( roomId, days[0] )
+      days  = Object.keys(roomUI.resRoom.days).sort()
+      resId = roomId + days[0]
       break
-    Util.error('Res.genResKey() resKey blank' ) if not Util.isStr(resKey)
-    resKey
+    Util.error('Res.genResKey() resKey blank' ) if not Util.isStr(resId)
+    resId
 
   @genCustId:( phone ) ->
     custKey = Util.padEnd( phone.substr(0,10), 10, '_' )
     if Data.testing then Data.randomCustKey() else custKey
 
   @genPaymentId:( resId, payments ) ->
-    pays   = Object.keys(@myRes.payments).sort()
+    pays   = Object.keys(payments).sort()
     paySeq = if pays.length > 0 then toString(parseInt(pays[pays.length-1])+1)  else '1'
     resId  + paySeq
 

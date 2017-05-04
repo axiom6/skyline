@@ -10,15 +10,15 @@
 
     Test.Data = require('data/test.json');
 
-    function Test(stream, store, room1, res1, pay, pict, book, Data) {
+    function Test(stream, store, Data, room1, res1, pay, pict, book) {
       this.stream = stream;
       this.store = store;
+      this.Data = Data;
       this.room = room1;
       this.res = res1;
       this.pay = pay;
       this.pict = pict;
       this.book = book;
-      this.Data = Data;
       this.rooms = this.room.rooms;
     }
 

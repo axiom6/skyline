@@ -34,6 +34,10 @@ class Res
           roomDay.status   = res.status
           roomDay.resId    = resId
           room.days[dayId] = roomDay
+        @allocRoom( roomId, room.days )
+
+  allocRoom:( roomId, days ) ->
+    store.add( 'Alloc', roomId, { days:days } )
 
   createRoomRes:( total, status, method, roomUIs ) ->
     res          = {}
@@ -66,9 +70,10 @@ class Res
     cust.source = source
     cust
 
-  postAllRes:( id, res ) ->
-    @updateAllRooms( res )
+  postRes:( id, res ) ->
+    @updateRooms( res )
     @store.add(    'Res',     id, res )
-    @store.insert( 'Room',    res.rooms )
-    @store.insert( 'Payment', res.payments )
-    @store.add(    'Cust',    res.cust.custId, res.cust )
+    #store.insert( 'Room',    res.rooms )
+    #store.insert( 'Payment', res.payments )
+    #store.add(    'Cust',    res.cust.custId, res.cust )
+    Util.log('Res.postRes()', res )

@@ -9,23 +9,22 @@
 
     Owner.init = function() {
       return Util.ready(function() {
-        var Alloc, Cust, Data, Firestore, Master, Res, Room, Stream, alloc, cust, master, res, room, store, stream;
+        var Alloc, Data, Fire, Master, Res, Room, Stream, alloc, master, res, room, store, stream;
         Stream = require('js/store/Stream');
-        Firestore = require('js/store/Firestore');
+        Fire = require('js/store/Fire');
         Data = require('js/res/Data');
         Room = require('js/res/Room');
-        Cust = require('js/res/Cust');
         Res = require('js/res/Res');
         Master = require('js/res/Master');
         Alloc = require('js/res/Alloc');
         stream = new Stream([]);
-        store = new Firestore(stream, "skytest", Data.configSkytest);
+        store = new Fire(stream, "skytest", Data.configSkytest);
         room = new Room(stream, store, Data);
-        cust = new Cust(stream, store);
-        res = new Res(stream, store, room, cust);
-        master = new Master(stream, store, room, cust, res, Data);
-        alloc = new Alloc(stream, store, room, cust, res, master);
-        return master.ready();
+        res = new Res(stream, store, Data, room);
+        master = new Master(stream, store, Data, room, res);
+        alloc = new Alloc(stream, store, Data, room, null, master);
+        master.ready();
+        return Util.noop(alloc);
       });
     };
 

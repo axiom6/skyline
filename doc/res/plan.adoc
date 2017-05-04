@@ -12,7 +12,6 @@ include::../dir/inc/DefBook.adoc[]
 
 ### [.black]#Test#
 * Test Suite - Reservation Pay
-* Weekend group hint
 * Test Weekend, Pop, Deposit, Spa Opt Out, Payment
 * Post and Test Reservations, Payments Customers
 * Populate Beth Reservations into Skyline
@@ -28,6 +27,7 @@ include::../dir/inc/DefBook.adoc[]
 * Bookings
 
 ## [.black]#Owner Site#
+* Weekend group hint on Guest
 * Refine Owner site
 * Master Calendar
 * Confirmation

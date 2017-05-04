@@ -13,8 +13,8 @@ class Pay
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
     @myRes   = {}
     @spas    = false
-    @purpose = 'PayInFull' # or 'Deposit'
-    @testing = true
+    @purpose = 'PayInFull' # 'Deposit' 'PayOffDeposit'
+    @testing = false
     @errored = false
 
   showSpa:( myRes ) ->
@@ -33,7 +33,7 @@ class Pay
     @initCCPayment()
     @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
     $('#Pays').show()
-    #@testPop() if @testing
+    @testPop() if @testing
     return
 
   initCCPayment:() =>
@@ -53,6 +53,7 @@ class Pay
     $('#er-exp').hide()
     $('#er-cvc').hide()
     $('#er-sub').hide()
+    return
 
   testPop:() ->
     $('#cc-num').val( '4242424242424242' )
@@ -339,10 +340,10 @@ class Pay
     #Util.log( 'StoreRest.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
       @doConfirm()
-      @postAllRes()
+      @postRes()
     else
       @doDeny()
-      #@denyAllRes()
+      #@denyRes()
 
   doConfirm:() ->
     @confirmEmail()
@@ -354,17 +355,30 @@ class Pay
     @showPay()
     $('#Approval').text('Payment Denied').show()
 
-  postAllRes:() ->
-    payId = Data.getPaymentId( @myRes.payments )
+  postRes:() =>
+    @setResStatus( 'post' )
+    payId = @Data.genPaymentId(  @myRes.resId, @myRes.payments )
     @myRes.payments[payId] = @createPayment()
-    @res.postAllRes( @myRes.resId, @myRes )
+    @res.postRes( @myRes.resId, @myRes )
 
   # Not sure what we want to do here
-  denyAllRes:() ->
-    payId = Data.getPaymentId( @myRes.payments )
+  denyRes:() =>
+    @setResStatus( 'deny' )
+    payId = @Data.genPaymentId( @myRes.resId, @myRes.payments )
     @myRes.payments[payId] = @createPayment()
-    @res.postAllRes( @myRes.resId, @myRes )
+    @res.postRes( @myRes.resId, @myRes )
 
+  setResStatus:( state ) ->
+    if       state is 'post'
+      @myRes.status = 'book' if @purpose is 'PayInFull' or @purpose is 'PayOffDeposit'
+      @myRes.status = 'depo' if @purpose is 'Deposit'
+    else if  state is 'deny'
+      @myRes.status = 'free'
+
+    if not Util.inArray(['book','depo','free'], @myRes.status )
+      Util.error( 'Pay.setResStatus() unknown status ', @myRes.status )
+      @myRes.status = 'free'
+    return
 
   createPayment:() ->
     payment = {}

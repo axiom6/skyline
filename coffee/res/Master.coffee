@@ -147,8 +147,3 @@ class Master
 
   toDateStr:( monthIdx, day ) ->
     @year+Util.pad(monthIdx+1)+Util.pad(day)
-
-
-
-
-

@@ -9,9 +9,10 @@
   Home = (function() {
     module.exports = Home;
 
-    function Home(stream, store, room1, pict) {
+    function Home(stream, store, Data, room1, pict) {
       this.stream = stream;
       this.store = store;
+      this.Data = Data;
       this.room = room1;
       this.pict = pict;
       this.onHome = bind(this.onHome, this);

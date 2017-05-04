@@ -5,7 +5,7 @@ class Alloc
 
   Alloc.Allocs   = require( 'data/Alloc.json' )
 
-  constructor:( @stream, @store, @Data, @room, @cust, @res, @master, @book=null ) ->
+  constructor:( @stream, @store, @Data, @room=null, @book=null, @master=null ) ->
     @subscribe()
     @rooms = @room.rooms
     @init()
@@ -30,7 +30,7 @@ class Alloc
     #Util.log( 'Alloc.onAlloc()', { onEvt:onAdd.onEvt, table:onAdd.table, key:onAdd.key, val:onAdd.val } )
     alloc  = onAdd.val
     roomId = onAdd.key
-    @room.  onAlloc( alloc, roomId )
-    @master.onAlloc( alloc, roomId )
+    @room.  onAlloc( alloc, roomId ) if @room?
     @book.  onAlloc( alloc, roomId ) if @book?
+    @master.onAlloc( alloc, roomId ) if @master?
     return

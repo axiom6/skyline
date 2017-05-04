@@ -1,6 +1,5 @@
 
-$     = require( 'jquery'       )
-Alloc = require( 'js/res/Alloc' )
+$ = require( 'jquery' )
 
 class Book
 
@@ -35,7 +34,7 @@ class Book
     $('#Months' ).change( @onMonth   )
     $('#Days'   ).change( @onDay     )
     $('#Pop'    ).click(  @onPop     )
-    $('#Err'    ).click(  @onErr     )
+    $('#Test'   ).click(  @onTest     )
     $('#GoToPay').click(  @onGoToPay ) # .prop('disabled',true)
     $('#Navb').hide()
     $('#Book').show()
@@ -63,8 +62,8 @@ class Book
     htm  = """<label for="Months" class="InitIp">Start: #{ @htmlSelect( "Months", @Data.season, @month,  'months' ) }</label>"""
     htm += """<label for="Days"   class="InitIp">       #{ @htmlSelect( "Days",   @Data.days,   @begDay, 'days'   ) }</label>"""
     htm += """<label class="InitIp">&nbsp;&nbsp;#{@year}</label>"""
-    htm += """<span  id="Pop" class="Test">Pop</span>"""
-    htm += """<span  id="Err" class="Test">Err</span>"""
+    htm += """<span  id="Pop"  class="Test">Pop</span>"""
+    htm += """<span  id="Test" class="Test">Test</span>"""
     htm
 
   seeRoom:( roomId, room ) ->
@@ -138,7 +137,7 @@ class Book
     #$('#'+name+'ER').show() if not valid
     [value,valid]
 
-  getCust( testing=false ) ->
+  getCust:( testing=false ) ->
     [first,fv] = @isValid('First', 'Samuel',      testing )
     [last, lv] = @isValid('Last',  'Hosendecker', testing )
     [phone,pv] = @isValid('Phone', '3037977129',  testing )
@@ -278,7 +277,11 @@ class Book
   onPop:() =>
     #Util.log( 'Book.onPop()'  )
     @getCust( true )
-    @pay.testing = false
+    @pay.testing = true
+    return
+
+  onTest:() =>
+    @test.doTest() if @test?
     return
 
   createRoomRes:() =>

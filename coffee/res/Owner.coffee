@@ -20,7 +20,8 @@ class Owner
       room     = new Room(   stream, store, Data )
       res      = new Res(    stream, store, Data, room )
       master   = new Master( stream, store, Data, room, res )
-      alloc    = new Alloc(  stream, store, Data, room, res, master )
+      alloc    = new Alloc(  stream, store, Data, room, null, master )
       master.ready()
+      Util.noop( alloc )
 
 Owner.init()
