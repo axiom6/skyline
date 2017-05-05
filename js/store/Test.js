@@ -53,7 +53,7 @@
     Test.prototype.doGoToPay = function(res) {
       var fn, payment;
       this.book.onGoToPay(null);
-      payment = Object.keys(res.payments).sort()[0];
+      payment = Util.keys(res.payments).sort()[0];
       this.popCC(payment.cc, payment.exp, payment.cvc);
       fn = (function(_this) {
         return function() {

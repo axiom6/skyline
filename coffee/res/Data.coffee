@@ -38,11 +38,11 @@ class Data
 
   @genResId:( roomUIs ) ->
     resId = ""
-    for own roomId, roomUI of roomUIs when roomUI.numDays > 0
-      days  = Object.keys(roomUI.resRoom.days).sort()
+    for own roomId, roomUI of roomUIs when not Util.isObjEmpty(roomUI.days)
+      days  = Util.keys(roomUI.days).sort()
       resId = roomId + days[0]
       break
-    Util.error('Res.genResKey() resKey blank' ) if not Util.isStr(resId)
+    Util.error('Data.getResId() resId blank' ) if not Util.isStr(resId)
     resId
 
   @genCustId:( phone ) ->
@@ -50,7 +50,7 @@ class Data
     if Data.testing then Data.randomCustKey() else custKey
 
   @genPaymentId:( resId, payments ) ->
-    pays   = Object.keys(payments).sort()
+    pays   = Util.keys(payments).sort()
     paySeq = if pays.length > 0 then toString(parseInt(pays[pays.length-1])+1)  else '1'
     resId  + paySeq
 

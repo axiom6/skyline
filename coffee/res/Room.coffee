@@ -16,22 +16,20 @@ class Room
     for key, room of rooms
       roomUIs[key]    = {}
       roomUI          = roomUIs[key]
-      roomUI.numDays  = 0
       roomUI.$        = {}
-      roomUI.resRoom  = {}
-      resRoom         = roomUI.resRoom
-      resRoom.name    = room.name
-      resRoom.total   = 0
-      resRoom.price   = 0
-      resRoom.guests  = 2
-      resRoom.pets    = 0
-      resRoom.spa     = room.spa
-      resRoom.days    = {}
-      resRoom.group   = {} # All days in group at maintained at the same status
+      roomUI.name    = room.name
+      roomUI.total   = 0
+      roomUI.price   = 0
+      roomUI.guests  = 2
+      roomUI.pets    = 0
+      roomUI.spa     = room.spa
+      roomUI.change  = 0         # Changes usually to spa opt out
+      roomUI.days    = {}
+      roomUI.group   = {} # All days in group at maintained at the same status
     roomUIs
 
-  hasSpa:( roomId ) ->
-    @rooms[roomId].spa > 0
+  optSpa:( roomId ) -> @rooms[roomId].spa is 'O'
+  hasSpa:( roomId ) -> @rooms[roomId].spa is 'O' or @rooms[roomId].spa is 'Y'
 
   initRooms:() =>
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
@@ -42,7 +40,7 @@ class Room
     if day? then day.status else 'free'
 
   dayBookedUI:( room, date ) ->
-    day = room.resRoom.days[date]
+    day = room.days[date]
     if day? then day.status else 'free'
 
   onAlloc:( alloc, roomId ) =>

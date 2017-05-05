@@ -9,9 +9,9 @@
 
     Res.Resvs = require('data/res.json');
 
-    function Res(stream, store1, Data, room1) {
+    function Res(stream, store, Data, room1) {
       this.stream = stream;
-      this.store = store1;
+      this.store = store;
       this.Data = Data;
       this.room = room1;
       this.subscribeToResId = bind(this.subscribeToResId, this);
@@ -20,6 +20,84 @@
         this.insertTestResvs();
       }
     }
+
+    Res.prototype.createRoomResv = function(status, method, roomUIs) {
+      var day, obj, ref, resv, roomId, roomUI;
+      resv = {};
+      resv.resId = this.Data.genResId(roomUIs);
+      resv.totals = 0;
+      resv.paid = 0;
+      resv.balance = 0;
+      resv.status = status;
+      resv.method = method;
+      resv.booked = this.Data.today();
+      resv.arrive = resv.resId.substr(1, 8);
+      resv.rooms = {};
+      for (roomId in roomUIs) {
+        if (!hasProp.call(roomUIs, roomId)) continue;
+        roomUI = roomUIs[roomId];
+        if (!(!Util.isObjEmpty(roomUI.days))) {
+          continue;
+        }
+        resv.rooms[roomId] = this.toResvRoom(roomUI);
+        ref = roomUI.days;
+        for (day in ref) {
+          if (!hasProp.call(ref, day)) continue;
+          obj = ref[day];
+          if (day.status === 'mine') {
+            day.status = status;
+          }
+          if (day < resv.arrive) {
+            resv.arrive = day;
+          }
+        }
+      }
+      resv.payments = {};
+      resv.cust = {};
+      return resv;
+    };
+
+    Res.prototype.toResvRoom = function(roomUI) {
+      var room;
+      room = {};
+      room.name = roomUI.name;
+      room.total = roomUI.total;
+      room.price = roomUI.price;
+      room.guests = roomUI.guests;
+      room.pets = roomUI.pets;
+      room.spa = roomUI.spa;
+      room.change = roomUI.change;
+      room.reason = roomUI.reason;
+      room.days = roomUI.days;
+      room.nights = Util.keys(roomUI.days).length;
+      return room;
+    };
+
+    Res.prototype.updateRooms = function(resv) {
+      var day, dayId, ref, ref1, results, room, roomId;
+      ref = resv.rooms;
+      results = [];
+      for (roomId in ref) {
+        if (!hasProp.call(ref, roomId)) continue;
+        room = ref[roomId];
+        ref1 = room.days;
+        for (dayId in ref1) {
+          if (!hasProp.call(ref1, dayId)) continue;
+          day = ref1[dayId];
+          day.status = resv.status;
+          day.resId = resv.resId;
+        }
+        delete room.group;
+        results.push(this.allocRoom(roomId, room.days));
+      }
+      return results;
+    };
+
+    Res.prototype.allocRoom = function(roomId, days) {
+      return this.store.add('Alloc', roomId, {
+        days: days
+      });
+    };
 
     Res.prototype.subscribeToResId = function(resId) {
       this.store.subscribe('Res', resId, 'add', (function(_this) {
@@ -35,6 +113,7 @@
     };
 
     Res.prototype.insertTestResvs = function() {
+      var ref, resId, resv;
       this.store.subscribe('Res', 'none', 'make', (function(_this) {
         return function(make) {
           _this.store.insert('Res', _this.testResvs);
@@ -42,7 +121,12 @@
         };
       })(this));
       this.store.make('Res');
-      this.updateRooms(this.testResvs);
+      ref = this.testResvs;
+      for (resId in ref) {
+        if (!hasProp.call(ref, resId)) continue;
+        resv = ref[resId];
+        this.updateRooms(resv);
+      }
     };
 
     Res.prototype.makeAllTables = function() {
@@ -50,80 +134,6 @@
       this.store.make('Room');
       this.store.make('Payment');
       return this.store.make('Cust');
-    };
-
-    Res.prototype.updateRooms = function(resvs) {
-      var dayId, res, resDay, resId, resRoom, results, room, roomDay, roomId;
-      results = [];
-      for (resId in resvs) {
-        if (!hasProp.call(resvs, resId)) continue;
-        res = resvs[resId];
-        results.push((function() {
-          var ref, ref1, results1;
-          ref = res.rooms;
-          results1 = [];
-          for (roomId in ref) {
-            if (!hasProp.call(ref, roomId)) continue;
-            resRoom = ref[roomId];
-            room = this.room.rooms[roomId];
-            ref1 = resRoom.days;
-            for (dayId in ref1) {
-              if (!hasProp.call(ref1, dayId)) continue;
-              resDay = ref1[dayId];
-              roomDay = room.days[dayId];
-              roomDay = roomDay != null ? roomDay : {};
-              roomDay.status = res.status;
-              roomDay.resId = resId;
-              room.days[dayId] = roomDay;
-            }
-            results1.push(this.allocRoom(roomId, room.days));
-          }
-          return results1;
-        }).call(this));
-      }
-      return results;
-    };
-
-    Res.prototype.allocRoom = function(roomId, days) {
-      return store.add('Alloc', roomId, {
-        days: days
-      });
-    };
-
-    Res.prototype.createRoomRes = function(total, status, method, roomUIs) {
-      var day, obj, ref, res, roomId, roomUI;
-      res = {};
-      res.resId = this.Data.genResId(roomUIs);
-      res.total = total;
-      res.paid = 0;
-      res.balance = 0;
-      res.status = status;
-      res.method = method;
-      res.booked = this.Data.today();
-      res.arrive = res.resId.substr(1, 8);
-      res.rooms = {};
-      for (roomId in roomUIs) {
-        if (!hasProp.call(roomUIs, roomId)) continue;
-        roomUI = roomUIs[roomId];
-        if (!(roomUI.numDays > 0)) {
-          continue;
-        }
-        res.rooms[roomId] = roomUI.resRoom;
-        ref = roomUI.resRoom.days;
-        for (day in ref) {
-          if (!hasProp.call(ref, day)) continue;
-          obj = ref[day];
-          if (day.status === 'mine') {
-            day.status = status;
-          }
-          if (day < res.arrive) {
-            res.arrive = day;
-          }
-        }
-      }
-      res.payments = {};
-      res.cust = {};
-      return res;
     };
 
     Res.prototype.createCust = function(first, last, phone, email, source) {
@@ -138,10 +148,50 @@
       return cust;
     };
 
-    Res.prototype.postRes = function(id, res) {
-      this.updateRooms(res);
-      this.store.add('Res', id, res);
-      return Util.log('Res.postRes()', res);
+    Res.prototype.createPayment = function(amount, method, last4, purpose) {
+      var payment;
+      payment = {};
+      payment.amount = amount;
+      payment.date = this.Data.today();
+      payment.method = method;
+      payment["with"] = last4;
+      payment.purpose = purpose;
+      payment.cc = '';
+      payment.exp = '';
+      payment.cvc = '';
+      return payment;
+    };
+
+    Res.prototype.setResvStatus = function(resv, post, purpose) {
+      if (post === 'post') {
+        if (purpose === 'PayInFull' || purpose === 'PayOffDeposit') {
+          resv.status = 'book';
+        }
+        if (purpose === 'Deposit') {
+          resv.status = 'depo';
+        }
+      } else if (post === 'deny') {
+        resv.status = 'free';
+      }
+      if (!Util.inArray(['book', 'depo', 'free'], resv.status)) {
+        Util.error('Pay.setResStatus() unknown status ', resv.status);
+        resv.status = 'free';
+      }
+    };
+
+    Res.prototype.postResv = function(resv, post, totals, amount, method, last4, purpose) {
+      var payId;
+      this.setResvStatus(resv, post, purpose);
+      payId = this.Data.genPaymentId(resv.resId, resv.payments);
+      resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
+      resv.totals = totals;
+      resv.paid += amount;
+      resv.balance = totals - resv.paid;
+      this.updateRooms(resv);
+      if (status === 'post') {
+        this.store.add('Res', resv.resId, resv);
+      }
+      return Util.log('Res.postResv()', resv);
     };
 
     return Res;

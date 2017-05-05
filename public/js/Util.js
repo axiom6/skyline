@@ -422,6 +422,14 @@ Util = (function() {
     return Util.consoleLog(json);
   };
 
+  Util.keys = function(o) {
+    if (Util.isObj(o)) {
+      return Object.keys(o);
+    } else {
+      return [];
+    }
+  };
+
   Util.isDef = function(d) {
     return d != null;
   };

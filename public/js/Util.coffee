@@ -304,6 +304,7 @@ class Util
 
   # ------ Validators ------
 
+  @keys:(o)          ->  if Util.isObj(o) then Object.keys(o) else []
   @isDef:(d)         ->  d?
   @isNot:(d)         ->  not Util.isDef(d)
   @isStr:(s)         ->  s? and typeof(s)=="string" and s.length > 0

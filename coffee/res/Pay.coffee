@@ -11,38 +11,36 @@ class Pay
     @uri    = "https://api.stripe.com/v1/"
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
-    @myRes   = {}
-    @spas    = false
+    @resv    = null
+    @totals  = 0
+    @amount  = 0
     @purpose = 'PayInFull' # 'Deposit' 'PayOffDeposit'
     @testing = false
     @errored = false
 
-  showSpa:( myRes ) ->
-    for own roomId, room of myRes.rooms
-      return true if @room.hasSpa(roomId)
-    false
-
-  showConfirmPay:( myRes ) =>
-    @myRes         = myRes
+  initPay:( totals, cust, roomUIs ) =>
+    @resv      = @res.createRoomResv( 'mine', 'card', roomUIs )
+    @resv.cust = cust
+    @totals    = totals
+    @amount    = totals - @resv.paid
     $('#Pays'        ).empty()
-    $('#Pays'        ).append( @confirmHead()  )
-    $('#ConfirmBlock').append( @confirmTable() )
-    $('#Pays'        ).append( @confirmBtns()  )
+    $('#Pays'        ).append( @confirmHead(  @resv ) )
+    $('#ConfirmBlock').append( @confirmTable( @resv ) )
+    $('#Pays'        ).append( @confirmBtns(  @resv ) )
     $('#PayDiv'      ).append( @payHtml()      )
     $('#Pays'        ).append( @termsHtml()    )
-    @initCCPayment()
+    @initCCPayment( @resv, @amount )
     @credit.init( 'cc-num', 'cc-exp', 'cc-cvc', 'cc-com' )
     $('#Pays').show()
     @testPop() if @testing
     return
 
-  initCCPayment:() =>
+  initCCPayment:( resv, amount ) =>
     @hideCCErrors()
-    $('#cc-amt' ).text('$'+@myRes.total)
+    $('#cc-amt' ).text( '$'+amount )
     $('#ChangeReser').click(  (e) => @onChangeReser( e ) )
     $('#MakeDeposit').click(  (e) => @onMakeDeposit( e ) )
     $('#MakePayment').click(  (e) => @onMakePayment( e ) )
-    $('.SpaCheck'   ).change( (e) => @onSpa(         e ) )
     $('#cc-sub'     ).click(  (e) => @submitPayment( e ) )
     $('#cc-can'     ).click(  (e) => @onCancel(      e ) )
     return
@@ -74,64 +72,59 @@ class Pay
     return
 
   calcDeposit:() ->
-    Math.round( @myRes.total * 50 ) / 100
+    Math.round(   @totals * 50 ) / 100
 
   onMakeDeposit:( e ) =>
     e.preventDefault()
-    @purpose = 'Deposit'
-    $("#cc-amt" ).text('$'+@calcDeposit() )
+    @amount  =  @ccAmt( 'Deposit' )
     $('#MakePay').text('Make 50% Deposit')
 
   onMakePayment:( e ) =>
     e.preventDefault()
-    @purpose = 'PayInFull'
-    $("#cc-amt" ).text('$'+@myRes.total)
+    @amount  =  @ccAmt( 'PayInFull' )
     $('#MakePay').text('Make Payment with Visa Mastercard or Discover')
 
-  ccAmt:() ->
-    amt = if @purpose is 'Deposit' then @calcDeposit() else @myRes.total
-    $("#cc-amt" ).text('$'+amt)
-    return
+  ccAmt:( purpose=@purpose ) ->
+    @purpose = purpose
+    amount   = if @purpose is 'Deposit' then @calcDeposit() else @totals
+    $("#cc-amt" ).text('$'+amount)
+    amount
 
-  confirmHead:() ->
-    htm   = """<div id="ConfirmTitle" class= "Title">Confirmation # #{@myRes.key}</div>"""
-    htm  += """<div><div id="ConfirmName"><span>For: #{@myRes.cust.first} </span><span>#{@myRes.cust.last} </span></div></div>"""
+  confirmHead:( resv ) ->
+    htm   = """<div id="ConfirmTitle" class= "Title">Confirmation # #{resv.resId}</div>"""
+    htm  += """<div><div id="ConfirmName"><span>For: #{resv.cust.first} </span><span>#{resv.cust.last} </span></div></div>"""
     htm  += """<div id="ConfirmBlock" class="DivCenter"></div>"""
     htm
  
-  confirmTable:() ->
-    @spas = @showSpa( @myRes )
-    spaTH = if @spas then "Spa" else ""
+  confirmTable:( resv ) ->
     htm   = """<table id="ConfirmTable"><thead>"""
-    htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>#{spaTH}</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
+    htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
 
-    for own roomId, r of @myRes.rooms
-      days   = Object.keys(r.days).sort()
-      num    = days.length
+    for own roomId, r of resv.rooms
+      days   = Util.keys(r.days).sort()
       bday   = days[0]
       i      = 0
-      total  = 0
-      night  = 0
-      while i < num
+      while i < r.nights
         eday   = days[i]
-        total += r.price
-        night++
-        if i is num-1 or days[i+1] isnt @Data.advanceDate( eday, 1 )
+        if i is r.nights-1 or days[i+1] isnt @Data.advanceDate( eday, 1 )
           arrive = @confirmDate( bday, "", false )
           depart = @confirmDate( eday, "", true  )
-          htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{night}</td><td id="#{roomId}TR" class="room-total">$#{total}</td></tr>"""
+          htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{r.nights}</td><td id="#{roomId}TR" class="room-total">$#{r.total}</td></tr>"""
           bday  = days[i+1]
-          total = 0
-          night = 0
         i++
 
-    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{@myRes.total}</td></tr>"""
+    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{@totals}</td></tr>"""
     htm  += """</tbody></table>"""
     htm
 
-  confirmBtns:() ->
-    canDeposit = @canMakeDeposit( @myRes )
+  spa:( roomId ) ->
+    change = @resv.rooms[roomId].change
+    has    = @room.hasSpa(roomId)
+    if  !has then '' else if change is -20 then 'N' else 'Y'
+
+  confirmBtns:( resv ) ->
+    canDeposit = @canMakeDeposit( resv )
     htm   = """<div class="PayBtns">"""
     htm  += """  <button class="btn btn-primary" id="ChangeReser">Change Reservation</button>"""
     htm  += """  <button class="btn btn-primary" id="MakeDeposit">Make 50% Deposit</button>""" if canDeposit
@@ -142,48 +135,30 @@ class Pay
     htm  += """<div id="Approval"></div>"""
     htm
 
-  canMakeDeposit:( myRes ) ->
-    @myRes.arrive >= @Data.advanceDate( @myRes.booked, 7 )
+  canMakeDeposit:( resv ) ->
+    resv.arrive >= @Data.advanceDate( resv.booked, 7 )
 
-  spa:( roomId ) ->
-    #Util.log("Util.spa()", roomId, @room.hasSpa(roomId) )
-    if @room.hasSpa(roomId) then """<input id="#{roomId}SpaCheck" class="SpaCheck" type="checkbox" value="#{roomId}" checked>""" else ""
-
-  onSpa:( event ) ->
-    $elem   = $(event.target)
-    roomId  = $elem.attr('id').charAt(0)
-    checked = $elem.is(':checked')
-    spaFee  = if checked then 20 else -20
-    @myRes.rooms[roomId].total += spaFee
-    @myRes.total               += spaFee
-    $('#'+roomId+'TR').text('$'+@myRes.rooms[roomId].total)
-    $('#TT'          ).text('$'+@myRes.total)
-    @ccAmt()
-    return
-
-  confirmBody:() ->
-    body  = """.      Confirmation# #{@myRes.key}\n"""
-    body += """.      For: #{@myRes.cust.first} #{@myRes.cust.last}\n"""
-    for own roomId, r of @myRes.rooms
+  confirmBody:( resv ) ->
+    body  = """.      Confirmation# #{resv.resId}\n"""
+    body += """.      For: #{resv.cust.first} #{resv.cust.last}\n"""
+    for own roomId, r of resv.rooms
       room   = Util.padEnd( r.name, 24, '-' )
-      days   = Object.keys(r.days).sort()
-      num    = days.length
+      days   = Util.keys(r.days).sort()
       bday   = days[0]
       i      = 1
-      total  = r.price
-      while i < num
+      while i < r.nights
         eday = days[i]
-        if i is num-1 or eday isnt @Data.advance( eday, 1 )
-          arrive = @confirmDate( bday,        "", false )
-          depart = @confirmDate( days[num-1], "", true  )
-          body  += """#{room} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{num}-Nights $#{total}\n"""
+        if i is r.nights-1 or eday isnt @Data.advance( eday, 1 )
+          arrive = @confirmDate( bday, "", false )
+          depart = @confirmDate( eday, "", true  )
+          body  += """#{room} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{r.nights}-Nights $#{r.total}\n"""
         i++
     body += """\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n"""
     body = escape(body)
     body
 
-  confirmEmail:() ->
-    win = window.open("""mailto:#{@myRes.cust.email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody()}""","EMail")
+  confirmEmail:( resv ) ->
+    win = window.open("""mailto:#{resv.cust.email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody(resv)}""","EMail")
     win.close() if win? and not win.closed
     return
 
@@ -269,7 +244,7 @@ class Pay
     if ne and ee and ce and accept
       @hidePay()
       $('#Approval').text("Waiting For Approval...").show()
-      @token( num, mon, yer, cvc )
+      @token( num, mon, yer, cvc )  # Call Stripe
       @last4 = num.substr( 11, 4 )
     else
       ae = card.type + ' not accepted'
@@ -334,63 +309,27 @@ class Pay
     #Util.log( 'StoreRest.onToken()', obj )
     @tokenId  = obj.id
     @cardId   = obj.card.id
-    @charge( @tokenId, @myRes.total, 'usd', @myRes.cust.first + " " + @myRes.cust.last )
+    @charge( @tokenId, @amount, 'usd', @resv.cust.first + " " + @resv.cust.last )
 
   onCharge:(obj) =>
     #Util.log( 'StoreRest.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
-      @doConfirm()
-      @postRes()
+      @doPost(       @resv )
+      @res.postResv( @resv, 'post', @totals, @amount, 'card', @last4, @purpose )
     else
-      @doDeny()
-      #@denyRes()
+      @amount = 0
+      @doDeny(       @resv )
+      @res.postResv( @resv, 'deny', @totals, @amount, 'card', @last4, @purpose )
 
-  doConfirm:() ->
-    @confirmEmail()
+  doPost:( resv ) ->
+    @confirmEmail( resv )
     @hidePay()
-    $('#Approval').text("Approved: A Confirnation Email Been Sent To #{@myRes.cust.email}")
+    $('#Approval').text("Approved: A Confirnation Email Been Sent To #{resv.cust.email}")
     @home.showConfirm()
 
-  doDeny:() ->
+  doDeny:( resv ) ->
     @showPay()
     $('#Approval').text('Payment Denied').show()
-
-  postRes:() =>
-    @setResStatus( 'post' )
-    payId = @Data.genPaymentId(  @myRes.resId, @myRes.payments )
-    @myRes.payments[payId] = @createPayment()
-    @res.postRes( @myRes.resId, @myRes )
-
-  # Not sure what we want to do here
-  denyRes:() =>
-    @setResStatus( 'deny' )
-    payId = @Data.genPaymentId( @myRes.resId, @myRes.payments )
-    @myRes.payments[payId] = @createPayment()
-    @res.postRes( @myRes.resId, @myRes )
-
-  setResStatus:( state ) ->
-    if       state is 'post'
-      @myRes.status = 'book' if @purpose is 'PayInFull' or @purpose is 'PayOffDeposit'
-      @myRes.status = 'depo' if @purpose is 'Deposit'
-    else if  state is 'deny'
-      @myRes.status = 'free'
-
-    if not Util.inArray(['book','depo','free'], @myRes.status )
-      Util.error( 'Pay.setResStatus() unknown status ', @myRes.status )
-      @myRes.status = 'free'
-    return
-
-  createPayment:() ->
-    payment = {}
-    payment.amount  = @myRes.total
-    payment.date    = @Data.today()
-    payment.method  = 'card'
-    payment.with    = @last4
-    payment.purpose = @purpose
-    payment.cc      = ''
-    payment.exp     = ''
-    payment.cvc     = ''
-    payment
 
   onError:(obj) =>
     Util.error( 'StoreRest.onError()', obj )

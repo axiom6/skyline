@@ -24,30 +24,32 @@
     }
 
     Room.prototype.createRoomUIs = function(rooms) {
-      var key, resRoom, room, roomUI, roomUIs;
+      var key, room, roomUI, roomUIs;
       roomUIs = {};
       for (key in rooms) {
         room = rooms[key];
         roomUIs[key] = {};
         roomUI = roomUIs[key];
-        roomUI.numDays = 0;
         roomUI.$ = {};
-        roomUI.resRoom = {};
-        resRoom = roomUI.resRoom;
-        resRoom.name = room.name;
-        resRoom.total = 0;
-        resRoom.price = 0;
-        resRoom.guests = 2;
-        resRoom.pets = 0;
-        resRoom.spa = room.spa;
-        resRoom.days = {};
-        resRoom.group = {};
+        roomUI.name = room.name;
+        roomUI.total = 0;
+        roomUI.price = 0;
+        roomUI.guests = 2;
+        roomUI.pets = 0;
+        roomUI.spa = room.spa;
+        roomUI.change = 0;
+        roomUI.days = {};
+        roomUI.group = {};
       }
       return roomUIs;
     };
 
+    Room.prototype.optSpa = function(roomId) {
+      return this.rooms[roomId].spa === 'O';
+    };
+
     Room.prototype.hasSpa = function(roomId) {
-      return this.rooms[roomId].spa > 0;
+      return this.rooms[roomId].spa === 'O' || this.rooms[roomId].spa === 'Y';
     };
 
     Room.prototype.initRooms = function() {
@@ -72,7 +74,7 @@
 
     Room.prototype.dayBookedUI = function(room, date) {
       var day;
-      day = room.resRoom.days[date];
+      day = room.days[date];
       if (day != null) {
         return day.status;
       } else {

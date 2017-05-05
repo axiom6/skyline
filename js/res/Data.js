@@ -63,15 +63,15 @@
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
         roomUI = roomUIs[roomId];
-        if (!(roomUI.numDays > 0)) {
+        if (!(!Util.isObjEmpty(roomUI.days))) {
           continue;
         }
-        days = Object.keys(roomUI.resRoom.days).sort();
+        days = Util.keys(roomUI.days).sort();
         resId = roomId + days[0];
         break;
       }
       if (!Util.isStr(resId)) {
-        Util.error('Res.genResKey() resKey blank');
+        Util.error('Data.getResId() resId blank');
       }
       return resId;
     };
@@ -88,7 +88,7 @@
 
     Data.genPaymentId = function(resId, payments) {
       var paySeq, pays;
-      pays = Object.keys(payments).sort();
+      pays = Util.keys(payments).sort();
       paySeq = pays.length > 0 ? toString(parseInt(pays[pays.length - 1]) + 1) : '1';
       return resId + paySeq;
     };

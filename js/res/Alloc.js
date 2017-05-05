@@ -18,17 +18,12 @@
       this.onAlloc = bind(this.onAlloc, this);
       this.subscribe();
       this.rooms = this.room.rooms;
-      this.init();
     }
-
-    Alloc.prototype.init = function() {
-      return this.store.make('Alloc');
-    };
 
     Alloc.prototype.subscribe = function() {
       this.store.subscribe('Alloc', 'none', 'make', (function(_this) {
         return function(make) {
-          return Util.log('Alloc.make()', make);
+          return Util.noop('Alloc.make()', make);
         };
       })(this));
       this.store.subscribe('Alloc', 'none', 'onAdd', (function(_this) {
@@ -43,7 +38,7 @@
       })(this));
       this.store.subscribe('Alloc', 'none', 'onDel', (function(_this) {
         return function(onDel) {
-          return Util.log('Alloc.onDel()', onDel);
+          return Util.noop('Alloc.onDel()', onDel);
         };
       })(this));
       this.store.make('Alloc');

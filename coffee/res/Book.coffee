@@ -22,20 +22,21 @@ class Book
     @method   = 'site'
 
   ready:() ->
-    $('#Book'   ).empty()
-    $('#Pays'   ).empty()
-    $('#Book'   ).append( @bookHtml()  )
-    $('#Insts'  ).append( @instructHtml() )
-    $('#Inits'  ).append( @initsHtml() )
-    $('#Rooms'  ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
-    $('#Guest'  ).append( @guestHtml() )
-    $('.guests' ).change( @onGuests  )
-    $('.pets'   ).change( @onPets    )
-    $('#Months' ).change( @onMonth   )
-    $('#Days'   ).change( @onDay     )
-    $('#Pop'    ).click(  @onPop     )
-    $('#Test'   ).click(  @onTest     )
-    $('#GoToPay').click(  @onGoToPay ) # .prop('disabled',true)
+    $('#Book'    ).empty()
+    $('#Pays'    ).empty()
+    $('#Book'    ).append( @bookHtml()  )
+    $('#Insts'   ).append( @instructHtml() )
+    $('#Inits'   ).append( @initsHtml() )
+    $('#Rooms'   ).append( @roomsHtml(@year,@monthIdx,@begDay,@numDays) )
+    $('#Guest'   ).append( @guestHtml() )
+    $('.guests'  ).change( @onGuests  )
+    $('.pets'    ).change( @onPets    )
+    $('.SpaCheck').change( @onSpa     )
+    $('#Months'  ).change( @onMonth   )
+    $('#Days'    ).change( @onDay     )
+    $('#Pop'     ).click(  @onPop     )
+    $('#Test'    ).click(  @onTest     )
+    $('#GoToPay' ).click(  @onGoToPay ) # .prop('disabled',true)
     $('#Navb').hide()
     $('#Book').show()
     @roomsJQuery()
@@ -73,21 +74,21 @@ class Book
   roomsHtml:( year, monthIdx, begDay, numDays ) ->
     weekdayIdx  = new Date( year, monthIdx, 1 ).getDay()
     htm   = "<table><thead>"
-    htm  += """<tr><th></th><th></th><th></th><th></th>"""
+    htm  += """<tr><th></th><th></th><th></th><th></th><th></th>"""
     for day in [1..@numDays]
       weekday = @Data.weekdays[(weekdayIdx+@begDay+day-2)%7]
       htm += "<th>#{weekday}</th>"
-    htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th>"
+    htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th>"
     for day in [1..@numDays]
       htm += "<th>#{@dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
-      htm += """<tr id="#{roomId}"><td class="td-left">#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
+      htm += """<tr id="#{roomId}"><td class="td-left">#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td>#{@spa(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
       for day in [1..numDays]
         htm += @createCell( roomId, room, @toDateStr(day) )
       htm += """<td class="room-total" id="#{roomId}T"></td></tr>"""
     htm += """<tr>"""
-    htm += """<td></td>""" for day in [1..@numDays+4]
+    htm += """<td></td>""" for day in [1..@numDays+5]
     htm += """<td class="room-total" id="Totals">&nbsp;</td></tr>"""
     htm += "</tbody></table>"
     htm
@@ -152,11 +153,7 @@ class Book
     if tv and fv and lv and pv and ev
       $('.NameER').hide()
       $('#Book').hide()
-      res       = @createRoomRes()
-      res.cust  = cust
-      res.total = @totals
-      #@res.add( res.resId, res )
-      @pay.showConfirmPay(  res )
+      @pay.initPay( @totals, cust, @roomUIs )
     else
       alert( @onGoToMsg( tv,fv,lv,pv,ev ) )
     return
@@ -194,10 +191,10 @@ class Book
 
   calcPrice:( roomId ) =>
     roomUI = @roomUIs[roomId]
-    guests = roomUI.resRoom.guests
-    pets   = roomUI.resRoom.pets
+    guests = roomUI.guests
+    pets   = roomUI.pets
     price  = @rooms[roomId][guests]+pets*@Data.petPrice
-    roomUI.resRoom.price = price
+    roomUI.price = price
     price
 
   updatePrice:(   roomId ) =>
@@ -206,10 +203,12 @@ class Book
     return
 
   updateTotal:( roomId ) ->
-    price = @calcPrice( roomId )
-    room  = @roomUIs[roomId]
-    room.resRoom.total = price * room.numDays
-    text = if room.resRoom.total is 0 then '' else '$'+room.resRoom.total
+    price  = @calcPrice( roomId )
+    room   = @roomUIs[roomId]
+    nights = Util.keys(room.days).length
+    room.total = price * nights + room.change
+    Util.log( 'Book.updateTotal()', { roomId:roomId, nights:nights, change:room.change, total:room.total } )
+    text = if room.total is 0 then '' else '$'+room.total
     $('#'+roomId+'T').text(text)
     @updateTotals()
     return
@@ -217,7 +216,7 @@ class Book
   updateTotals:() ->
     @totals = 0
     for own roomId, room of @roomUIs
-      @totals += room.resRoom.total
+      @totals += room.total
     text = if @totals is 0 then '' else '$'+@totals
     $('#Totals').text(text)
     $('#GoToPay').prop('disabled',false) if @totals > 0
@@ -239,16 +238,32 @@ class Book
 
   onGuests:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
-    @roomUIs[roomId].resRoom.guests = event.target.value
-    #Util.log( 'Book.onGuests', roomId, @roomUIs[roomId].resRoom.guests, @calcPrice(roomId) )
+    @roomUIs[roomId].guests = event.target.value
+    #Util.log( 'Book.onGuests', roomId, @roomUIs[roomId].guests, @calcPrice(roomId) )
     @updatePrice(roomId)
     return
 
   onPets:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
-    @roomUIs[roomId].resRoom.pets = event.target.value
-    #Util.log( 'Book.onPets', roomId, @roomUIs[roomId].resRoom.pets, @calcPrice(roomId) )
+    @roomUIs[roomId].pets = event.target.value
+    #Util.log( 'Book.onPets', roomId, @roomUIs[roomId].pets, @calcPrice(roomId) )
     @updatePrice(roomId)
+    return
+
+  spa:( roomId ) ->
+    if @room.optSpa(roomId) then """<input id="#{roomId}SpaCheck" class="SpaCheck" type="checkbox" value="#{roomId}" checked>""" else ""
+
+  onSpa:( event ) =>
+    $elem   = $(event.target)
+    roomId  = $elem.attr('id').charAt(0)
+    roomUI  = @roomUIs[roomId]
+    checked = $elem.is(':checked')
+    spaFee  = if checked then  20         else -20
+    reason  = if checked then 'Spa Added' else 'Spa Opted Out'
+    roomUI.change += spaFee
+    roomUI.reason  = reason
+    @updateTotal( roomId )  if roomUI.total > 0
+    #Util.log('Book.onSpa()', { room:roomId, change:roomUI.change, reason:readon, total:roomUI.total, totals:@totals } )
     return
 
   onMonth:( event ) =>
@@ -283,17 +298,6 @@ class Book
   onTest:() =>
     @test.doTest() if @test?
     return
-
-  createRoomRes:() =>
-    res = @res.createRoomRes( @totals, 'mine', @method, @roomUIs )
-    #Util.log( 'Book.createRes()', res )
-    for   own roomId, room of res.rooms
-      for own dayId,  day  of room.days
-        day.resId = res.resId
-      onAdd = {}
-      onAdd.days = room.days
-      @store.add( 'Alloc', roomId, onAdd )
-    res
     
   onCellBook:( event ) =>
     $cell  = $(event.target)
@@ -303,7 +307,7 @@ class Book
   cellBook:( $cell ) ->
     status  = $cell.attr('data-status')
     roomId  = $cell.attr('id').substr(1,1)
-    group   = @roomUIs[roomId].resRoom.group
+    group   = @roomUIs[roomId].group
     isEmpty = Util.isObjEmpty(group)
     if      status is 'free'
       status = 'mine'
@@ -329,21 +333,17 @@ class Book
     date   = $cell.attr('id').substr(2,8)
     roomUI = @roomUIs[roomId]
     if status is 'mine'
-      roomUI.numDays++
-      roomUI.resRoom.days[date] = { "status":status, "resId":"" }
-      #Util.log( 'Book.updateCellStatus() mine', roomUI.numDays )
+      roomUI.days[date] = { "status":status, "resId":"" }
     else if status is 'free'
-      roomUI.numDays-- if roomUI.numDays > 0
-      delete roomUI.resRoom.days[ date]
-      delete roomUI.resRoom.group[date] if roomUI.resRoom.group[date]?
-      #Util.log( 'Book.updateCellStatus() free', roomUI.numDays )
+      delete roomUI.days[ date]
+      delete roomUI.group[date] if roomUI.group[date]?
     @updateTotal( roomId  )
     [roomId,status]
 
   # Only status of 'mine' is supported
   fillInRooms:( roomId, $last ) ->
     roomUI  = @roomUIs[roomId]
-    days    = Object.keys(roomUI.resRoom.days).sort()
+    days    = Util.keys(roomUI.days).sort()
     bday    = days[0]
     weekday = @Data.weekday(days[0])
     weekend = weekday is 'Fri' or weekday is 'Sat'
@@ -356,7 +356,7 @@ class Book
   fillInWeekend:( roomId, bday ) ->
     nday  = @Data.advanceDate( bday, 1 )
     if $('#R'+roomId+nday).attr('data-status') is 'free'
-      group = @roomUIs[roomId].resRoom.group
+      group = @roomUIs[roomId].group
       group[bday] = { status:'mine' }
       group[nday] = { status:'mine' }
       #Util.log( 'Book.fillInRooms()', { bday:bday, nday:nday, group })

@@ -23,7 +23,7 @@ class Test
 
   doGoToPay:( res ) ->
     @book.onGoToPay( null )
-    payment = Object.keys(res.payments).sort()[0]
+    payment = Util.keys(res.payments).sort()[0]
     @popCC( payment.cc, payment.exp, payment.cvc )
     fn = () => @pay.submit( null )
     setTimeout( fn, 4000 )

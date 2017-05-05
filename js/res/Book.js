@@ -9,23 +9,23 @@
   Book = (function() {
     module.exports = Book;
 
-    function Book(stream, store, Data, room1, res1, pay, pict) {
+    function Book(stream, store, Data, room1, res, pay, pict) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
       this.room = room1;
-      this.res = res1;
+      this.res = res;
       this.pay = pay;
       this.pict = pict;
       this.insert = bind(this.insert, this);
       this.make = bind(this.make, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
-      this.createRoomRes = bind(this.createRoomRes, this);
       this.onTest = bind(this.onTest, this);
       this.onPop = bind(this.onPop, this);
       this.onDay = bind(this.onDay, this);
       this.onMonth = bind(this.onMonth, this);
+      this.onSpa = bind(this.onSpa, this);
       this.onPets = bind(this.onPets, this);
       this.onGuests = bind(this.onGuests, this);
       this.updatePrice = bind(this.updatePrice, this);
@@ -57,6 +57,7 @@
       $('#Guest').append(this.guestHtml());
       $('.guests').change(this.onGuests);
       $('.pets').change(this.onPets);
+      $('.SpaCheck').change(this.onSpa);
       $('#Months').change(this.onMonth);
       $('#Days').change(this.onDay);
       $('#Pop').click(this.onPop);
@@ -93,12 +94,12 @@
       var day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday, weekdayIdx;
       weekdayIdx = new Date(year, monthIdx, 1).getDay();
       htm = "<table><thead>";
-      htm += "<tr><th></th><th></th><th></th><th></th>";
+      htm += "<tr><th></th><th></th><th></th><th></th><th></th>";
       for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
         weekday = this.Data.weekdays[(weekdayIdx + this.begDay + day - 2) % 7];
         htm += "<th>" + weekday + "</th>";
       }
-      htm += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th>";
+      htm += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th>";
       for (day = j = 1, ref1 = this.numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
         htm += "<th>" + (this.dayMonth(day)) + "</th>";
       }
@@ -107,14 +108,14 @@
       for (roomId in ref2) {
         if (!hasProp.call(ref2, roomId)) continue;
         room = ref2[roomId];
-        htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
+        htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td>" + (this.spa(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
         for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
           htm += this.createCell(roomId, room, this.toDateStr(day));
         }
         htm += "<td class=\"room-total\" id=\"" + roomId + "T\"></td></tr>";
       }
       htm += "<tr>";
-      for (day = l = 1, ref4 = this.numDays + 4; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
+      for (day = l = 1, ref4 = this.numDays + 5; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
         htm += "<td></td>";
       }
       htm += "<td class=\"room-total\" id=\"Totals\">&nbsp;</td></tr>";
@@ -158,7 +159,7 @@
     };
 
     Book.prototype.onGoToPay = function(e) {
-      var cust, ev, fv, lv, pv, ref, res, tv;
+      var cust, ev, fv, lv, pv, ref, tv;
       if (e != null) {
         e.preventDefault();
       }
@@ -166,10 +167,7 @@
       if (tv && fv && lv && pv && ev) {
         $('.NameER').hide();
         $('#Book').hide();
-        res = this.createRoomRes();
-        res.cust = cust;
-        res.total = this.totals;
-        this.pay.showConfirmPay(res);
+        this.pay.initPay(this.totals, cust, this.roomUIs);
       } else {
         alert(this.onGoToMsg(tv, fv, lv, pv, ev));
       }
@@ -237,10 +235,10 @@
     Book.prototype.calcPrice = function(roomId) {
       var guests, pets, price, roomUI;
       roomUI = this.roomUIs[roomId];
-      guests = roomUI.resRoom.guests;
-      pets = roomUI.resRoom.pets;
+      guests = roomUI.guests;
+      pets = roomUI.pets;
       price = this.rooms[roomId][guests] + pets * this.Data.petPrice;
-      roomUI.resRoom.price = price;
+      roomUI.price = price;
       return price;
     };
 
@@ -250,11 +248,18 @@
     };
 
     Book.prototype.updateTotal = function(roomId) {
-      var price, room, text;
+      var nights, price, room, text;
       price = this.calcPrice(roomId);
       room = this.roomUIs[roomId];
-      room.resRoom.total = price * room.numDays;
-      text = room.resRoom.total === 0 ? '' : '$' + room.resRoom.total;
+      nights = Util.keys(room.days).length;
+      room.total = price * nights + room.change;
+      Util.log('Book.updateTotal()', {
+        roomId: roomId,
+        nights: nights,
+        change: room.change,
+        total: room.total
+      });
+      text = room.total === 0 ? '' : '$' + room.total;
       $('#' + roomId + 'T').text(text);
       this.updateTotals();
     };
@@ -266,7 +271,7 @@
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
         room = ref[roomId];
-        this.totals += room.resRoom.total;
+        this.totals += room.total;
       }
       text = this.totals === 0 ? '' : '$' + this.totals;
       $('#Totals').text(text);
@@ -316,15 +321,38 @@
     Book.prototype.onGuests = function(event) {
       var roomId;
       roomId = $(event.target).attr('id').charAt(0);
-      this.roomUIs[roomId].resRoom.guests = event.target.value;
+      this.roomUIs[roomId].guests = event.target.value;
       this.updatePrice(roomId);
     };
 
     Book.prototype.onPets = function(event) {
       var roomId;
       roomId = $(event.target).attr('id').charAt(0);
-      this.roomUIs[roomId].resRoom.pets = event.target.value;
+      this.roomUIs[roomId].pets = event.target.value;
       this.updatePrice(roomId);
+    };
+
+    Book.prototype.spa = function(roomId) {
+      if (this.room.optSpa(roomId)) {
+        return "<input id=\"" + roomId + "SpaCheck\" class=\"SpaCheck\" type=\"checkbox\" value=\"" + roomId + "\" checked>";
+      } else {
+        return "";
+      }
+    };
+
+    Book.prototype.onSpa = function(event) {
+      var $elem, checked, reason, roomId, roomUI, spaFee;
+      $elem = $(event.target);
+      roomId = $elem.attr('id').charAt(0);
+      roomUI = this.roomUIs[roomId];
+      checked = $elem.is(':checked');
+      spaFee = checked ? 20 : -20;
+      reason = checked ? 'Spa Added' : 'Spa Opted Out';
+      roomUI.change += spaFee;
+      roomUI.reason = reason;
+      if (roomUI.total > 0) {
+        this.updateTotal(roomId);
+      }
     };
 
     Book.prototype.onMonth = function(event) {
@@ -362,26 +390,6 @@
       }
     };
 
-    Book.prototype.createRoomRes = function() {
-      var day, dayId, onAdd, ref, ref1, res, room, roomId;
-      res = this.res.createRoomRes(this.totals, 'mine', this.method, this.roomUIs);
-      ref = res.rooms;
-      for (roomId in ref) {
-        if (!hasProp.call(ref, roomId)) continue;
-        room = ref[roomId];
-        ref1 = room.days;
-        for (dayId in ref1) {
-          if (!hasProp.call(ref1, dayId)) continue;
-          day = ref1[dayId];
-          day.resId = res.resId;
-        }
-        onAdd = {};
-        onAdd.days = room.days;
-        this.store.add('Alloc', roomId, onAdd);
-      }
-      return res;
-    };
-
     Book.prototype.onCellBook = function(event) {
       var $cell, ref, roomId, status;
       $cell = $(event.target);
@@ -395,7 +403,7 @@
       var group, isEmpty, roomId, status;
       status = $cell.attr('data-status');
       roomId = $cell.attr('id').substr(1, 1);
-      group = this.roomUIs[roomId].resRoom.group;
+      group = this.roomUIs[roomId].group;
       isEmpty = Util.isObjEmpty(group);
       if (status === 'free') {
         status = 'mine';
@@ -431,18 +439,14 @@
       date = $cell.attr('id').substr(2, 8);
       roomUI = this.roomUIs[roomId];
       if (status === 'mine') {
-        roomUI.numDays++;
-        roomUI.resRoom.days[date] = {
+        roomUI.days[date] = {
           "status": status,
           "resId": ""
         };
       } else if (status === 'free') {
-        if (roomUI.numDays > 0) {
-          roomUI.numDays--;
-        }
-        delete roomUI.resRoom.days[date];
-        if (roomUI.resRoom.group[date] != null) {
-          delete roomUI.resRoom.group[date];
+        delete roomUI.days[date];
+        if (roomUI.group[date] != null) {
+          delete roomUI.group[date];
         }
       }
       this.updateTotal(roomId);
@@ -452,7 +456,7 @@
     Book.prototype.fillInRooms = function(roomId, $last) {
       var bday, days, roomUI, weekday, weekend;
       roomUI = this.roomUIs[roomId];
-      days = Object.keys(roomUI.resRoom.days).sort();
+      days = Util.keys(roomUI.days).sort();
       bday = days[0];
       weekday = this.Data.weekday(days[0]);
       weekend = weekday === 'Fri' || weekday === 'Sat';
@@ -467,7 +471,7 @@
       var group, nday;
       nday = this.Data.advanceDate(bday, 1);
       if ($('#R' + roomId + nday).attr('data-status') === 'free') {
-        group = this.roomUIs[roomId].resRoom.group;
+        group = this.roomUIs[roomId].group;
         group[bday] = {
           status: 'mine'
         };
