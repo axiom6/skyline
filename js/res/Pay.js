@@ -11,11 +11,11 @@
   Pay = (function() {
     module.exports = Pay;
 
-    function Pay(stream, store, Data, room1, res, home) {
+    function Pay(stream, store, Data, room, res, home) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
-      this.room = room1;
+      this.room = room;
       this.res = res;
       this.home = home;
       this.onError = bind(this.onError, this);
@@ -24,6 +24,7 @@
       this.onChargeError = bind(this.onChargeError, this);
       this.onTokenError = bind(this.onTokenError, this);
       this.submitPayment = bind(this.submitPayment, this);
+      this.confirmBody = bind(this.confirmBody, this);
       this.onMakePayment = bind(this.onMakePayment, this);
       this.onMakeDeposit = bind(this.onMakeDeposit, this);
       this.onCancel = bind(this.onCancel, this);
@@ -157,14 +158,32 @@
     };
 
     Pay.prototype.confirmTable = function(resv) {
-      var arrive, bday, days, depart, eday, htm, i, r, ref, roomId;
+      var htm;
       htm = "<table id=\"ConfirmTable\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
-      ref = resv.rooms;
-      for (roomId in ref) {
-        if (!hasProp.call(ref, roomId)) continue;
-        r = ref[roomId];
+      htm += this.confirmContent(resv.rooms, 'html');
+      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.totals + "</td></tr>";
+      htm += "</tbody></table>";
+      return htm;
+    };
+
+    Pay.prototype.confirmBody = function(resv) {
+      var body;
+      body = "\n      Confirmation #" + resv.resId + "\nFor: " + resv.cust.first + " " + resv.cust.last + "\nPhone: " + resv.cust.phone + "\n\n";
+      body += this.confirmContent(resv.rooms, 'body');
+      body += "\n Totals:$" + resv.totals + " Paid:$" + resv.paid + " Balance:$" + resv.balance + " ";
+      body = escape(body);
+      return body;
+    };
+
+    Pay.prototype.confirmContent = function(rooms, stuff) {
+      var arrive, bday, content, days, depart, eday, i, name, r, roomId;
+      content = "";
+      for (roomId in rooms) {
+        if (!hasProp.call(rooms, roomId)) continue;
+        r = rooms[roomId];
+        name = Util.padEnd(r.name + ' ', 26, '-');
         days = Util.keys(r.days).sort();
         bday = days[0];
         i = 0;
@@ -173,15 +192,17 @@
           if (i === r.nights - 1 || days[i + 1] !== this.Data.advanceDate(eday, 1)) {
             arrive = this.confirmDate(bday, "", false);
             depart = this.confirmDate(eday, "", true);
-            htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+            if (stuff === 'html') {
+              content += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+            } else if (stuff === 'body') {
+              content += name + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + r.nights + "-Nights $" + r.total + "\n";
+            }
             bday = days[i + 1];
           }
           i++;
         }
       }
-      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.totals + "</td></tr>";
-      htm += "</tbody></table>";
-      return htm;
+      return content;
     };
 
     Pay.prototype.spa = function(roomId) {
@@ -219,39 +240,10 @@
       return resv.arrive >= this.Data.advanceDate(resv.booked, 7);
     };
 
-    Pay.prototype.confirmBody = function(resv) {
-      var arrive, bday, body, days, depart, eday, i, r, ref, room, roomId;
-      body = ".      Confirmation# " + resv.resId + "\n";
-      body += ".      For: " + resv.cust.first + " " + resv.cust.last + "\n";
-      ref = resv.rooms;
-      for (roomId in ref) {
-        if (!hasProp.call(ref, roomId)) continue;
-        r = ref[roomId];
-        room = Util.padEnd(r.name, 24, '-');
-        days = Util.keys(r.days).sort();
-        bday = days[0];
-        i = 1;
-        while (i < r.nights) {
-          eday = days[i];
-          if (i === r.nights - 1 || eday !== this.Data.advance(eday, 1)) {
-            arrive = this.confirmDate(bday, "", false);
-            depart = this.confirmDate(eday, "", true);
-            body += room + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + r.nights + "-Nights $" + r.total + "\n";
-          }
-          i++;
-        }
-      }
-      body += "\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n";
-      body = escape(body);
-      return body;
-    };
-
     Pay.prototype.confirmEmail = function(resv) {
       var win;
       win = window.open("mailto:" + resv.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody(resv)), "EMail");
-      if ((win != null) && !win.closed) {
-        win.close();
-      }
+      Util.noop(win);
     };
 
     Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
@@ -404,7 +396,8 @@
     Pay.prototype.onCharge = function(obj) {
       if (obj['outcome'].type === 'authorized') {
         this.doPost(this.resv);
-        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
+        this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
+        return this.confirmEmail(this.resv);
       } else {
         this.amount = 0;
         this.doDeny(this.resv);
@@ -413,7 +406,6 @@
     };
 
     Pay.prototype.doPost = function(resv) {
-      this.confirmEmail(resv);
       this.hidePay();
       $('#Approval').text("Approved: A Confirnation Email Been Sent To " + resv.cust.email);
       return this.home.showConfirm();
@@ -485,7 +477,7 @@
     };
 
     Pay.prototype.termsHtml = function() {
-      return "<ul class=\"Terms\">\n  <li>Prices have been automatically calculated.</li>\n  <li>The number of guests and pets has to be declared in the reservation.</li>\n  <li>Pricing for 1-2 guests is the same for cottages 1 2 4 7 8 N S.</li>\n  <li>Pricing for 1-4 guests is the same for cottages 3 5 6.</li>\n  <li>Additional guests are $10 per night.</li>\n  <li>Each pet is $12 per night.</li>\n  <li>Deposit is 50% of total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
+      return "<ul class=\"Terms\">\n  <li>The number of guests and pets has to be declared in the reservation.</li>\n  <li>Prices have been automatically calculated.</li>\n  <li style=\"margin-left:20px;\">Additional guests are $10 per night above the base rate for 2-4 guests.</li>\n  <li style=\"margin-left:20px;\">Each pet is $12 per night.</li>\n  <li>A deposit is 50% of the total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
     };
 
     return Pay;

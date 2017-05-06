@@ -100,23 +100,37 @@ class Pay
     htm   = """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
+    htm  += @confirmContent( resv.rooms, 'html' )
+    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{@totals}</td></tr>"""
+    htm  += """</tbody></table>"""
+    htm
 
-    for own roomId, r of resv.rooms
+  confirmBody:( resv ) =>
+    body  = """\n      Confirmation ##{resv.resId}\nFor: #{resv.cust.first} #{resv.cust.last}\nPhone: #{resv.cust.phone}\n\n"""
+    body += @confirmContent( resv.rooms, 'body' )
+    body += """\n Totals:$#{resv.totals} Paid:$#{resv.paid} Balance:$#{resv.balance} """
+    body = escape(body)
+    body
+
+  confirmContent:( rooms, stuff ) ->
+    content = ""
+    for own roomId, r of rooms
+      name   = Util.padEnd( r.name+' ', 26, '-' )
       days   = Util.keys(r.days).sort()
       bday   = days[0]
       i      = 0
       while i < r.nights
         eday   = days[i]
         if i is r.nights-1 or days[i+1] isnt @Data.advanceDate( eday, 1 )
-          arrive = @confirmDate( bday, "", false )
-          depart = @confirmDate( eday, "", true  )
-          htm  += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{r.nights}</td><td id="#{roomId}TR" class="room-total">$#{r.total}</td></tr>"""
-          bday  = days[i+1]
+          arrive   = @confirmDate( bday, "", false )
+          depart   = @confirmDate( eday, "", true  )
+          if      stuff is 'html'
+            content += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{r.nights}</td><td id="#{roomId}TR" class="room-total">$#{r.total}</td></tr>"""
+          else if stuff is 'body'
+            content  += """#{name} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{r.nights}-Nights $#{r.total}\n"""
+          bday     = days[i+1]
         i++
-
-    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{@totals}</td></tr>"""
-    htm  += """</tbody></table>"""
-    htm
+    content
 
   spa:( roomId ) ->
     change = @resv.rooms[roomId].change
@@ -138,28 +152,11 @@ class Pay
   canMakeDeposit:( resv ) ->
     resv.arrive >= @Data.advanceDate( resv.booked, 7 )
 
-  confirmBody:( resv ) ->
-    body  = """.      Confirmation# #{resv.resId}\n"""
-    body += """.      For: #{resv.cust.first} #{resv.cust.last}\n"""
-    for own roomId, r of resv.rooms
-      room   = Util.padEnd( r.name, 24, '-' )
-      days   = Util.keys(r.days).sort()
-      bday   = days[0]
-      i      = 1
-      while i < r.nights
-        eday = days[i]
-        if i is r.nights-1 or eday isnt @Data.advance( eday, 1 )
-          arrive = @confirmDate( bday, "", false )
-          depart = @confirmDate( eday, "", true  )
-          body  += """#{room} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{r.nights}-Nights $#{r.total}\n"""
-        i++
-    body += """\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n"""
-    body = escape(body)
-    body
-
+  # Call after @res.postResv(...)
   confirmEmail:( resv ) ->
     win = window.open("""mailto:#{resv.cust.email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody(resv)}""","EMail")
-    win.close() if win? and not win.closed
+    #win.close() if win? and not win.closed
+    Util.noop( win )
     return
 
   departDate:( monthI, dayI, weekdayI ) ->
@@ -316,13 +313,13 @@ class Pay
     if obj['outcome'].type is 'authorized'
       @doPost(       @resv )
       @res.postResv( @resv, 'post', @totals, @amount, 'card', @last4, @purpose )
+      @confirmEmail( @resv )
     else
       @amount = 0
       @doDeny(       @resv )
       @res.postResv( @resv, 'deny', @totals, @amount, 'card', @last4, @purpose )
 
   doPost:( resv ) ->
-    @confirmEmail( resv )
     @hidePay()
     $('#Approval').text("Approved: A Confirnation Email Been Sent To #{resv.cust.email}")
     @home.showConfirm()
@@ -363,13 +360,11 @@ class Pay
   termsHtml:() ->
     """
       <ul class="Terms">
-        <li>Prices have been automatically calculated.</li>
         <li>The number of guests and pets has to be declared in the reservation.</li>
-        <li>Pricing for 1-2 guests is the same for cottages 1 2 4 7 8 N S.</li>
-        <li>Pricing for 1-4 guests is the same for cottages 3 5 6.</li>
-        <li>Additional guests are $10 per night.</li>
-        <li>Each pet is $12 per night.</li>
-        <li>Deposit is 50% of total reservation.</li>
+        <li>Prices have been automatically calculated.</li>
+        <li style="margin-left:20px;">Additional guests are $10 per night above the base rate for 2-4 guests.</li>
+        <li style="margin-left:20px;">Each pet is $12 per night.</li>
+        <li>A deposit is 50% of the total reservation.</li>
         <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>
         <li>Less than 50-day notice, deposit is forfeited.</li>
         <li>Short term reservations have a 3-day cancellation deadline.</li>

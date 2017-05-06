@@ -31,8 +31,8 @@
       this.updatePrice = bind(this.updatePrice, this);
       this.calcPrice = bind(this.calcPrice, this);
       this.onGoToPay = bind(this.onGoToPay, this);
-      this.rooms = this.room.rooms;
-      this.roomUIs = this.room.roomUIs;
+      this.rooms = null;
+      this.roomUIs = null;
       this.myDays = 0;
       this.today = new Date();
       this.monthIdx = this.today.getMonth();
@@ -48,6 +48,8 @@
     }
 
     Book.prototype.ready = function() {
+      this.rooms = this.room.rooms;
+      this.roomUIs = this.room.createRoomUIs(this.rooms);
       $('#Book').empty();
       $('#Pays').empty();
       $('#Book').append(this.bookHtml());
@@ -253,12 +255,6 @@
       room = this.roomUIs[roomId];
       nights = Util.keys(room.days).length;
       room.total = price * nights + room.change;
-      Util.log('Book.updateTotal()', {
-        roomId: roomId,
-        nights: nights,
-        change: room.change,
-        total: room.total
-      });
       text = room.total === 0 ? '' : '$' + room.total;
       $('#' + roomId + 'T').text(text);
       this.updateTotals();

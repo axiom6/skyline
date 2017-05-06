@@ -42,7 +42,6 @@ class Res
     room.nights  = Util.keys(roomUI.days).length
     room
 
-
   # Need to clear out obsolete resKeys in rooms
   updateRooms:( resv ) ->
     for own  roomId, room of resv.rooms

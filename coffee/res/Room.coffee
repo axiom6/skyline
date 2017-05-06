@@ -8,15 +8,14 @@ class Room
   constructor:( @stream, @store, @Data ) ->
     @rooms   = Room.Rooms
     @states  = Room.States
-    @roomUIs = @createRoomUIs( @rooms )
     @initRooms()
 
   createRoomUIs:( rooms ) ->
     roomUIs = {}
     for key, room of rooms
-      roomUIs[key]    = {}
-      roomUI          = roomUIs[key]
-      roomUI.$        = {}
+      roomUIs[key]   = {}
+      roomUI         = roomUIs[key]
+      roomUI.$       = {}
       roomUI.name    = room.name
       roomUI.total   = 0
       roomUI.price   = 0
@@ -24,6 +23,7 @@ class Room
       roomUI.pets    = 0
       roomUI.spa     = room.spa
       roomUI.change  = 0         # Changes usually to spa opt out
+      roomUI.reason  = 'No Changes'
       roomUI.days    = {}
       roomUI.group   = {} # All days in group at maintained at the same status
     roomUIs

@@ -19,7 +19,6 @@
       this.initRooms = bind(this.initRooms, this);
       this.rooms = Room.Rooms;
       this.states = Room.States;
-      this.roomUIs = this.createRoomUIs(this.rooms);
       this.initRooms();
     }
 
@@ -38,6 +37,7 @@
         roomUI.pets = 0;
         roomUI.spa = room.spa;
         roomUI.change = 0;
+        roomUI.reason = 'No Changes';
         roomUI.days = {};
         roomUI.group = {};
       }

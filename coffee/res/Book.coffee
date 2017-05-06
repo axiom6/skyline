@@ -6,8 +6,8 @@ class Book
   module.exports = Book
 
   constructor:( @stream, @store, @Data, @room, @res, @pay, @pict ) ->
-    @rooms    = @room.rooms
-    @roomUIs  = @room.roomUIs
+    @rooms    = null
+    @roomUIs  = null
     @myDays   =  0
     @today    = new Date()
     @monthIdx = @today.getMonth()
@@ -22,6 +22,8 @@ class Book
     @method   = 'site'
 
   ready:() ->
+    @rooms   = @room.rooms
+    @roomUIs = @room.createRoomUIs( @rooms )
     $('#Book'    ).empty()
     $('#Pays'    ).empty()
     $('#Book'    ).append( @bookHtml()  )
@@ -207,7 +209,7 @@ class Book
     room   = @roomUIs[roomId]
     nights = Util.keys(room.days).length
     room.total = price * nights + room.change
-    Util.log( 'Book.updateTotal()', { roomId:roomId, nights:nights, change:room.change, total:room.total } )
+    # Util.log( 'Book.updateTotal()', { roomId:roomId, nights:nights, change:room.change, total:room.total } )
     text = if room.total is 0 then '' else '$'+room.total
     $('#'+roomId+'T').text(text)
     @updateTotals()
