@@ -6,8 +6,6 @@
   Alloc = (function() {
     module.exports = Alloc;
 
-    Alloc.Allocs = require('data/Alloc.json');
-
     function Alloc(stream, store, Data, room, book, master) {
       this.stream = stream;
       this.store = store;

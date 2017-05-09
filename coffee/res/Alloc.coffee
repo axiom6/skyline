@@ -3,7 +3,7 @@ class Alloc
 
   module.exports = Alloc
 
-  Alloc.Allocs   = require( 'data/Alloc.json' )
+  #Alloc.Allocs   = require( 'data/Alloc.json' )
 
   constructor:( @stream, @store, @Data, @room=null, @book=null, @master=null ) ->
     @subscribe()

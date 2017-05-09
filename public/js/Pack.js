@@ -31806,7 +31806,7 @@
 	    Test.prototype.doGoToPay = function(res) {
 	      var fn, payment;
 	      this.book.onGoToPay(null);
-	      payment = Object.keys(res.payments).sort()[0];
+	      payment = Util.keys(res.payments).sort()[0];
 	      this.popCC(payment.cc, payment.exp, payment.cvc);
 	      fn = (function(_this) {
 	        return function() {
@@ -32307,15 +32307,15 @@
 	      for (roomId in roomUIs) {
 	        if (!hasProp.call(roomUIs, roomId)) continue;
 	        roomUI = roomUIs[roomId];
-	        if (!(roomUI.numDays > 0)) {
+	        if (!(!Util.isObjEmpty(roomUI.days))) {
 	          continue;
 	        }
-	        days = Object.keys(roomUI.resRoom.days).sort();
+	        days = Util.keys(roomUI.days).sort();
 	        resId = roomId + days[0];
 	        break;
 	      }
 	      if (!Util.isStr(resId)) {
-	        Util.error('Res.genResKey() resKey blank');
+	        Util.error('Data.getResId() resId blank');
 	      }
 	      return resId;
 	    };
@@ -32332,7 +32332,7 @@
 
 	    Data.genPaymentId = function(resId, payments) {
 	      var paySeq, pays;
-	      pays = Object.keys(payments).sort();
+	      pays = Util.keys(payments).sort();
 	      paySeq = pays.length > 0 ? toString(parseInt(pays[pays.length - 1]) + 1) : '1';
 	      return resId + paySeq;
 	    };
@@ -32409,35 +32409,37 @@
 	      this.initRooms = bind(this.initRooms, this);
 	      this.rooms = Room.Rooms;
 	      this.states = Room.States;
-	      this.roomUIs = this.createRoomUIs(this.rooms);
 	      this.initRooms();
 	    }
 
 	    Room.prototype.createRoomUIs = function(rooms) {
-	      var key, resRoom, room, roomUI, roomUIs;
+	      var key, room, roomUI, roomUIs;
 	      roomUIs = {};
 	      for (key in rooms) {
 	        room = rooms[key];
 	        roomUIs[key] = {};
 	        roomUI = roomUIs[key];
-	        roomUI.numDays = 0;
 	        roomUI.$ = {};
-	        roomUI.resRoom = {};
-	        resRoom = roomUI.resRoom;
-	        resRoom.name = room.name;
-	        resRoom.total = 0;
-	        resRoom.price = 0;
-	        resRoom.guests = 2;
-	        resRoom.pets = 0;
-	        resRoom.spa = room.spa;
-	        resRoom.days = {};
-	        resRoom.group = {};
+	        roomUI.name = room.name;
+	        roomUI.total = 0;
+	        roomUI.price = 0;
+	        roomUI.guests = 2;
+	        roomUI.pets = 0;
+	        roomUI.spa = room.spa;
+	        roomUI.change = 0;
+	        roomUI.reason = 'No Changes';
+	        roomUI.days = {};
+	        roomUI.group = {};
 	      }
 	      return roomUIs;
 	    };
 
+	    Room.prototype.optSpa = function(roomId) {
+	      return this.rooms[roomId].spa === 'O';
+	    };
+
 	    Room.prototype.hasSpa = function(roomId) {
-	      return this.rooms[roomId].spa > 0;
+	      return this.rooms[roomId].spa === 'O' || this.rooms[roomId].spa === 'Y';
 	    };
 
 	    Room.prototype.initRooms = function() {
@@ -32462,7 +32464,7 @@
 
 	    Room.prototype.dayBookedUI = function(room, date) {
 	      var day;
-	      day = room.resRoom.days[date];
+	      day = room.days[date];
 	      if (day != null) {
 	        return day.status;
 	      } else {
@@ -32502,7 +32504,7 @@
 			"days": {},
 			"name": "#1 Cozy 1-Room Cabin",
 			"pet": 12,
-			"spa": 0,
+			"spa": "N",
 			"max": 4,
 			"price": 0
 		},
@@ -32514,7 +32516,7 @@
 			"days": {},
 			"name": "#2 Mountain Spa",
 			"pet": 12,
-			"spa": 20,
+			"spa": "O",
 			"max": 4,
 			"price": 0
 		},
@@ -32531,7 +32533,7 @@
 			"days": {},
 			"name": "#3 Southwest Spa",
 			"pet": 12,
-			"spa": 20,
+			"spa": "Y",
 			"max": 9,
 			"price": 0
 		},
@@ -32543,7 +32545,7 @@
 			"days": {},
 			"name": "#4 Cozy 1-Room Cabin",
 			"pet": 12,
-			"spa": 0,
+			"spa": "N",
 			"max": 4,
 			"price": 0
 		},
@@ -32557,7 +32559,7 @@
 			"days": {},
 			"name": "#5 River Cabin With View",
 			"pet": 12,
-			"spa": 0,
+			"spa": "N",
 			"max": 6,
 			"price": 0
 		},
@@ -32577,7 +32579,7 @@
 			"days": {},
 			"name": "#6 Large River Cabin",
 			"pet": 12,
-			"spa": 0,
+			"spa": "N",
 			"max": 12,
 			"price": 0
 		},
@@ -32589,7 +32591,7 @@
 			"days": {},
 			"name": "#7 Western Spa",
 			"pet": 12,
-			"spa": 20,
+			"spa": "O",
 			"max": 4,
 			"price": 0
 		},
@@ -32601,7 +32603,7 @@
 			"days": {},
 			"name": "#8 Western Unit",
 			"pet": 12,
-			"spa": 0,
+			"spa": "N",
 			"max": 4,
 			"price": 0
 		},
@@ -32613,7 +32615,7 @@
 			"days": {},
 			"name": "Upper Skyline North",
 			"pet": 12,
-			"spa": 0,
+			"spa": "N",
 			"max": 4,
 			"price": 0
 		},
@@ -32625,7 +32627,7 @@
 			"days": {},
 			"name": "Upper Skyline South",
 			"pet": 12,
-			"spa": 0,
+			"spa": "N",
 			"max": 4,
 			"price": 0
 		}
@@ -32917,9 +32919,9 @@
 
 	    Res.Resvs = __webpack_require__(362);
 
-	    function Res(stream, store1, Data, room1) {
+	    function Res(stream, store, Data, room1) {
 	      this.stream = stream;
-	      this.store = store1;
+	      this.store = store;
 	      this.Data = Data;
 	      this.room = room1;
 	      this.subscribeToResId = bind(this.subscribeToResId, this);
@@ -32928,6 +32930,84 @@
 	        this.insertTestResvs();
 	      }
 	    }
+
+	    Res.prototype.createRoomResv = function(status, method, roomUIs) {
+	      var day, obj, ref, resv, roomId, roomUI;
+	      resv = {};
+	      resv.resId = this.Data.genResId(roomUIs);
+	      resv.totals = 0;
+	      resv.paid = 0;
+	      resv.balance = 0;
+	      resv.status = status;
+	      resv.method = method;
+	      resv.booked = this.Data.today();
+	      resv.arrive = resv.resId.substr(1, 8);
+	      resv.rooms = {};
+	      for (roomId in roomUIs) {
+	        if (!hasProp.call(roomUIs, roomId)) continue;
+	        roomUI = roomUIs[roomId];
+	        if (!(!Util.isObjEmpty(roomUI.days))) {
+	          continue;
+	        }
+	        resv.rooms[roomId] = this.toResvRoom(roomUI);
+	        ref = roomUI.days;
+	        for (day in ref) {
+	          if (!hasProp.call(ref, day)) continue;
+	          obj = ref[day];
+	          if (day.status === 'mine') {
+	            day.status = status;
+	          }
+	          if (day < resv.arrive) {
+	            resv.arrive = day;
+	          }
+	        }
+	      }
+	      resv.payments = {};
+	      resv.cust = {};
+	      return resv;
+	    };
+
+	    Res.prototype.toResvRoom = function(roomUI) {
+	      var room;
+	      room = {};
+	      room.name = roomUI.name;
+	      room.total = roomUI.total;
+	      room.price = roomUI.price;
+	      room.guests = roomUI.guests;
+	      room.pets = roomUI.pets;
+	      room.spa = roomUI.spa;
+	      room.change = roomUI.change;
+	      room.reason = roomUI.reason;
+	      room.days = roomUI.days;
+	      room.nights = Util.keys(roomUI.days).length;
+	      return room;
+	    };
+
+	    Res.prototype.updateRooms = function(resv) {
+	      var day, dayId, ref, ref1, results, room, roomId;
+	      ref = resv.rooms;
+	      results = [];
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        room = ref[roomId];
+	        ref1 = room.days;
+	        for (dayId in ref1) {
+	          if (!hasProp.call(ref1, dayId)) continue;
+	          day = ref1[dayId];
+	          day.status = resv.status;
+	          day.resId = resv.resId;
+	        }
+	        delete room.group;
+	        results.push(this.allocRoom(roomId, room.days));
+	      }
+	      return results;
+	    };
+
+	    Res.prototype.allocRoom = function(roomId, days) {
+	      return this.store.add('Alloc', roomId, {
+	        days: days
+	      });
+	    };
 
 	    Res.prototype.subscribeToResId = function(resId) {
 	      this.store.subscribe('Res', resId, 'add', (function(_this) {
@@ -32943,6 +33023,7 @@
 	    };
 
 	    Res.prototype.insertTestResvs = function() {
+	      var ref, resId, resv;
 	      this.store.subscribe('Res', 'none', 'make', (function(_this) {
 	        return function(make) {
 	          _this.store.insert('Res', _this.testResvs);
@@ -32950,7 +33031,12 @@
 	        };
 	      })(this));
 	      this.store.make('Res');
-	      this.updateRooms(this.testResvs);
+	      ref = this.testResvs;
+	      for (resId in ref) {
+	        if (!hasProp.call(ref, resId)) continue;
+	        resv = ref[resId];
+	        this.updateRooms(resv);
+	      }
 	    };
 
 	    Res.prototype.makeAllTables = function() {
@@ -32958,80 +33044,6 @@
 	      this.store.make('Room');
 	      this.store.make('Payment');
 	      return this.store.make('Cust');
-	    };
-
-	    Res.prototype.updateRooms = function(resvs) {
-	      var dayId, res, resDay, resId, resRoom, results, room, roomDay, roomId;
-	      results = [];
-	      for (resId in resvs) {
-	        if (!hasProp.call(resvs, resId)) continue;
-	        res = resvs[resId];
-	        results.push((function() {
-	          var ref, ref1, results1;
-	          ref = res.rooms;
-	          results1 = [];
-	          for (roomId in ref) {
-	            if (!hasProp.call(ref, roomId)) continue;
-	            resRoom = ref[roomId];
-	            room = this.room.rooms[roomId];
-	            ref1 = resRoom.days;
-	            for (dayId in ref1) {
-	              if (!hasProp.call(ref1, dayId)) continue;
-	              resDay = ref1[dayId];
-	              roomDay = room.days[dayId];
-	              roomDay = roomDay != null ? roomDay : {};
-	              roomDay.status = res.status;
-	              roomDay.resId = resId;
-	              room.days[dayId] = roomDay;
-	            }
-	            results1.push(this.allocRoom(roomId, room.days));
-	          }
-	          return results1;
-	        }).call(this));
-	      }
-	      return results;
-	    };
-
-	    Res.prototype.allocRoom = function(roomId, days) {
-	      return store.add('Alloc', roomId, {
-	        days: days
-	      });
-	    };
-
-	    Res.prototype.createRoomRes = function(total, status, method, roomUIs) {
-	      var day, obj, ref, res, roomId, roomUI;
-	      res = {};
-	      res.resId = this.Data.genResId(roomUIs);
-	      res.total = total;
-	      res.paid = 0;
-	      res.balance = 0;
-	      res.status = status;
-	      res.method = method;
-	      res.booked = this.Data.today();
-	      res.arrive = res.resId.substr(1, 8);
-	      res.rooms = {};
-	      for (roomId in roomUIs) {
-	        if (!hasProp.call(roomUIs, roomId)) continue;
-	        roomUI = roomUIs[roomId];
-	        if (!(roomUI.numDays > 0)) {
-	          continue;
-	        }
-	        res.rooms[roomId] = roomUI.resRoom;
-	        ref = roomUI.resRoom.days;
-	        for (day in ref) {
-	          if (!hasProp.call(ref, day)) continue;
-	          obj = ref[day];
-	          if (day.status === 'mine') {
-	            day.status = status;
-	          }
-	          if (day < res.arrive) {
-	            res.arrive = day;
-	          }
-	        }
-	      }
-	      res.payments = {};
-	      res.cust = {};
-	      return res;
 	    };
 
 	    Res.prototype.createCust = function(first, last, phone, email, source) {
@@ -33046,10 +33058,50 @@
 	      return cust;
 	    };
 
-	    Res.prototype.postRes = function(id, res) {
-	      this.updateRooms(res);
-	      this.store.add('Res', id, res);
-	      return Util.log('Res.postRes()', res);
+	    Res.prototype.createPayment = function(amount, method, last4, purpose) {
+	      var payment;
+	      payment = {};
+	      payment.amount = amount;
+	      payment.date = this.Data.today();
+	      payment.method = method;
+	      payment["with"] = last4;
+	      payment.purpose = purpose;
+	      payment.cc = '';
+	      payment.exp = '';
+	      payment.cvc = '';
+	      return payment;
+	    };
+
+	    Res.prototype.setResvStatus = function(resv, post, purpose) {
+	      if (post === 'post') {
+	        if (purpose === 'PayInFull' || purpose === 'PayOffDeposit') {
+	          resv.status = 'book';
+	        }
+	        if (purpose === 'Deposit') {
+	          resv.status = 'depo';
+	        }
+	      } else if (post === 'deny') {
+	        resv.status = 'free';
+	      }
+	      if (!Util.inArray(['book', 'depo', 'free'], resv.status)) {
+	        Util.error('Pay.setResStatus() unknown status ', resv.status);
+	        resv.status = 'free';
+	      }
+	    };
+
+	    Res.prototype.postResv = function(resv, post, totals, amount, method, last4, purpose) {
+	      var payId;
+	      this.setResvStatus(resv, post, purpose);
+	      payId = this.Data.genPaymentId(resv.resId, resv.payments);
+	      resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
+	      resv.totals = totals;
+	      resv.paid += amount;
+	      resv.balance = totals - resv.paid;
+	      this.updateRooms(resv);
+	      if (status === 'post') {
+	        this.store.add('Res', resv.resId, resv);
+	      }
+	      return Util.log('Res.postResv()', resv);
 	    };
 
 	    return Res;
@@ -33064,10 +33116,15 @@
 /***/ function(module, exports) {
 
 	module.exports = {
-		"1": {
-			"total": 250,
+		"120170709": {
+			"resId": "120170709",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "book",
+			"method": "site",
+			"booked": "20170501",
+			"arrive": "20170709",
 			"rooms": {
 				"1": {
 					"total": 250,
@@ -33082,21 +33139,34 @@
 				}
 			},
 			"payments": {
-				"1": {
+				"1201707091": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
-					"num": "4028"
+					"num": "4028",
+					"cc": "",
+					"exp": "",
+					"cvc": ""
 				}
 			},
-			"status": "book",
-			"method": "site",
-			"custId": "1"
+			"cust": {
+				"custId": "3037984232",
+				"first": "Luke",
+				"last": "Johnson",
+				"phone": "3037984232",
+				"email": "tef@eazy.net",
+				"source": "site"
+			}
 		},
-		"2": {
-			"total": 250,
+		"220170710": {
+			"resId": "220170710",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "depo",
+			"method": "booking",
+			"booked": "20170502",
+			"arrive": "20170710",
 			"rooms": {
 				"2": {
 					"total": 250,
@@ -33111,21 +33181,31 @@
 				}
 			},
 			"payments": {
-				"2": {
+				"1201707101": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "depo",
-			"method": "booking",
-			"custId": "2"
+			"cust": {
+				"custId": "3137984232",
+				"first": "Mark",
+				"last": "Ryan",
+				"phone": "3137984232",
+				"email": "tef@eazy.net",
+				"source": "walkin"
+			}
 		},
-		"3": {
-			"total": 250,
+		"320170711": {
+			"resId": "320170711",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "hold",
+			"method": "walkin",
+			"booked": "20170502",
+			"arrive": "20170711",
 			"rooms": {
 				"3": {
 					"total": 250,
@@ -33140,21 +33220,31 @@
 				}
 			},
 			"payments": {
-				"3": {
+				"3201707111": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "book",
-			"method": "walkin",
-			"custId": "3"
+			"cust": {
+				"custId": "3047984232",
+				"first": "David",
+				"last": "Macon",
+				"phone": "3047984232",
+				"email": "tef@eazy.net",
+				"source": "site"
+			}
 		},
-		"4": {
-			"total": 250,
+		"420170712": {
+			"resId": "420170712",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "book",
+			"method": "phone",
+			"booked": "20170503",
+			"arrive": "20170712",
 			"rooms": {
 				"4": {
 					"total": 250,
@@ -33169,21 +33259,32 @@
 				}
 			},
 			"payments": {
-				"4": {
+				"4201707121": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
-				}
+				},
+				"resId": ""
 			},
-			"status": "book",
-			"method": "phone",
-			"custId": "4"
+			"cust": {
+				"custId": "3038984232",
+				"first": "John",
+				"last": "Abrams",
+				"phone": "3038984232",
+				"email": "tef@eazy.net",
+				"source": "bookings"
+			}
 		},
-		"5": {
-			"total": 250,
+		"520170714": {
+			"resId": "520170714",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "depo",
+			"method": "email",
+			"booked": "20170504",
+			"arrive": "20170714",
 			"rooms": {
 				"5": {
 					"total": 250,
@@ -33198,21 +33299,31 @@
 				}
 			},
 			"payments": {
-				"1": {
+				"5201707141": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "depo",
-			"method": "email",
-			"custId": "5"
+			"cust": {
+				"custId": "3037084232",
+				"first": "Clyde",
+				"last": "Horn",
+				"phone": "3037084232",
+				"email": "tef@eazy.net",
+				"source": "expedia"
+			}
 		},
-		"6": {
-			"total": 250,
+		"620170715": {
+			"resId": "620170715",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "hold",
+			"method": "site",
+			"booked": "20170505",
+			"arrive": "20170715",
 			"rooms": {
 				"6": {
 					"total": 250,
@@ -33227,21 +33338,31 @@
 				}
 			},
 			"payments": {
-				"1": {
+				"6201707151": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "depo",
-			"method": "site",
-			"custId": "6"
+			"cust": {
+				"custId": "3037994232",
+				"first": "Teressa",
+				"last": "May",
+				"phone": "3037994232",
+				"email": "tef@eazy.net",
+				"source": "bookings"
+			}
 		},
-		"7": {
-			"total": 250,
+		"720170716": {
+			"resId": "720170716",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "book",
+			"method": "booking",
+			"booked": "20170507",
+			"arrive": "20170716",
 			"rooms": {
 				"7": {
 					"total": 250,
@@ -33256,21 +33377,31 @@
 				}
 			},
 			"payments": {
-				"1": {
+				"7201707161": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "book",
-			"method": "booking",
-			"custId": "7"
+			"cust": {
+				"custId": "3037985232",
+				"first": "Susan",
+				"last": "Anthony",
+				"phone": "3037985232",
+				"email": "tef@eazy.net",
+				"source": "site"
+			}
 		},
-		"8": {
-			"total": 250,
+		"820170717": {
+			"resId": "820170717",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "depo",
+			"method": "walkin",
+			"booked": "20170508",
+			"arrive": "20170717",
 			"rooms": {
 				"8": {
 					"total": 250,
@@ -33285,21 +33416,31 @@
 				}
 			},
 			"payments": {
-				"1": {
+				"8201707171": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "depo",
-			"method": "walkin",
-			"custId": "8"
+			"cust": {
+				"custId": "3037984332",
+				"first": "Gretchen",
+				"last": "Menn",
+				"phone": "3037984332",
+				"email": "tef@eazy.net",
+				"source": "bookings"
+			}
 		},
-		"9": {
-			"total": 250,
+		"N20170718": {
+			"resId": "N20170718",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "hold",
+			"method": "email",
+			"booked": "20170509",
+			"arrive": "20170718",
 			"rooms": {
 				"N": {
 					"total": 250,
@@ -33314,21 +33455,31 @@
 				}
 			},
 			"payments": {
-				"1": {
+				"N201707181": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "depo",
-			"method": "email",
-			"custId": "9"
+			"cust": {
+				"custId": "3037984242",
+				"first": "Fabio",
+				"last": "Sosa",
+				"phone": "3037984242",
+				"email": "tef@eazy.net",
+				"source": "walkin"
+			}
 		},
-		"10": {
-			"total": 250,
+		"S20170719": {
+			"resId": "S20170719",
+			"totals": 250,
 			"paid": 250,
 			"balance": 0,
+			"status": "book",
+			"method": "site",
+			"booked": "20170510",
+			"arrive": "20170719",
 			"rooms": {
 				"S": {
 					"total": 250,
@@ -33343,16 +33494,21 @@
 				}
 			},
 			"payments": {
-				"10": {
+				"S201707191": {
 					"amount": 250,
 					"date": "20170517",
 					"with": "check",
 					"num": "4028"
 				}
 			},
-			"status": "book",
-			"method": "site",
-			"custId": "10"
+			"cust": {
+				"custId": "3037984233",
+				"first": "Dan",
+				"last": "Marks",
+				"phone": "3037984233",
+				"email": "tef@eazy.net",
+				"source": "site"
+			}
 		}
 	};
 
@@ -33373,27 +33529,26 @@
 	  Pay = (function() {
 	    module.exports = Pay;
 
-	    function Pay(stream, store, Data, room1, res, home) {
+	    function Pay(stream, store, Data, room, res, home) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
-	      this.room = room1;
+	      this.room = room;
 	      this.res = res;
 	      this.home = home;
 	      this.onError = bind(this.onError, this);
-	      this.denyRes = bind(this.denyRes, this);
-	      this.postRes = bind(this.postRes, this);
 	      this.onCharge = bind(this.onCharge, this);
 	      this.onToken = bind(this.onToken, this);
 	      this.onChargeError = bind(this.onChargeError, this);
 	      this.onTokenError = bind(this.onTokenError, this);
 	      this.submitPayment = bind(this.submitPayment, this);
+	      this.confirmBody = bind(this.confirmBody, this);
 	      this.onMakePayment = bind(this.onMakePayment, this);
 	      this.onMakeDeposit = bind(this.onMakeDeposit, this);
 	      this.onCancel = bind(this.onCancel, this);
 	      this.onChangeReser = bind(this.onChangeReser, this);
 	      this.initCCPayment = bind(this.initCCPayment, this);
-	      this.showConfirmPay = bind(this.showConfirmPay, this);
+	      this.initPay = bind(this.initPay, this);
 	      this.credit = new Credit();
 	      this.uri = "https://api.stripe.com/v1/";
 	      this.subscribe();
@@ -33402,35 +33557,26 @@
 	          "Authorization": this.Data.stripeCurlKey
 	        }
 	      });
-	      this.myRes = {};
-	      this.spas = false;
+	      this.resv = null;
+	      this.totals = 0;
+	      this.amount = 0;
 	      this.purpose = 'PayInFull';
 	      this.testing = false;
 	      this.errored = false;
 	    }
 
-	    Pay.prototype.showSpa = function(myRes) {
-	      var ref, room, roomId;
-	      ref = myRes.rooms;
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        room = ref[roomId];
-	        if (this.room.hasSpa(roomId)) {
-	          return true;
-	        }
-	      }
-	      return false;
-	    };
-
-	    Pay.prototype.showConfirmPay = function(myRes) {
-	      this.myRes = myRes;
+	    Pay.prototype.initPay = function(totals, cust, roomUIs) {
+	      this.resv = this.res.createRoomResv('mine', 'card', roomUIs);
+	      this.resv.cust = cust;
+	      this.totals = totals;
+	      this.amount = totals - this.resv.paid;
 	      $('#Pays').empty();
-	      $('#Pays').append(this.confirmHead());
-	      $('#ConfirmBlock').append(this.confirmTable());
-	      $('#Pays').append(this.confirmBtns());
+	      $('#Pays').append(this.confirmHead(this.resv));
+	      $('#ConfirmBlock').append(this.confirmTable(this.resv));
+	      $('#Pays').append(this.confirmBtns(this.resv));
 	      $('#PayDiv').append(this.payHtml());
 	      $('#Pays').append(this.termsHtml());
-	      this.initCCPayment();
+	      this.initCCPayment(this.resv, this.amount);
 	      this.credit.init('cc-num', 'cc-exp', 'cc-cvc', 'cc-com');
 	      $('#Pays').show();
 	      if (this.testing) {
@@ -33438,9 +33584,9 @@
 	      }
 	    };
 
-	    Pay.prototype.initCCPayment = function() {
+	    Pay.prototype.initCCPayment = function(resv, amount) {
 	      this.hideCCErrors();
-	      $('#cc-amt').text('$' + this.myRes.total);
+	      $('#cc-amt').text('$' + amount);
 	      $('#ChangeReser').click((function(_this) {
 	        return function(e) {
 	          return _this.onChangeReser(e);
@@ -33454,11 +33600,6 @@
 	      $('#MakePayment').click((function(_this) {
 	        return function(e) {
 	          return _this.onMakePayment(e);
-	        };
-	      })(this));
-	      $('.SpaCheck').change((function(_this) {
-	        return function(e) {
-	          return _this.onSpa(e);
 	        };
 	      })(this));
 	      $('#cc-sub').click((function(_this) {
@@ -33500,77 +33641,104 @@
 	    };
 
 	    Pay.prototype.calcDeposit = function() {
-	      return Math.round(this.myRes.total * 50) / 100;
+	      return Math.round(this.totals * 50) / 100;
 	    };
 
 	    Pay.prototype.onMakeDeposit = function(e) {
 	      e.preventDefault();
-	      this.purpose = 'Deposit';
-	      $("#cc-amt").text('$' + this.calcDeposit());
+	      this.amount = this.ccAmt('Deposit');
 	      return $('#MakePay').text('Make 50% Deposit');
 	    };
 
 	    Pay.prototype.onMakePayment = function(e) {
 	      e.preventDefault();
-	      this.purpose = 'PayInFull';
-	      $("#cc-amt").text('$' + this.myRes.total);
+	      this.amount = this.ccAmt('PayInFull');
 	      return $('#MakePay').text('Make Payment with Visa Mastercard or Discover');
 	    };
 
-	    Pay.prototype.ccAmt = function() {
-	      var amt;
-	      amt = this.purpose === 'Deposit' ? this.calcDeposit() : this.myRes.total;
-	      $("#cc-amt").text('$' + amt);
+	    Pay.prototype.ccAmt = function(purpose) {
+	      var amount;
+	      if (purpose == null) {
+	        purpose = this.purpose;
+	      }
+	      this.purpose = purpose;
+	      amount = this.purpose === 'Deposit' ? this.calcDeposit() : this.totals;
+	      $("#cc-amt").text('$' + amount);
+	      return amount;
 	    };
 
-	    Pay.prototype.confirmHead = function() {
+	    Pay.prototype.confirmHead = function(resv) {
 	      var htm;
-	      htm = "<div id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + this.myRes.key + "</div>";
-	      htm += "<div><div id=\"ConfirmName\"><span>For: " + this.myRes.cust.first + " </span><span>" + this.myRes.cust.last + " </span></div></div>";
+	      htm = "<div id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + resv.resId + "</div>";
+	      htm += "<div><div id=\"ConfirmName\"><span>For: " + resv.cust.first + " </span><span>" + resv.cust.last + " </span></div></div>";
 	      htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"></div>";
 	      return htm;
 	    };
 
-	    Pay.prototype.confirmTable = function() {
-	      var arrive, bday, days, depart, eday, htm, i, night, num, r, ref, roomId, spaTH, total;
-	      this.spas = this.showSpa(this.myRes);
-	      spaTH = this.spas ? "Spa" : "";
+	    Pay.prototype.confirmTable = function(resv) {
+	      var htm;
 	      htm = "<table id=\"ConfirmTable\"><thead>";
-	      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>" + spaTH + "</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
+	      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
 	      htm += "</thead><tbody>";
-	      ref = this.myRes.rooms;
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        r = ref[roomId];
-	        days = Object.keys(r.days).sort();
-	        num = days.length;
-	        bday = days[0];
-	        i = 0;
-	        total = 0;
-	        night = 0;
-	        while (i < num) {
-	          eday = days[i];
-	          total += r.price;
-	          night++;
-	          if (i === num - 1 || days[i + 1] !== this.Data.advanceDate(eday, 1)) {
-	            arrive = this.confirmDate(bday, "", false);
-	            depart = this.confirmDate(eday, "", true);
-	            htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + night + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + total + "</td></tr>";
-	            bday = days[i + 1];
-	            total = 0;
-	            night = 0;
-	          }
-	          i++;
-	        }
-	      }
-	      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.myRes.total + "</td></tr>";
+	      htm += this.confirmContent(resv.rooms, 'html');
+	      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.totals + "</td></tr>";
 	      htm += "</tbody></table>";
 	      return htm;
 	    };
 
-	    Pay.prototype.confirmBtns = function() {
+	    Pay.prototype.confirmBody = function(resv) {
+	      var body;
+	      body = "\n      Confirmation #" + resv.resId + "\nFor: " + resv.cust.first + " " + resv.cust.last + "\nPhone: " + resv.cust.phone + "\n\n";
+	      body += this.confirmContent(resv.rooms, 'body');
+	      body += "\n Totals:$" + resv.totals + " Paid:$" + resv.paid + " Balance:$" + resv.balance + " ";
+	      body = escape(body);
+	      return body;
+	    };
+
+	    Pay.prototype.confirmContent = function(rooms, stuff) {
+	      var arrive, bday, content, days, depart, eday, i, name, r, roomId;
+	      content = "";
+	      for (roomId in rooms) {
+	        if (!hasProp.call(rooms, roomId)) continue;
+	        r = rooms[roomId];
+	        name = Util.padEnd(r.name + ' ', 26, '-');
+	        days = Util.keys(r.days).sort();
+	        bday = days[0];
+	        i = 0;
+	        while (i < r.nights) {
+	          eday = days[i];
+	          if (i === r.nights - 1 || days[i + 1] !== this.Data.advanceDate(eday, 1)) {
+	            arrive = this.confirmDate(bday, "", false);
+	            depart = this.confirmDate(eday, "", true);
+	            if (stuff === 'html') {
+	              content += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+	            } else if (stuff === 'body') {
+	              content += name + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + r.nights + "-Nights $" + r.total + "\n";
+	            }
+	            bday = days[i + 1];
+	          }
+	          i++;
+	        }
+	      }
+	      return content;
+	    };
+
+	    Pay.prototype.spa = function(roomId) {
+	      var change, has;
+	      change = this.resv.rooms[roomId].change;
+	      has = this.room.hasSpa(roomId);
+	      if (!has) {
+	        return '';
+	      } else if (change === -20) {
+	        return 'N';
+	      } else {
+	        return 'Y';
+	      }
+	    };
+
+	    Pay.prototype.confirmBtns = function(resv) {
 	      var canDeposit, htm;
-	      canDeposit = this.canMakeDeposit(this.myRes);
+	      canDeposit = this.canMakeDeposit(resv);
 	      htm = "<div class=\"PayBtns\">";
 	      htm += "  <button class=\"btn btn-primary\" id=\"ChangeReser\">Change Reservation</button>";
 	      if (canDeposit) {
@@ -33586,66 +33754,14 @@
 	      return htm;
 	    };
 
-	    Pay.prototype.canMakeDeposit = function(myRes) {
-	      return this.myRes.arrive >= this.Data.advanceDate(this.myRes.booked, 7);
+	    Pay.prototype.canMakeDeposit = function(resv) {
+	      return resv.arrive >= this.Data.advanceDate(resv.booked, 7);
 	    };
 
-	    Pay.prototype.spa = function(roomId) {
-	      if (this.room.hasSpa(roomId)) {
-	        return "<input id=\"" + roomId + "SpaCheck\" class=\"SpaCheck\" type=\"checkbox\" value=\"" + roomId + "\" checked>";
-	      } else {
-	        return "";
-	      }
-	    };
-
-	    Pay.prototype.onSpa = function(event) {
-	      var $elem, checked, roomId, spaFee;
-	      $elem = $(event.target);
-	      roomId = $elem.attr('id').charAt(0);
-	      checked = $elem.is(':checked');
-	      spaFee = checked ? 20 : -20;
-	      this.myRes.rooms[roomId].total += spaFee;
-	      this.myRes.total += spaFee;
-	      $('#' + roomId + 'TR').text('$' + this.myRes.rooms[roomId].total);
-	      $('#TT').text('$' + this.myRes.total);
-	      this.ccAmt();
-	    };
-
-	    Pay.prototype.confirmBody = function() {
-	      var arrive, bday, body, days, depart, eday, i, num, r, ref, room, roomId, total;
-	      body = ".      Confirmation# " + this.myRes.key + "\n";
-	      body += ".      For: " + this.myRes.cust.first + " " + this.myRes.cust.last + "\n";
-	      ref = this.myRes.rooms;
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        r = ref[roomId];
-	        room = Util.padEnd(r.name, 24, '-');
-	        days = Object.keys(r.days).sort();
-	        num = days.length;
-	        bday = days[0];
-	        i = 1;
-	        total = r.price;
-	        while (i < num) {
-	          eday = days[i];
-	          if (i === num - 1 || eday !== this.Data.advance(eday, 1)) {
-	            arrive = this.confirmDate(bday, "", false);
-	            depart = this.confirmDate(days[num - 1], "", true);
-	            body += room + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + num + "-Nights $" + total + "\n";
-	          }
-	          i++;
-	        }
-	      }
-	      body += "\n.      Arrival is from 3:00-8:00PM   Checkout is before 10:00AM\n";
-	      body = escape(body);
-	      return body;
-	    };
-
-	    Pay.prototype.confirmEmail = function() {
+	    Pay.prototype.confirmEmail = function(resv) {
 	      var win;
-	      win = window.open("mailto:" + this.myRes.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody()), "EMail");
-	      if ((win != null) && !win.closed) {
-	        win.close();
-	      }
+	      win = window.open("mailto:" + resv.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody(resv)), "EMail");
+	      Util.noop(win);
 	    };
 
 	    Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
@@ -33792,75 +33908,30 @@
 	    Pay.prototype.onToken = function(obj) {
 	      this.tokenId = obj.id;
 	      this.cardId = obj.card.id;
-	      return this.charge(this.tokenId, this.myRes.total, 'usd', this.myRes.cust.first + " " + this.myRes.cust.last);
+	      return this.charge(this.tokenId, this.amount, 'usd', this.resv.cust.first + " " + this.resv.cust.last);
 	    };
 
 	    Pay.prototype.onCharge = function(obj) {
 	      if (obj['outcome'].type === 'authorized') {
-	        this.doConfirm();
-	        return this.postRes();
+	        this.doPost(this.resv);
+	        this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
+	        return this.confirmEmail(this.resv);
 	      } else {
-	        return this.doDeny();
+	        this.amount = 0;
+	        this.doDeny(this.resv);
+	        return this.res.postResv(this.resv, 'deny', this.totals, this.amount, 'card', this.last4, this.purpose);
 	      }
 	    };
 
-	    Pay.prototype.doConfirm = function() {
-	      this.confirmEmail();
+	    Pay.prototype.doPost = function(resv) {
 	      this.hidePay();
-	      $('#Approval').text("Approved: A Confirnation Email Been Sent To " + this.myRes.cust.email);
+	      $('#Approval').text("Approved: A Confirnation Email Been Sent To " + resv.cust.email);
 	      return this.home.showConfirm();
 	    };
 
-	    Pay.prototype.doDeny = function() {
+	    Pay.prototype.doDeny = function(resv) {
 	      this.showPay();
 	      return $('#Approval').text('Payment Denied').show();
-	    };
-
-	    Pay.prototype.postRes = function() {
-	      var payId;
-	      this.setResStatus('post');
-	      payId = this.Data.genPaymentId(this.myRes.resId, this.myRes.payments);
-	      this.myRes.payments[payId] = this.createPayment();
-	      return this.res.postRes(this.myRes.resId, this.myRes);
-	    };
-
-	    Pay.prototype.denyRes = function() {
-	      var payId;
-	      this.setResStatus('deny');
-	      payId = this.Data.genPaymentId(this.myRes.resId, this.myRes.payments);
-	      this.myRes.payments[payId] = this.createPayment();
-	      return this.res.postRes(this.myRes.resId, this.myRes);
-	    };
-
-	    Pay.prototype.setResStatus = function(state) {
-	      if (state === 'post') {
-	        if (this.purpose === 'PayInFull' || this.purpose === 'PayOffDeposit') {
-	          this.myRes.status = 'book';
-	        }
-	        if (this.purpose === 'Deposit') {
-	          this.myRes.status = 'depo';
-	        }
-	      } else if (state === 'deny') {
-	        this.myRes.status = 'free';
-	      }
-	      if (!Util.inArray(['book', 'depo', 'free'], this.myRes.status)) {
-	        Util.error('Pay.setResStatus() unknown status ', this.myRes.status);
-	        this.myRes.status = 'free';
-	      }
-	    };
-
-	    Pay.prototype.createPayment = function() {
-	      var payment;
-	      payment = {};
-	      payment.amount = this.myRes.total;
-	      payment.date = this.Data.today();
-	      payment.method = 'card';
-	      payment["with"] = this.last4;
-	      payment.purpose = this.purpose;
-	      payment.cc = '';
-	      payment.exp = '';
-	      payment.cvc = '';
-	      return payment;
 	    };
 
 	    Pay.prototype.onError = function(obj) {
@@ -33924,7 +33995,7 @@
 	    };
 
 	    Pay.prototype.termsHtml = function() {
-	      return "<ul class=\"Terms\">\n  <li>Prices have been automatically calculated.</li>\n  <li>The number of guests and pets has to be declared in the reservation.</li>\n  <li>Pricing for 1-2 guests is the same for cottages 1 2 4 7 8 N S.</li>\n  <li>Pricing for 1-4 guests is the same for cottages 3 5 6.</li>\n  <li>Additional guests are $10 per night.</li>\n  <li>Each pet is $12 per night.</li>\n  <li>Deposit is 50% of total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
+	      return "<ul class=\"Terms\">\n  <li>The number of guests and pets has to be declared in the reservation.</li>\n  <li>Prices have been automatically calculated.</li>\n  <li style=\"margin-left:20px;\">Additional guests are $10 per night above the base rate for 2-4 guests.</li>\n  <li style=\"margin-left:20px;\">Each pet is $12 per night.</li>\n  <li>A deposit is 50% of the total reservation.</li>\n  <li>There will be a deposit refund with a 50-day cancellation notice, less a $50 fee.</li>\n  <li>Less than 50-day notice, deposit is forfeited.</li>\n  <li>Short term reservations have a 3-day cancellation deadline.</li>\n</ul>";
 	    };
 
 	    return Pay;
@@ -34697,30 +34768,30 @@
 	  Book = (function() {
 	    module.exports = Book;
 
-	    function Book(stream, store, Data, room1, res1, pay, pict) {
+	    function Book(stream, store, Data, room1, res, pay, pict) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
 	      this.room = room1;
-	      this.res = res1;
+	      this.res = res;
 	      this.pay = pay;
 	      this.pict = pict;
 	      this.insert = bind(this.insert, this);
 	      this.make = bind(this.make, this);
 	      this.onAlloc = bind(this.onAlloc, this);
 	      this.onCellBook = bind(this.onCellBook, this);
-	      this.createRoomRes = bind(this.createRoomRes, this);
 	      this.onTest = bind(this.onTest, this);
 	      this.onPop = bind(this.onPop, this);
 	      this.onDay = bind(this.onDay, this);
 	      this.onMonth = bind(this.onMonth, this);
+	      this.onSpa = bind(this.onSpa, this);
 	      this.onPets = bind(this.onPets, this);
 	      this.onGuests = bind(this.onGuests, this);
 	      this.updatePrice = bind(this.updatePrice, this);
 	      this.calcPrice = bind(this.calcPrice, this);
 	      this.onGoToPay = bind(this.onGoToPay, this);
-	      this.rooms = this.room.rooms;
-	      this.roomUIs = this.room.roomUIs;
+	      this.rooms = null;
+	      this.roomUIs = null;
 	      this.myDays = 0;
 	      this.today = new Date();
 	      this.monthIdx = this.today.getMonth();
@@ -34736,6 +34807,8 @@
 	    }
 
 	    Book.prototype.ready = function() {
+	      this.rooms = this.room.rooms;
+	      this.roomUIs = this.room.createRoomUIs(this.rooms);
 	      $('#Book').empty();
 	      $('#Pays').empty();
 	      $('#Book').append(this.bookHtml());
@@ -34745,6 +34818,7 @@
 	      $('#Guest').append(this.guestHtml());
 	      $('.guests').change(this.onGuests);
 	      $('.pets').change(this.onPets);
+	      $('.SpaCheck').change(this.onSpa);
 	      $('#Months').change(this.onMonth);
 	      $('#Days').change(this.onDay);
 	      $('#Pop').click(this.onPop);
@@ -34781,12 +34855,12 @@
 	      var day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday, weekdayIdx;
 	      weekdayIdx = new Date(year, monthIdx, 1).getDay();
 	      htm = "<table><thead>";
-	      htm += "<tr><th></th><th></th><th></th><th></th>";
+	      htm += "<tr><th></th><th></th><th></th><th></th><th></th>";
 	      for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
 	        weekday = this.Data.weekdays[(weekdayIdx + this.begDay + day - 2) % 7];
 	        htm += "<th>" + weekday + "</th>";
 	      }
-	      htm += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Price</th>";
+	      htm += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th>";
 	      for (day = j = 1, ref1 = this.numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
 	        htm += "<th>" + (this.dayMonth(day)) + "</th>";
 	      }
@@ -34795,14 +34869,14 @@
 	      for (roomId in ref2) {
 	        if (!hasProp.call(ref2, roomId)) continue;
 	        room = ref2[roomId];
-	        htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
+	        htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td>" + (this.spa(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
 	        for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
 	          htm += this.createCell(roomId, room, this.toDateStr(day));
 	        }
 	        htm += "<td class=\"room-total\" id=\"" + roomId + "T\"></td></tr>";
 	      }
 	      htm += "<tr>";
-	      for (day = l = 1, ref4 = this.numDays + 4; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
+	      for (day = l = 1, ref4 = this.numDays + 5; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
 	        htm += "<td></td>";
 	      }
 	      htm += "<td class=\"room-total\" id=\"Totals\">&nbsp;</td></tr>";
@@ -34846,7 +34920,7 @@
 	    };
 
 	    Book.prototype.onGoToPay = function(e) {
-	      var cust, ev, fv, lv, pv, ref, res, tv;
+	      var cust, ev, fv, lv, pv, ref, tv;
 	      if (e != null) {
 	        e.preventDefault();
 	      }
@@ -34854,10 +34928,7 @@
 	      if (tv && fv && lv && pv && ev) {
 	        $('.NameER').hide();
 	        $('#Book').hide();
-	        res = this.createRoomRes();
-	        res.cust = cust;
-	        res.total = this.totals;
-	        this.pay.showConfirmPay(res);
+	        this.pay.initPay(this.totals, cust, this.roomUIs);
 	      } else {
 	        alert(this.onGoToMsg(tv, fv, lv, pv, ev));
 	      }
@@ -34925,10 +34996,10 @@
 	    Book.prototype.calcPrice = function(roomId) {
 	      var guests, pets, price, roomUI;
 	      roomUI = this.roomUIs[roomId];
-	      guests = roomUI.resRoom.guests;
-	      pets = roomUI.resRoom.pets;
+	      guests = roomUI.guests;
+	      pets = roomUI.pets;
 	      price = this.rooms[roomId][guests] + pets * this.Data.petPrice;
-	      roomUI.resRoom.price = price;
+	      roomUI.price = price;
 	      return price;
 	    };
 
@@ -34938,11 +35009,12 @@
 	    };
 
 	    Book.prototype.updateTotal = function(roomId) {
-	      var price, room, text;
+	      var nights, price, room, text;
 	      price = this.calcPrice(roomId);
 	      room = this.roomUIs[roomId];
-	      room.resRoom.total = price * room.numDays;
-	      text = room.resRoom.total === 0 ? '' : '$' + room.resRoom.total;
+	      nights = Util.keys(room.days).length;
+	      room.total = price * nights + room.change;
+	      text = room.total === 0 ? '' : '$' + room.total;
 	      $('#' + roomId + 'T').text(text);
 	      this.updateTotals();
 	    };
@@ -34954,7 +35026,7 @@
 	      for (roomId in ref) {
 	        if (!hasProp.call(ref, roomId)) continue;
 	        room = ref[roomId];
-	        this.totals += room.resRoom.total;
+	        this.totals += room.total;
 	      }
 	      text = this.totals === 0 ? '' : '$' + this.totals;
 	      $('#Totals').text(text);
@@ -35004,15 +35076,38 @@
 	    Book.prototype.onGuests = function(event) {
 	      var roomId;
 	      roomId = $(event.target).attr('id').charAt(0);
-	      this.roomUIs[roomId].resRoom.guests = event.target.value;
+	      this.roomUIs[roomId].guests = event.target.value;
 	      this.updatePrice(roomId);
 	    };
 
 	    Book.prototype.onPets = function(event) {
 	      var roomId;
 	      roomId = $(event.target).attr('id').charAt(0);
-	      this.roomUIs[roomId].resRoom.pets = event.target.value;
+	      this.roomUIs[roomId].pets = event.target.value;
 	      this.updatePrice(roomId);
+	    };
+
+	    Book.prototype.spa = function(roomId) {
+	      if (this.room.optSpa(roomId)) {
+	        return "<input id=\"" + roomId + "SpaCheck\" class=\"SpaCheck\" type=\"checkbox\" value=\"" + roomId + "\" checked>";
+	      } else {
+	        return "";
+	      }
+	    };
+
+	    Book.prototype.onSpa = function(event) {
+	      var $elem, checked, reason, roomId, roomUI, spaFee;
+	      $elem = $(event.target);
+	      roomId = $elem.attr('id').charAt(0);
+	      roomUI = this.roomUIs[roomId];
+	      checked = $elem.is(':checked');
+	      spaFee = checked ? 20 : -20;
+	      reason = checked ? 'Spa Added' : 'Spa Opted Out';
+	      roomUI.change += spaFee;
+	      roomUI.reason = reason;
+	      if (roomUI.total > 0) {
+	        this.updateTotal(roomId);
+	      }
 	    };
 
 	    Book.prototype.onMonth = function(event) {
@@ -35050,26 +35145,6 @@
 	      }
 	    };
 
-	    Book.prototype.createRoomRes = function() {
-	      var day, dayId, onAdd, ref, ref1, res, room, roomId;
-	      res = this.res.createRoomRes(this.totals, 'mine', this.method, this.roomUIs);
-	      ref = res.rooms;
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        room = ref[roomId];
-	        ref1 = room.days;
-	        for (dayId in ref1) {
-	          if (!hasProp.call(ref1, dayId)) continue;
-	          day = ref1[dayId];
-	          day.resId = res.resId;
-	        }
-	        onAdd = {};
-	        onAdd.days = room.days;
-	        this.store.add('Alloc', roomId, onAdd);
-	      }
-	      return res;
-	    };
-
 	    Book.prototype.onCellBook = function(event) {
 	      var $cell, ref, roomId, status;
 	      $cell = $(event.target);
@@ -35083,7 +35158,7 @@
 	      var group, isEmpty, roomId, status;
 	      status = $cell.attr('data-status');
 	      roomId = $cell.attr('id').substr(1, 1);
-	      group = this.roomUIs[roomId].resRoom.group;
+	      group = this.roomUIs[roomId].group;
 	      isEmpty = Util.isObjEmpty(group);
 	      if (status === 'free') {
 	        status = 'mine';
@@ -35119,18 +35194,14 @@
 	      date = $cell.attr('id').substr(2, 8);
 	      roomUI = this.roomUIs[roomId];
 	      if (status === 'mine') {
-	        roomUI.numDays++;
-	        roomUI.resRoom.days[date] = {
+	        roomUI.days[date] = {
 	          "status": status,
 	          "resId": ""
 	        };
 	      } else if (status === 'free') {
-	        if (roomUI.numDays > 0) {
-	          roomUI.numDays--;
-	        }
-	        delete roomUI.resRoom.days[date];
-	        if (roomUI.resRoom.group[date] != null) {
-	          delete roomUI.resRoom.group[date];
+	        delete roomUI.days[date];
+	        if (roomUI.group[date] != null) {
+	          delete roomUI.group[date];
 	        }
 	      }
 	      this.updateTotal(roomId);
@@ -35140,7 +35211,7 @@
 	    Book.prototype.fillInRooms = function(roomId, $last) {
 	      var bday, days, roomUI, weekday, weekend;
 	      roomUI = this.roomUIs[roomId];
-	      days = Object.keys(roomUI.resRoom.days).sort();
+	      days = Util.keys(roomUI.days).sort();
 	      bday = days[0];
 	      weekday = this.Data.weekday(days[0]);
 	      weekend = weekday === 'Fri' || weekday === 'Sat';
@@ -35155,7 +35226,7 @@
 	      var group, nday;
 	      nday = this.Data.advanceDate(bday, 1);
 	      if ($('#R' + roomId + nday).attr('data-status') === 'free') {
-	        group = this.roomUIs[roomId].resRoom.group;
+	        group = this.roomUIs[roomId].group;
 	        group[bday] = {
 	          status: 'mine'
 	        };
@@ -35336,7 +35407,7 @@
 
 /***/ },
 /* 367 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	// Generated by CoffeeScript 1.12.2
 	(function() {
@@ -35345,8 +35416,6 @@
 
 	  Alloc = (function() {
 	    module.exports = Alloc;
-
-	    Alloc.Allocs = __webpack_require__(368);
 
 	    function Alloc(stream, store, Data, room, book, master) {
 	      this.stream = stream;
@@ -35358,17 +35427,12 @@
 	      this.onAlloc = bind(this.onAlloc, this);
 	      this.subscribe();
 	      this.rooms = this.room.rooms;
-	      this.init();
 	    }
-
-	    Alloc.prototype.init = function() {
-	      return this.store.make('Alloc');
-	    };
 
 	    Alloc.prototype.subscribe = function() {
 	      this.store.subscribe('Alloc', 'none', 'make', (function(_this) {
 	        return function(make) {
-	          return Util.log('Alloc.make()', make);
+	          return Util.noop('Alloc.make()', make);
 	        };
 	      })(this));
 	      this.store.subscribe('Alloc', 'none', 'onAdd', (function(_this) {
@@ -35383,7 +35447,7 @@
 	      })(this));
 	      this.store.subscribe('Alloc', 'none', 'onDel', (function(_this) {
 	        return function(onDel) {
-	          return Util.log('Alloc.onDel()', onDel);
+	          return Util.noop('Alloc.onDel()', onDel);
 	        };
 	      })(this));
 	      this.store.make('Alloc');
@@ -35413,113 +35477,6 @@
 
 	}).call(this);
 
-
-/***/ },
-/* 368 */
-/***/ function(module, exports) {
-
-	module.exports = {
-		"1": {
-			"days": {
-				"20170709": {
-					"status": "free"
-				},
-				"20170710": {
-					"status": "free"
-				}
-			}
-		},
-		"2": {
-			"days": {
-				"20170710": {
-					"status": "depo"
-				},
-				"20170711": {
-					"status": "depo"
-				}
-			}
-		},
-		"3": {
-			"days": {
-				"20170711": {
-					"status": "free"
-				},
-				"20170712": {
-					"status": "free"
-				}
-			}
-		},
-		"4": {
-			"days": {
-				"20170715": {
-					"status": "book"
-				},
-				"20170716": {
-					"status": "book"
-				}
-			}
-		},
-		"5": {
-			"days": {
-				"20170721": {
-					"status": "depo"
-				},
-				"20170722": {
-					"status": "depo"
-				}
-			}
-		},
-		"6": {
-			"days": {
-				"20170714": {
-					"status": "free"
-				},
-				"20170715": {
-					"status": "free"
-				}
-			}
-		},
-		"7": {
-			"days": {
-				"20170720": {
-					"status": "book"
-				},
-				"20170722": {
-					"status": "book"
-				}
-			}
-		},
-		"8": {
-			"days": {
-				"20170719": {
-					"status": "depo"
-				},
-				"20170720": {
-					"status": "depo"
-				}
-			}
-		},
-		"N": {
-			"days": {
-				"20170721": {
-					"status": "free"
-				},
-				"20170722": {
-					"status": "free"
-				}
-			}
-		},
-		"S": {
-			"days": {
-				"20170724": {
-					"status": "book"
-				},
-				"20170725": {
-					"status": "book"
-				}
-			}
-		}
-	};
 
 /***/ }
 /******/ ]);
