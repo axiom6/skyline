@@ -32781,6 +32781,7 @@
 	    function Pict() {
 	      this.onSlides = bind(this.onSlides, this);
 	      this.onVideo = bind(this.onVideo, this);
+	      this.slide = null;
 	    }
 
 	    Pict.prototype.roomPageHtml = function(title, prev, next) {
@@ -32853,6 +32854,26 @@
 	      slideshow.spacing = 5;
 	      slideshow.active = "#fff";
 	      return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
+	    };
+
+	    Pict.prototype.initSlide = function(w, h) {
+	      var slide;
+	      Util.noop(w, h);
+	      slide = new Slide("slideshow");
+	      Slide.ElemById('slideshow').style.display = 'none';
+	      Slide.ElemById('wrapper').style.display = 'block';
+	      slide.auto = false;
+	      slide.speed = 10;
+	      slide.link = "linkhover";
+	      slide.info = "information";
+	      slide.thumbs = "slider";
+	      slide.left = "slideleft";
+	      slide.right = "slideright";
+	      slide.scrollSpeed = 4;
+	      slide.spacing = 5;
+	      slide.active = "#fff";
+	      slide.init("slide", "image", "imgprev", "imgnext", "imglink");
+	      return slide;
 	    };
 
 	    Pict.prototype.resizeSlideView = function(w, h) {

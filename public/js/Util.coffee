@@ -595,6 +595,16 @@ class Util
         objects[key] = row
     objects
 
+  @toRange:( rows, beg, end, keyProp='key' ) ->
+    objects = {}
+    if Util.isArray(rows)
+      for row in rows when beg <= row[keyProp] and row[keyProp] <= end
+        objects[row[keyProp]] = row
+    else
+      for own key, row of rows when beg <= key and key <= end
+        objects[key] = row
+    objects
+
   # keyProp only needed if rows is away
   @toKeys:( rows, whereIn=null, keyProp='key' ) ->
     where = if whereIn? then whereIn else () -> true

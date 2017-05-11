@@ -19,6 +19,7 @@ class Rest extends Store
   # Sql
   insert:( table, objects,  params="" )  -> @ajaxSql( 'insert', table, @W,    objects, params )
   select:( table, where=@W, params="" )  -> @ajaxSql( 'select', table, where, null,    params )
+  range:(  table, beg, end, params="" )  -> @ajaxSql( 'range',  table, beg,   end,     params )
   update:( table, objects,  params="" )  -> @ajaxSql( 'update', table, @W,    objects, params )
   remove:( table, where=@W, params="" )  -> @ajaxSql( 'remove', table, where, null,    params )
 
@@ -53,6 +54,8 @@ class Rest extends Store
     return
 
   ajaxSql:( op, t, where, objects=null, params="" ) ->
+    beg       = if op is 'range' then where   else null
+    end       = if op is 'range' then objects else null
     tableName = @tableName(t)
     url       = @urlRest(op,t,'',params)
     dataType  = @dataType()
@@ -62,6 +65,7 @@ class Rest extends Store
       result = {}
       result = Util.toObjects(data,where,@key) if data?    and ( op is 'select' or op is 'remove' ) # Need to get toArray through
       result = objects                         if objects? and ( op is 'insert' or op is 'update' )
+      result = Util.toRange( data, beg, end )  if op is 'range'
       extras = @toExtras( status, url, dataType, jqXHR.readyState )
       extras.where = 'all' if op is 'select' or op is 'delete'
       @publish( tableName, 'none', op, result, extras )

@@ -1,5 +1,6 @@
 
-$ = Util.requireModule('jquery','skyline')
+$      = Util.requireModule('jquery',       'skyline')
+#Slide = require('js/res/Slide') # Util.requireModule('js/res/Slide', 'skyline')
 
 class Pict
 
@@ -15,6 +16,7 @@ class Pict
     return
 
   constructor:() ->
+    @slide = null
     
 
   roomPageHtml:( title, prev, next ) ->
@@ -37,7 +39,7 @@ class Pict
       for pic in Img[roomId]['pics']
         htm += @li( pic, dir )
       $('#slideshow').append( htm )
-      @initTINY( w, h )
+      @initTINY( w, h ) # @slide = @initSlide( w, h )
     url = if roomId is 'M' then "../data/Img.json" else "../../data/Img.json"
     $.getJSON( url, images )
     return
@@ -102,6 +104,25 @@ class Pict
     slideshow.active="#fff"
     # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slideshow.init("slideshow","image","imgprev","imgnext","imglink")
+
+  initSlide:( w, h ) ->
+    Util.noop( w, h )
+    slide = new Slide("slideshow")
+    Slide.ElemById('slideshow').style.display='none'
+    Slide.ElemById('wrapper'  ).style.display='block'
+    slide.auto=false #true
+    slide.speed=10
+    slide.link="linkhover"
+    slide.info="information"
+    slide.thumbs="slider"
+    slide.left="slideleft"
+    slide.right="slideright"
+    slide.scrollSpeed=4
+    slide.spacing=5
+    slide.active="#fff"
+    # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
+    slide.init("slide","image","imgprev","imgnext","imglink")
+    slide
 
   resizeSlideView:( w, h ) ->
     $('#wrapper'  ).css( { width:w,     height:h       } )

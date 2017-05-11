@@ -57,6 +57,11 @@ class IndexedDB extends Store
     @traverse( 'select', tableName, where )
     return
 
+  range:( t, beg, end ) ->
+    tableName = @tableName(t)
+    @traverse( 'range', tableName, beg, end )
+    return
+
   update:( t, objects ) ->
     tableName = @tableName(t)
     txo = @txnObjectStore( t, "readwrite" )
@@ -111,8 +116,9 @@ class IndexedDB extends Store
       Util.error( 'Store.IndexedDb.txnObjectStore() missing objectStore for', t )
     txo
 
-  traverse:( op, t, where=Store.where ) ->
+  traverse:( op, t, where=Store.where, end=null ) ->
     mode = if op is 'select' then 'readonly' else 'readwrite'
+    beg  = if op is 'range'  then where else null
     txo  = @txnObjectStore( t, mode )
     req  = txo.openCursor()
     req.onsuccess = ( event ) =>
@@ -120,6 +126,7 @@ class IndexedDB extends Store
       cursor = event.target.result
       if cursor?
         objects[cursor.key] = cursor.value if op is 'select' and where(cursor.value)
+        objects[cursor.key] = cursor.value if op is 'range ' and beg <= cursor.key and cursor.key <= end
         cursor.delete()                    if op is 'remove' and where(cursor.value)
         cursor.continue()
       @publish( t, 'none', op, objects,   { where:'all' } )

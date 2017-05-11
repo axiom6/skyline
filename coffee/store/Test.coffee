@@ -70,6 +70,15 @@ describe("store/PouchDB.coffee", () ->
     @pouchDB.select( 'columns' )
     expect('select filler').toBe('select filler')  )
 
+  it("range:( table, beg=1, end=10   )",  () ->
+    subject = @pouchDB.toSubject('columns','range')
+    @stream.subscribe( subject, (objects) =>
+      console.log( "select Columns", objects ) )
+      #@stream.unsubscribe( subject )
+      # expect(objects.Embrace.icon).toBe('fa-link') )
+    @pouchDB.range( 'columns' )
+    expect('range filler').toBe('range filler')  )
+
   it("update:( table, objects )",  () ->
     subjectSelect  = @pouchDB.toSubject('columns','select')
     subjectUpdate  = @pouchDB.toSubject('columns','update')

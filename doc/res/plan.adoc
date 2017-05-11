@@ -6,27 +6,26 @@ include::../dir/inc/DefBook.adoc[]
 
 ## [.black]#Guest Site#
 
-### [.black]#Feature#
-* Rooms M 1-8 N S, fix sign.jpg
-* Terms and Conditions
-
 ### [.black]#Test#
-* Test Suite - Reservation Pay
-* Test Weekend, Pop, Deposit, Spa Opt Out, Payment
-* Post and Test Reservations, Payments Customers
+* Reservation Lifecycle
+* Test Suite, Weekend, Pop, Deposit, Payment
 * Populate Beth Reservations into Skyline
 
 ### [.black]#Deploy#
 * Move domain from GoDaddy
 * Bank Account
-* Consider Owner reservation - maybe just a link
 * Deploy to Firebase
+
+### [.black]#Feature#
+* Confirmation EMail
+* Rooms M 1-8 N S, fix sign.jpg
 
 ### [.black]#Integrate#
 * Stripe Reader
 * Bookings
 
 ## [.black]#Owner Site#
+* Owner reservation - maybe just a link
 * Weekend group hint on Guest
 * Refine Owner site
 * Master Calendar
@@ -42,6 +41,8 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets
 
 ## [.black]#Guest Site Completed#
+* Terms and Conditions - review
+* Slide.coffee ?
 * Video
 * Fixed require
 * Home Page Text and Sizing

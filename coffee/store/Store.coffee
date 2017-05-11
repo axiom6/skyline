@@ -41,10 +41,11 @@ class Store
   del:( table, id )          -> Util.noop(  table, id         )  # Delete  Delete   an object from table with id
 
   # SQL Table DML (Data Manipulation Language) with multiple objects (rows)
-  insert:( table, objects ) -> Util.noop( table, objects )  # Insert objects into table with unique id
-  select:( table, where=W ) -> Util.noop( table, where   )  # Select objects from table with where clause
-  update:( table, objects ) -> Util.noop( table, objects )  # Update objects into table mapped by id
-  remove:( table, wheKeys ) -> Util.noop( table, wheKeys )  # Delete objects from table with keys array or where clause
+  insert:( table, objects  ) -> Util.noop( table, objects  )  # Insert objects into table with unique id
+  select:( table, where=W  ) -> Util.noop( table, where    )  # Select objects from table with where clause
+  range:(  table, beg, end ) -> Util.noop( table, beg, end )  # Select objects from table with where clause
+  update:( table, objects  ) -> Util.noop( table, objects  )  # Update objects into table mapped by id
+  remove:( table, wheKeys  ) -> Util.noop( table, wheKeys  )  # Delete objects from table with keys array or where clause
 
   # Table DDL (Data Definition Language) omitted schema update
   make:( table           ) -> Util.noop( table ) # Create a table

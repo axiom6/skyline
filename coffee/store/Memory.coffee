@@ -52,6 +52,13 @@ class Memory extends Store
     @publish( t, 'none', 'select', objects, { where:where.toString() } )
     return
 
+  range:( t, beg, end ) ->
+    objects =  {}
+    table   = @table(t)
+    for own key, object of table when beg <= key and key <= end
+      objects[key] = object
+    @publish( t, 'none', 'range', objects, { beg:beg.toString(), end:end.toString() } )
+
   update:( t, objects ) ->
     table = @table(t)
     for own key, object of objects

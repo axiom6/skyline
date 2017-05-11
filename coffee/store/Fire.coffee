@@ -77,6 +77,7 @@ class Fire extends Store
     return
 
   select:( t, where=Store.where ) ->
+    Util.noop( where )
     tableName = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
@@ -84,6 +85,16 @@ class Fire extends Store
       else
         @onerror( tableName, 'none', 'select', {} )
     @fd.ref(tableName).once('value', onComplete )
+    return
+
+  range:( t, beg, end ) ->
+    tableName = @tableName(t)
+    onComplete = (snapshot) =>
+      if snapshot? and snapshot.val()?
+        @publish( tableName, 'none', 'range', snapshot.val() )
+      else
+        @onerror( tableName, 'none', 'range', {} )
+    @fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete )
     return
 
   update:( t, objects ) ->

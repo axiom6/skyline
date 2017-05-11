@@ -65,9 +65,18 @@ class Res
       @updateRooms( resv )
     return
 
+  insertDaysRooms:() ->
+    rooms = {}
+    for own roomId, room of @room.rooms
+      rooms[roomId] = {}
+    @store.subscribe( 'Days', 'none', 'make',  (make) => @store.insert( 'Days', rooms ); Util.noop(make)  )
+    @store.make( 'Days' )
+    return
+
   makeAllTables:() ->
     @store.make( 'Res'     )
     @store.make( 'Room'    )
+    @store.make( 'Days'    )
     @store.make( 'Payment' )
     @store.make( 'Cust'    )
 
@@ -115,8 +124,18 @@ class Res
     @updateRooms( resv )
     if status is 'post'
       @store.add(    'Res',     resv.resId, resv )
+      @postDays( resv )
       #store.insert( 'Room',    resv.rooms )
       #store.insert( 'Payment', resv.payments )
       #store.add(    'Cust',    resv.cust.custId, res.cust )
     Util.log('Res.postResv()', resv )
+
+  postDays:( resv ) ->
+    for   own roomId, room of resv.rooms
+      for own  dayId, dayr of room.days
+        dayd        = {}
+        dayd.status = dayr.status
+        dayd.resId  = dayr.resId
+        @store.add( 'Days/'+roomId, dayId, dayd )
+
 

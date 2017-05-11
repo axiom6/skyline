@@ -83,6 +83,10 @@
       return Util.noop(table, where);
     };
 
+    Store.prototype.range = function(table, beg, end) {
+      return Util.noop(table, beg, end);
+    };
+
     Store.prototype.update = function(table, objects) {
       return Util.noop(table, objects);
     };
