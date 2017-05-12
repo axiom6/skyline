@@ -11,11 +11,10 @@
   Pay = (function() {
     module.exports = Pay;
 
-    function Pay(stream, store, Data, room, res, home) {
+    function Pay(stream, store, Data, res, home) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
-      this.room = room;
       this.res = res;
       this.home = home;
       this.onError = bind(this.onError, this);
@@ -208,7 +207,7 @@
     Pay.prototype.spa = function(roomId) {
       var change, has;
       change = this.resv.rooms[roomId].change;
-      has = this.room.hasSpa(roomId);
+      has = this.res.hasSpa(roomId);
       if (!has) {
         return '';
       } else if (change === -20) {

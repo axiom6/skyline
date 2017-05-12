@@ -1,21 +1,46 @@
 class Res
 
   module.exports = Res
-  Res.Resvs      = require( 'data/res.json'  )
-  Res.Days       = require( 'data/days.json' )
+  Res.Rooms  = require( 'data/room.json' )
+  Res.Resvs  = require( 'data/res.json'  )
+  Res.Days   = require( 'data/days.json' )
+  Res.States = ["free","mine","depo","book"]
 
-  constructor:( @stream, @store, @Data, @room ) ->
-    @days   = {}
+  constructor:( @stream, @store, @Data ) ->
+    @rooms   = Res.Rooms
+    @states  = Res.States
+    @initRooms()
+    @days   = null
     @book   = null
     @master = null
     @insertRevs( Res.Resvs ) if @Data.testing
     @insertDays( Res.Resvs ) if @Data.testing
 
-
   dayBooked:( roomId, date ) ->
-    day   = Res.Days[date]
-    entry = if day? and day[roomId] then day[roomId] else null
+    day   = if @days? then @days[date]
+    entry = if  day?  and  day[roomId] then day[roomId] else null
     if entry? then entry.status else 'free'
+
+  createRoomUIs:( rooms ) ->
+    roomUIs = {}
+    for key, room of rooms
+      roomUIs[key]   = {}
+      roomUI         = roomUIs[key]
+      roomUI.$       = {}
+      roomUI.name    = room.name
+      roomUI.total   = 0
+      roomUI.price   = 0
+      roomUI.guests  = 2
+      roomUI.pets    = 0
+      roomUI.spa     = room.spa
+      roomUI.change  = 0         # Changes usually to spa opt out
+      roomUI.reason  = 'No Changes'
+      roomUI.days    = {}
+      roomUI.group   = {} # All days in group at maintained at the same status
+    roomUIs
+
+  optSpa:( roomId ) -> @rooms[roomId].spa is 'O'
+  hasSpa:( roomId ) -> @rooms[roomId].spa is 'O' or @rooms[roomId].spa is 'Y'
 
   createRoomResv:( status, method, roomUIs ) ->
     resv          = {}
@@ -52,18 +77,20 @@ class Res
     room.nights  = Util.keys(roomUI.days).length
     room
 
-  # Need to clear out obsolete resKeys in rooms
-  updateRooms:( resv ) ->
+  allocRooms:( resv ) ->
     for own  roomId, room of resv.rooms
       for own dayId, day  of room.days
-        day.status = resv.status
-        day.resId  = resv.resId
+        @setDay( day, resv.status, resv.resId )
       delete room.group
       @allocRoom( roomId, room.days )
 
   allocRoom:( roomId, days ) ->
     @book.  onAlloc( roomId, days ) if @book?
     @master.onAlloc( roomId, days ) if @master?
+
+  setDay:( day, status, resId ) ->
+    day.status = status
+    day.resId  = resId
 
   subscribeToResId:( resId ) =>
     @store.subscribe( 'Res',   resId,  'onAdd', (onAdd) => Util.log('Res.subscribeToResId onAdd', resId, onAdd ) )
@@ -81,57 +108,41 @@ class Res
     @store.on(        'Days',          'onPut' )
     @store.on(        'Days',          'onDel' )
 
+  insertRooms:( rooms ) =>
+    @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
+    @store.make( 'Room' )
+    return
+
   insertRevs:( resvs ) ->
+    @allocRooms( resv ) for own resId,  resv of resvs
     @store.subscribe( 'Res', 'none', 'make',  () => @store.insert( 'Res', resvs ) )
     @store.make( 'Res' )
-    for own resId,  resv of resvs
-      @updateRooms( resv )
     return
 
   insertDays:( resvs ) ->
-    for     own resvId, resv of resvs
-      for   own roomId, room of resv.rooms
-        Util.error( 'Res.insertDays', roomId ) if not Util.inArray(['1','2','3','4','5','6','7','8','N','S'], roomId )
-        for own  dayId, rday of room.days
-          day = @createDay( @days, dayId, roomId )
-          day.status = rday.status
-          day.resId  = rday.resId
-    Util.log('Res.insertDaysResvs() days', Res.Days  )
-    @store.subscribe( 'Days', 'none', 'make',  () => @store.insert( 'Days', Res.Days  ) )
+    @days = @createDaysFromResvs( resvs, {} )
+    @store.subscribe( 'Days', 'none', 'make',  () => @store.insert( 'Days', @days  ) )
     @store.make( 'Days' )
     @subscribeToDays()
     return
 
-  @xdays = {
-   x170709:{ r1:{ status:"book", resId:1707091 } },
-   x170710:{ r1:{ status:"book", resId:1707091 }, r2:{ status:"depo", resId:1707102 } },
-   x170711:{ r2:{ status:"depo", resId:1707102 }, r3:{ status:"book", resId:1707113 } },
-   x170712:{ r3:{ status:"book", resId:1707113 }, r4:{ status:"book", resId:1707124 } },
-   x170713:{ r4:{ status:"book", resId:1707124 } },
-   x170714:{ r5:{ status:"depo", resId:1707145 } },
-   x170715:{ r5:{ status:"depo", resId:1707145 }, r6:{ status:"book", resId:1707156 } },
-   x170716:{ r6:{ status:"book", resId:1707156 }, r7:{ status:"book", resId:1707167 } },
-   x170717:{ r7:{ status:"book", resId:1707167 }, r8:{ status:"book", resId:1707178 } },
-   x170718:{ r8:{ status:"book", resId:1707178 }, rN:{ status:"book", resId:1707189 } },
-   x170719:{ rN:{ status:"book", resId:1707189 }, rS:{ status:"book", resId:1707190 } },
-   x170720:{ rS:{ status:"book", resId:1707190 } } }
+  createDaysFromResvs:( resvs, days ) ->
+    for own resvId, resv of resvs
+      days = @createDaysFromResv( resv, days )
+    days
 
+  createDaysFromResv:( resv, days ) ->
+    for   own roomId, room of resv.rooms
+      for own  dayId, rday of room.days
+        day = @createDay( days, dayId, roomId )
+        @setDay( day, rday.status, rday.resId )
+    #Util.log('Res.createDaysFromResv() days', days  )
+    days
 
   createDay:( days, dayId, roomId ) ->
-    Util.log( 'Res.createDay() days null ') if not days?
-    dayd = days[dayId]
-    if not dayd?
-      dayd = {}
-      days[dayId] = dayd
-    dayd[roomId] = {}
-    dayd[roomId]
-
-  makeAllTables:() ->
-    @store.make( 'Res'     )
-    @store.make( 'Room'    )
-    @store.make( 'Days'    )
-    @store.make( 'Payment' )
-    @store.make( 'Cust'    )
+    days[dayId]         = {} if not days[dayId]?
+    days[dayId][roomId] = {}
+    days[dayId][roomId]
 
   createCust:( first, last, phone, email, source ) ->
     cust = {}
@@ -156,6 +167,7 @@ class Res
     payment
 
   setResvStatus:( resv, post, purpose ) ->
+
     if        post is 'post'
         resv.status = 'book' if purpose is 'PayInFull' or purpose is 'PayOffDeposit'
         resv.status = 'depo' if purpose is 'Deposit'
@@ -165,6 +177,7 @@ class Res
     if not Util.inArray(['book','depo','free'], resv.status )
       Util.error( 'Pay.setResStatus() unknown status ', resv.status )
       resv.status = 'free'
+
     return    
 
   postResv:( resv, post, totals, amount, method, last4, purpose ) ->
@@ -174,19 +187,25 @@ class Res
     resv.totals  = totals
     resv.paid   += amount
     resv.balance = totals - resv.paid
-    @updateRooms( resv )
+    @allocRooms( resv )
     if status is 'post'
-      @store.add(    'Res',     resv.resId, resv )
-      @postDays( resv )
-      #store.insert( 'Room',    resv.rooms )
-      #store.insert( 'Payment', resv.payments )
-      #store.add(    'Cust',    resv.cust.custId, res.cust )
+      @store.add( 'Res', resv.resId, resv )
+      @days = @postDays( resv, @days )
+
     Util.log('Res.postResv()', resv )
 
-  postDays:( resv ) ->
-    for   own roomId, room of resv.rooms
-      for own  dayId, dayr of room.days
-        dayd        = {}
-        dayd.status = dayr.status
-        dayd.resId  = dayr.resId
-        @store.add( 'Days/'+dayId, roomId, dayd )
+  postDays:( resv, allDays ) ->
+    newDays = @createDaysFromResv( resv, {} )
+    Util.log('Res.postDays()', newDays )
+    @store.insert( 'Days', newDays )
+    @mergeDays( allDays,   newDays )
+
+  mergeDays:( allDays, newDays ) ->
+    for own newDayId, newDay of newDays
+      for own roomId, room   of newDay
+        allDay = @createDay( allDays, newDayId, roomId )
+        @setDay( allDay, room.status, room.resId )
+    allDays
+
+  #store.insert( 'Payment', resv.payments )
+  #store.add(    'Cust',    resv.cust.custId, res.cust )

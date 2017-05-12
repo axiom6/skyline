@@ -9,20 +9,17 @@
   Master = (function() {
     module.exports = Master;
 
-    function Master(stream, store, Data, room1, cust, res) {
+    function Master(stream, store, Data, res) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
-      this.room = room1;
-      this.cust = cust;
       this.res = res;
       this.onSeasonClick = bind(this.onSeasonClick, this);
       this.onMasterClick = bind(this.onMasterClick, this);
       this.onAlloc = bind(this.onAlloc, this);
-      this.rooms = this.room.rooms;
-      this.roomUIs = this.room.roomUIs;
+      this.rooms = this.res.rooms;
       this.res.master = this;
-      this.year = 2017;
+      this.year = this.Data.year;
       this.lastMaster = {
         left: 0,
         top: 0,
@@ -64,7 +61,7 @@
 
     Master.prototype.createMasterCell = function(roomId, room, date) {
       var status;
-      status = this.room.dayBooked(room, date);
+      status = this.res.dayBooked(room, date);
       return "<td id=\"M" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
     };
 
@@ -152,7 +149,7 @@
       monthIdx = this.Data.months.indexOf(month);
       begDay = month !== 'May' ? 1 : 17;
       endDay = month !== 'October' ? this.Data.numDayMonth[monthIdx] : 15;
-      weekdayIdx = new Date(year, monthIdx, 1).getDay();
+      weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
       htm = "<div class=\"MasterTitle\">" + month + "</div>";
       htm += "<table><thead>";
       htm += "<tr><th></th>";
@@ -227,7 +224,7 @@
         if (roomId === 10) {
           roomId = 'S';
         }
-        status = this.room.dayBooked(this.room.rooms[roomId], this.toDateStr(monthIdx, day));
+        status = this.room.dayBooked(this.rooms[roomId], this.toDateStr(monthIdx, day));
         if (status !== 'free') {
           htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + "</span>";
         }

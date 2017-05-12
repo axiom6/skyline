@@ -43,6 +43,7 @@ class Credit
       $('#er-exp').show() if not @validateCardExpiry( expiryObj )
       $('#er-exp').show() if not @validateCardCVC(    cvc.value, card.type )
       return
+    Util.noop( validate )
     #sub.addEventListener('click', validate )
 
     ###

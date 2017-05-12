@@ -82,7 +82,8 @@ class Stream
     for source in sources
       sub = @getSubject(source).take(1)
       subs.push( sub )
-    @subjects[name] = Rx.Observable.concat( subs ).take(subs.length)
+    Obs = Rx['Observable']
+    @subjects[name] = Obs.concat( subs ).take(subs.length)
     #Util.log( 'Stream.concat() subs.length', subs.length )
     onNext = (object) ->
       params = if object.params? then object.params else 'none'
@@ -128,8 +129,8 @@ class Stream
     mousemove = $(document).bindAsObservable("mousemove").publish().refCount()
     mousedown =  dragTarget.bindAsObservable("mousedown").publish().refCount().map( (event) -> # calculate offsets when mouse down
       event.preventDefault()
-      left: event.clientX - dragTarget.offset().left
-      top:  event.clientY - dragTarget.offset().top  )
+      left: event['clientX'] - dragTarget.offset().left
+      top:  event['clientY'] - dragTarget.offset().top  )
 
     # Combine mouse down with mouse move until mouse up
     mousedrag = mousedown.selectMany( (offset) ->

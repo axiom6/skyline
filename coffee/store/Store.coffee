@@ -102,13 +102,13 @@ class Store
       when 'put'    then memory.put(    table, id, data )
       when 'del'    then memory.del(    table, id )
       when 'insert' then memory.insert( table, data )
-      when 'select' then memory.insert( table, data )
+      when 'select' then memory.select( table, params.where )
+      when 'range'  then memory.range(  table, params.beg, params.end )
       when 'update' then memory.update( table, data )
       when 'remove' then memory.remove( table, params.where  )
-      when 'open'   then memory.open(   table, params.schema )
-      when 'show'   then memory.show(   table, params.format )
-      when 'make'   then memory.make(   table, params.alters )
-      when 'drop'   then memory.drop(   table, params.resets )
+      when 'make'   then memory.make(   table )
+      when 'show'   then memory.show(   table )
+      when 'drop'   then memory.drop(   table )
       else Util.error( 'Store.toMemory() unknown op', op )
     return
 
@@ -136,8 +136,8 @@ class Store
   toSubjectFromParams:( params ) ->
     @toSubject( params.table, params.op, params.id )
 
-  toParams:( table, id, op, extras ) ->
-    params = { db:@dbName, table:table, id:id, op:op, module:@module }
+  toParams:( table, id, op, extras, where=W ) ->
+    params = { db:@dbName, table:table, id:id, op:op, module:@module, where:where, beg:"", end:"" }
     Util.copyProperties( params, extras )
 
   # Combine params and result

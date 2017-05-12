@@ -7,9 +7,11 @@ class IndexedDB extends Store
 
   constructor:( stream, uri, @dbVersion=1, @tableNames=[] ) ->
     super( stream, uri, 'IndexedDB' )
-    @indexedDB = window.indexedDB # or window.mozIndexedDB or window.webkitIndexedDB or window.msIndexedDB
+    @indexedDB = window['indexedDB'] # or window.mozIndexedDB or window.webkitIndexedDB or window.msIndexedDB
     Util.error( 'Store.IndexedDB.constructor indexedDB not found' ) if not @indexedDB
-    @dbs       = null
+    @dbs = null
+    @objectStoreNames = null
+    @openDatabase()  # Set @dbs and @objectStoreNames
 
   add:( t, id, object ) ->
     tableName = @tableName(t)
@@ -109,7 +111,7 @@ class IndexedDB extends Store
     txo = null
     if not @dbs?
       Util.trace( 'Store.IndexedDb.txnObjectStore() @dbs null' )
-    else if @dbs.objectStoreNames.contains(t)
+    else if @objectStoreNames.contains(t)
       txn = @dbs.transaction( t, mode )
       txo = txn.objectStore(  t, { keyPath:key } )
     else
@@ -136,7 +138,7 @@ class IndexedDB extends Store
 
   createObjectStores:() ->
     if @tableNames?
-      for t in @tableNames when not @dbs.objectStoreNames.contains(t)
+      for t in @tableNames when not @objectStoreNames.contains(t)
         @dbs.createObjectStore( t, { keyPath:@key } )
     else
       Util.error( 'Store.IndexedDB.createTables() missing @tableNames' )
@@ -146,11 +148,12 @@ class IndexedDB extends Store
     request = @indexedDB.open( @dbName, @dbVersion ) # request = @indexedDB.IDBFactory.open( database, @dbVersion )
     request.onupgradeneeded = ( event ) =>
       @dbs = event.target.result
+      @objectStoreNames = @dbs['objectStoreNames']
       @createObjectStores()
-      Util.log( 'Store.IndexedDB', 'upgrade', @dbName, @dbs.objectStoreNames )
+      Util.log( 'Store.IndexedDB', 'upgrade', @dbName, @objectStoreNames )
     request.onsuccess = ( event ) =>
       @dbs = event.target.result
-      Util.log( 'Store.IndexedDB', 'open',    @dbName, @dbs.objectStoreNames )
+      Util.log( 'Store.IndexedDB', 'open',    @dbName, @objectStoreNames )
       @publish( 'none', 'none', 'open', @dbs.objectStoreNames )
     request.onerror   = () =>
       Util.error( 'Store.IndexedDB.openDatabase() unable to open', { database:@dbName, error:request.error } )

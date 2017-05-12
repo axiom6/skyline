@@ -17,7 +17,6 @@ class Pict
 
   constructor:() ->
     @slide = null
-    
 
   roomPageHtml:( title, prev, next ) ->
     prevPage = """ '#{prev}.html' """
@@ -86,6 +85,16 @@ class Pict
     </div>
     """
 
+  resizeSlideView:( w, h ) ->
+    $('#wrapper'  ).css( { width:w,     height:h       } )
+    $('#fullsize' ).css( { width:w,     height:h-100   } )
+    $('#slidearea').css( { width:w- 45, height:61      } )
+    $('#image'    ).css( { width:w-100, height:h-200 } )
+    $('#image img').css( { width:w-100, height:h-200 } )
+    slideshow.width  = w-100
+    slideshow.height = h-200
+    return
+
   initTINY:( w, h ) ->
     Util.noop( w, h )
     TINY.ElemById('slideshow').style.display='none'
@@ -105,6 +114,7 @@ class Pict
     # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slideshow.init("slideshow","image","imgprev","imgnext","imglink")
 
+  ###
   initSlide:( w, h ) ->
     Util.noop( w, h )
     slide = new Slide("slideshow")
@@ -123,14 +133,6 @@ class Pict
     # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slide.init("slide","image","imgprev","imgnext","imglink")
     slide
+  ###
 
-  resizeSlideView:( w, h ) ->
-    $('#wrapper'  ).css( { width:w,     height:h       } )
-    $('#fullsize' ).css( { width:w,     height:h-100   } )
-    $('#slidearea').css( { width:w- 45, height:61      } )
-    $('#image'    ).css( { width:w-100, height:h-200 } )
-    $('#image img').css( { width:w-100, height:h-200 } )
-    slideshow.width  = w-100
-    slideshow.height = h-200
-    return
 

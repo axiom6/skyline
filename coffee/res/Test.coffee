@@ -6,8 +6,7 @@ class Test
   module.exports = Test
   Test.Data      = require( 'data/res.json' )
 
-  constructor:( @stream, @store, @Data, @room, @res, @pay, @pict, @book ) ->
-    @rooms   = @room.rooms
+  constructor:( @stream, @store, @Data, @res, @pay, @pict, @book ) ->
 
   doTest:() ->
     for     own resId,  res  of Test.Data

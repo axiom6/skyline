@@ -10,16 +10,14 @@
 
     Test.Data = require('data/res.json');
 
-    function Test(stream, store, Data, room1, res1, pay, pict, book) {
+    function Test(stream, store, Data, res1, pay, pict, book) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
-      this.room = room1;
       this.res = res1;
       this.pay = pay;
       this.pict = pict;
       this.book = book;
-      this.rooms = this.room.rooms;
     }
 
     Test.prototype.doTest = function() {

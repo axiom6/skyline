@@ -9,16 +9,13 @@
   Book = (function() {
     module.exports = Book;
 
-    function Book(stream, store, Data, room1, res, pay, pict) {
+    function Book(stream, store, Data, res, pay, pict) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
-      this.room = room1;
       this.res = res;
       this.pay = pay;
       this.pict = pict;
-      this.insert = bind(this.insert, this);
-      this.make = bind(this.make, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.onCellBook = bind(this.onCellBook, this);
       this.onTest = bind(this.onTest, this);
@@ -31,8 +28,8 @@
       this.updatePrice = bind(this.updatePrice, this);
       this.calcPrice = bind(this.calcPrice, this);
       this.onGoToPay = bind(this.onGoToPay, this);
-      this.rooms = null;
-      this.roomUIs = null;
+      this.rooms = this.res.rooms;
+      this.roomUIs = this.res.createRoomUIs(this.rooms);
       this.res.book = this;
       this.myDays = 0;
       this.today = new Date();
@@ -49,8 +46,6 @@
     }
 
     Book.prototype.ready = function() {
-      this.rooms = this.room.rooms;
-      this.roomUIs = this.room.createRoomUIs(this.rooms);
       $('#Book').empty();
       $('#Pays').empty();
       $('#Book').append(this.bookHtml());
@@ -327,7 +322,7 @@
     };
 
     Book.prototype.spa = function(roomId) {
-      if (this.room.optSpa(roomId)) {
+      if (this.res.optSpa(roomId)) {
         return "<input id=\"" + roomId + "SpaCheck\" class=\"SpaCheck\" type=\"checkbox\" value=\"" + roomId + "\" checked>";
       } else {
         return "";
@@ -536,14 +531,6 @@
 
     Book.prototype.toDateStr = function(day) {
       return this.year + Util.pad(this.monthIdx + 1) + Util.pad(this.dayMonth(day, this.begDay));
-    };
-
-    Book.prototype.make = function() {
-      return this.store.make('Room');
-    };
-
-    Book.prototype.insert = function() {
-      return this.store.insert('Room', this.rooms);
     };
 
     return Book;

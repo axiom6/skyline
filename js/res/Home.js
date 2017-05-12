@@ -9,16 +9,14 @@
   Home = (function() {
     module.exports = Home;
 
-    function Home(stream, store, Data, room1, pict) {
+    function Home(stream, store, Data, res, pict) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
-      this.room = room1;
+      this.res = res;
       this.pict = pict;
       this.onHome = bind(this.onHome, this);
       this.onMakeRes = bind(this.onMakeRes, this);
-      this.rooms = this.room.rooms;
-      this.roomUIs = this.room.roomUIs;
     }
 
     Home.prototype.ready = function(book) {
@@ -55,7 +53,7 @@
       htm += "<div class=\"RoomSee\">See Our Cabins</div>";
       htm += "<div class=\"FootSee\">Skyline Cottages Where the River Meets the Mountains</div>";
       htm += "<ul  class=\"RoomUL\">";
-      ref = this.rooms;
+      ref = this.res.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
         room = ref[roomId];

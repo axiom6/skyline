@@ -9,12 +9,11 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Book, Data, Fire, Home, Pay, Pict, Res, Room, Stream, Test, book, home, pay, pict, res, room, store, stream, test;
+        var Book, Data, Fire, Home, Pay, Pict, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
         Util.jquery = require('jquery');
         Stream = require('js/store/Stream');
         Fire = require('js/store/Fire');
         Data = require('js/res/Data');
-        Room = require('js/res/Room');
         Home = require('js/res/Home');
         Pict = require('js/res/Pict');
         Res = require('js/res/Res');
@@ -24,12 +23,11 @@
         pict = new Pict();
         stream = new Stream([]);
         store = new Fire(stream, "skytest", Data.configSkytest);
-        room = new Room(stream, store, Data);
-        home = new Home(stream, store, Data, room, pict);
-        res = new Res(stream, store, Data, room);
-        pay = new Pay(stream, store, Data, room, res, home);
-        book = new Book(stream, store, Data, room, res, pay, pict);
-        test = new Test(stream, store, Data, room, res, pay, pict, book);
+        res = new Res(stream, store, Data);
+        home = new Home(stream, store, Data, res, pict);
+        pay = new Pay(stream, store, Data, res, home);
+        book = new Book(stream, store, Data, res, pay, pict);
+        test = new Test(stream, store, Data, res, pay, pict, book);
         book.test = test;
         return home.ready(book);
       });

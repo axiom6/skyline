@@ -5,9 +5,9 @@ class Book
 
   module.exports = Book
 
-  constructor:( @stream, @store, @Data, @room, @res, @pay, @pict ) ->
-    @rooms    = null
-    @roomUIs  = null
+  constructor:( @stream, @store, @Data, @res, @pay, @pict ) ->
+    @rooms   = @res.rooms
+    @roomUIs = @res.createRoomUIs( @rooms )
     @res.book = @
     @myDays   = 0
     @today    = new Date()
@@ -23,8 +23,6 @@ class Book
     @method   = 'site'
 
   ready:() ->
-    @rooms   = @room.rooms
-    @roomUIs = @room.createRoomUIs( @rooms )
     $('#Book'    ).empty()
     $('#Pays'    ).empty()
     $('#Book'    ).append( @bookHtml()  )
@@ -251,7 +249,7 @@ class Book
     return
 
   spa:( roomId ) ->
-    if @room.optSpa(roomId) then """<input id="#{roomId}SpaCheck" class="SpaCheck" type="checkbox" value="#{roomId}" checked>""" else ""
+    if @res.optSpa(roomId) then """<input id="#{roomId}SpaCheck" class="SpaCheck" type="checkbox" value="#{roomId}" checked>""" else ""
 
   onSpa:( event ) =>
     $elem   = $(event.target)
@@ -407,9 +405,7 @@ class Book
   toDateStr:( day ) ->
     @year+Util.pad(@monthIdx+1)+Util.pad(@dayMonth(day,@begDay))
 
-  make:()   => @store.make(   'Room' )
 
-  insert:() => @store.insert( 'Room', @rooms )
 
 
 

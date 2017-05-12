@@ -73,7 +73,7 @@
         };
       })(this);
       num.addEventListener('input', updateType);
-      return validate = (function(_this) {
+      validate = (function(_this) {
         return function(e) {
           var card, expiryObj;
           Util.noop(e);
@@ -90,6 +90,7 @@
           }
         };
       })(this);
+      return Util.noop(validate);
 
       /*
       validateF = (e) =>

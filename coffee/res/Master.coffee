@@ -5,11 +5,10 @@ class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @Data, @room, @cust, @res ) ->
-    @rooms       = @room.rooms
-    @roomUIs     = @room.roomUIs
+  constructor:( @stream, @store, @Data, @res ) ->
+    @rooms       = @res.rooms
     @res.master  = @
-    @year        = 2017
+    @year        = @Data.year
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
 
@@ -27,7 +26,7 @@ class Master
     return
 
   createMasterCell:( roomId,  room, date ) ->
-    status = @room.dayBooked( room, date )
+    status = @res.dayBooked( room, date )
     """<td id="M#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
 
   allocMasterCell:( roomId, day, status ) ->
@@ -78,7 +77,7 @@ class Master
     monthIdx   = @Data.months.indexOf(month)
     begDay     = if month isnt 'May'     then 1 else 17
     endDay     = if month isnt 'October' then @Data.numDayMonth[monthIdx] else 15
-    weekdayIdx = new Date( year, monthIdx, 1 ).getDay()
+    weekdayIdx = new Date( 2000+year, monthIdx, 1 ).getDay()
     htm  = """<div class="MasterTitle">#{month}</div>"""
     htm += "<table><thead>"
     htm += """<tr><th></th>"""
@@ -130,7 +129,7 @@ class Master
       roomId = col
       roomId = 'N' if roomId is  9
       roomId = 'S' if roomId is 10
-      status = @room.dayBooked( @room.rooms[roomId], @toDateStr(monthIdx,day) )
+      status = @room.dayBooked( @rooms[roomId], @toDateStr(monthIdx,day) )
       if status isnt 'free'
         htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId}</span>"""
     htm += """</div>"""

@@ -5,9 +5,7 @@ class Home
 
   module.exports = Home
 
-  constructor:( @stream, @store, @Data, @room, @pict ) ->
-    @rooms       = @room.rooms
-    @roomUIs     = @room.roomUIs
+  constructor:( @stream, @store, @Data, @res, @pict ) ->
 
   ready:( book ) ->
     @book = book
@@ -51,7 +49,7 @@ class Home
     htm += """<div class="RoomSee">See Our Cabins</div>"""
     htm += """<div class="FootSee">Skyline Cottages Where the River Meets the Mountains</div>"""
     htm += """<ul  class="RoomUL">"""
-    for own roomId, room of @rooms
+    for own roomId, room of @res.rooms
       htm += """<li class="RoomLI"><a href="rooms/#{roomId}.html">#{room.name}</a></li>"""
     htm += """</ul>"""
     $("#View").append( htm )

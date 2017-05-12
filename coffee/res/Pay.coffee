@@ -6,7 +6,7 @@ class Pay
 
   module.exports = Pay
 
-  constructor:( @stream, @store, @Data, @room, @res, @home ) ->
+  constructor:( @stream, @store, @Data, @res, @home ) ->
     @credit = new Credit()
     @uri    = "https://api.stripe.com/v1/"
     @subscribe()
@@ -134,7 +134,7 @@ class Pay
 
   spa:( roomId ) ->
     change = @resv.rooms[roomId].change
-    has    = @room.hasSpa(roomId)
+    has    = @res.hasSpa(roomId)
     if  !has then '' else if change is -20 then 'N' else 'Y'
 
   confirmBtns:( resv ) ->

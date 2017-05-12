@@ -79,46 +79,6 @@
       return "<ul id=\"slideshow\"></ul>\n<div id=\"wrapper\">\n  <div id=\"fullsize\">\n    <div id=\"imgprev\" class=\"imgnav\" title=\"Previous Image\"></div>\n    <div id=\"imglink\"></div>\n    <div id=\"imgnext\" class=\"imgnav\" title=\"Next Image\"></div>\n    <div id=\"image\"></div>\n    <div id=\"information\">\n      <h3></h3>\n      <p></p>\n    </div>\n  </div>\n  <div id=\"thumbnails\">\n    <div id=\"slideleft\" title=\"Slide Left\"></div>\n    <div id=\"slidearea\">\n      <div id=\"slider\"></div>\n    </div>\n    <div id=\"slideright\" title=\"Slide Right\"></div>\n  </div>\n</div>";
     };
 
-    Pict.prototype.initTINY = function(w, h) {
-      var slideshow;
-      Util.noop(w, h);
-      TINY.ElemById('slideshow').style.display = 'none';
-      TINY.ElemById('wrapper').style.display = 'block';
-      window.slideshow = new TINY.slideshow("slideshow");
-      slideshow = window.slideshow;
-      slideshow.auto = false;
-      slideshow.speed = 10;
-      slideshow.link = "linkhover";
-      slideshow.info = "information";
-      slideshow.thumbs = "slider";
-      slideshow.left = "slideleft";
-      slideshow.right = "slideright";
-      slideshow.scrollSpeed = 4;
-      slideshow.spacing = 5;
-      slideshow.active = "#fff";
-      return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
-    };
-
-    Pict.prototype.initSlide = function(w, h) {
-      var slide;
-      Util.noop(w, h);
-      slide = new Slide("slideshow");
-      Slide.ElemById('slideshow').style.display = 'none';
-      Slide.ElemById('wrapper').style.display = 'block';
-      slide.auto = false;
-      slide.speed = 10;
-      slide.link = "linkhover";
-      slide.info = "information";
-      slide.thumbs = "slider";
-      slide.left = "slideleft";
-      slide.right = "slideright";
-      slide.scrollSpeed = 4;
-      slide.spacing = 5;
-      slide.active = "#fff";
-      slide.init("slide", "image", "imgprev", "imgnext", "imglink");
-      return slide;
-    };
-
     Pict.prototype.resizeSlideView = function(w, h) {
       $('#wrapper').css({
         width: w,
@@ -143,6 +103,48 @@
       slideshow.width = w - 100;
       slideshow.height = h - 200;
     };
+
+    Pict.prototype.initTINY = function(w, h) {
+      var slideshow;
+      Util.noop(w, h);
+      TINY.ElemById('slideshow').style.display = 'none';
+      TINY.ElemById('wrapper').style.display = 'block';
+      window.slideshow = new TINY.slideshow("slideshow");
+      slideshow = window.slideshow;
+      slideshow.auto = false;
+      slideshow.speed = 10;
+      slideshow.link = "linkhover";
+      slideshow.info = "information";
+      slideshow.thumbs = "slider";
+      slideshow.left = "slideleft";
+      slideshow.right = "slideright";
+      slideshow.scrollSpeed = 4;
+      slideshow.spacing = 5;
+      slideshow.active = "#fff";
+      return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
+    };
+
+
+    /*
+    initSlide:( w, h ) ->
+      Util.noop( w, h )
+      slide = new Slide("slideshow")
+      Slide.ElemById('slideshow').style.display='none'
+      Slide.ElemById('wrapper'  ).style.display='block'
+      slide.auto=false #true
+      slide.speed=10
+      slide.link="linkhover"
+      slide.info="information"
+      slide.thumbs="slider"
+      slide.left="slideleft"
+      slide.right="slideright"
+      slide.scrollSpeed=4
+      slide.spacing=5
+      slide.active="#fff"
+       * @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
+      slide.init("slide","image","imgprev","imgnext","imglink")
+      slide
+     */
 
     return Pict;
 
