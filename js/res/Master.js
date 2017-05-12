@@ -21,6 +21,7 @@
       this.onAlloc = bind(this.onAlloc, this);
       this.rooms = this.room.rooms;
       this.roomUIs = this.room.roomUIs;
+      this.res.master = this;
       this.year = 2017;
       this.lastMaster = {
         left: 0,
@@ -51,14 +52,13 @@
       })(this));
     };
 
-    Master.prototype.onAlloc = function(alloc, roomId) {
-      var day, obj, ref;
-      ref = alloc.days;
-      for (day in ref) {
-        if (!hasProp.call(ref, day)) continue;
-        obj = ref[day];
-        this.allocMasterCell(roomId, day, obj.status);
-        this.allocSeasonCell(roomId, day, obj.status);
+    Master.prototype.onAlloc = function(roomId, days) {
+      var day, dayId;
+      for (dayId in days) {
+        if (!hasProp.call(days, dayId)) continue;
+        day = days[dayId];
+        this.allocMasterCell(roomId, dayId, day.status);
+        this.allocSeasonCell(roomId, dayId, day.status);
       }
     };
 

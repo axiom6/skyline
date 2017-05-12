@@ -19,7 +19,6 @@ class Guest
       Pay    = require( 'js/res/Pay'      )
       Book   = require( 'js/res/Book'     )
       Test   = require( 'js/res/Test'     )
-      Alloc  = require( 'js/res/Alloc'    )
 
       pict   = new Pict()
       stream = new Stream( [] )
@@ -30,10 +29,8 @@ class Guest
       pay    = new Pay(   stream, store, Data, room, res,  home )
       book   = new Book(  stream, store, Data, room, res,  pay, pict )
       test   = new Test(  stream, store, Data, room, res,  pay, pict, book )
-      alloc  = new Alloc( stream, store, Data, room, book, null )
 
       book.test = test
       home.ready( book )
-      Util.noop( alloc )
 
 Guest.init()

@@ -8,11 +8,12 @@ class Book
   constructor:( @stream, @store, @Data, @room, @res, @pay, @pict ) ->
     @rooms    = null
     @roomUIs  = null
-    @myDays   =  0
+    @res.book = @
+    @myDays   = 0
     @today    = new Date()
     @monthIdx = @today.getMonth()
     @monthIdx = if 4 <=  @monthIdx and @monthIdx <= 9 then @monthIdx else 4
-    @year     = 2017
+    @year     = @Data.year
     @month    = @Data.months[@monthIdx]
     @numDays  = 15
     @begMay   = 15
@@ -74,7 +75,7 @@ class Book
     room.name
 
   roomsHtml:( year, monthIdx, begDay, numDays ) ->
-    weekdayIdx  = new Date( year, monthIdx, 1 ).getDay()
+    weekdayIdx  = new Date( 2000+year, monthIdx, 1 ).getDay()
     htm   = "<table><thead>"
     htm  += """<tr><th></th><th></th><th></th><th></th><th></th>"""
     for day in [1..@numDays]
@@ -171,10 +172,7 @@ class Book
     msg
 
   createCell:( roomId, roomRm, date ) ->
-    roomUI   = @roomUIs[roomId]
-    statusRm = @room.dayBookedRm( roomRm, date )
-    statusUI = @room.dayBookedUI( roomUI, date )
-    status   = if statusRm isnt 'free' then statusRm else statusUI
+    status = @res.dayBooked( roomId, date )
     """<td id="R#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
 
   roomsJQuery:() ->
@@ -391,13 +389,13 @@ class Book
       nday = @Data.advanceDate( nday, 1 )
     return
 
-  onAlloc:( alloc, roomId ) =>
-    for own day, obj of alloc.days
-      @allocCell( day, obj.status, roomId )
+  onAlloc:( roomId, days ) =>
+    for own dayId, day of days
+      @allocCell( dayId, day.status, roomId )
     return
 
-  allocCell:( day, status, roomId ) ->
-    @cellStatus( $('#R'+roomId+day), status )
+  allocCell:( dayId, status, roomId ) ->
+    @cellStatus( $('#R'+roomId+dayId), status )
 
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)

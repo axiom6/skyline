@@ -8,6 +8,7 @@ class Master
   constructor:( @stream, @store, @Data, @room, @cust, @res ) ->
     @rooms       = @room.rooms
     @roomUIs     = @room.roomUIs
+    @res.master  = @
     @year        = 2017
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
@@ -19,10 +20,10 @@ class Master
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
     return
 
-  onAlloc:( alloc, roomId ) =>
-    for own day, obj of alloc.days
-      @allocMasterCell( roomId, day, obj.status )
-      @allocSeasonCell( roomId, day, obj.status )
+  onAlloc:( roomId, days ) =>
+    for own dayId, day of days
+      @allocMasterCell( roomId, dayId, day.status )
+      @allocSeasonCell( roomId, dayId, day.status )
     return
 
   createMasterCell:( roomId,  room, date ) ->

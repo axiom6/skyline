@@ -260,9 +260,9 @@
 
     Pay.prototype.confirmDate = function(dayStr, msg, isDepart) {
       var day, monthIdx, ref, weekdayIdx, year;
-      year = parseInt(dayStr.substr(0, 4));
-      monthIdx = parseInt(dayStr.substr(4, 2)) - 1;
-      day = parseInt(dayStr.substr(6, 2));
+      year = parseInt(dayStr.substr(0, 2)) + 2000;
+      monthIdx = parseInt(dayStr.substr(2, 2)) - 1;
+      day = parseInt(dayStr.substr(4, 2));
       weekdayIdx = new Date(year, monthIdx, day).getDay();
       if (isDepart) {
         ref = this.departDate(monthIdx, day, weekdayIdx), monthIdx = ref[0], day = ref[1], weekdayIdx = ref[2];

@@ -4,7 +4,7 @@ $ = require('jquery')
 class Test
 
   module.exports = Test
-  Test.Data      = require( 'data/test.json' )
+  Test.Data      = require( 'data/res.json' )
 
   constructor:( @stream, @store, @Data, @room, @res, @pay, @pict, @book ) ->
     @rooms   = @room.rooms
@@ -40,13 +40,3 @@ class Test
     $('#cc-exp').val( exp  )
     $('#cc-cvc').val( cvc  )
     return
-
-
-
-
-
-
-
-
-
-

@@ -55,19 +55,18 @@
 
 	    Guest.init = function() {
 	      return Util.ready(function() {
-	        var Alloc, Book, Data, Fire, Home, Pay, Pict, Res, Room, Stream, Test, alloc, book, home, pay, pict, res, room, store, stream, test;
+	        var Book, Data, Fire, Home, Pay, Pict, Res, Room, Stream, Test, book, home, pay, pict, res, room, store, stream, test;
 	        Util.jquery = __webpack_require__(1);
 	        Stream = __webpack_require__(2);
 	        Fire = __webpack_require__(347);
-	        Data = __webpack_require__(355);
-	        Room = __webpack_require__(356);
-	        Home = __webpack_require__(358);
-	        Pict = __webpack_require__(359);
-	        Res = __webpack_require__(361);
+	        Data = __webpack_require__(354);
+	        Room = __webpack_require__(355);
+	        Home = __webpack_require__(357);
+	        Pict = __webpack_require__(358);
+	        Res = __webpack_require__(360);
 	        Pay = __webpack_require__(363);
 	        Book = __webpack_require__(365);
 	        Test = __webpack_require__(366);
-	        Alloc = __webpack_require__(367);
 	        pict = new Pict();
 	        stream = new Stream([]);
 	        store = new Fire(stream, "skytest", Data.configSkytest);
@@ -77,10 +76,8 @@
 	        pay = new Pay(stream, store, Data, room, res, home);
 	        book = new Book(stream, store, Data, room, res, pay, pict);
 	        test = new Test(stream, store, Data, room, res, pay, pict, book);
-	        alloc = new Alloc(stream, store, Data, room, book, null);
 	        book.test = test;
-	        home.ready(book);
-	        return Util.noop(alloc);
+	        return home.ready(book);
 	      });
 	    };
 
@@ -30434,6 +30431,10 @@
 	      return Util.noop(table, where);
 	    };
 
+	    Store.prototype.range = function(table, beg, end) {
+	      return Util.noop(table, beg, end);
+	    };
+
 	    Store.prototype.update = function(table, objects) {
 	      return Util.noop(table, objects);
 	    };
@@ -30876,6 +30877,23 @@
 	      });
 	    };
 
+	    Memory.prototype.range = function(t, beg, end) {
+	      var key, object, objects, table;
+	      objects = {};
+	      table = this.table(t);
+	      for (key in table) {
+	        if (!hasProp.call(table, key)) continue;
+	        object = table[key];
+	        if (beg <= key && key <= end) {
+	          objects[key] = object;
+	        }
+	      }
+	      return this.publish(t, 'none', 'range', objects, {
+	        beg: beg.toString(),
+	        end: end.toString()
+	      });
+	    };
+
 	    Memory.prototype.update = function(t, objects) {
 	      var key, object, table;
 	      table = this.table(t);
@@ -31195,6 +31213,12 @@
 	      this.traverse('select', tableName, where);
 	    };
 
+	    IndexedDB.prototype.range = function(t, beg, end) {
+	      var tableName;
+	      tableName = this.tableName(t);
+	      this.traverse('range', tableName, beg, end);
+	    };
+
 	    IndexedDB.prototype.update = function(t, objects) {
 	      var key, object, tableName, txo;
 	      tableName = this.tableName(t);
@@ -31273,12 +31297,16 @@
 	      return txo;
 	    };
 
-	    IndexedDB.prototype.traverse = function(op, t, where) {
-	      var mode, req, txo;
+	    IndexedDB.prototype.traverse = function(op, t, where, end) {
+	      var beg, mode, req, txo;
 	      if (where == null) {
 	        where = Store.where;
 	      }
+	      if (end == null) {
+	        end = null;
+	      }
 	      mode = op === 'select' ? 'readonly' : 'readwrite';
+	      beg = op === 'range' ? where : null;
 	      txo = this.txnObjectStore(t, mode);
 	      req = txo.openCursor();
 	      req.onsuccess = (function(_this) {
@@ -31288,6 +31316,9 @@
 	          cursor = event.target.result;
 	          if (cursor != null) {
 	            if (op === 'select' && where(cursor.value)) {
+	              objects[cursor.key] = cursor.value;
+	            }
+	            if (op === 'range ' && beg <= cursor.key && cursor.key <= end) {
 	              objects[cursor.key] = cursor.value;
 	            }
 	            if (op === 'remove' && where(cursor.value)) {
@@ -31467,6 +31498,13 @@
 	      return this.ajaxSql('select', table, where, null, params);
 	    };
 
+	    Rest.prototype.range = function(table, beg, end, params) {
+	      if (params == null) {
+	        params = "";
+	      }
+	      return this.ajaxSql('range', table, beg, end, params);
+	    };
+
 	    Rest.prototype.update = function(table, objects, params) {
 	      if (params == null) {
 	        params = "";
@@ -31556,13 +31594,15 @@
 	    };
 
 	    Rest.prototype.ajaxSql = function(op, t, where, objects, params) {
-	      var dataType, settings, tableName, url;
+	      var beg, dataType, end, settings, tableName, url;
 	      if (objects == null) {
 	        objects = null;
 	      }
 	      if (params == null) {
 	        params = "";
 	      }
+	      beg = op === 'range' ? where : null;
+	      end = op === 'range' ? objects : null;
 	      tableName = this.tableName(t);
 	      url = this.urlRest(op, t, '', params);
 	      dataType = this.dataType();
@@ -31586,6 +31626,9 @@
 	          }
 	          if ((objects != null) && (op === 'insert' || op === 'update')) {
 	            result = objects;
+	          }
+	          if (op === 'range') {
+	            result = Util.toRange(data, beg, end);
 	          }
 	          extras = _this.toExtras(status, url, dataType, jqXHR.readyState);
 	          if (op === 'select' || op === 'delete') {
@@ -31749,497 +31792,270 @@
 
 /***/ },
 /* 353 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	// Generated by CoffeeScript 1.12.2
+
+	/*
+	window.xUtil.fixTestGlobals()
+	Stream   = require( 'js/util/Stream'   )
+	Store    = require( 'js/store/Store'   )
+	PouchDB  = require( 'js/store/PouchDB' )
+	Database = require( 'js/store/Database')
+	Columns  = require( 'data/muse/Columns.json')
+	Rows     = require( 'data/muse/Rows.json')
+	Add      = require( 'data/test/Add.json')
+	Get      = require( 'data/test/Get.json')
+	Put      = require( 'data/test/Put.json')
+	Del      = require( 'data/test/Del.json')
+
+	beforeAll () ->
+	  @stream  = new Stream()
+	  #@pouchDB = new PouchDB( @stream, 'http://127.0.0.1:5984/' )
+
+	describe("store/PouchDB.coffee", () ->
+
+	  it("add:( table, id, object )",  () ->
+	    subjectGet = @pouchDB.toSubject('add','get', 'one')
+	    subjectDel = @pouchDB.toSubject('add','del', 'one')
+	    subjectAdd = @pouchDB.toSubject('add','add', 'one')
+	    @stream.subscribe( subjectGet, ()    => @pouchDB.del( 'add', 'one'      ) )
+	    @stream.subscribe( subjectDel, ()    => @pouchDB.add( 'add', 'one', Add ) )
+	    @stream.subscribe( subjectAdd, (obj) => console.log( 'PouchDB Add', obj ) )
+	    @pouchDB.get( 'add', 'one' )
+	    expect('add filler').toBe('add filler') )
+
+	  it("get:( table, id )", () ->
+	    subject  = @pouchDB.toSubject('get','get', 'one')
+	    @stream.subscribe( subject, (data) =>
+	      console.log( 'PouchDB.get:( table, id ) Get =', data ) )
+	       * expect(data.file).toBe('get.json') )
+	    @pouchDB.get( 'get', 'one' )
+	    expect('get filler').toBe('get filler') )
+
+	  it("put:( table, id, object )", () ->
+	    subject  = @pouchDB.toSubject('put','put', 'one')
+	    @stream.subscribe( subject, (data) =>
+	      console.log( 'PouchDB Put =', data ) )
+	      #expect(data.file).toBe('put.json') )
+	    Put.dir = 'xxxx'
+	    @pouchDB.put( 'put', 'one', Put )
+	    expect('put filler').toBe('put filler') )
+
+	  it("del:( table, id )",  () ->
+	    subject  = @pouchDB.toSubject('del','del', 'one')
+	    @stream.subscribe( subject, (data) =>
+	      console.log( 'PouchDB.Del =', data ) )
+	       * expect(data.file).toBe('del.json') )
+	    @pouchDB.del( 'del', 'one' )
+	    expect('del filler').toBe('del filler') )
+
+	  it("insert:( table, objects )",  () ->
+	    subject  = @pouchDB.toSubject('columns','insert')
+	    @stream.subscribe( subject, (objects) =>
+	      console.log( "PouchDB insert", objects ) )
+	       * expect(objects.Embrace.icon).toBe('fa-link') )
+	    @pouchDB.insert( 'columns', Columns )
+	    expect('insert filler').toBe('insert filler')  )
+
+	  it("select:( table, where=Store.where   )",  () ->
+	    subject = @pouchDB.toSubject('columns','select')
+	    @stream.subscribe( subject, (objects) =>
+	      console.log( "select Columns", objects ) )
+	      #@stream.unsubscribe( subject )
+	       * expect(objects.Embrace.icon).toBe('fa-link') )
+	    @pouchDB.select( 'columns' )
+	    expect('select filler').toBe('select filler')  )
+
+	  it("range:( table, beg=1, end=10   )",  () ->
+	    subject = @pouchDB.toSubject('columns','range')
+	    @stream.subscribe( subject, (objects) =>
+	      console.log( "select Columns", objects ) )
+	      #@stream.unsubscribe( subject )
+	       * expect(objects.Embrace.icon).toBe('fa-link') )
+	    @pouchDB.range( 'columns' )
+	    expect('range filler').toBe('range filler')  )
+
+	  it("update:( table, objects )",  () ->
+	    subjectSelect  = @pouchDB.toSubject('columns','select')
+	    subjectUpdate  = @pouchDB.toSubject('columns','update')
+	    @stream.subscribe( subjectSelect, (objects) =>
+	      obj.css = 'xxx-xxx' for key, obj of objects
+	      @pouchDB.update( 'columns', objects ) )
+	    @stream.subscribe( subjectUpdate, (objects) =>
+	      console.log( "PouchDB update", objects ) )
+	       * expect(objects.Embrace.css).toBe('xxx-xxx') )
+	    @pouchDB.select( 'columns' )
+	    expect('update filler').toBe('update filler')  )
+
+	  it("remove:( table, where=Store.where )",  () ->
+	    subjectSelect  = @pouchDB.toSubject('columns','select')
+	    subjectRemove  = @pouchDB.toSubject('columns','remove')
+	    @stream.subscribe( subjectSelect, (objects) =>
+	      @pouchDB.remove( 'columns', objects ) )
+	    @stream.subscribe( subjectRemove, (objects) =>
+	      console.log( "PouchDB remove", objects ) )
+	       * expect('remove objects').toBe('remove objects') )
+	    @pouchDB.select( 'columns' )
+	    expect('remove filler').toBe('remove filler')  )
+
+	  it("open:(      table, schema=Store.schema )",  () -> expect(true).toBe(true)  )
+	  it("show:(      table=''                   )",  () -> expect(true).toBe(true)  )
+	  it("make:(      table, alters=Store.alters )",  () -> expect(true).toBe(true)  )
+	  it("drop:(      table                      )",  () -> expect(true).toBe(true)  )
+	  it("onChange:(  table, id='' )              ",  () -> expect(true).toBe(true)  )
+	  it("isNotEvt:(  evt )                       ",  () -> expect(true).toBe(true)  )
+	  it("auth:( tok )                            ",  () -> expect(true).toBe(true)  )
+	)
+
+	describe("store/Rest.coffee", () ->
+	  it("constructor",                                   () -> expect(true).toBe(true)  )
+	  it("add:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("get:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("put:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("del:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("insert:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("select:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("update:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("remove:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("n open:(    table, schema=Store.schema )",  () -> expect(true).toBe(true)  )
+	  it("show:(      table=''                   )",  () -> expect(true).toBe(true)  )
+	  it("make:(      table, alters=Store.alters )",  () -> expect(true).toBe(true)  )
+	  it("drop:(      table                      )",  () -> expect(true).toBe(true)  )
+	  it("onChange:(  table, id='' )              ",  () -> expect(true).toBe(true)  )
+	  it("ajaxRest:(  op, table, id,    object=null  )", () -> expect(true).toBe(true)  )
+	  it("ajaxSql:(   op, table, where, objects=null )", () -> expect(true).toBe(true)  )
+	  it("ajaxTable:( op, table, options ) ->  ",            () -> expect(true).toBe(true)  )
+	  it("url:(       op, table, id='' ) ->  ",              () -> expect(true).toBe(true)  )
+	  it("urlRest:(   op, table, id='' ) ->  ",              () -> expect(true).toBe(true)  )
+	  it("urlCouchDB:(op, table, id='' ) ->  ",              () -> expect(true).toBe(true)  )
+	  it("restOp:( op ) ->  ",                               () -> expect(true).toBe(true)  )
+	  it("toObject:( json ) ->  ",                           () -> expect(true).toBe(true)  )
+	)
+
+	describe("store/IndexedDB.coffee", () ->
+	  it("constructor",                                   () -> expect(true).toBe(true)  )
+	  it("add:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("get:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("put:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("del:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("insert:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("select:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("update:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("remove:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("open:(      table, schema=Store.schema )",  () -> expect(true).toBe(true)  )
+	  it("show:(      table=''                   )",  () -> expect(true).toBe(true)  )
+	  it("make:(      table, alters=Store.alters )",  () -> expect(true).toBe(true)  )
+	  it("drop:(      table                      )",  () -> expect(true).toBe(true)  )
+	  it("onChange:(  table, id='' )              ",  () -> expect(true).toBe(true)  )
+	  it("openDatabase:( database, dbVersion ) ->  ",     () -> expect(true).toBe(true)  )
+	  it("close:() ->  ",                                 () -> expect(true).toBe(true)  )
+	  it("txnTable:( t, mode, key=@key )",            () -> expect(true).toBe(true)  )
+	  it("traverse:( op, subject, t, objects, where, toArray ) ->  ",  () -> expect(true).toBe(true)  )
+	  it("row:( op, txo, key, object, objects, where, toArray ) ->  ", () -> expect(true).toBe(true)  )
+	)
+
+	describe("store/Memory.coffee", () ->
+	  it("constructor",                                   () -> expect(true).toBe(true)  )
+	  it("add:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("get:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("put:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("del:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("insert:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("select:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("update:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("remove:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("open:(      table, schema=Store.schema )",  () -> expect(true).toBe(true)  )
+	  it("show:(      table=''                   )",  () -> expect(true).toBe(true)  )
+	  it("make:(      table, alters=Store.alters )",  () -> expect(true).toBe(true)  )
+	  it("drop:(      table                      )",  () -> expect(true).toBe(true)  )
+	  it("onChange:(  table, id='' )              ",  () -> expect(true).toBe(true)  )
+	  it("createSession:( prevSession ) ->            ",  () -> expect(true).toBe(true)  )
+	  it("createDatabases:( session, database ) ->    ",  () -> expect(true).toBe(true)  )
+	  it("createTables:( databases, database ) ->     ",  () -> expect(true).toBe(true)  )
+	  it("createTable:( t  ) ->                       ",  () -> expect(true).toBe(true)  )
+	  it("table:( t ) ->                              ",  () -> expect(true).toBe(true)  )
+	)
+
+	describe("store/Firebase.coffee", () ->
+	  it("constructor",                                   () -> expect(true).toBe(true)  )
+	  it("add:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("get:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("put:(       table, id, object          )",  () -> expect(true).toBe(true)  )
+	  it("del:(       table, id                  )",  () -> expect(true).toBe(true)  )
+	  it("insert:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("select:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("update:(    table, objects             )",  () -> expect(true).toBe(true)  )
+	  it("remove:(    table, where=Store.where   )",  () -> expect(true).toBe(true)  )
+	  it("open:(      table, schema=Store.schema )",  () -> expect(true).toBe(true)  )
+	  it("show:(      table=''                   )",  () -> expect(true).toBe(true)  )
+	  it("make:(      table, alters=Store.alters )",  () -> expect(true).toBe(true)  )
+	  it("drop:(      table                      )",  () -> expect(true).toBe(true)  )
+	  it("onChange:(  table, id='' )              ",  () -> expect(true).toBe(true)  )
+	  it("db:(t) ->                                   ",  () -> expect(true).toBe(true)  )
+	  it("revIds:( objects, bulk ) ->                 ",  () -> expect(true).toBe(true)  )
+	)
+
+
+
+	describe("store/coffee Utils", () ->
+	  it("constructor",                () -> expect(true).toBe(true)  )
+	  it("@isRestOp:(  op )",          () -> expect(true).toBe(true)  )
+	  it("@isSqlOp:(   op )",          () -> expect(true).toBe(true)  )
+	  it("@isTableOp:( op )",          () -> expect(true).toBe(true)  )
+	)
+
+	describe("store/Schema.coffee", () ->
+	  it("constructor:() ->                                ", () -> expect(true).toBe(true)  )
+	  it( "@Prims                                          ", () -> expect(true).toBe(true)  )
+	  it( "@Enums                                          ", () -> expect(true).toBe(true)  )
+	  it( "@Specs                                          ", () -> expect(true).toBe(true)  )
+	  it( "@isType                                         ", () -> expect(true).toBe(true)  )
+	  it( "@isPrim                                         ", () -> expect(true).toBe(true)  )
+	  it( "@isSpec                                         ", () -> expect(true).toBe(true)  )
+	  it( "@toRdfType:(    dir, decl, cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@toSchemaType:( dir, decl, cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@toFoafType:(   dir, decl, cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@toXSDType:(    dir, decl, cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@toTypeType:(   decl, cardinality='1' ) ->      ", () -> expect(true).toBe(true)  )
+	  it( "@toPrimType:(   decl, cardinality='1' ) ->      ", () -> expect(true).toBe(true)  )
+	  it( "@toEnumType:(   decl, cardinality='1' ) ->      ", () -> expect(true).toBe(true)  )
+	  it( "@toSpecType:(   prop, cardinality='1' ) ->      ", () -> expect(true).toBe(true)  )
+	  it( "@toIdLD:(   uri, dir, prop                                )", () -> expect(true).toBe(true)  )
+	  it( "@toTypeLD:( uri, dir, decl, cardinality='1'               )", () -> expect(true).toBe(true)  )
+	  it( "@toPropLD:( prop, toId, toType                            )", () -> expect(true).toBe(true)  )
+	  it( "@rdf:      ( prop, dir='', decl='string', cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@schemaOrg:( prop, dir='', decl='string', cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@foafOrg:(   prop, dir='', decl='string', cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@xmlSchema:( prop, dir='', decl='string', cardinality='1' )", () -> expect(true).toBe(true)  )
+	  it( "@axiomType:( prop, cardinality='1', decl='string'         )", () -> expect(true).toBe(true)  )
+	  it( "@axiomPrim:( prop, cardinality='1', decl='string'         )", () -> expect(true).toBe(true)  )
+	  it( "@axiomEnum:( prop, cardinality='1', decl='string'         )", () -> expect(true).toBe(true)  )
+	  it( "@axiomSpec:( prop, cardinality='1'                        )", () -> expect(true).toBe(true)  )
+	  it( "@QuadRdf      ", () -> expect(true).toBe(true)  )
+	  it( "@Quad         ", () -> expect(true).toBe(true)  )
+	  it( "@Elem         ", () -> expect(true).toBe(true)  )
+	  it( "@References   ", () -> expect(true).toBe(true)  )
+	  it( "@Dimensions   ", () -> expect(true).toBe(true)  )
+	  it( "@Perspectives ", () -> expect(true).toBe(true)  )
+	  it( "@Planes       ", () -> expect(true).toBe(true)  )
+	  it( "@Columns      ", () -> expect(true).toBe(true)  )
+	  it( "@Rows         ", () -> expect(true).toBe(true)  )
+	  it( "@Practices    ", () -> expect(true).toBe(true)  )
+	  it( "@Studys       ", () -> expect(true).toBe(true)  )
+	  it( "@NavbSpecs    ", () -> expect(true).toBe(true)  )
+	  it( "@NavbItems    ", () -> expect(true).toBe(true)  )
+	)
+	 */
+
 	(function() {
-	  var $, Test,
-	    hasProp = {}.hasOwnProperty;
 
-	  $ = __webpack_require__(1);
-
-	  Test = (function() {
-	    module.exports = Test;
-
-	    Test.Data = __webpack_require__(354);
-
-	    function Test(stream, store, Data, room1, res1, pay, pict, book) {
-	      this.stream = stream;
-	      this.store = store;
-	      this.Data = Data;
-	      this.room = room1;
-	      this.res = res1;
-	      this.pay = pay;
-	      this.pict = pict;
-	      this.book = book;
-	      this.rooms = this.room.rooms;
-	    }
-
-	    Test.prototype.doTest = function() {
-	      var $cell, cust, day, dayId, fn, ref, ref1, res, resId, room, roomId;
-	      ref = Test.Data;
-	      for (resId in ref) {
-	        if (!hasProp.call(ref, resId)) continue;
-	        res = ref[resId];
-	        for (roomId in res) {
-	          if (!hasProp.call(res, roomId)) continue;
-	          room = res[roomId];
-	          ref1 = res.days;
-	          for (dayId in ref1) {
-	            if (!hasProp.call(ref1, dayId)) continue;
-	            day = ref1[dayId];
-	            $cell = $('#R' + roomId + dayId);
-	            this.book.cellBook($cell);
-	          }
-	        }
-	        cust = res.cust;
-	        this.getNamePhoneEmail(cust.first, cust.last, cust.phone, cust.email);
-	        fn = (function(_this) {
-	          return function() {
-	            return _this.doGoToPay(res);
-	          };
-	        })(this);
-	        setTimeout(fn, 4000);
-	      }
-	    };
-
-	    Test.prototype.doGoToPay = function(res) {
-	      var fn, payment;
-	      this.book.onGoToPay(null);
-	      payment = Util.keys(res.payments).sort()[0];
-	      this.popCC(payment.cc, payment.exp, payment.cvc);
-	      fn = (function(_this) {
-	        return function() {
-	          return _this.pay.submit(null);
-	        };
-	      })(this);
-	      setTimeout(fn, 4000);
-	    };
-
-	    Test.prototype.getNamesPhoneEmail = function(first, last, phone, email) {
-	      var ev, fv, lv, pv, ref, ref1, ref2, ref3;
-	      ref = this.pay.isValid('First', first, true), this.pay.first = ref[0], fv = ref[1];
-	      ref1 = this.pay.isValid('Last', last, true), this.pay.last = ref1[0], lv = ref1[1];
-	      ref2 = this.pay.isValid('Phone', phone, true), this.pay.phone = ref2[0], pv = ref2[1];
-	      return ref3 = this.pay.isValid('EMail', email, true), this.pay.email = ref3[0], ev = ref3[1], ref3;
-	    };
-
-	    Test.prototype.popCC = function(cc, exp, cvc) {
-	      $('#cc-num').val(cc);
-	      $('#cc-exp').val(exp);
-	      $('#cc-cvc').val(cvc);
-	    };
-
-	    return Test;
-
-	  })();
 
 	}).call(this);
 
 
 /***/ },
 /* 354 */
-/***/ function(module, exports) {
-
-	module.exports = {
-		"120170709": {
-			"resId": "120170709",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "book",
-			"method": "site",
-			"booked": "20170501",
-			"arrive": "20170709",
-			"rooms": {
-				"1": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170709": {},
-						"20170710": {}
-					}
-				}
-			},
-			"payments": {
-				"1201707091": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028",
-					"cc": "",
-					"exp": "",
-					"cvc": ""
-				}
-			},
-			"cust": {
-				"custId": "3037984232",
-				"first": "Luke",
-				"last": "Johnson",
-				"phone": "3037984232",
-				"email": "tef@eazy.net",
-				"source": "site"
-			}
-		},
-		"220170710": {
-			"resId": "220170710",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "depo",
-			"method": "booking",
-			"booked": "20170502",
-			"arrive": "20170710",
-			"rooms": {
-				"2": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170710": {},
-						"20170711": {}
-					}
-				}
-			},
-			"payments": {
-				"1201707101": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3137984232",
-				"first": "Mark",
-				"last": "Ryan",
-				"phone": "3137984232",
-				"email": "tef@eazy.net",
-				"source": "walkin"
-			}
-		},
-		"320170711": {
-			"resId": "320170711",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "hold",
-			"method": "walkin",
-			"booked": "20170502",
-			"arrive": "20170711",
-			"rooms": {
-				"3": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170711": {},
-						"20170712": {}
-					}
-				}
-			},
-			"payments": {
-				"3201707111": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3047984232",
-				"first": "David",
-				"last": "Macon",
-				"phone": "3047984232",
-				"email": "tef@eazy.net",
-				"source": "site"
-			}
-		},
-		"420170712": {
-			"resId": "420170712",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "book",
-			"method": "phone",
-			"booked": "20170503",
-			"arrive": "20170712",
-			"rooms": {
-				"4": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170712": {},
-						"20170713": {}
-					}
-				}
-			},
-			"payments": {
-				"4201707121": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				},
-				"resId": ""
-			},
-			"cust": {
-				"custId": "3038984232",
-				"first": "John",
-				"last": "Abrams",
-				"phone": "3038984232",
-				"email": "tef@eazy.net",
-				"source": "bookings"
-			}
-		},
-		"520170714": {
-			"resId": "520170714",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "depo",
-			"method": "email",
-			"booked": "20170504",
-			"arrive": "20170714",
-			"rooms": {
-				"5": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170714": {},
-						"20170715": {}
-					}
-				}
-			},
-			"payments": {
-				"5201707141": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3037084232",
-				"first": "Clyde",
-				"last": "Horn",
-				"phone": "3037084232",
-				"email": "tef@eazy.net",
-				"source": "expedia"
-			}
-		},
-		"620170715": {
-			"resId": "620170715",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "hold",
-			"method": "site",
-			"booked": "20170505",
-			"arrive": "20170715",
-			"rooms": {
-				"6": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170715": {},
-						"20170716": {}
-					}
-				}
-			},
-			"payments": {
-				"6201707151": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3037994232",
-				"first": "Teressa",
-				"last": "May",
-				"phone": "3037994232",
-				"email": "tef@eazy.net",
-				"source": "bookings"
-			}
-		},
-		"720170716": {
-			"resId": "720170716",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "book",
-			"method": "booking",
-			"booked": "20170507",
-			"arrive": "20170716",
-			"rooms": {
-				"7": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170716": {},
-						"20170717": {}
-					}
-				}
-			},
-			"payments": {
-				"7201707161": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3037985232",
-				"first": "Susan",
-				"last": "Anthony",
-				"phone": "3037985232",
-				"email": "tef@eazy.net",
-				"source": "site"
-			}
-		},
-		"820170717": {
-			"resId": "820170717",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "depo",
-			"method": "walkin",
-			"booked": "20170508",
-			"arrive": "20170717",
-			"rooms": {
-				"8": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170717": {},
-						"20170718": {}
-					}
-				}
-			},
-			"payments": {
-				"8201707171": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3037984332",
-				"first": "Gretchen",
-				"last": "Menn",
-				"phone": "3037984332",
-				"email": "tef@eazy.net",
-				"source": "bookings"
-			}
-		},
-		"N20170718": {
-			"resId": "N20170718",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "hold",
-			"method": "email",
-			"booked": "20170509",
-			"arrive": "20170718",
-			"rooms": {
-				"N": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170718": {},
-						"20170719": {}
-					}
-				}
-			},
-			"payments": {
-				"N201707181": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3037984242",
-				"first": "Fabio",
-				"last": "Sosa",
-				"phone": "3037984242",
-				"email": "tef@eazy.net",
-				"source": "walkin"
-			}
-		},
-		"S20170719": {
-			"resId": "S20170719",
-			"total": 250,
-			"paid": 250,
-			"balance": 0,
-			"status": "book",
-			"method": "site",
-			"booked": "20170510",
-			"arrive": "20170719",
-			"rooms": {
-				"S": {
-					"total": 250,
-					"price": 125,
-					"guests": 2,
-					"pets": 1,
-					"spa": false,
-					"days": {
-						"20170719": {},
-						"20170720": {}
-					}
-				}
-			},
-			"payments": {
-				"S201707191": {
-					"amount": 250,
-					"date": "20170517",
-					"with": "check",
-					"num": "4028"
-				}
-			},
-			"cust": {
-				"custId": "3037984233",
-				"first": "Dan",
-				"last": "Marks",
-				"phone": "3037984233",
-				"email": "tef@eazy.net",
-				"source": "site"
-			}
-		}
-	};
-
-/***/ },
-/* 355 */
 /***/ function(module, exports) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -32253,6 +32069,8 @@
 	    module.exports = Data;
 
 	    Data.testing = true;
+
+	    Data.year = 17;
 
 	    Data.season = ["May", "June", "July", "August", "September", "October"];
 
@@ -32311,7 +32129,7 @@
 	          continue;
 	        }
 	        days = Util.keys(roomUI.days).sort();
-	        resId = roomId + days[0];
+	        resId = days[0] + roomId;
 	        break;
 	      }
 	      if (!Util.isStr(resId)) {
@@ -32352,9 +32170,9 @@
 
 	    Data.advanceDate = function(resDate, numDays) {
 	      var day, dayInt, month, monthIdx, year;
-	      year = resDate.substr(0, 4);
-	      monthIdx = parseInt(resDate.substr(4, 2)) - 1;
-	      dayInt = parseInt(resDate.substr(6, 2)) + numDays;
+	      year = resDate.substr(0, 2);
+	      monthIdx = parseInt(resDate.substr(2, 2)) - 1;
+	      dayInt = parseInt(resDate.substr(4, 2)) + numDays;
 	      if (dayInt > this.numDayMonth[monthIdx]) {
 	        dayInt = dayInt - this.numDayMonth[monthIdx];
 	        monthIdx++;
@@ -32366,10 +32184,10 @@
 
 	    Data.weekday = function(date) {
 	      var dayInt, monthIdx, weekdayIdx, year;
-	      year = parseInt(date.substr(0, 4));
-	      monthIdx = parseInt(date.substr(4, 2)) - 1;
-	      dayInt = parseInt(date.substr(6, 2));
-	      weekdayIdx = new Date(year, monthIdx, dayInt).getDay();
+	      year = parseInt(date.substr(0, 2));
+	      monthIdx = parseInt(date.substr(2, 2)) - 1;
+	      dayInt = parseInt(date.substr(4, 2));
+	      weekdayIdx = new Date(2000 + year, monthIdx, dayInt).getDay();
 	      return Data.weekdays[weekdayIdx];
 	    };
 
@@ -32385,19 +32203,18 @@
 
 
 /***/ },
-/* 356 */
+/* 355 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
 	(function() {
 	  var Room,
-	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-	    hasProp = {}.hasOwnProperty;
+	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 	  Room = (function() {
 	    module.exports = Room;
 
-	    Room.Rooms = __webpack_require__(357);
+	    Room.Rooms = __webpack_require__(356);
 
 	    Room.States = ["free", "mine", "depo", "book"];
 
@@ -32405,7 +32222,6 @@
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
-	      this.onAlloc = bind(this.onAlloc, this);
 	      this.initRooms = bind(this.initRooms, this);
 	      this.rooms = Room.Rooms;
 	      this.states = Room.States;
@@ -32452,38 +32268,6 @@
 	      return this.store.make('Room');
 	    };
 
-	    Room.prototype.dayBookedRm = function(room, date) {
-	      var day;
-	      day = room.days[date];
-	      if (day != null) {
-	        return day.status;
-	      } else {
-	        return 'free';
-	      }
-	    };
-
-	    Room.prototype.dayBookedUI = function(room, date) {
-	      var day;
-	      day = room.days[date];
-	      if (day != null) {
-	        return day.status;
-	      } else {
-	        return 'free';
-	      }
-	    };
-
-	    Room.prototype.onAlloc = function(alloc, roomId) {
-	      var day, obj, ref, room;
-	      room = this.rooms[roomId];
-	      ref = alloc.days;
-	      for (day in ref) {
-	        if (!hasProp.call(ref, day)) continue;
-	        obj = ref[day];
-	        room.days[day] = alloc.days[day];
-	      }
-	      this.store.put('Room', roomId, room);
-	    };
-
 	    return Room;
 
 	  })();
@@ -32492,7 +32276,7 @@
 
 
 /***/ },
-/* 357 */
+/* 356 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -32501,7 +32285,6 @@
 			"2": 125,
 			"3": 135,
 			"4": 145,
-			"days": {},
 			"name": "#1 Cozy 1-Room Cabin",
 			"pet": 12,
 			"spa": "N",
@@ -32513,7 +32296,6 @@
 			"2": 165,
 			"3": 175,
 			"4": 185,
-			"days": {},
 			"name": "#2 Mountain Spa",
 			"pet": 12,
 			"spa": "O",
@@ -32530,7 +32312,6 @@
 			"7": 305,
 			"8": 315,
 			"9": 325,
-			"days": {},
 			"name": "#3 Southwest Spa",
 			"pet": 12,
 			"spa": "Y",
@@ -32542,7 +32323,6 @@
 			"2": 125,
 			"3": 135,
 			"4": 145,
-			"days": {},
 			"name": "#4 Cozy 1-Room Cabin",
 			"pet": 12,
 			"spa": "N",
@@ -32556,7 +32336,6 @@
 			"4": 195,
 			"5": 205,
 			"6": 215,
-			"days": {},
 			"name": "#5 River Cabin With View",
 			"pet": 12,
 			"spa": "N",
@@ -32576,7 +32355,6 @@
 			"10": 295,
 			"11": 305,
 			"12": 315,
-			"days": {},
 			"name": "#6 Large River Cabin",
 			"pet": 12,
 			"spa": "N",
@@ -32588,7 +32366,6 @@
 			"2": 165,
 			"3": 175,
 			"4": 175,
-			"days": {},
 			"name": "#7 Western Spa",
 			"pet": 12,
 			"spa": "O",
@@ -32600,7 +32377,6 @@
 			"2": 125,
 			"3": 135,
 			"4": 145,
-			"days": {},
 			"name": "#8 Western Unit",
 			"pet": 12,
 			"spa": "N",
@@ -32612,7 +32388,6 @@
 			"2": 145,
 			"3": 155,
 			"4": 165,
-			"days": {},
 			"name": "Upper Skyline North",
 			"pet": 12,
 			"spa": "N",
@@ -32624,7 +32399,6 @@
 			"2": 135,
 			"3": 145,
 			"4": 155,
-			"days": {},
 			"name": "Upper Skyline South",
 			"pet": 12,
 			"spa": "N",
@@ -32634,7 +32408,7 @@
 	};
 
 /***/ },
-/* 358 */
+/* 357 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -32752,7 +32526,7 @@
 
 
 /***/ },
-/* 359 */
+/* 358 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {// Generated by CoffeeScript 1.12.2
@@ -32907,10 +32681,10 @@
 
 	}).call(this);
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(360)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(359)(module)))
 
 /***/ },
-/* 360 */
+/* 359 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -32926,7 +32700,7 @@
 
 
 /***/ },
-/* 361 */
+/* 360 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -32938,19 +32712,37 @@
 	  Res = (function() {
 	    module.exports = Res;
 
-	    Res.Resvs = __webpack_require__(362);
+	    Res.Resvs = __webpack_require__(361);
+
+	    Res.Days = __webpack_require__(362);
 
 	    function Res(stream, store, Data, room1) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
 	      this.room = room1;
+	      this.subscribeToDays = bind(this.subscribeToDays, this);
 	      this.subscribeToResId = bind(this.subscribeToResId, this);
-	      this.testResvs = Res.Resvs;
 	      if (this.Data.testing) {
 	        this.insertTestResvs();
 	      }
+	      if (this.Data.testing) {
+	        this.insertDaysResvs();
+	      }
+	      this.book = null;
+	      this.master = null;
 	    }
+
+	    Res.prototype.dayBooked = function(roomId, date) {
+	      var day, entry;
+	      day = Res.Days[date];
+	      entry = (day != null) && day[roomId] ? day[roomId] : null;
+	      if (entry != null) {
+	        return entry.status;
+	      } else {
+	        return 'free';
+	      }
+	    };
 
 	    Res.prototype.createRoomResv = function(status, method, roomUIs) {
 	      var day, obj, ref, resv, roomId, roomUI;
@@ -32985,6 +32777,7 @@
 	      }
 	      resv.payments = {};
 	      resv.cust = {};
+	      this.subscribeToResId(resv.resId);
 	      return resv;
 	    };
 
@@ -33025,29 +32818,61 @@
 	    };
 
 	    Res.prototype.allocRoom = function(roomId, days) {
-	      return this.store.add('Alloc', roomId, {
-	        days: days
-	      });
+	      if (this.book != null) {
+	        this.book.onAlloc(roomId, days);
+	      }
+	      if (this.master != null) {
+	        return this.master.onAlloc(roomId, days);
+	      }
 	    };
 
 	    Res.prototype.subscribeToResId = function(resId) {
-	      this.store.subscribe('Res', resId, 'add', (function(_this) {
-	        return function(add) {
-	          return Util.log('Res.subscribeToResId', resId, add);
+	      this.store.subscribe('Res', resId, 'onAdd', (function(_this) {
+	        return function(onAdd) {
+	          return Util.log('Res.subscribeToResId onAdd', resId, onAdd);
 	        };
 	      })(this));
-	      return this.store.subscribe('Res', resId, 'put', (function(_this) {
-	        return function(put) {
-	          return Util.log('Res.subscribeToResId', resId, put);
+	      this.store.subscribe('Res', resId, 'onPut', (function(_this) {
+	        return function(onPut) {
+	          return Util.log('Res.subscribeToResId onPut', resId, onPut);
 	        };
 	      })(this));
+	      this.store.subscribe('Res', resId, 'onDel', (function(_this) {
+	        return function(onDel) {
+	          return Util.log('Res.subscribeToResId onDel', resId, onDel);
+	        };
+	      })(this));
+	      this.store.on('Res', 'onAdd', resId);
+	      this.store.on('Res', 'onPut', resId);
+	      return this.store.on('Res', 'onDel', resId);
+	    };
+
+	    Res.prototype.subscribeToDays = function() {
+	      this.store.subscribe('Days', 'none', 'onAdd', (function(_this) {
+	        return function(onAdd) {
+	          return Util.log('Res.subscribeToDays onAdd', onAdd);
+	        };
+	      })(this));
+	      this.store.subscribe('Days', 'none', 'onPut', (function(_this) {
+	        return function(onPut) {
+	          return Util.log('Res.subscribeToDays onPut', onPut);
+	        };
+	      })(this));
+	      this.store.subscribe('Days', 'none', 'onDel', (function(_this) {
+	        return function(onDel) {
+	          return Util.log('Res.subscribeToDays onDel', onDel);
+	        };
+	      })(this));
+	      this.store.on('Days', 'onAdd');
+	      this.store.on('Days', 'onPut');
+	      return this.store.on('Days', 'onDel');
 	    };
 
 	    Res.prototype.insertTestResvs = function() {
 	      var ref, resId, resv;
 	      this.store.subscribe('Res', 'none', 'make', (function(_this) {
 	        return function(make) {
-	          _this.store.insert('Res', _this.testResvs);
+	          _this.store.insert('Res', Res.Resvs);
 	          return Util.noop(make);
 	        };
 	      })(this));
@@ -33060,9 +32885,45 @@
 	      }
 	    };
 
+	    Res.prototype.insertDaysResvs = function() {
+	      var dayId, dayd, dayr, days, ref, ref1, ref2, resv, resvId, room, roomId;
+	      days = {};
+	      ref = this.testResvs;
+	      for (resvId in ref) {
+	        if (!hasProp.call(ref, resvId)) continue;
+	        resv = ref[resvId];
+	        ref1 = resv.rooms;
+	        for (roomId in ref1) {
+	          if (!hasProp.call(ref1, roomId)) continue;
+	          room = ref1[roomId];
+	          ref2 = room.days;
+	          for (dayId in ref2) {
+	            if (!hasProp.call(ref2, dayId)) continue;
+	            dayr = ref2[dayId];
+	            if (days[dayId] == null) {
+	              days[dayId] = {};
+	            }
+	            days[dayId][roomId] = {};
+	            dayd = days[dayId][roomId];
+	            dayd.status = dayr.status;
+	            dayd.resId = dayr.resId;
+	          }
+	        }
+	      }
+	      this.store.subscribe('Days', 'none', 'make', (function(_this) {
+	        return function(make) {
+	          _this.store.insert('Days', days);
+	          return Util.noop(make);
+	        };
+	      })(this));
+	      this.store.make('Days');
+	      this.subscribeToDays();
+	    };
+
 	    Res.prototype.makeAllTables = function() {
 	      this.store.make('Res');
 	      this.store.make('Room');
+	      this.store.make('Days');
 	      this.store.make('Payment');
 	      return this.store.make('Cust');
 	    };
@@ -33121,8 +32982,34 @@
 	      this.updateRooms(resv);
 	      if (status === 'post') {
 	        this.store.add('Res', resv.resId, resv);
+	        this.postDays(resv);
 	      }
 	      return Util.log('Res.postResv()', resv);
+	    };
+
+	    Res.prototype.postDays = function(resv) {
+	      var dayId, dayd, dayr, ref, results, room, roomId;
+	      ref = resv.rooms;
+	      results = [];
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        room = ref[roomId];
+	        results.push((function() {
+	          var ref1, results1;
+	          ref1 = room.days;
+	          results1 = [];
+	          for (dayId in ref1) {
+	            if (!hasProp.call(ref1, dayId)) continue;
+	            dayr = ref1[dayId];
+	            dayd = {};
+	            dayd.status = dayr.status;
+	            dayd.resId = dayr.resId;
+	            results1.push(this.store.add('Days/' + dayId, roomId, dayd));
+	          }
+	          return results1;
+	        }).call(this));
+	      }
+	      return results;
 	    };
 
 	    return Res;
@@ -33133,19 +33020,19 @@
 
 
 /***/ },
-/* 362 */
+/* 361 */
 /***/ function(module, exports) {
 
 	module.exports = {
-		"120170709": {
-			"resId": "120170709",
+		"1707091": {
+			"resId": "1707091",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
 			"status": "book",
 			"method": "site",
-			"booked": "20170501",
-			"arrive": "20170709",
+			"booked": "170501",
+			"arrive": "170709",
 			"rooms": {
 				"1": {
 					"total": 250,
@@ -33154,15 +33041,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170709": {},
-						"20170710": {}
+						"170709": {},
+						"170710": {}
 					}
 				}
 			},
 			"payments": {
-				"1201707091": {
+				"11707091": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028",
 					"cc": "",
@@ -33179,15 +33066,15 @@
 				"source": "site"
 			}
 		},
-		"220170710": {
-			"resId": "220170710",
+		"1707102": {
+			"resId": "1707102",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
 			"status": "depo",
 			"method": "booking",
-			"booked": "20170502",
-			"arrive": "20170710",
+			"booked": "170502",
+			"arrive": "170710",
 			"rooms": {
 				"2": {
 					"total": 250,
@@ -33196,15 +33083,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170710": {},
-						"20170711": {}
+						"170710": {},
+						"170711": {}
 					}
 				}
 			},
 			"payments": {
-				"1201707101": {
+				"11707101": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33218,15 +33105,15 @@
 				"source": "walkin"
 			}
 		},
-		"320170711": {
-			"resId": "320170711",
+		"1707113": {
+			"resId": "1707113",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
-			"status": "hold",
+			"status": "book",
 			"method": "walkin",
-			"booked": "20170502",
-			"arrive": "20170711",
+			"booked": "170502",
+			"arrive": "170711",
 			"rooms": {
 				"3": {
 					"total": 250,
@@ -33235,15 +33122,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170711": {},
-						"20170712": {}
+						"170711": {},
+						"170712": {}
 					}
 				}
 			},
 			"payments": {
-				"3201707111": {
+				"31707111": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33257,15 +33144,15 @@
 				"source": "site"
 			}
 		},
-		"420170712": {
-			"resId": "420170712",
+		"1707124": {
+			"resId": "1707124",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
 			"status": "book",
 			"method": "phone",
-			"booked": "20170503",
-			"arrive": "20170712",
+			"booked": "170503",
+			"arrive": "170712",
 			"rooms": {
 				"4": {
 					"total": 250,
@@ -33274,15 +33161,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170712": {},
-						"20170713": {}
+						"170712": {},
+						"170713": {}
 					}
 				}
 			},
 			"payments": {
-				"4201707121": {
+				"41707121": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				},
@@ -33297,15 +33184,15 @@
 				"source": "bookings"
 			}
 		},
-		"520170714": {
-			"resId": "520170714",
+		"1707145": {
+			"resId": "1707145",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
 			"status": "depo",
 			"method": "email",
-			"booked": "20170504",
-			"arrive": "20170714",
+			"booked": "170504",
+			"arrive": "170714",
 			"rooms": {
 				"5": {
 					"total": 250,
@@ -33314,15 +33201,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170714": {},
-						"20170715": {}
+						"170714": {},
+						"170715": {}
 					}
 				}
 			},
 			"payments": {
-				"5201707141": {
+				"51707141": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33336,15 +33223,15 @@
 				"source": "expedia"
 			}
 		},
-		"620170715": {
-			"resId": "620170715",
+		"1707156": {
+			"resId": "1707156",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
-			"status": "hold",
+			"status": "book",
 			"method": "site",
-			"booked": "20170505",
-			"arrive": "20170715",
+			"booked": "170505",
+			"arrive": "170715",
 			"rooms": {
 				"6": {
 					"total": 250,
@@ -33353,15 +33240,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170715": {},
-						"20170716": {}
+						"170715": {},
+						"170716": {}
 					}
 				}
 			},
 			"payments": {
-				"6201707151": {
+				"61707151": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33375,15 +33262,15 @@
 				"source": "bookings"
 			}
 		},
-		"720170716": {
-			"resId": "720170716",
+		"1707167": {
+			"resId": "1707167",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
 			"status": "book",
 			"method": "booking",
-			"booked": "20170507",
-			"arrive": "20170716",
+			"booked": "170507",
+			"arrive": "170716",
 			"rooms": {
 				"7": {
 					"total": 250,
@@ -33392,15 +33279,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170716": {},
-						"20170717": {}
+						"170716": {},
+						"170717": {}
 					}
 				}
 			},
 			"payments": {
-				"7201707161": {
+				"71707161": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33414,15 +33301,15 @@
 				"source": "site"
 			}
 		},
-		"820170717": {
-			"resId": "820170717",
+		"1707178": {
+			"resId": "1707178",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
-			"status": "depo",
+			"status": "book",
 			"method": "walkin",
-			"booked": "20170508",
-			"arrive": "20170717",
+			"booked": "170508",
+			"arrive": "170717",
 			"rooms": {
 				"8": {
 					"total": 250,
@@ -33431,15 +33318,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170717": {},
-						"20170718": {}
+						"170717": {},
+						"170718": {}
 					}
 				}
 			},
 			"payments": {
-				"8201707171": {
+				"81707171": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33453,15 +33340,15 @@
 				"source": "bookings"
 			}
 		},
-		"N20170718": {
-			"resId": "N20170718",
+		"170718N": {
+			"resId": "170718N",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
-			"status": "hold",
+			"status": "book",
 			"method": "email",
-			"booked": "20170509",
-			"arrive": "20170718",
+			"booked": "170509",
+			"arrive": "170718",
 			"rooms": {
 				"N": {
 					"total": 250,
@@ -33470,15 +33357,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170718": {},
-						"20170719": {}
+						"170718": {},
+						"170719": {}
 					}
 				}
 			},
 			"payments": {
-				"N201707181": {
+				"N1707181": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33492,15 +33379,15 @@
 				"source": "walkin"
 			}
 		},
-		"S20170719": {
-			"resId": "S20170719",
+		"170719S": {
+			"resId": "170719S",
 			"totals": 250,
 			"paid": 250,
 			"balance": 0,
 			"status": "book",
 			"method": "site",
-			"booked": "20170510",
-			"arrive": "20170719",
+			"booked": "170510",
+			"arrive": "170719",
 			"rooms": {
 				"S": {
 					"total": 250,
@@ -33509,15 +33396,15 @@
 					"pets": 1,
 					"spa": false,
 					"days": {
-						"20170719": {},
-						"20170720": {}
+						"170719": {},
+						"170720": {}
 					}
 				}
 			},
 			"payments": {
-				"S201707191": {
+				"S1707191": {
 					"amount": 250,
-					"date": "20170517",
+					"date": "170517",
 					"with": "check",
 					"num": "4028"
 				}
@@ -33529,6 +33416,117 @@
 				"phone": "3037984233",
 				"email": "tef@eazy.net",
 				"source": "site"
+			}
+		}
+	};
+
+/***/ },
+/* 362 */
+/***/ function(module, exports) {
+
+	module.exports = {
+		"170709": {
+			"1": {
+				"resId": "1707091",
+				"status": "book"
+			}
+		},
+		"170710": {
+			"1": {
+				"resId": "1707091",
+				"status": "book"
+			},
+			"2": {
+				"resId": "1707102",
+				"status": "depo"
+			}
+		},
+		"170711": {
+			"2": {
+				"resId": "1707102",
+				"status": "depo"
+			},
+			"3": {
+				"resId": "1707113",
+				"status": "book"
+			}
+		},
+		"170712": {
+			"3": {
+				"resId": "1707113",
+				"status": "book"
+			},
+			"4": {
+				"resId": "1707124",
+				"status": "book"
+			}
+		},
+		"170713": {
+			"4": {
+				"resId": "1707124",
+				"status": "book"
+			}
+		},
+		"170714": {
+			"5": {
+				"resId": "1707145",
+				"status": "depo"
+			}
+		},
+		"170715": {
+			"5": {
+				"resId": "1707145",
+				"status": "depo"
+			},
+			"6": {
+				"resId": "1707156",
+				"status": "book"
+			}
+		},
+		"170716": {
+			"6": {
+				"resId": "1707156",
+				"status": "book"
+			},
+			"7": {
+				"resId": "1707167",
+				"status": "book"
+			}
+		},
+		"170717": {
+			"7": {
+				"resId": "1707167",
+				"status": "book"
+			},
+			"8": {
+				"resId": "1707178",
+				"status": "depo"
+			}
+		},
+		"170718": {
+			"8": {
+				"resId": "1707178",
+				"status": "depo"
+			},
+			"N": {
+				"resId": "170718N",
+				"status": "book"
+			}
+		},
+		"170719": {
+			"N": {
+				"resId": "170718N",
+				"status": "book"
+			},
+			"S": {
+				"resId": "170719S",
+				"status": "book"
+			}
+		},
+		"170720": {
+			"S": {
+				"resId": "170719S",
+				"status": "book"
 			}
 		}
 	};
@@ -33799,9 +33797,9 @@
 
 	    Pay.prototype.confirmDate = function(dayStr, msg, isDepart) {
 	      var day, monthIdx, ref, weekdayIdx, year;
-	      year = parseInt(dayStr.substr(0, 4));
-	      monthIdx = parseInt(dayStr.substr(4, 2)) - 1;
-	      day = parseInt(dayStr.substr(6, 2));
+	      year = parseInt(dayStr.substr(0, 2)) + 2000;
+	      monthIdx = parseInt(dayStr.substr(2, 2)) - 1;
+	      day = parseInt(dayStr.substr(4, 2));
 	      weekdayIdx = new Date(year, monthIdx, day).getDay();
 	      if (isDepart) {
 	        ref = this.departDate(monthIdx, day, weekdayIdx), monthIdx = ref[0], day = ref[1], weekdayIdx = ref[2];
@@ -34772,7 +34770,7 @@
 
 	}).call(this);
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(360)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(359)(module)))
 
 /***/ },
 /* 365 */
@@ -34813,11 +34811,12 @@
 	      this.onGoToPay = bind(this.onGoToPay, this);
 	      this.rooms = null;
 	      this.roomUIs = null;
+	      this.res.book = this;
 	      this.myDays = 0;
 	      this.today = new Date();
 	      this.monthIdx = this.today.getMonth();
 	      this.monthIdx = 4 <= this.monthIdx && this.monthIdx <= 9 ? this.monthIdx : 4;
-	      this.year = 2017;
+	      this.year = this.Data.year;
 	      this.month = this.Data.months[this.monthIdx];
 	      this.numDays = 15;
 	      this.begMay = 15;
@@ -34874,7 +34873,7 @@
 
 	    Book.prototype.roomsHtml = function(year, monthIdx, begDay, numDays) {
 	      var day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday, weekdayIdx;
-	      weekdayIdx = new Date(year, monthIdx, 1).getDay();
+	      weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
 	      htm = "<table><thead>";
 	      htm += "<tr><th></th><th></th><th></th><th></th><th></th>";
 	      for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
@@ -34980,11 +34979,8 @@
 	    };
 
 	    Book.prototype.createCell = function(roomId, roomRm, date) {
-	      var roomUI, status, statusRm, statusUI;
-	      roomUI = this.roomUIs[roomId];
-	      statusRm = this.room.dayBookedRm(roomRm, date);
-	      statusUI = this.room.dayBookedUI(roomUI, date);
-	      status = statusRm !== 'free' ? statusRm : statusUI;
+	      var status;
+	      status = this.res.dayBooked(roomId, date);
 	      return "<td id=\"R" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
 	    };
 
@@ -35289,18 +35285,17 @@
 	      }
 	    };
 
-	    Book.prototype.onAlloc = function(alloc, roomId) {
-	      var day, obj, ref;
-	      ref = alloc.days;
-	      for (day in ref) {
-	        if (!hasProp.call(ref, day)) continue;
-	        obj = ref[day];
-	        this.allocCell(day, obj.status, roomId);
+	    Book.prototype.onAlloc = function(roomId, days) {
+	      var day, dayId;
+	      for (dayId in days) {
+	        if (!hasProp.call(days, dayId)) continue;
+	        day = days[dayId];
+	        this.allocCell(dayId, day.status, roomId);
 	      }
 	    };
 
-	    Book.prototype.allocCell = function(day, status, roomId) {
-	      return this.cellStatus($('#R' + roomId + day), status);
+	    Book.prototype.allocCell = function(dayId, status, roomId) {
+	      return this.cellStatus($('#R' + roomId + dayId), status);
 	    };
 
 	    Book.prototype.cellStatus = function($cell, status) {
@@ -35350,7 +35345,7 @@
 	  Test = (function() {
 	    module.exports = Test;
 
-	    Test.Data = __webpack_require__(354);
+	    Test.Data = __webpack_require__(361);
 
 	    function Test(stream, store, Data, room1, res1, pay, pict, book) {
 	      this.stream = stream;
@@ -35395,7 +35390,7 @@
 	    Test.prototype.doGoToPay = function(res) {
 	      var fn, payment;
 	      this.book.onGoToPay(null);
-	      payment = Object.keys(res.payments).sort()[0];
+	      payment = Util.keys(res.payments).sort()[0];
 	      this.popCC(payment.cc, payment.exp, payment.cvc);
 	      fn = (function(_this) {
 	        return function() {
@@ -35420,79 +35415,6 @@
 	    };
 
 	    return Test;
-
-	  })();
-
-	}).call(this);
-
-
-/***/ },
-/* 367 */
-/***/ function(module, exports) {
-
-	// Generated by CoffeeScript 1.12.2
-	(function() {
-	  var Alloc,
-	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-	  Alloc = (function() {
-	    module.exports = Alloc;
-
-	    function Alloc(stream, store, Data, room, book, master) {
-	      this.stream = stream;
-	      this.store = store;
-	      this.Data = Data;
-	      this.room = room != null ? room : null;
-	      this.book = book != null ? book : null;
-	      this.master = master != null ? master : null;
-	      this.onAlloc = bind(this.onAlloc, this);
-	      this.subscribe();
-	      this.rooms = this.room.rooms;
-	    }
-
-	    Alloc.prototype.subscribe = function() {
-	      this.store.subscribe('Alloc', 'none', 'make', (function(_this) {
-	        return function(make) {
-	          return Util.noop('Alloc.make()', make);
-	        };
-	      })(this));
-	      this.store.subscribe('Alloc', 'none', 'onAdd', (function(_this) {
-	        return function(onAdd) {
-	          return _this.onAlloc(onAdd);
-	        };
-	      })(this));
-	      this.store.subscribe('Alloc', 'none', 'onPut', (function(_this) {
-	        return function(onPut) {
-	          return _this.onAlloc(onPut);
-	        };
-	      })(this));
-	      this.store.subscribe('Alloc', 'none', 'onDel', (function(_this) {
-	        return function(onDel) {
-	          return Util.noop('Alloc.onDel()', onDel);
-	        };
-	      })(this));
-	      this.store.make('Alloc');
-	      this.store.on('Alloc', 'onAdd');
-	      this.store.on('Alloc', 'onPut');
-	      return this.store.on('Alloc', 'onDel');
-	    };
-
-	    Alloc.prototype.onAlloc = function(onAdd) {
-	      var alloc, roomId;
-	      alloc = onAdd.val;
-	      roomId = onAdd.key;
-	      if (this.room != null) {
-	        this.room.onAlloc(alloc, roomId);
-	      }
-	      if (this.book != null) {
-	        this.book.onAlloc(alloc, roomId);
-	      }
-	      if (this.master != null) {
-	        this.master.onAlloc(alloc, roomId);
-	      }
-	    };
-
-	    return Alloc;
 
 	  })();
 

@@ -33,11 +33,12 @@
       this.onGoToPay = bind(this.onGoToPay, this);
       this.rooms = null;
       this.roomUIs = null;
+      this.res.book = this;
       this.myDays = 0;
       this.today = new Date();
       this.monthIdx = this.today.getMonth();
       this.monthIdx = 4 <= this.monthIdx && this.monthIdx <= 9 ? this.monthIdx : 4;
-      this.year = 2017;
+      this.year = this.Data.year;
       this.month = this.Data.months[this.monthIdx];
       this.numDays = 15;
       this.begMay = 15;
@@ -94,7 +95,7 @@
 
     Book.prototype.roomsHtml = function(year, monthIdx, begDay, numDays) {
       var day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday, weekdayIdx;
-      weekdayIdx = new Date(year, monthIdx, 1).getDay();
+      weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
       htm = "<table><thead>";
       htm += "<tr><th></th><th></th><th></th><th></th><th></th>";
       for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
@@ -200,11 +201,8 @@
     };
 
     Book.prototype.createCell = function(roomId, roomRm, date) {
-      var roomUI, status, statusRm, statusUI;
-      roomUI = this.roomUIs[roomId];
-      statusRm = this.room.dayBookedRm(roomRm, date);
-      statusUI = this.room.dayBookedUI(roomUI, date);
-      status = statusRm !== 'free' ? statusRm : statusUI;
+      var status;
+      status = this.res.dayBooked(roomId, date);
       return "<td id=\"R" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
     };
 
@@ -509,18 +507,17 @@
       }
     };
 
-    Book.prototype.onAlloc = function(alloc, roomId) {
-      var day, obj, ref;
-      ref = alloc.days;
-      for (day in ref) {
-        if (!hasProp.call(ref, day)) continue;
-        obj = ref[day];
-        this.allocCell(day, obj.status, roomId);
+    Book.prototype.onAlloc = function(roomId, days) {
+      var day, dayId;
+      for (dayId in days) {
+        if (!hasProp.call(days, dayId)) continue;
+        day = days[dayId];
+        this.allocCell(dayId, day.status, roomId);
       }
     };
 
-    Book.prototype.allocCell = function(day, status, roomId) {
-      return this.cellStatus($('#R' + roomId + day), status);
+    Book.prototype.allocCell = function(dayId, status, roomId) {
+      return this.cellStatus($('#R' + roomId + dayId), status);
     };
 
     Book.prototype.cellStatus = function($cell, status) {

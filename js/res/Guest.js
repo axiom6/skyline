@@ -9,7 +9,7 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Alloc, Book, Data, Fire, Home, Pay, Pict, Res, Room, Stream, Test, alloc, book, home, pay, pict, res, room, store, stream, test;
+        var Book, Data, Fire, Home, Pay, Pict, Res, Room, Stream, Test, book, home, pay, pict, res, room, store, stream, test;
         Util.jquery = require('jquery');
         Stream = require('js/store/Stream');
         Fire = require('js/store/Fire');
@@ -21,7 +21,6 @@
         Pay = require('js/res/Pay');
         Book = require('js/res/Book');
         Test = require('js/res/Test');
-        Alloc = require('js/res/Alloc');
         pict = new Pict();
         stream = new Stream([]);
         store = new Fire(stream, "skytest", Data.configSkytest);
@@ -31,10 +30,8 @@
         pay = new Pay(stream, store, Data, room, res, home);
         book = new Book(stream, store, Data, room, res, pay, pict);
         test = new Test(stream, store, Data, room, res, pay, pict, book);
-        alloc = new Alloc(stream, store, Data, room, book, null);
         book.test = test;
-        home.ready(book);
-        return Util.noop(alloc);
+        return home.ready(book);
       });
     };
 

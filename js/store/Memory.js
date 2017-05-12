@@ -79,6 +79,23 @@
       });
     };
 
+    Memory.prototype.range = function(t, beg, end) {
+      var key, object, objects, table;
+      objects = {};
+      table = this.table(t);
+      for (key in table) {
+        if (!hasProp.call(table, key)) continue;
+        object = table[key];
+        if (beg <= key && key <= end) {
+          objects[key] = object;
+        }
+      }
+      return this.publish(t, 'none', 'range', objects, {
+        beg: beg.toString(),
+        end: end.toString()
+      });
+    };
+
     Memory.prototype.update = function(t, objects) {
       var key, object, table;
       table = this.table(t);

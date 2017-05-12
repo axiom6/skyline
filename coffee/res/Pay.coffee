@@ -169,9 +169,9 @@ class Pay
     [monthO, dayO, weekdayO]
 
   confirmDate:( dayStr, msg, isDepart ) ->
-    year       = parseInt( dayStr.substr(0,4) )
-    monthIdx   = parseInt( dayStr.substr(4,2) ) - 1
-    day        = parseInt( dayStr.substr(6,2) )
+    year       = parseInt( dayStr.substr(0,2) ) + 2000
+    monthIdx   = parseInt( dayStr.substr(2,2) ) - 1
+    day        = parseInt( dayStr.substr(4,2) )
     weekdayIdx = new Date( year, monthIdx, day ).getDay()
     [monthIdx,day,weekdayIdx] = @departDate( monthIdx,day,weekdayIdx ) if isDepart
     """#{@Data.weekdays[weekdayIdx]} #{@Data.months[monthIdx]} #{day}, #{year}  #{msg}"""

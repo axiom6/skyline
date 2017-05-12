@@ -1,11 +1,21 @@
 class Res
 
   module.exports = Res
-  Res.Resvs      = require( 'data/res.json' )
+  Res.Resvs      = require( 'data/res.json'  )
+  Res.Days       = require( 'data/days.json' )
 
   constructor:( @stream, @store, @Data, @room ) ->
-    @testResvs = Res.Resvs
-    @insertTestResvs() if @Data.testing
+    @days   = {}
+    @book   = null
+    @master = null
+    @insertRevs( Res.Resvs ) if @Data.testing
+    @insertDays( Res.Resvs ) if @Data.testing
+
+
+  dayBooked:( roomId, date ) ->
+    day   = Res.Days[date]
+    entry = if day? and day[roomId] then day[roomId] else null
+    if entry? then entry.status else 'free'
 
   createRoomResv:( status, method, roomUIs ) ->
     resv          = {}
@@ -25,7 +35,7 @@ class Res
         resv.arrive = day   if day < resv.arrive
     resv.payments = {}
     resv.cust     = {}
-    #@subscribeToResKey( resv,resId )
+    @subscribeToResId( resv.resId )
     resv
 
   toResvRoom:( roomUI ) ->
@@ -52,26 +62,69 @@ class Res
       @allocRoom( roomId, room.days )
 
   allocRoom:( roomId, days ) ->
-    @store.add( 'Alloc', roomId, { days:days } )
+    @book.  onAlloc( roomId, days ) if @book?
+    @master.onAlloc( roomId, days ) if @master?
 
   subscribeToResId:( resId ) =>
-    @store.subscribe( 'Res', resId, 'add', (add)  => Util.log('Res.subscribeToResId', resId, add ) )
-    @store.subscribe( 'Res', resId, 'put', (put)  => Util.log('Res.subscribeToResId', resId, put ) )
+    @store.subscribe( 'Res',   resId,  'onAdd', (onAdd) => Util.log('Res.subscribeToResId onAdd', resId, onAdd ) )
+    @store.subscribe( 'Res',   resId,  'onPut', (onPut) => Util.log('Res.subscribeToResId onPut', resId, onPut ) )
+    @store.subscribe( 'Res',   resId,  'onDel', (onDel) => Util.log('Res.subscribeToResId onDel', resId, onDel ) )
+    @store.on( 'Res', 'onAdd', resId )
+    @store.on( 'Res', 'onPut', resId )
+    @store.on( 'Res', 'onDel', resId )
 
-  insertTestResvs:() ->
-    @store.subscribe( 'Res', 'none', 'make',  (make) => @store.insert( 'Res', @testResvs ); Util.noop(make)  )
+  subscribeToDays:() =>
+    @store.subscribe( 'Days', 'none',  'onAdd', (onAdd) => Util.log('Res.subscribeToDays onAdd', onAdd ) )
+    @store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
+    @store.subscribe( 'Days', 'none',  'onDel', (onDel) => Util.log('Res.subscribeToDays onDel', onDel ) )
+    @store.on(        'Days',          'onAdd' )
+    @store.on(        'Days',          'onPut' )
+    @store.on(        'Days',          'onDel' )
+
+  insertRevs:( resvs ) ->
+    @store.subscribe( 'Res', 'none', 'make',  () => @store.insert( 'Res', resvs ) )
     @store.make( 'Res' )
-    for own resId,  resv of  @testResvs
+    for own resId,  resv of resvs
       @updateRooms( resv )
     return
 
-  insertDaysRooms:() ->
-    rooms = {}
-    for own roomId, room of @room.rooms
-      rooms[roomId] = {}
-    @store.subscribe( 'Days', 'none', 'make',  (make) => @store.insert( 'Days', rooms ); Util.noop(make)  )
+  insertDays:( resvs ) ->
+    for     own resvId, resv of resvs
+      for   own roomId, room of resv.rooms
+        Util.error( 'Res.insertDays', roomId ) if not Util.inArray(['1','2','3','4','5','6','7','8','N','S'], roomId )
+        for own  dayId, rday of room.days
+          day = @createDay( @days, dayId, roomId )
+          day.status = rday.status
+          day.resId  = rday.resId
+    Util.log('Res.insertDaysResvs() days', Res.Days  )
+    @store.subscribe( 'Days', 'none', 'make',  () => @store.insert( 'Days', Res.Days  ) )
     @store.make( 'Days' )
+    @subscribeToDays()
     return
+
+  @xdays = {
+   x170709:{ r1:{ status:"book", resId:1707091 } },
+   x170710:{ r1:{ status:"book", resId:1707091 }, r2:{ status:"depo", resId:1707102 } },
+   x170711:{ r2:{ status:"depo", resId:1707102 }, r3:{ status:"book", resId:1707113 } },
+   x170712:{ r3:{ status:"book", resId:1707113 }, r4:{ status:"book", resId:1707124 } },
+   x170713:{ r4:{ status:"book", resId:1707124 } },
+   x170714:{ r5:{ status:"depo", resId:1707145 } },
+   x170715:{ r5:{ status:"depo", resId:1707145 }, r6:{ status:"book", resId:1707156 } },
+   x170716:{ r6:{ status:"book", resId:1707156 }, r7:{ status:"book", resId:1707167 } },
+   x170717:{ r7:{ status:"book", resId:1707167 }, r8:{ status:"book", resId:1707178 } },
+   x170718:{ r8:{ status:"book", resId:1707178 }, rN:{ status:"book", resId:1707189 } },
+   x170719:{ rN:{ status:"book", resId:1707189 }, rS:{ status:"book", resId:1707190 } },
+   x170720:{ rS:{ status:"book", resId:1707190 } } }
+
+
+  createDay:( days, dayId, roomId ) ->
+    Util.log( 'Res.createDay() days null ') if not days?
+    dayd = days[dayId]
+    if not dayd?
+      dayd = {}
+      days[dayId] = dayd
+    dayd[roomId] = {}
+    dayd[roomId]
 
   makeAllTables:() ->
     @store.make( 'Res'     )
@@ -136,6 +189,4 @@ class Res
         dayd        = {}
         dayd.status = dayr.status
         dayd.resId  = dayr.resId
-        @store.add( 'Days/'+roomId, dayId, dayd )
-
-
+        @store.add( 'Days/'+dayId, roomId, dayd )

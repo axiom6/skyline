@@ -35,17 +35,3 @@ class Room
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', @rooms ); Util.noop(make)  )
     @store.make( 'Room' )
 
-  dayBookedRm:( room, date ) ->
-    day = room.days[date]
-    if day? then day.status else 'free'
-
-  dayBookedUI:( room, date ) ->
-    day = room.days[date]
-    if day? then day.status else 'free'
-
-  onAlloc:( alloc, roomId ) =>
-    room = @rooms[roomId]
-    for own day, obj of alloc.days
-      room.days[day] =  alloc.days[day]
-    @store.put( 'Room', roomId, room )
-    return

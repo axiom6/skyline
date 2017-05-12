@@ -8,7 +8,7 @@
   Test = (function() {
     module.exports = Test;
 
-    Test.Data = require('data/test.json');
+    Test.Data = require('data/res.json');
 
     function Test(stream, store, Data, room1, res1, pay, pict, book) {
       this.stream = stream;
@@ -53,7 +53,7 @@
     Test.prototype.doGoToPay = function(res) {
       var fn, payment;
       this.book.onGoToPay(null);
-      payment = Object.keys(res.payments).sort()[0];
+      payment = Util.keys(res.payments).sort()[0];
       this.popCC(payment.cc, payment.exp, payment.cvc);
       fn = (function(_this) {
         return function() {

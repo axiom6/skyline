@@ -120,6 +120,12 @@
       this.traverse('select', tableName, where);
     };
 
+    IndexedDB.prototype.range = function(t, beg, end) {
+      var tableName;
+      tableName = this.tableName(t);
+      this.traverse('range', tableName, beg, end);
+    };
+
     IndexedDB.prototype.update = function(t, objects) {
       var key, object, tableName, txo;
       tableName = this.tableName(t);
@@ -198,12 +204,16 @@
       return txo;
     };
 
-    IndexedDB.prototype.traverse = function(op, t, where) {
-      var mode, req, txo;
+    IndexedDB.prototype.traverse = function(op, t, where, end) {
+      var beg, mode, req, txo;
       if (where == null) {
         where = Store.where;
       }
+      if (end == null) {
+        end = null;
+      }
       mode = op === 'select' ? 'readonly' : 'readwrite';
+      beg = op === 'range' ? where : null;
       txo = this.txnObjectStore(t, mode);
       req = txo.openCursor();
       req.onsuccess = (function(_this) {
@@ -213,6 +223,9 @@
           cursor = event.target.result;
           if (cursor != null) {
             if (op === 'select' && where(cursor.value)) {
+              objects[cursor.key] = cursor.value;
+            }
+            if (op === 'range ' && beg <= cursor.key && cursor.key <= end) {
               objects[cursor.key] = cursor.value;
             }
             if (op === 'remove' && where(cursor.value)) {

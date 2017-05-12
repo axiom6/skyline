@@ -973,6 +973,31 @@ Util = (function() {
     return objects;
   };
 
+  Util.toRange = function(rows, beg, end, keyProp) {
+    var j, key, len1, objects, row;
+    if (keyProp == null) {
+      keyProp = 'key';
+    }
+    objects = {};
+    if (Util.isArray(rows)) {
+      for (j = 0, len1 = rows.length; j < len1; j++) {
+        row = rows[j];
+        if (beg <= row[keyProp] && row[keyProp] <= end) {
+          objects[row[keyProp]] = row;
+        }
+      }
+    } else {
+      for (key in rows) {
+        if (!hasProp.call(rows, key)) continue;
+        row = rows[key];
+        if (beg <= key && key <= end) {
+          objects[key] = row;
+        }
+      }
+    }
+    return objects;
+  };
+
   Util.toKeys = function(rows, whereIn, keyProp) {
     var j, key, keys, len1, row, where;
     if (whereIn == null) {

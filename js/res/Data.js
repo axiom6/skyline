@@ -10,6 +10,8 @@
 
     Data.testing = true;
 
+    Data.year = 17;
+
     Data.season = ["May", "June", "July", "August", "September", "October"];
 
     Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -67,7 +69,7 @@
           continue;
         }
         days = Util.keys(roomUI.days).sort();
-        resId = roomId + days[0];
+        resId = days[0] + roomId;
         break;
       }
       if (!Util.isStr(resId)) {
@@ -108,9 +110,9 @@
 
     Data.advanceDate = function(resDate, numDays) {
       var day, dayInt, month, monthIdx, year;
-      year = resDate.substr(0, 4);
-      monthIdx = parseInt(resDate.substr(4, 2)) - 1;
-      dayInt = parseInt(resDate.substr(6, 2)) + numDays;
+      year = resDate.substr(0, 2);
+      monthIdx = parseInt(resDate.substr(2, 2)) - 1;
+      dayInt = parseInt(resDate.substr(4, 2)) + numDays;
       if (dayInt > this.numDayMonth[monthIdx]) {
         dayInt = dayInt - this.numDayMonth[monthIdx];
         monthIdx++;
@@ -122,10 +124,10 @@
 
     Data.weekday = function(date) {
       var dayInt, monthIdx, weekdayIdx, year;
-      year = parseInt(date.substr(0, 4));
-      monthIdx = parseInt(date.substr(4, 2)) - 1;
-      dayInt = parseInt(date.substr(6, 2));
-      weekdayIdx = new Date(year, monthIdx, dayInt).getDay();
+      year = parseInt(date.substr(0, 2));
+      monthIdx = parseInt(date.substr(2, 2)) - 1;
+      dayInt = parseInt(date.substr(4, 2));
+      weekdayIdx = new Date(2000 + year, monthIdx, dayInt).getDay();
       return Data.weekdays[weekdayIdx];
     };
 

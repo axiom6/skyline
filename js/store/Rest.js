@@ -63,6 +63,13 @@
       return this.ajaxSql('select', table, where, null, params);
     };
 
+    Rest.prototype.range = function(table, beg, end, params) {
+      if (params == null) {
+        params = "";
+      }
+      return this.ajaxSql('range', table, beg, end, params);
+    };
+
     Rest.prototype.update = function(table, objects, params) {
       if (params == null) {
         params = "";
@@ -152,13 +159,15 @@
     };
 
     Rest.prototype.ajaxSql = function(op, t, where, objects, params) {
-      var dataType, settings, tableName, url;
+      var beg, dataType, end, settings, tableName, url;
       if (objects == null) {
         objects = null;
       }
       if (params == null) {
         params = "";
       }
+      beg = op === 'range' ? where : null;
+      end = op === 'range' ? objects : null;
       tableName = this.tableName(t);
       url = this.urlRest(op, t, '', params);
       dataType = this.dataType();
@@ -182,6 +191,9 @@
           }
           if ((objects != null) && (op === 'insert' || op === 'update')) {
             result = objects;
+          }
+          if (op === 'range') {
+            result = Util.toRange(data, beg, end);
           }
           extras = _this.toExtras(status, url, dataType, jqXHR.readyState);
           if (op === 'select' || op === 'delete') {
