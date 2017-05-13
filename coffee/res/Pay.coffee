@@ -173,7 +173,6 @@ class Pay
     monthIdx   = parseInt( dayStr.substr(2,2) ) - 1
     day        = parseInt( dayStr.substr(4,2) )
     weekdayIdx = new Date( year, monthIdx, day ).getDay()
-    Util.log( 'Pay.confirmDate', monthIdx, @Data.months[monthIdx] )
     [monthIdx,day,weekdayIdx] = @departDate( monthIdx,day,weekdayIdx ) if isDepart
     """#{@Data.weekdays[weekdayIdx]} #{@Data.months[monthIdx]} #{day}, #{year}  #{msg}"""
 

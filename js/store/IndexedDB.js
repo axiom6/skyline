@@ -36,7 +36,7 @@
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onerror(tableName, id, 'add', object, {
+          return _this.onError(tableName, id, 'add', object, {
             error: req.error
           });
         };
@@ -55,7 +55,7 @@
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onerror(tableName, id, 'get', req.result, {
+          return _this.onError(tableName, id, 'get', req.result, {
             error: req.error
           });
         };
@@ -74,7 +74,7 @@
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onerror(tableName, id, 'put', object, {
+          return _this.onError(tableName, id, 'put', object, {
             error: req.error
           });
         };
@@ -93,7 +93,7 @@
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onerror(tableName, id, 'del', req.result, {
+          return _this.onError(tableName, id, 'del', req.result, {
             error: req.error
           });
         };
@@ -175,7 +175,7 @@
         id = 'none';
       }
       tableName = this.tableName(t);
-      this.onerror(tableName, id, 'onChange', {}, {
+      this.onError(tableName, id, 'onChange', {}, {
         msg: "on() not implemeted by Store.IndexedDb"
       });
     };
@@ -242,7 +242,7 @@
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onerror(t, 'none', op, {}, {
+          return _this.onError(t, 'none', op, {}, {
             where: 'all',
             error: req.error
           });
@@ -291,7 +291,7 @@
             database: _this.dbName,
             error: request.error
           });
-          return _this.onerror('none', 'none', 'open', _this.dbName, {
+          return _this.onError('none', 'none', 'open', _this.dbName, {
             error: request.error
           });
         };

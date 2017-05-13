@@ -27,7 +27,7 @@ class Fire extends Store
       if not error?
         @publish( tableName, id, 'add', object )
       else
-        @onerror( tableName, id, 'add', object, { error:error } )
+        @onError( tableName, id, 'add', object, { error:error } )
     @fd.ref(tableName+'/'+id).set( object, onComplete )
     return
 
@@ -39,7 +39,7 @@ class Fire extends Store
         object[@keyProp] = id
         @publish( tableName, id, 'get', object )
       else
-        @onerror( tableName, id, 'get', { msg:'Fire get error' } )
+        @onError( tableName, id, 'get', { msg:'Fire get error' } )
     @fd.ref(tableName+'/'+id).once('value', onComplete )
     return
 
@@ -52,7 +52,7 @@ class Fire extends Store
         object[@keyProp] = id
         @publish( tableName, id, 'put', object )
       else
-        @onerror( tableName, id, 'put', object, { error:error } )
+        @onError( tableName, id, 'put', object, { error:error } )
     @fd.ref(tableName+'/'+id).set( object, onComplete )
     return
 
@@ -62,7 +62,7 @@ class Fire extends Store
       if not error?
         @publish( tableName, id, 'del', {} )
       else
-        @onerror( tableName, id, 'del', {}, { error:error } )
+        @onError( tableName, id, 'del', {}, { error:error } )
     @fd.ref(tableName+'/'+id).remove( onComplete )
     return
 
@@ -72,7 +72,7 @@ class Fire extends Store
       if not error?
         @publish( tableName, 'none', 'insert', objects )
       else
-        @onerror( tableName, 'none', 'insert', { error:error } )
+        @onError( tableName, 'none', 'insert', { error:error } )
     @fd.ref(tableName).set( objects, onComplete )
     return
 
@@ -83,17 +83,18 @@ class Fire extends Store
       if snapshot? and snapshot.val()?
         @publish( tableName, 'none', 'select', snapshot.val() )
       else
-        @onerror( tableName, 'none', 'select', {} )
+        @publish( tableName, 'none', 'select', {} ) # Publish empty results
     @fd.ref(tableName).once('value', onComplete )
     return
 
   range:( t, beg, end ) ->
     tableName = @tableName(t)
+    Util.log( 'Fire.range  beg', t, beg, end )
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         @publish( tableName, 'none', 'range', snapshot.val() )
       else
-        @onerror( tableName, 'none', 'range', {} )
+        @publish( tableName, 'none', 'range', {} )  # Publish empty results
     @fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete )
     return
 
@@ -103,7 +104,7 @@ class Fire extends Store
       if not error?
         @publish( tableName, 'none', 'update', objects )
       else
-        @onerror( tableName, 'none', 'update', { error:error } )
+        @onError( tableName, 'none', 'update', { error:error } )
     @fd.ref(tableName).update( objects, onComplete )
     return
 
@@ -120,7 +121,7 @@ class Fire extends Store
       if not error?
         @publish( tableName, 'none', 'make', {}, {} )
       else
-        @onerror( tableName, 'none', 'make', {}, { error:error } )
+        @onError( tableName, 'none', 'make', {}, { error:error } )
     @fd.ref().set( tableName, onComplete )
     return
 
@@ -131,7 +132,7 @@ class Fire extends Store
         keys = Util.toKeys( snapshot.val(), where, @keyProp )
         @publish( tableName, 'none', 'show', keys, { where:where.toString() } )
       else
-        @onerror( tableName, 'none', 'show', {},   { where:where.toString() } )
+        @onError( tableName, 'none', 'show', {},   { where:where.toString() } )
     if t?
       @fd.ref(tableName).once('value', onComplete )
     else
@@ -144,7 +145,7 @@ class Fire extends Store
       if not error?
         @publish( tableName, 'none', 'drop', "OK" )
       else
-        @onerror( tableName, 'none', 'drop', {}, { error:error } )
+        @onError( tableName, 'none', 'drop', {}, { error:error } )
     @fd.ref(tableName).remove( onComplete )
     return
 
@@ -157,15 +158,15 @@ class Fire extends Store
         val = snapshot.val()
         @publish( table, id, onEvt, { onEvt:onEvt, table:table, key:key, val:val } )
       else
-        @onerror( table, id, onEvt, {}, { error:'error' } )
+        @onError( table, id, onEvt, {}, { error:'error' } )
     path  = if id is 'none' then table else table + '/' + id
     @fd.ref(path).on( Fire.OnEvent[onEvt], onComplete )
     return
 
   # Sign Anonymously
   auth:( ) ->
-   onError = (error) =>
-     @onerror( 'none', 'none', 'anon', {}, { error:error } )
-   @fb.auth().signInAnonymously().catch( onError )
+   onerror = (error) =>
+     @onError( 'none', 'none', 'anon', {}, { error:error } )
+   @fb.auth().signInAnonymously().catch( onerror )
    return
 

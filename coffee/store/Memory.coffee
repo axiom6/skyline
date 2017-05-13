@@ -20,7 +20,7 @@ class Memory extends Store
     if object?
       @publish( t, id, 'get', object )
     else
-      @onerror( t, id, 'get', object,  { msg:"Id #{id} not found"} )
+      @onError( t, id, 'get', object,  { msg:"Id #{id} not found"} )
     return
 
   put:( t, id,  object ) ->
@@ -34,7 +34,7 @@ class Memory extends Store
       delete @table(t)[id]
       @publish( t, id, 'del', object )
     else
-      @onerror( t, id, 'del', object,  { msg:"Id #{id} not found"} )
+      @onError( t, id, 'del', object,  { msg:"Id #{id} not found"} )
     return
 
   insert:( t, objects ) ->
@@ -99,12 +99,12 @@ class Memory extends Store
       delete  @tables[t]
       @publish( t, 'none', 'drop', {} )
     else
-      @onerror( t, 'none', 'drop', {}, { msg:"Table #{t} not found"} )
+      @onError( t, 'none', 'drop', {}, { msg:"Table #{t} not found"} )
     return
 
   # Subscribe to  a table or object with id
   on:(  t, id='none'   ) ->
-    @onerror( t, id, 'on', {}, { msg:"on() not implemeted by Store.Memory" } )
+    @onError( t, id, 'on', {}, { msg:"on() not implemeted by Store.Memory" } )
     return
 
   dbTableName:( tableName ) ->

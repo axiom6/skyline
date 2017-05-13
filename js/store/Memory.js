@@ -28,7 +28,7 @@
       if (object != null) {
         this.publish(t, id, 'get', object);
       } else {
-        this.onerror(t, id, 'get', object, {
+        this.onError(t, id, 'get', object, {
           msg: "Id " + id + " not found"
         });
       }
@@ -46,7 +46,7 @@
         delete this.table(t)[id];
         this.publish(t, id, 'del', object);
       } else {
-        this.onerror(t, id, 'del', object, {
+        this.onError(t, id, 'del', object, {
           msg: "Id " + id + " not found"
         });
       }
@@ -167,7 +167,7 @@
         delete this.tables[t];
         this.publish(t, 'none', 'drop', {});
       } else {
-        this.onerror(t, 'none', 'drop', {}, {
+        this.onError(t, 'none', 'drop', {}, {
           msg: "Table " + t + " not found"
         });
       }
@@ -177,7 +177,7 @@
       if (id == null) {
         id = 'none';
       }
-      this.onerror(t, id, 'on', {}, {
+      this.onError(t, id, 'on', {}, {
         msg: "on() not implemeted by Store.Memory"
       });
     };

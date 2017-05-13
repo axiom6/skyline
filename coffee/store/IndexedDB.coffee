@@ -18,7 +18,7 @@ class IndexedDB extends Store
     txo = @txnObjectStore( tableName, "readwrite" )
     req = txo.add( obj, id )
     req.onsuccess = () => @publish( tableName, id, 'add', object )
-    req.onerror   = () => @onerror( tableName, id, 'add', object, { error:req.error } )
+    req.onerror   = () => @onError( tableName, id, 'add', object, { error:req.error } )
     return
 
   get:( t, id ) ->
@@ -26,7 +26,7 @@ class IndexedDB extends Store
     txo = @txnObjectStore( tableName, "readonly" )
     req = txo.get(id) # Check to be sre that indexDB understands id
     req.onsuccess = () => @publish( tableName, id, 'get', req.result )
-    req.onerror   = () => @onerror( tableName, id, 'get', req.result, { error:req.error } )
+    req.onerror   = () => @onError( tableName, id, 'get', req.result, { error:req.error } )
     return
 
   put:( t, id, object ) ->
@@ -34,7 +34,7 @@ class IndexedDB extends Store
     txo = @txnObjectStore( tableName, "readwrite" )
     req = txo.put(object) # Check to be sre that indexDB understands id
     req.onsuccess = () => @publish( tableName, id, 'put', object )
-    req.onerror   = () => @onerror( tableName, id, 'put', object, { error:req.error } )
+    req.onerror   = () => @onError( tableName, id, 'put', object, { error:req.error } )
     return
 
   del:( t, id ) ->
@@ -42,7 +42,7 @@ class IndexedDB extends Store
     txo = @txnObjectStore( tableName, "readwrite" )
     req = txo['delete'](id) # Check to be sre that indexDB understands id
     req.onsuccess = () => @publish( tableName, id, 'del', req.result )
-    req.onerror   = () => @onerror( tableName, id, 'del', req.result, { error:req.error } )
+    req.onerror   = () => @onError( tableName, id, 'del', req.result, { error:req.error } )
     return
 
   insert:( t, objects ) ->
@@ -98,7 +98,7 @@ class IndexedDB extends Store
   # Subscribe to  a table or object with id
   on:(  t, id='none'   ) ->
     tableName = @tableName(t)
-    @onerror( tableName, id, 'onChange', {}, { msg:"on() not implemeted by Store.IndexedDb" } )
+    @onError( tableName, id, 'onChange', {}, { msg:"on() not implemeted by Store.IndexedDb" } )
     return
 
   # IndexedDB Specifics
@@ -133,7 +133,7 @@ class IndexedDB extends Store
         cursor.continue()
       @publish( t, 'none', op, objects,   { where:'all' } )
     req.onerror   = () =>
-      @onerror( t, 'none', op, {}, { where:'all', error:req.error } )
+      @onError( t, 'none', op, {}, { where:'all', error:req.error } )
     return
 
   createObjectStores:() ->
@@ -157,7 +157,7 @@ class IndexedDB extends Store
       @publish( 'none', 'none', 'open', @dbs.objectStoreNames )
     request.onerror   = () =>
       Util.error( 'Store.IndexedDB.openDatabase() unable to open', { database:@dbName, error:request.error } )
-      @onerror( 'none', 'none', 'open', @dbName, { error:request.error } )
+      @onError( 'none', 'none', 'open', @dbName, { error:request.error } )
 
   deleteDatabase:( dbName ) ->
     request = @indexedDB.deleteDatabase(dbName)

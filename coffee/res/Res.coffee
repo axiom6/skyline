@@ -7,6 +7,7 @@ class Res
   Res.States = ["free","mine","depo","book"]
 
   constructor:( @stream, @store, @Data ) ->
+    Util.log( 'Res.Days', Res.Days )
     @rooms    = Res.Rooms
     @states   = Res.States
     @book     = null
@@ -27,8 +28,13 @@ class Res
 
   dateRange:( onComplete=null ) ->
     @beg = @toDateStr( @begDay )
-    @end = @Data.advanceDate( @beg, @numDays )
-    @store.subscribe( 'Days', 'none',  'range', (days) => @days = days; Util.log('Res.dateRange',days); onComplete() if onComplete? )
+    @end = @Data.advanceDate( @beg, @numDays-1 )
+    Util.log( 'Res.dateRange()', @beg, @end, @monthIdx, @begDay )
+    @store.subscribe( 'Days', 'none',  'range', (days) =>
+      @days = days
+      msg = if Util.isObjEmpty(days) then 'days Empty' else days
+      Util.log('Res.dateRange', msg )
+      onComplete() if onComplete? )
     @store.range( 'Days', @beg, @end )
     return
 
@@ -141,10 +147,18 @@ class Res
     return
 
   insertDays:( resvs ) ->
+    @subscribeToDays()
+    @days = @createDaysFromResvs( resvs, {} )
+    for own dayId, day of @days
+      @store.add( 'Days', dayId, day )
+    return
+
+  # Inexplicable this is randomly generating arrays on [roomId]
+  insertDays2:( resvs ) ->
+    @subscribeToDays()
     @days = @createDaysFromResvs( resvs, {} )
     @store.subscribe( 'Days', 'none', 'make',  () => @store.insert( 'Days', @days  ) )
     @store.make( 'Days' )
-    @subscribeToDays()
     return
 
   createDaysFromResvs:( resvs, days ) ->
@@ -160,7 +174,9 @@ class Res
     #Util.log('Res.createDaysFromResv() days', days  )
     days
 
-  createDay:( days, dayId, roomId ) ->
+  # Inexplicable this maybe randomly generating arrays on [roomId]
+  createDay:( days, dayId, roomIdA ) ->
+    roomId = roomIdA.toString()
     days[dayId]         = {} if not days[dayId]?
     days[dayId][roomId] = {}
     days[dayId][roomId]
@@ -232,10 +248,7 @@ class Res
     monthDay = day + @begDay - 1
     if monthDay > @Data.numDayMonth[@monthIdx] then monthDay-@Data.numDayMonth[@monthIdx] else monthDay
 
-  toDateStr:( day ) ->
-    @year+Util.pad(@monthIdx+1)+Util.pad(@dayMonth(day))
-
-  toAnyDateStr:( year, monthIdx, day ) ->
+  toDateStr:( day, monthIdx=@monthIdx, year=@year ) ->
     year+Util.pad(monthIdx+1)+Util.pad(day)
 
   #store.insert( 'Payment', resv.payments )

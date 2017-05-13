@@ -30,7 +30,7 @@ class Rest extends Store
 
   # Subscribe to  a table or object with id
   on:(  t, id='none'   ) ->
-    @onerror( t, id, 'on', {}, { msg:"on() not implemeted by Store.Rest" } )
+    @onError( t, id, 'on', {}, { msg:"on() not implemeted by Store.Rest" } )
     return
 
   ajaxRest:( op, t, id, object=null, params="" ) ->
@@ -49,7 +49,7 @@ class Rest extends Store
       result = {}
       result = object if op is 'add' or op is 'put'
       extras = @toExtras( status, url, dataType, jqXHR.readyState, error )
-      @onerror( tableName, id, op, result, extras )
+      @onError( tableName, id, op, result, extras )
     $.ajax( settings )
     return
 
@@ -74,7 +74,7 @@ class Rest extends Store
       result = objects if op is 'open' or op is 'update'
       extras = @toExtras( status, url, dataType, jqXHR.readyState, error )
       extras.where = 'all' if op is 'select' or op is 'delete'
-      @onerror( tableName, 'none', op, result, extras )
+      @onError( tableName, 'none', op, result, extras )
     $.ajax( settings )
     return
 
@@ -89,7 +89,7 @@ class Rest extends Store
       @publish( tableName, 'none', op, result, extras )
     settings.error = ( jqXHR, status, error ) =>
       extras = @toExtras( status, url, dataType, jqXHR.readyState, error )
-      @onerror( tableName, 'none', op, {}, extras )
+      @onError( tableName, 'none', op, {}, extras )
     $.ajax( settings )
     return
 

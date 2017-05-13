@@ -22,6 +22,7 @@
       this.insertRooms = bind(this.insertRooms, this);
       this.subscribeToDays = bind(this.subscribeToDays, this);
       this.subscribeToResId = bind(this.subscribeToResId, this);
+      Util.log('Res.Days', Res.Days);
       this.rooms = Res.Rooms;
       this.states = Res.States;
       this.book = null;
@@ -50,11 +51,14 @@
         onComplete = null;
       }
       this.beg = this.toDateStr(this.begDay);
-      this.end = this.Data.advanceDate(this.beg, this.numDays);
+      this.end = this.Data.advanceDate(this.beg, this.numDays - 1);
+      Util.log('Res.dateRange()', this.beg, this.end, this.monthIdx, this.begDay);
       this.store.subscribe('Days', 'none', 'range', (function(_this) {
         return function(days) {
+          var msg;
           _this.days = days;
-          Util.log('Res.dateRange', days);
+          msg = Util.isObjEmpty(days) ? 'days Empty' : days;
+          Util.log('Res.dateRange', msg);
           if (onComplete != null) {
             return onComplete();
           }
@@ -264,6 +268,19 @@
     };
 
     Res.prototype.insertDays = function(resvs) {
+      var day, dayId, ref;
+      this.subscribeToDays();
+      this.days = this.createDaysFromResvs(resvs, {});
+      ref = this.days;
+      for (dayId in ref) {
+        if (!hasProp.call(ref, dayId)) continue;
+        day = ref[dayId];
+        this.store.add('Days', dayId, day);
+      }
+    };
+
+    Res.prototype.insertDays2 = function(resvs) {
+      this.subscribeToDays();
       this.days = this.createDaysFromResvs(resvs, {});
       this.store.subscribe('Days', 'none', 'make', (function(_this) {
         return function() {
@@ -271,7 +288,6 @@
         };
       })(this));
       this.store.make('Days');
-      this.subscribeToDays();
     };
 
     Res.prototype.createDaysFromResvs = function(resvs, days) {
@@ -301,7 +317,9 @@
       return days;
     };
 
-    Res.prototype.createDay = function(days, dayId, roomId) {
+    Res.prototype.createDay = function(days, dayId, roomIdA) {
+      var roomId;
+      roomId = roomIdA.toString();
       if (days[dayId] == null) {
         days[dayId] = {};
       }
@@ -401,11 +419,13 @@
       }
     };
 
-    Res.prototype.toDateStr = function(day) {
-      return this.year + Util.pad(this.monthIdx + 1) + Util.pad(this.dayMonth(day));
-    };
-
-    Res.prototype.toAnyDateStr = function(year, monthIdx, day) {
+    Res.prototype.toDateStr = function(day, monthIdx, year) {
+      if (monthIdx == null) {
+        monthIdx = this.monthIdx;
+      }
+      if (year == null) {
+        year = this.year;
+      }
       return year + Util.pad(monthIdx + 1) + Util.pad(day);
     };
 

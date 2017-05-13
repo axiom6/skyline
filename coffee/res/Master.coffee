@@ -10,8 +10,8 @@ class Master
     @res.master  = @
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
-    @res.beg     = @res.toAnyDateStr( @res.year, 4, 15 )
-    @res.end     = @res.toAnyDateStr( @res.year, 9, 15 )
+    @res.beg     = @res.toDateStr( 15, 4 )
+    @res.end     = @res.toDateStr( 15, 9 )
     @res.dateRange()
 
   ready:() ->
@@ -93,7 +93,7 @@ class Master
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
-        date = @toDateStr(monthIdx,day)
+        date = @res.toDateStr( day, monthIdx )
         htm += @createMasterCell( roomId, room, date )
       htm += """</tr>"""
     htm += "</tbody></table>"
@@ -131,7 +131,7 @@ class Master
       roomId = col
       roomId = 'N' if roomId is  9
       roomId = 'S' if roomId is 10
-      status = @res.dayBooked( @rooms[roomId], @toDateStr(monthIdx,day) )
+      status = @res.dayBooked( @rooms[roomId], @res.toDateStr(day,monthIdx) )
       if status isnt 'free'
         htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId}</span>"""
     htm += """</div>"""
@@ -147,5 +147,3 @@ class Master
     day = if 1 <= day and day <= endDay then day else ""
     day
 
-  toDateStr:( monthIdx, day ) ->
-    @res.year+Util.pad(monthIdx+1)+Util.pad(day)

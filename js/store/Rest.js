@@ -103,7 +103,7 @@
       if (id == null) {
         id = 'none';
       }
-      this.onerror(t, id, 'on', {}, {
+      this.onError(t, id, 'on', {}, {
         msg: "on() not implemeted by Store.Rest"
       });
     };
@@ -152,7 +152,7 @@
             result = object;
           }
           extras = _this.toExtras(status, url, dataType, jqXHR.readyState, error);
-          return _this.onerror(tableName, id, op, result, extras);
+          return _this.onError(tableName, id, op, result, extras);
         };
       })(this);
       $.ajax(settings);
@@ -213,7 +213,7 @@
           if (op === 'select' || op === 'delete') {
             extras.where = 'all';
           }
-          return _this.onerror(tableName, 'none', op, result, extras);
+          return _this.onError(tableName, 'none', op, result, extras);
         };
       })(this);
       $.ajax(settings);
@@ -244,7 +244,7 @@
         return function(jqXHR, status, error) {
           var extras;
           extras = _this.toExtras(status, url, dataType, jqXHR.readyState, error);
-          return _this.onerror(tableName, 'none', op, {}, extras);
+          return _this.onError(tableName, 'none', op, {}, extras);
         };
       })(this);
       $.ajax(settings);

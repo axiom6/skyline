@@ -31,8 +31,8 @@
         width: 0,
         height: 0
       };
-      this.res.beg = this.res.toAnyDateStr(this.res.year, 4, 15);
-      this.res.end = this.res.toAnyDateStr(this.res.year, 9, 15);
+      this.res.beg = this.res.toDateStr(15, 4);
+      this.res.end = this.res.toDateStr(15, 9);
       this.res.dateRange();
     }
 
@@ -170,7 +170,7 @@
         room = ref4[roomId];
         htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
         for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
-          date = this.toDateStr(monthIdx, day);
+          date = this.res.toDateStr(day, monthIdx);
           htm += this.createMasterCell(roomId, room, date);
         }
         htm += "</tr>";
@@ -226,7 +226,7 @@
         if (roomId === 10) {
           roomId = 'S';
         }
-        status = this.res.dayBooked(this.rooms[roomId], this.toDateStr(monthIdx, day));
+        status = this.res.dayBooked(this.rooms[roomId], this.res.toDateStr(day, monthIdx));
         if (status !== 'free') {
           htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + "</span>";
         }
@@ -247,10 +247,6 @@
       day = row * 7 + col - begDay;
       day = 1 <= day && day <= endDay ? day : "";
       return day;
-    };
-
-    Master.prototype.toDateStr = function(monthIdx, day) {
-      return this.res.year + Util.pad(monthIdx + 1) + Util.pad(day);
     };
 
     return Master;

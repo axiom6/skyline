@@ -160,20 +160,4 @@ class Stream
     mergeSubject.mapTo( topic )
     @resetSubject( name, mergeSubject )
     return
-
-  # Publishes topic on dom element event
-  publishEvent2:( name, topic, jQuerySelector, eventType ) ->
-    subject         = @getSubject( name )
-    element         = @domElement( jQuerySelector )
-    return if @notElement( element, name )
-    observable    = Rx.Observable.fromEvent( element, eventType ).mapTo( topic )
-    next  = ( event ) =>
-      @processEvent(  event )
-      object  = if topic? then topic else event.target.value
-      observable.mapTo( object )
-    subject = subject.merge( observable )
-    subject.subscribe( next, @error, @complete )
-    subject.mapTo( topic )
-    @resetSubject( name, subject )
-    return
   ###

@@ -51,7 +51,7 @@
           if (error == null) {
             return _this.publish(tableName, id, 'add', object);
           } else {
-            return _this.onerror(tableName, id, 'add', object, {
+            return _this.onError(tableName, id, 'add', object, {
               error: error
             });
           }
@@ -71,7 +71,7 @@
             object[_this.keyProp] = id;
             return _this.publish(tableName, id, 'get', object);
           } else {
-            return _this.onerror(tableName, id, 'get', {
+            return _this.onError(tableName, id, 'get', {
               msg: 'Fire get error'
             });
           }
@@ -90,7 +90,7 @@
             object[_this.keyProp] = id;
             return _this.publish(tableName, id, 'put', object);
           } else {
-            return _this.onerror(tableName, id, 'put', object, {
+            return _this.onError(tableName, id, 'put', object, {
               error: error
             });
           }
@@ -107,7 +107,7 @@
           if (error == null) {
             return _this.publish(tableName, id, 'del', {});
           } else {
-            return _this.onerror(tableName, id, 'del', {}, {
+            return _this.onError(tableName, id, 'del', {}, {
               error: error
             });
           }
@@ -124,7 +124,7 @@
           if (error == null) {
             return _this.publish(tableName, 'none', 'insert', objects);
           } else {
-            return _this.onerror(tableName, 'none', 'insert', {
+            return _this.onError(tableName, 'none', 'insert', {
               error: error
             });
           }
@@ -138,17 +138,34 @@
       if (where == null) {
         where = Store.where;
       }
+      Util.noop(where);
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(snapshot) {
           if ((snapshot != null) && (snapshot.val() != null)) {
             return _this.publish(tableName, 'none', 'select', snapshot.val());
           } else {
-            return _this.onerror(tableName, 'none', 'select', {});
+            return _this.publish(tableName, 'none', 'select', {});
           }
         };
       })(this);
       this.fd.ref(tableName).once('value', onComplete);
+    };
+
+    Fire.prototype.range = function(t, beg, end) {
+      var onComplete, tableName;
+      tableName = this.tableName(t);
+      Util.log('Fire.range  beg', t, beg, end);
+      onComplete = (function(_this) {
+        return function(snapshot) {
+          if ((snapshot != null) && (snapshot.val() != null)) {
+            return _this.publish(tableName, 'none', 'range', snapshot.val());
+          } else {
+            return _this.publish(tableName, 'none', 'range', {});
+          }
+        };
+      })(this);
+      this.fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete);
     };
 
     Fire.prototype.update = function(t, objects) {
@@ -159,7 +176,7 @@
           if (error == null) {
             return _this.publish(tableName, 'none', 'update', objects);
           } else {
-            return _this.onerror(tableName, 'none', 'update', {
+            return _this.onError(tableName, 'none', 'update', {
               error: error
             });
           }
@@ -187,7 +204,7 @@
           if (error == null) {
             return _this.publish(tableName, 'none', 'make', {}, {});
           } else {
-            return _this.onerror(tableName, 'none', 'make', {}, {
+            return _this.onError(tableName, 'none', 'make', {}, {
               error: error
             });
           }
@@ -211,7 +228,7 @@
               where: where.toString()
             });
           } else {
-            return _this.onerror(tableName, 'none', 'show', {}, {
+            return _this.onError(tableName, 'none', 'show', {}, {
               where: where.toString()
             });
           }
@@ -232,7 +249,7 @@
           if (error == null) {
             return _this.publish(tableName, 'none', 'drop', "OK");
           } else {
-            return _this.onerror(tableName, 'none', 'drop', {}, {
+            return _this.onError(tableName, 'none', 'drop', {}, {
               error: error
             });
           }
@@ -260,7 +277,7 @@
               val: val
             });
           } else {
-            return _this.onerror(table, id, onEvt, {}, {
+            return _this.onError(table, id, onEvt, {}, {
               error: 'error'
             });
           }
@@ -271,15 +288,15 @@
     };
 
     Fire.prototype.auth = function() {
-      var onError;
-      onError = (function(_this) {
+      var onerror;
+      onerror = (function(_this) {
         return function(error) {
-          return _this.onerror('none', 'none', 'anon', {}, {
+          return _this.onError('none', 'none', 'anon', {}, {
             error: error
           });
         };
       })(this);
-      this.fb.auth().signInAnonymously()["catch"](onError);
+      this.fb.auth().signInAnonymously()["catch"](onerror);
     };
 
     return Fire;

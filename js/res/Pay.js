@@ -263,7 +263,6 @@
       monthIdx = parseInt(dayStr.substr(2, 2)) - 1;
       day = parseInt(dayStr.substr(4, 2));
       weekdayIdx = new Date(year, monthIdx, day).getDay();
-      Util.log('Pay.confirmDate', monthIdx, this.Data.months[monthIdx]);
       if (isDepart) {
         ref = this.departDate(monthIdx, day, weekdayIdx), monthIdx = ref[0], day = ref[1], weekdayIdx = ref[2];
       }

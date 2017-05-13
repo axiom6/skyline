@@ -171,7 +171,7 @@
       if (error == null) {
         error = {};
       }
-      console.log('Stream.onerror', {
+      console.log('Store.onerror', {
         db: this.dbName,
         table: table,
         id: id,
