@@ -3,7 +3,7 @@ class Data
 
   module.exports = Data
 
-  @testing     = true # Use Res test data
+  @insertNewTables = false # Use Res test data
 
   @year        = 17
   @season      = ["May","June","July","August","September","October"]
@@ -47,8 +47,7 @@ class Data
     resId
 
   @genCustId:( phone ) ->
-    custKey = Util.padEnd( phone.substr(0,10), 10, '_' )
-    if Data.testing then Data.randomCustKey() else custKey
+    Util.padEnd( phone.substr(0,10), 10, '_' )
 
   @genPaymentId:( resId, payments ) ->
     pays   = Util.keys(payments).sort()
@@ -84,6 +83,8 @@ class Data
     dayInt     = parseInt( date.substr( 4,2 ) )
     weekdayIdx = new Date( 2000+year, monthIdx, dayInt ).getDay()
     Data.weekdays[weekdayIdx]
+
+
 
   @isElem:( $elem ) ->
     not (  $elem? and $elem.length? and $elem.length is 0 )

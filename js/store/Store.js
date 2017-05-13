@@ -204,7 +204,10 @@
           memory.insert(table, data);
           break;
         case 'select':
-          memory.insert(table, data);
+          memory.select(table, params.where);
+          break;
+        case 'range':
+          memory.range(table, params.beg, params.end);
           break;
         case 'update':
           memory.update(table, data);
@@ -212,17 +215,14 @@
         case 'remove':
           memory.remove(table, params.where);
           break;
-        case 'open':
-          memory.open(table, params.schema);
+        case 'make':
+          memory.make(table);
           break;
         case 'show':
-          memory.show(table, params.format);
-          break;
-        case 'make':
-          memory.make(table, params.alters);
+          memory.show(table);
           break;
         case 'drop':
-          memory.drop(table, params.resets);
+          memory.drop(table);
           break;
         default:
           Util.error('Store.toMemory() unknown op', op);
@@ -273,14 +273,20 @@
       return this.toSubject(params.table, params.op, params.id);
     };
 
-    Store.prototype.toParams = function(table, id, op, extras) {
+    Store.prototype.toParams = function(table, id, op, extras, where) {
       var params;
+      if (where == null) {
+        where = W;
+      }
       params = {
         db: this.dbName,
         table: table,
         id: id,
         op: op,
-        module: this.module
+        module: this.module,
+        where: where,
+        beg: "",
+        end: ""
       };
       return Util.copyProperties(params, extras);
     };

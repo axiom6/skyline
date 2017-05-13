@@ -8,7 +8,7 @@
 
     module.exports = Data;
 
-    Data.testing = true;
+    Data.insertNewTables = false;
 
     Data.year = 17;
 
@@ -79,13 +79,7 @@
     };
 
     Data.genCustId = function(phone) {
-      var custKey;
-      custKey = Util.padEnd(phone.substr(0, 10), 10, '_');
-      if (Data.testing) {
-        return Data.randomCustKey();
-      } else {
-        return custKey;
-      }
+      return Util.padEnd(phone.substr(0, 10), 10, '_');
     };
 
     Data.genPaymentId = function(resId, payments) {

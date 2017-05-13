@@ -8,9 +8,11 @@ class Master
   constructor:( @stream, @store, @Data, @res ) ->
     @rooms       = @res.rooms
     @res.master  = @
-    @year        = @Data.year
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
+    @res.beg     = @res.toAnyDateStr( @res.year, 4, 15 )
+    @res.end     = @res.toAnyDateStr( @res.year, 9, 15 )
+    @res.dateRange()
 
   ready:() ->
     $('#Master').append( @masterHtml() )
@@ -27,19 +29,19 @@ class Master
 
   createMasterCell:( roomId,  room, date ) ->
     status = @res.dayBooked( room, date )
-    """<td id="M#{roomId+date}" class="room-#{status}" data-status="#{status}"></td>"""
+    """<td id="M#{date+roomId}" class="room-#{status}" data-status="#{status}"></td>"""
 
   allocMasterCell:( roomId, day, status ) ->
-    @cellMasterStatus( $('#M'+roomId+day), status )
+    @cellMasterStatus( $('#M'+day+roomId), status )
 
   allocSeasonCell:( roomId, day, status ) ->
-    @cellSeasonStatus( $('#S'+roomId+day), status )
+    @cellSeasonStatus( $('#S'+day+roomId), status )
 
   cellMasterStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
 
   cellSeasonStatus:( $cell, status ) ->
-    $cell.removeClass().addClass("own-"+status).attr('data-status',status)
+    $cell.removeClass().addClass( "own-"+status).attr('data-status',status)
 
   onMasterClick:( event ) =>
     $title  = $(event.target)
@@ -70,7 +72,7 @@ class Master
   masterHtml:() ->
     htm = ""
     for month in @Data.season
-      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @year, month )}</div>"""
+      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @res.year, month )}</div>"""
     htm
 
   roomsHtml:( year, month ) ->
@@ -105,7 +107,7 @@ class Master
 
   monthTable:( month ) ->
     monthIdx = @Data.months.indexOf(month)
-    begDay   = new Date( 2017, monthIdx, 1 ).getDay() - 1
+    begDay   = new Date( 2000+@res.year, monthIdx, 1 ).getDay() - 1
     endDay   = @Data.numDayMonth[monthIdx]
     htm  = """<div class="SeasonTitle">#{month}</div>"""
     htm += """<table class="MonthTable"><thead><tr>"""
@@ -129,7 +131,7 @@ class Master
       roomId = col
       roomId = 'N' if roomId is  9
       roomId = 'S' if roomId is 10
-      status = @room.dayBooked( @rooms[roomId], @toDateStr(monthIdx,day) )
+      status = @res.dayBooked( @rooms[roomId], @toDateStr(monthIdx,day) )
       if status isnt 'free'
         htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId}</span>"""
     htm += """</div>"""
@@ -138,7 +140,7 @@ class Master
   roomDayId:( monthIdx, day, roomId ) ->
     monPad = Util.pad( monthIdx+1 )
     dayPad = Util.pad( day )
-    'S' + roomId + @year + monPad + dayPad
+    'S' + roomId + @res.year + monPad + dayPad
 
   monthDay:( begDay, endDay, row, col ) ->
     day = row*7 + col - begDay
@@ -146,4 +148,4 @@ class Master
     day
 
   toDateStr:( monthIdx, day ) ->
-    @year+Util.pad(monthIdx+1)+Util.pad(day)
+    @res.year+Util.pad(monthIdx+1)+Util.pad(day)

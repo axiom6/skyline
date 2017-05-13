@@ -15,11 +15,13 @@
       this.dbVersion = dbVersion != null ? dbVersion : 1;
       this.tableNames = tableNames != null ? tableNames : [];
       IndexedDB.__super__.constructor.call(this, stream, uri, 'IndexedDB');
-      this.indexedDB = window.indexedDB;
+      this.indexedDB = window['indexedDB'];
       if (!this.indexedDB) {
         Util.error('Store.IndexedDB.constructor indexedDB not found');
       }
       this.dbs = null;
+      this.objectStoreNames = null;
+      this.openDatabase();
     }
 
     IndexedDB.prototype.add = function(t, id, object) {
@@ -193,7 +195,7 @@
       txo = null;
       if (this.dbs == null) {
         Util.trace('Store.IndexedDb.txnObjectStore() @dbs null');
-      } else if (this.dbs.objectStoreNames.contains(t)) {
+      } else if (this.objectStoreNames.contains(t)) {
         txn = this.dbs.transaction(t, mode);
         txo = txn.objectStore(t, {
           keyPath: key
@@ -254,7 +256,7 @@
         ref = this.tableNames;
         for (i = 0, len = ref.length; i < len; i++) {
           t = ref[i];
-          if (!this.dbs.objectStoreNames.contains(t)) {
+          if (!this.objectStoreNames.contains(t)) {
             this.dbs.createObjectStore(t, {
               keyPath: this.key
             });
@@ -271,14 +273,15 @@
       request.onupgradeneeded = (function(_this) {
         return function(event) {
           _this.dbs = event.target.result;
+          _this.objectStoreNames = _this.dbs['objectStoreNames'];
           _this.createObjectStores();
-          return Util.log('Store.IndexedDB', 'upgrade', _this.dbName, _this.dbs.objectStoreNames);
+          return Util.log('Store.IndexedDB', 'upgrade', _this.dbName, _this.objectStoreNames);
         };
       })(this);
       request.onsuccess = (function(_this) {
         return function(event) {
           _this.dbs = event.target.result;
-          Util.log('Store.IndexedDB', 'open', _this.dbName, _this.dbs.objectStoreNames);
+          Util.log('Store.IndexedDB', 'open', _this.dbName, _this.objectStoreNames);
           return _this.publish('none', 'none', 'open', _this.dbs.objectStoreNames);
         };
       })(this);

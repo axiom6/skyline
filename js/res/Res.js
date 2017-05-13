@@ -24,17 +24,50 @@
       this.subscribeToResId = bind(this.subscribeToResId, this);
       this.rooms = Res.Rooms;
       this.states = Res.States;
-      this.initRooms();
-      this.days = null;
       this.book = null;
       this.master = null;
-      if (this.Data.testing) {
-        this.insertRevs(Res.Resvs);
+      this.days = null;
+      this.today = new Date();
+      this.monthIdx = this.today.getMonth();
+      this.monthIdx = 4 <= this.monthIdx && this.monthIdx <= 9 ? this.monthIdx : 4;
+      this.year = this.Data.year;
+      this.month = this.Data.months[this.monthIdx];
+      this.numDays = 15;
+      this.begMay = 15;
+      this.begDay = this.month === 'May' ? this.begMay : 1;
+      this.beg = this.toDateStr(this.begDay);
+      this.end = this.Data.advanceDate(this.beg, this.numDays);
+      if (this.Data.insertNewTables) {
+        this.insertNewTables();
       }
-      if (this.Data.testing) {
-        this.insertDays(Res.Resvs);
+      if (!this.Data.insertNewTables) {
+        this.dateRange();
       }
     }
+
+    Res.prototype.dateRange = function(onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
+      }
+      this.beg = this.toDateStr(this.begDay);
+      this.end = this.Data.advanceDate(this.beg, this.numDays);
+      this.store.subscribe('Days', 'none', 'range', (function(_this) {
+        return function(days) {
+          _this.days = days;
+          Util.log('Res.dateRange', days);
+          if (onComplete != null) {
+            return onComplete();
+          }
+        };
+      })(this));
+      this.store.range('Days', this.beg, this.end);
+    };
+
+    Res.prototype.insertNewTables = function() {
+      this.insertRooms(Res.Rooms);
+      this.insertRevs(Res.Resvs);
+      return this.insertDays(Res.Resvs);
+    };
 
     Res.prototype.dayBooked = function(roomId, date) {
       var day, entry;
@@ -356,6 +389,24 @@
         }
       }
       return allDays;
+    };
+
+    Res.prototype.dayMonth = function(day) {
+      var monthDay;
+      monthDay = day + this.begDay - 1;
+      if (monthDay > this.Data.numDayMonth[this.monthIdx]) {
+        return monthDay - this.Data.numDayMonth[this.monthIdx];
+      } else {
+        return monthDay;
+      }
+    };
+
+    Res.prototype.toDateStr = function(day) {
+      return this.year + Util.pad(this.monthIdx + 1) + Util.pad(this.dayMonth(day));
+    };
+
+    Res.prototype.toAnyDateStr = function(year, monthIdx, day) {
+      return year + Util.pad(monthIdx + 1) + Util.pad(day);
     };
 
     return Res;

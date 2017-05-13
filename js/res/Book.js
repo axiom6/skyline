@@ -20,6 +20,7 @@
       this.onCellBook = bind(this.onCellBook, this);
       this.onTest = bind(this.onTest, this);
       this.onPop = bind(this.onPop, this);
+      this.resetRooms = bind(this.resetRooms, this);
       this.onDay = bind(this.onDay, this);
       this.onMonth = bind(this.onMonth, this);
       this.onSpa = bind(this.onSpa, this);
@@ -31,15 +32,6 @@
       this.rooms = this.res.rooms;
       this.roomUIs = this.res.createRoomUIs(this.rooms);
       this.res.book = this;
-      this.myDays = 0;
-      this.today = new Date();
-      this.monthIdx = this.today.getMonth();
-      this.monthIdx = 4 <= this.monthIdx && this.monthIdx <= 9 ? this.monthIdx : 4;
-      this.year = this.Data.year;
-      this.month = this.Data.months[this.monthIdx];
-      this.numDays = 15;
-      this.begMay = 15;
-      this.begDay = this.month === 'May' ? this.begMay : 1;
       this.$cells = [];
       this.totals = 0;
       this.method = 'site';
@@ -51,7 +43,7 @@
       $('#Book').append(this.bookHtml());
       $('#Insts').append(this.instructHtml());
       $('#Inits').append(this.initsHtml());
-      $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
+      $('#Rooms').append(this.roomsHtml(this.res.year, this.res.monthIdx, this.res.begDay, this.res.numDays));
       $('#Guest').append(this.guestHtml());
       $('.guests').change(this.onGuests);
       $('.pets').change(this.onPets);
@@ -76,9 +68,9 @@
 
     Book.prototype.initsHtml = function() {
       var htm;
-      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (this.htmlSelect("Months", this.Data.season, this.month, 'months')) + "</label>";
-      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
-      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + this.year + "</label>";
+      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (this.htmlSelect("Months", this.Data.season, this.res.month, 'months')) + "</label>";
+      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.res.begDay, 'days')) + "</label>";
+      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + (2000 + this.res.year) + "</label>";
       htm += "<span  id=\"Pop\"  class=\"Test\">Pop</span>";
       htm += "<span  id=\"Test\" class=\"Test\">Test</span>";
       return htm;
@@ -93,13 +85,13 @@
       weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
       htm = "<table><thead>";
       htm += "<tr><th></th><th></th><th></th><th></th><th></th>";
-      for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
-        weekday = this.Data.weekdays[(weekdayIdx + this.begDay + day - 2) % 7];
+      for (day = i = 1, ref = numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
+        weekday = this.Data.weekdays[(weekdayIdx + begDay + day - 2) % 7];
         htm += "<th>" + weekday + "</th>";
       }
       htm += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th>";
-      for (day = j = 1, ref1 = this.numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
-        htm += "<th>" + (this.dayMonth(day)) + "</th>";
+      for (day = j = 1, ref1 = numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
+        htm += "<th>" + (this.res.dayMonth(day)) + "</th>";
       }
       htm += "<th>Total</th></tr></thead><tbody>";
       ref2 = this.rooms;
@@ -108,12 +100,12 @@
         room = ref2[roomId];
         htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td>" + (this.spa(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
         for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
-          htm += this.createCell(roomId, room, this.toDateStr(day));
+          htm += this.createCell(roomId, room, this.res.toDateStr(day));
         }
         htm += "<td class=\"room-total\" id=\"" + roomId + "T\"></td></tr>";
       }
       htm += "<tr>";
-      for (day = l = 1, ref4 = this.numDays + 5; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
+      for (day = l = 1, ref4 = numDays + 5; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
         htm += "<td></td>";
       }
       htm += "<td class=\"room-total\" id=\"Totals\">&nbsp;</td></tr>";
@@ -213,8 +205,8 @@
       for (roomId in ref1) {
         roomUI = ref1[roomId];
         roomUI.$ = $('#' + roomId);
-        for (day = j = 1, ref2 = this.numDays; 1 <= ref2 ? j <= ref2 : j >= ref2; day = 1 <= ref2 ? ++j : --j) {
-          date = this.toDateStr(day);
+        for (day = j = 1, ref2 = this.res.numDays; 1 <= ref2 ? j <= ref2 : j >= ref2; day = 1 <= ref2 ? ++j : --j) {
+          date = this.res.toDateStr(day);
           $cell = $('#R' + roomId + date);
           $cell.click((function(_this) {
             return function(event) {
@@ -345,26 +337,27 @@
     };
 
     Book.prototype.onMonth = function(event) {
-      this.month = event.target.value;
-      this.monthIdx = this.Data.months.indexOf(this.month);
-      this.begDay = this.month === 'May' ? this.begMay : 1;
-      $('#Days').val(this.begDay.toString());
+      this.res.month = event.target.value;
+      this.res.monthIdx = this.Data.months.indexOf(this.month);
+      this.res.begDay = this.month === 'May' ? this.begMay : 1;
+      $('#Days').val(this.res.begDay.toString());
+      this.res.dateRange(this.resetRooms);
       this.resetRooms();
     };
 
     Book.prototype.onDay = function(event) {
-      this.begDay = parseInt(event.target.value);
-      if (this.month === 'October' && this.begDay > 1) {
-        this.begDay = 1;
+      this.res.begDay = parseInt(event.target.value);
+      if (this.res.month === 'October' && this.res.begDay > 1) {
+        this.res.begDay = 1;
         alert('The Season Ends on October 15');
-      } else {
-        this.resetRooms();
       }
+      this.res.dateRange(this.resetRooms);
+      this.resetRooms();
     };
 
     Book.prototype.resetRooms = function() {
       $('#Rooms').empty();
-      $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
+      $('#Rooms').append(this.roomsHtml(this.res.year, this.res.monthIdx, this.res.begDay, this.res.numDays));
       return this.roomsJQuery();
     };
 
@@ -517,20 +510,6 @@
 
     Book.prototype.cellStatus = function($cell, status) {
       return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
-    };
-
-    Book.prototype.dayMonth = function(day) {
-      var monthDay;
-      monthDay = day + this.begDay - 1;
-      if (monthDay > this.Data.numDayMonth[this.monthIdx]) {
-        return monthDay - this.Data.numDayMonth[this.monthIdx];
-      } else {
-        return monthDay;
-      }
-    };
-
-    Book.prototype.toDateStr = function(day) {
-      return this.year + Util.pad(this.monthIdx + 1) + Util.pad(this.dayMonth(day, this.begDay));
     };
 
     return Book;

@@ -7,14 +7,35 @@ class Res
   Res.States = ["free","mine","depo","book"]
 
   constructor:( @stream, @store, @Data ) ->
-    @rooms   = Res.Rooms
-    @states  = Res.States
-    @initRooms()
-    @days   = null
-    @book   = null
-    @master = null
-    @insertRevs( Res.Resvs ) if @Data.testing
-    @insertDays( Res.Resvs ) if @Data.testing
+    @rooms    = Res.Rooms
+    @states   = Res.States
+    @book     = null
+    @master   = null
+    @days     = null
+    @today    = new Date()
+    @monthIdx = @today.getMonth()
+    @monthIdx = if 4 <=  @monthIdx and @monthIdx <= 9 then @monthIdx else 4
+    @year     = @Data.year
+    @month    = @Data.months[@monthIdx]
+    @numDays  = 15
+    @begMay   = 15
+    @begDay   = if @month is 'May' then @begMay else 1
+    @beg      = @toDateStr( @begDay )
+    @end      = @Data.advanceDate( @beg, @numDays )
+    @insertNewTables() if     @Data.insertNewTables
+    @dateRange()       if not @Data.insertNewTables
+
+  dateRange:( onComplete=null ) ->
+    @beg = @toDateStr( @begDay )
+    @end = @Data.advanceDate( @beg, @numDays )
+    @store.subscribe( 'Days', 'none',  'range', (days) => @days = days; Util.log('Res.dateRange',days); onComplete() if onComplete? )
+    @store.range( 'Days', @beg, @end )
+    return
+
+  insertNewTables:() ->
+    @insertRooms( Res.Rooms )
+    @insertRevs(  Res.Resvs )
+    @insertDays(  Res.Resvs )
 
   dayBooked:( roomId, date ) ->
     day   = if @days? then @days[date]
@@ -206,6 +227,16 @@ class Res
         allDay = @createDay( allDays, newDayId, roomId )
         @setDay( allDay, room.status, room.resId )
     allDays
+
+  dayMonth:( day ) ->
+    monthDay = day + @begDay - 1
+    if monthDay > @Data.numDayMonth[@monthIdx] then monthDay-@Data.numDayMonth[@monthIdx] else monthDay
+
+  toDateStr:( day ) ->
+    @year+Util.pad(@monthIdx+1)+Util.pad(@dayMonth(day))
+
+  toAnyDateStr:( year, monthIdx, day ) ->
+    year+Util.pad(monthIdx+1)+Util.pad(day)
 
   #store.insert( 'Payment', resv.payments )
   #store.add(    'Cust',    resv.cust.custId, res.cust )

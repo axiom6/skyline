@@ -19,7 +19,6 @@
       this.onAlloc = bind(this.onAlloc, this);
       this.rooms = this.res.rooms;
       this.res.master = this;
-      this.year = this.Data.year;
       this.lastMaster = {
         left: 0,
         top: 0,
@@ -32,6 +31,9 @@
         width: 0,
         height: 0
       };
+      this.res.beg = this.res.toAnyDateStr(this.res.year, 4, 15);
+      this.res.end = this.res.toAnyDateStr(this.res.year, 9, 15);
+      this.res.dateRange();
     }
 
     Master.prototype.ready = function() {
@@ -62,15 +64,15 @@
     Master.prototype.createMasterCell = function(roomId, room, date) {
       var status;
       status = this.res.dayBooked(room, date);
-      return "<td id=\"M" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
+      return "<td id=\"M" + (date + roomId) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
     };
 
     Master.prototype.allocMasterCell = function(roomId, day, status) {
-      return this.cellMasterStatus($('#M' + roomId + day), status);
+      return this.cellMasterStatus($('#M' + day + roomId), status);
     };
 
     Master.prototype.allocSeasonCell = function(roomId, day, status) {
-      return this.cellSeasonStatus($('#S' + roomId + day), status);
+      return this.cellSeasonStatus($('#S' + day + roomId), status);
     };
 
     Master.prototype.cellMasterStatus = function($cell, status) {
@@ -139,7 +141,7 @@
       ref = this.Data.season;
       for (i = 0, len = ref.length; i < len; i++) {
         month = ref[i];
-        htm += "<div id=\"" + month + "\" class=\"" + month + "\">" + (this.roomsHtml(this.year, month)) + "</div>";
+        htm += "<div id=\"" + month + "\" class=\"" + month + "\">" + (this.roomsHtml(this.res.year, month)) + "</div>";
       }
       return htm;
     };
@@ -191,7 +193,7 @@
     Master.prototype.monthTable = function(month) {
       var begDay, col, day, endDay, htm, i, j, k, monthIdx, row, weekday;
       monthIdx = this.Data.months.indexOf(month);
-      begDay = new Date(2017, monthIdx, 1).getDay() - 1;
+      begDay = new Date(2000 + this.res.year, monthIdx, 1).getDay() - 1;
       endDay = this.Data.numDayMonth[monthIdx];
       htm = "<div class=\"SeasonTitle\">" + month + "</div>";
       htm += "<table class=\"MonthTable\"><thead><tr>";
@@ -224,7 +226,7 @@
         if (roomId === 10) {
           roomId = 'S';
         }
-        status = this.room.dayBooked(this.rooms[roomId], this.toDateStr(monthIdx, day));
+        status = this.res.dayBooked(this.rooms[roomId], this.toDateStr(monthIdx, day));
         if (status !== 'free') {
           htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + "</span>";
         }
@@ -237,7 +239,7 @@
       var dayPad, monPad;
       monPad = Util.pad(monthIdx + 1);
       dayPad = Util.pad(day);
-      return 'S' + roomId + this.year + monPad + dayPad;
+      return 'S' + roomId + this.res.year + monPad + dayPad;
     };
 
     Master.prototype.monthDay = function(begDay, endDay, row, col) {
@@ -248,7 +250,7 @@
     };
 
     Master.prototype.toDateStr = function(monthIdx, day) {
-      return this.year + Util.pad(monthIdx + 1) + Util.pad(day);
+      return this.res.year + Util.pad(monthIdx + 1) + Util.pad(day);
     };
 
     return Master;

@@ -135,14 +135,15 @@
     };
 
     Stream.prototype.concat = function(name, sources, onComplete) {
-      var i, len, onError, onNext, source, sub, subs;
+      var Obs, i, len, onError, onNext, source, sub, subs;
       subs = [];
       for (i = 0, len = sources.length; i < len; i++) {
         source = sources[i];
         sub = this.getSubject(source).take(1);
         subs.push(sub);
       }
-      this.subjects[name] = Rx.Observable.concat(subs).take(subs.length);
+      Obs = Rx['Observable'];
+      this.subjects[name] = Obs.concat(subs).take(subs.length);
       onNext = function(object) {
         var params;
         params = object.params != null ? object.params : 'none';
@@ -207,8 +208,8 @@
       mousedown = dragTarget.bindAsObservable("mousedown").publish().refCount().map(function(event) {
         event.preventDefault();
         return {
-          left: event.clientX - dragTarget.offset().left,
-          top: event.clientY - dragTarget.offset().top
+          left: event['clientX'] - dragTarget.offset().left,
+          top: event['clientY'] - dragTarget.offset().top
         };
       });
       mousedrag = mousedown.selectMany(function(offset) {
