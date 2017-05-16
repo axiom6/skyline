@@ -313,7 +313,7 @@ class Pay
     if obj['outcome'].type is 'authorized'
       @doPost(       @resv )
       @res.postResv( @resv, 'post', @totals, @amount, 'card', @last4, @purpose )
-      @confirmEmail( @resv )
+      #confirmEmail( @resv )
     else
       @amount = 0
       @doDeny(       @resv )

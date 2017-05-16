@@ -155,7 +155,6 @@
     Fire.prototype.range = function(t, beg, end) {
       var onComplete, tableName;
       tableName = this.tableName(t);
-      Util.log('Fire.range  beg', t, beg, end);
       onComplete = (function(_this) {
         return function(snapshot) {
           if ((snapshot != null) && (snapshot.val() != null)) {

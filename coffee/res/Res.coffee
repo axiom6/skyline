@@ -7,7 +7,7 @@ class Res
   Res.States = ["free","mine","depo","book"]
 
   constructor:( @stream, @store, @Data ) ->
-    Util.log( 'Res.Days', Res.Days )
+    # Util.log( 'Res.Days', Res.Days )
     @rooms    = Res.Rooms
     @states   = Res.States
     @book     = null
@@ -29,11 +29,11 @@ class Res
   dateRange:( onComplete=null ) ->
     @beg = @toDateStr( @begDay )
     @end = @Data.advanceDate( @beg, @numDays-1 )
-    Util.log( 'Res.dateRange()', @beg, @end, @monthIdx, @begDay )
+    #Util.log( 'Res.dateRange()', @beg, @end, @monthIdx, @begDay )
     @store.subscribe( 'Days', 'none',  'range', (days) =>
       @days = days
       msg = if Util.isObjEmpty(days) then 'days Empty' else days
-      Util.log('Res.dateRange', msg )
+      #Util.log('Res.dateRange', msg )
       onComplete() if onComplete? )
     @store.range( 'Days', @beg, @end )
     return
@@ -120,20 +120,22 @@ class Res
     day.resId  = resId
 
   subscribeToResId:( resId ) =>
-    @store.subscribe( 'Res',   resId,  'onAdd', (onAdd) => Util.log('Res.subscribeToResId onAdd', resId, onAdd ) )
-    @store.subscribe( 'Res',   resId,  'onPut', (onPut) => Util.log('Res.subscribeToResId onPut', resId, onPut ) )
-    @store.subscribe( 'Res',   resId,  'onDel', (onDel) => Util.log('Res.subscribeToResId onDel', resId, onDel ) )
-    @store.on( 'Res', 'onAdd', resId )
-    @store.on( 'Res', 'onPut', resId )
-    @store.on( 'Res', 'onDel', resId )
+    @store.subscribe( 'Res',   resId,    'add',   (add) => Util.log('Res.subscribeToResId add',   resId,   add ) )
+    #store.subscribe( 'Res',   resId,  'onAdd', (onAdd) => Util.log('Res.subscribeToResId onAdd', resId, onAdd ) )
+    #store.subscribe( 'Res',   resId,  'onPut', (onPut) => Util.log('Res.subscribeToResId onPut', resId, onPut ) )
+    #store.subscribe( 'Res',   resId,  'onDel', (onDel) => Util.log('Res.subscribeToResId onDel', resId, onDel ) )
+    #store.on( 'Res', 'onAdd', resId )
+    #store.on( 'Res', 'onPut', resId )
+    #store.on( 'Res', 'onDel', resId )
 
   subscribeToDays:() =>
-    @store.subscribe( 'Days', 'none',  'onAdd', (onAdd) => Util.log('Res.subscribeToDays onAdd', onAdd ) )
-    @store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
-    @store.subscribe( 'Days', 'none',  'onDel', (onDel) => Util.log('Res.subscribeToDays onDel', onDel ) )
-    @store.on(        'Days',          'onAdd' )
-    @store.on(        'Days',          'onPut' )
-    @store.on(        'Days',          'onDel' )
+    @store.subscribe( 'Days', 'none',    'add',   (add) => Util.log('Res.subscribeToDays add',     add ) )
+    #store.subscribe( 'Days', 'none',  'onAdd', (onAdd) => Util.log('Res.subscribeToDays onAdd', onAdd ) )
+    #store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
+    #store.subscribe( 'Days', 'none',  'onDel', (onDel) => Util.log('Res.subscribeToDays onDel', onDel ) )
+    #store.on(        'Days',          'onAdd' )
+    #store.on(        'Days',          'onPut' )
+    #store.on(        'Days',          'onDel' )
 
   insertRooms:( rooms ) =>
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
@@ -204,17 +206,14 @@ class Res
     payment
 
   setResvStatus:( resv, post, purpose ) ->
-
     if        post is 'post'
         resv.status = 'book' if purpose is 'PayInFull' or purpose is 'PayOffDeposit'
         resv.status = 'depo' if purpose is 'Deposit'
     else if   post is 'deny'
         resv.status = 'free'
-
     if not Util.inArray(['book','depo','free'], resv.status )
       Util.error( 'Pay.setResStatus() unknown status ', resv.status )
       resv.status = 'free'
-
     return    
 
   postResv:( resv, post, totals, amount, method, last4, purpose ) ->
@@ -225,16 +224,13 @@ class Res
     resv.paid   += amount
     resv.balance = totals - resv.paid
     @allocRooms( resv )
-    if status is 'post'
+    if post is 'post'
       @store.add( 'Res', resv.resId, resv )
       @days = @postDays( resv, @days )
-
-    Util.log('Res.postResv()', resv )
+   # Util.log('Res.postResv()', resv )
 
   postDays:( resv, allDays ) ->
     newDays = @createDaysFromResv( resv, {} )
-    Util.log('Res.postDays()', newDays )
-    @store.insert( 'Days', newDays )
     @mergeDays( allDays,   newDays )
 
   mergeDays:( allDays, newDays ) ->
@@ -242,6 +238,8 @@ class Res
       for own roomId, room   of newDay
         allDay = @createDay( allDays, newDayId, roomId )
         @setDay( allDay, room.status, room.resId )
+    for own newDayId, newDay of newDays
+      @store.add( 'Days', newDayId, allDays[newDayId])
     allDays
 
   dayMonth:( day ) ->
@@ -251,5 +249,3 @@ class Res
   toDateStr:( day, monthIdx=@monthIdx, year=@year ) ->
     year+Util.pad(monthIdx+1)+Util.pad(day)
 
-  #store.insert( 'Payment', resv.payments )
-  #store.add(    'Cust',    resv.cust.custId, res.cust )

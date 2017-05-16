@@ -22,7 +22,6 @@
       this.insertRooms = bind(this.insertRooms, this);
       this.subscribeToDays = bind(this.subscribeToDays, this);
       this.subscribeToResId = bind(this.subscribeToResId, this);
-      Util.log('Res.Days', Res.Days);
       this.rooms = Res.Rooms;
       this.states = Res.States;
       this.book = null;
@@ -52,13 +51,11 @@
       }
       this.beg = this.toDateStr(this.begDay);
       this.end = this.Data.advanceDate(this.beg, this.numDays - 1);
-      Util.log('Res.dateRange()', this.beg, this.end, this.monthIdx, this.begDay);
       this.store.subscribe('Days', 'none', 'range', (function(_this) {
         return function(days) {
           var msg;
           _this.days = days;
           msg = Util.isObjEmpty(days) ? 'days Empty' : days;
-          Util.log('Res.dateRange', msg);
           if (onComplete != null) {
             return onComplete();
           }
@@ -201,45 +198,19 @@
     };
 
     Res.prototype.subscribeToResId = function(resId) {
-      this.store.subscribe('Res', resId, 'onAdd', (function(_this) {
-        return function(onAdd) {
-          return Util.log('Res.subscribeToResId onAdd', resId, onAdd);
+      return this.store.subscribe('Res', resId, 'add', (function(_this) {
+        return function(add) {
+          return Util.log('Res.subscribeToResId add', resId, add);
         };
       })(this));
-      this.store.subscribe('Res', resId, 'onPut', (function(_this) {
-        return function(onPut) {
-          return Util.log('Res.subscribeToResId onPut', resId, onPut);
-        };
-      })(this));
-      this.store.subscribe('Res', resId, 'onDel', (function(_this) {
-        return function(onDel) {
-          return Util.log('Res.subscribeToResId onDel', resId, onDel);
-        };
-      })(this));
-      this.store.on('Res', 'onAdd', resId);
-      this.store.on('Res', 'onPut', resId);
-      return this.store.on('Res', 'onDel', resId);
     };
 
     Res.prototype.subscribeToDays = function() {
-      this.store.subscribe('Days', 'none', 'onAdd', (function(_this) {
-        return function(onAdd) {
-          return Util.log('Res.subscribeToDays onAdd', onAdd);
+      return this.store.subscribe('Days', 'none', 'add', (function(_this) {
+        return function(add) {
+          return Util.log('Res.subscribeToDays add', add);
         };
       })(this));
-      this.store.subscribe('Days', 'none', 'onPut', (function(_this) {
-        return function(onPut) {
-          return Util.log('Res.subscribeToDays onPut', onPut);
-        };
-      })(this));
-      this.store.subscribe('Days', 'none', 'onDel', (function(_this) {
-        return function(onDel) {
-          return Util.log('Res.subscribeToDays onDel', onDel);
-        };
-      })(this));
-      this.store.on('Days', 'onAdd');
-      this.store.on('Days', 'onPut');
-      return this.store.on('Days', 'onDel');
     };
 
     Res.prototype.insertRooms = function(rooms) {
@@ -379,18 +350,15 @@
       resv.paid += amount;
       resv.balance = totals - resv.paid;
       this.allocRooms(resv);
-      if (status === 'post') {
+      if (post === 'post') {
         this.store.add('Res', resv.resId, resv);
-        this.days = this.postDays(resv, this.days);
+        return this.days = this.postDays(resv, this.days);
       }
-      return Util.log('Res.postResv()', resv);
     };
 
     Res.prototype.postDays = function(resv, allDays) {
       var newDays;
       newDays = this.createDaysFromResv(resv, {});
-      Util.log('Res.postDays()', newDays);
-      this.store.insert('Days', newDays);
       return this.mergeDays(allDays, newDays);
     };
 
@@ -405,6 +373,11 @@
           allDay = this.createDay(allDays, newDayId, roomId);
           this.setDay(allDay, room.status, room.resId);
         }
+      }
+      for (newDayId in newDays) {
+        if (!hasProp.call(newDays, newDayId)) continue;
+        newDay = newDays[newDayId];
+        this.store.add('Days', newDayId, allDays[newDayId]);
       }
       return allDays;
     };

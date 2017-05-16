@@ -395,8 +395,7 @@
     Pay.prototype.onCharge = function(obj) {
       if (obj['outcome'].type === 'authorized') {
         this.doPost(this.resv);
-        this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
-        return this.confirmEmail(this.resv);
+        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
       } else {
         this.amount = 0;
         this.doDeny(this.resv);

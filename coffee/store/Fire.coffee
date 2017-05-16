@@ -89,7 +89,7 @@ class Fire extends Store
 
   range:( t, beg, end ) ->
     tableName = @tableName(t)
-    Util.log( 'Fire.range  beg', t, beg, end )
+    #Util.log( 'Fire.range  beg', t, beg, end )
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         @publish( tableName, 'none', 'range', snapshot.val() )
