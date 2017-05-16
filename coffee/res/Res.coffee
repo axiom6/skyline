@@ -29,11 +29,8 @@ class Res
   dateRange:( onComplete=null ) ->
     @beg = @toDateStr( @begDay )
     @end = @Data.advanceDate( @beg, @numDays-1 )
-    #Util.log( 'Res.dateRange()', @beg, @end, @monthIdx, @begDay )
     @store.subscribe( 'Days', 'none',  'range', (days) =>
       @days = days
-      msg = if Util.isObjEmpty(days) then 'days Empty' else days
-      #Util.log('Res.dateRange', msg )
       onComplete() if onComplete? )
     @store.range( 'Days', @beg, @end )
     return
@@ -107,17 +104,13 @@ class Res
   allocRooms:( resv ) ->
     for own  roomId, room of resv.rooms
       for own dayId, day  of room.days
-        @setDay( day, resv.status, resv.resId )
+        @setDayRoom( day, resv.status, resv.resId ) # setDayRoom also works for days in rooms
       delete room.group
       @allocRoom( roomId, room.days )
 
   allocRoom:( roomId, days ) ->
     @book.  onAlloc( roomId, days ) if @book?
     @master.onAlloc( roomId, days ) if @master?
-
-  setDay:( day, status, resId ) ->
-    day.status = status
-    day.resId  = resId
 
   subscribeToResId:( resId ) =>
     @store.subscribe( 'Res',   resId,    'add',   (add) => Util.log('Res.subscribeToResId add',   resId,   add ) )
@@ -128,9 +121,11 @@ class Res
     #store.on( 'Res', 'onPut', resId )
     #store.on( 'Res', 'onDel', resId )
 
+  # Does not work because we are updating Day / dayId / roomId grandchildren instead of children
   subscribeToDays:() =>
-    @store.subscribe( 'Days', 'none',    'add',   (add) => Util.log('Res.subscribeToDays add',     add ) )
+    #store.subscribe( 'Days', 'none',    'add',   (add) => Util.log('Res.subscribeToDays add',     add ) )
     #store.subscribe( 'Days', 'none',  'onAdd', (onAdd) => Util.log('Res.subscribeToDays onAdd', onAdd ) )
+    #store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
     #store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
     #store.subscribe( 'Days', 'none',  'onDel', (onDel) => Util.log('Res.subscribeToDays onDel', onDel ) )
     #store.on(        'Days',          'onAdd' )
@@ -171,13 +166,13 @@ class Res
   createDaysFromResv:( resv, days ) ->
     for   own roomId, room of resv.rooms
       for own  dayId, rday of room.days
-        day = @createDay( days, dayId, roomId )
-        @setDay( day, rday.status, rday.resId )
+        dayRoom = @createDayRoom( days, dayId, roomId )
+        @setDayRoom( dayRoom, rday.status, rday.resId )
     #Util.log('Res.createDaysFromResv() days', days  )
     days
 
   # Inexplicable this maybe randomly generating arrays on [roomId]
-  createDay:( days, dayId, roomIdA ) ->
+  createDayRoom:( days, dayId, roomIdA ) ->
     roomId = roomIdA.toString()
     days[dayId]         = {} if not days[dayId]?
     days[dayId][roomId] = {}
@@ -214,33 +209,36 @@ class Res
     if not Util.inArray(['book','depo','free'], resv.status )
       Util.error( 'Pay.setResStatus() unknown status ', resv.status )
       resv.status = 'free'
-    return    
+    resv.status
 
   postResv:( resv, post, totals, amount, method, last4, purpose ) ->
-    @setResvStatus( resv, post, purpose )
-    payId = @Data.genPaymentId( resv.resId, resv.payments )
-    resv.payments[payId] = @createPayment( amount, method, last4, purpose )
-    resv.totals  = totals
-    resv.paid   += amount
-    resv.balance = totals - resv.paid
-    @allocRooms( resv )
-    if post is 'post'
+    status = @setResvStatus( resv, post, purpose )
+    if status is 'book' or status is 'depo'
+      payId = @Data.genPaymentId( resv.resId, resv.payments )
+      resv.payments[payId] = @createPayment( amount, method, last4, purpose )
+      resv.totals  = totals
+      resv.paid   += amount
+      resv.balance = totals - resv.paid
+      @allocRooms( resv )
       @store.add( 'Res', resv.resId, resv )
-      @days = @postDays( resv, @days )
+      @days = @mergePostDays( resv, @days )
    # Util.log('Res.postResv()', resv )
 
-  postDays:( resv, allDays ) ->
+  mergePostDays:( resv, allDays) ->
     newDays = @createDaysFromResv( resv, {} )
-    @mergeDays( allDays,   newDays )
-
-  mergeDays:( allDays, newDays ) ->
     for own newDayId, newDay of newDays
       for own roomId, room   of newDay
-        allDay = @createDay( allDays, newDayId, roomId )
-        @setDay( allDay, room.status, room.resId )
-    for own newDayId, newDay of newDays
-      @store.add( 'Days', newDayId, allDays[newDayId])
+        dayRoom = @createDayRoom( allDays, newDayId, roomId )
+        @setDayRoom( dayRoom, room.status, room.resId )
+        # We do not publish from Days with the newDayId+'/'+roomId grand child
+        # Instead @allocRoom( resv ) is driven by resv
+        @store.add( 'Days', newDayId+'/'+roomId, dayRoom )
     allDays
+
+  # Used for Days / dayId / roomId and for Res / rooms[dayId] since both has status and resid properties
+  setDayRoom:( dayRoom, status, resId ) ->
+    dayRoom.status = status
+    dayRoom.resId  = resId
 
   dayMonth:( day ) ->
     monthDay = day + @begDay - 1

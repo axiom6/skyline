@@ -269,12 +269,13 @@
           if (snapshot != null) {
             key = snapshot.key;
             val = snapshot.val();
-            return _this.publish(table, id, onEvt, {
+            _this.publish(table, id, onEvt, {
               onEvt: onEvt,
               table: table,
               key: key,
               val: val
             });
+            return Util.log('Fire.on()', table, onEvt, key, val);
           } else {
             return _this.onError(table, id, onEvt, {}, {
               error: 'error'

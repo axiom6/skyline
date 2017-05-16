@@ -53,9 +53,7 @@
       this.end = this.Data.advanceDate(this.beg, this.numDays - 1);
       this.store.subscribe('Days', 'none', 'range', (function(_this) {
         return function(days) {
-          var msg;
           _this.days = days;
-          msg = Util.isObjEmpty(days) ? 'days Empty' : days;
           if (onComplete != null) {
             return onComplete();
           }
@@ -175,7 +173,7 @@
         for (dayId in ref1) {
           if (!hasProp.call(ref1, dayId)) continue;
           day = ref1[dayId];
-          this.setDay(day, resv.status, resv.resId);
+          this.setDayRoom(day, resv.status, resv.resId);
         }
         delete room.group;
         results.push(this.allocRoom(roomId, room.days));
@@ -192,11 +190,6 @@
       }
     };
 
-    Res.prototype.setDay = function(day, status, resId) {
-      day.status = status;
-      return day.resId = resId;
-    };
-
     Res.prototype.subscribeToResId = function(resId) {
       return this.store.subscribe('Res', resId, 'add', (function(_this) {
         return function(add) {
@@ -205,13 +198,7 @@
       })(this));
     };
 
-    Res.prototype.subscribeToDays = function() {
-      return this.store.subscribe('Days', 'none', 'add', (function(_this) {
-        return function(add) {
-          return Util.log('Res.subscribeToDays add', add);
-        };
-      })(this));
-    };
+    Res.prototype.subscribeToDays = function() {};
 
     Res.prototype.insertRooms = function(rooms) {
       this.store.subscribe('Room', 'none', 'make', (function(_this) {
@@ -272,7 +259,7 @@
     };
 
     Res.prototype.createDaysFromResv = function(resv, days) {
-      var day, dayId, rday, ref, ref1, room, roomId;
+      var dayId, dayRoom, rday, ref, ref1, room, roomId;
       ref = resv.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
@@ -281,14 +268,14 @@
         for (dayId in ref1) {
           if (!hasProp.call(ref1, dayId)) continue;
           rday = ref1[dayId];
-          day = this.createDay(days, dayId, roomId);
-          this.setDay(day, rday.status, rday.resId);
+          dayRoom = this.createDayRoom(days, dayId, roomId);
+          this.setDayRoom(dayRoom, rday.status, rday.resId);
         }
       }
       return days;
     };
 
-    Res.prototype.createDay = function(days, dayId, roomIdA) {
+    Res.prototype.createDayRoom = function(days, dayId, roomIdA) {
       var roomId;
       roomId = roomIdA.toString();
       if (days[dayId] == null) {
@@ -339,47 +326,44 @@
         Util.error('Pay.setResStatus() unknown status ', resv.status);
         resv.status = 'free';
       }
+      return resv.status;
     };
 
     Res.prototype.postResv = function(resv, post, totals, amount, method, last4, purpose) {
-      var payId;
-      this.setResvStatus(resv, post, purpose);
-      payId = this.Data.genPaymentId(resv.resId, resv.payments);
-      resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
-      resv.totals = totals;
-      resv.paid += amount;
-      resv.balance = totals - resv.paid;
-      this.allocRooms(resv);
-      if (post === 'post') {
+      var payId, status;
+      status = this.setResvStatus(resv, post, purpose);
+      if (status === 'book' || status === 'depo') {
+        payId = this.Data.genPaymentId(resv.resId, resv.payments);
+        resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
+        resv.totals = totals;
+        resv.paid += amount;
+        resv.balance = totals - resv.paid;
+        this.allocRooms(resv);
         this.store.add('Res', resv.resId, resv);
-        return this.days = this.postDays(resv, this.days);
+        return this.days = this.mergePostDays(resv, this.days);
       }
     };
 
-    Res.prototype.postDays = function(resv, allDays) {
-      var newDays;
+    Res.prototype.mergePostDays = function(resv, allDays) {
+      var dayRoom, newDay, newDayId, newDays, room, roomId;
       newDays = this.createDaysFromResv(resv, {});
-      return this.mergeDays(allDays, newDays);
-    };
-
-    Res.prototype.mergeDays = function(allDays, newDays) {
-      var allDay, newDay, newDayId, room, roomId;
       for (newDayId in newDays) {
         if (!hasProp.call(newDays, newDayId)) continue;
         newDay = newDays[newDayId];
         for (roomId in newDay) {
           if (!hasProp.call(newDay, roomId)) continue;
           room = newDay[roomId];
-          allDay = this.createDay(allDays, newDayId, roomId);
-          this.setDay(allDay, room.status, room.resId);
+          dayRoom = this.createDayRoom(allDays, newDayId, roomId);
+          this.setDayRoom(dayRoom, room.status, room.resId);
+          this.store.add('Days', newDayId + '/' + roomId, dayRoom);
         }
       }
-      for (newDayId in newDays) {
-        if (!hasProp.call(newDays, newDayId)) continue;
-        newDay = newDays[newDayId];
-        this.store.add('Days', newDayId, allDays[newDayId]);
-      }
       return allDays;
+    };
+
+    Res.prototype.setDayRoom = function(dayRoom, status, resId) {
+      dayRoom.status = status;
+      return dayRoom.resId = resId;
     };
 
     Res.prototype.dayMonth = function(day) {
