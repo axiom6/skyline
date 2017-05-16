@@ -15,7 +15,7 @@ class Owner
 
       stream   = new Stream( [] )
       store    = new Fire(   stream, "skytest", Data.configSkytest )
-      res      = new Res(    stream, store, Data )
+      res      = new Res(    stream, store, Data, 'Owner' )
       master   = new Master( stream, store, Data, res )
       master.ready()
 

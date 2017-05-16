@@ -17,6 +17,10 @@
       this.onSeasonClick = bind(this.onSeasonClick, this);
       this.onMasterClick = bind(this.onMasterClick, this);
       this.onAlloc = bind(this.onAlloc, this);
+      this.onDateRange = bind(this.onDateRange, this);
+      this.onDailysBtn = bind(this.onDailysBtn, this);
+      this.onSeasonBtn = bind(this.onSeasonBtn, this);
+      this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
       this.res.master = this;
       this.lastMaster = {
@@ -31,12 +35,37 @@
         width: 0,
         height: 0
       };
-      this.res.beg = this.res.toDateStr(15, 4);
-      this.res.end = this.res.toDateStr(15, 9);
-      this.res.dateRange();
+      this.res.beg = this.res.toDateStr(1, 4);
+      this.res.end = this.res.toDateStr(31, 9);
     }
 
     Master.prototype.ready = function() {
+      this.res.dateRange(this.onDateRange);
+      $('#MasterBtn').click(this.onMasterBtn);
+      $('#SeasonBtn').click(this.onSeasonBtn);
+      $('#DailysBtn').click(this.onDailysBtn);
+    };
+
+    Master.prototype.onMasterBtn = function() {
+      $('#Season').hide();
+      $('#Dailys').hide();
+      return $('#Master').show();
+    };
+
+    Master.prototype.onSeasonBtn = function() {
+      $('#Dailys').hide();
+      $('#Master').hide();
+      return $('#Season').show();
+    };
+
+    Master.prototype.onDailysBtn = function() {
+      $('#Season').hide();
+      $('#Master').hide();
+      return $('#Dailys').show();
+    };
+
+    Master.prototype.onDateRange = function() {
+      var dayId, dayRoom, ref, results;
       $('#Master').append(this.masterHtml());
       $('#Season').append(this.seasonHtml());
       $('.MasterTitle').click((function(_this) {
@@ -49,15 +78,23 @@
           return _this.onSeasonClick(event);
         };
       })(this));
+      ref = this.res.days;
+      results = [];
+      for (dayId in ref) {
+        if (!hasProp.call(ref, dayId)) continue;
+        dayRoom = ref[dayId];
+        results.push(this.onAlloc(dayId, dayRoom));
+      }
+      return results;
     };
 
-    Master.prototype.onAlloc = function(roomId, days) {
-      var day, dayId;
-      for (dayId in days) {
-        if (!hasProp.call(days, dayId)) continue;
-        day = days[dayId];
-        this.allocMasterCell(roomId, dayId, day.status);
-        this.allocSeasonCell(roomId, dayId, day.status);
+    Master.prototype.onAlloc = function(dayId, dayRoom) {
+      var room, roomId;
+      for (roomId in dayRoom) {
+        if (!hasProp.call(dayRoom, roomId)) continue;
+        room = dayRoom[roomId];
+        this.allocMasterCell(roomId, dayId, room.status);
+        this.allocSeasonCell(roomId, dayId, room.status);
       }
     };
 
@@ -149,8 +186,8 @@
     Master.prototype.roomsHtml = function(year, month) {
       var begDay, date, day, endDay, htm, i, j, k, monthIdx, ref, ref1, ref2, ref3, ref4, ref5, ref6, room, roomId, weekday, weekdayIdx;
       monthIdx = this.Data.months.indexOf(month);
-      begDay = month !== 'May' ? 1 : 17;
-      endDay = month !== 'October' ? this.Data.numDayMonth[monthIdx] : 15;
+      begDay = 1;
+      endDay = this.Data.numDayMonth[monthIdx];
       weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
       htm = "<div class=\"MasterTitle\">" + month + "</div>";
       htm += "<table><thead>";
@@ -214,7 +251,7 @@
     };
 
     Master.prototype.roomDay = function(monthIdx, day) {
-      var col, htm, i, roomId, status;
+      var col, date, htm, i, roomId, status;
       htm = "";
       htm += "<div class=\"MonthDay\">" + day + "</div>";
       htm += "<div class=\"MonthRoom\">";
@@ -226,7 +263,8 @@
         if (roomId === 10) {
           roomId = 'S';
         }
-        status = this.res.dayBooked(this.rooms[roomId], this.res.toDateStr(day, monthIdx));
+        date = this.res.toDateStr(day, monthIdx);
+        status = this.res.dayBooked(roomId, date);
         if (status !== 'free') {
           htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + "</span>";
         }

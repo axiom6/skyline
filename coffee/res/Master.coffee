@@ -10,21 +10,45 @@ class Master
     @res.master  = @
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
-    @res.beg     = @res.toDateStr( 15, 4 )
-    @res.end     = @res.toDateStr( 15, 9 )
-    @res.dateRange()
+    @res.beg     = @res.toDateStr(  1, 4 )
+    @res.end     = @res.toDateStr( 31, 9 )
 
   ready:() ->
+    @res.dateRange( @onDateRange )
+    $('#MasterBtn').click( @onMasterBtn )
+    $('#SeasonBtn').click( @onSeasonBtn )
+    $('#DailysBtn').click( @onDailysBtn )
+    return
+
+  onMasterBtn:() =>
+    $('#Season').hide()
+    $('#Dailys').hide()
+    $('#Master').show()
+
+  onSeasonBtn:() =>
+
+    $('#Dailys').hide()
+    $('#Master').hide()
+    $('#Season').show()
+
+  onDailysBtn:() =>
+    $('#Season').hide()
+    $('#Master').hide()
+    $('#Dailys').show()
+
+  onDateRange:() =>
     $('#Master').append( @masterHtml() )
     $('#Season').append( @seasonHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
-    return
+    #Util.log( 'Master.onDateRange', @res.days )
+    for own dayId, dayRoom of @res.days
+      @onAlloc( dayId, dayRoom )
 
-  onAlloc:( roomId, days ) =>
-    for own dayId, day of days
-      @allocMasterCell( roomId, dayId, day.status )
-      @allocSeasonCell( roomId, dayId, day.status )
+  onAlloc:(  dayId, dayRoom ) =>
+    for own roomId, room   of dayRoom
+      @allocMasterCell( roomId, dayId, room.status )
+      @allocSeasonCell( roomId, dayId, room.status )
     return
 
   createMasterCell:( roomId,  room, date ) ->
@@ -77,8 +101,8 @@ class Master
 
   roomsHtml:( year, month ) ->
     monthIdx   = @Data.months.indexOf(month)
-    begDay     = if month isnt 'May'     then 1 else 17
-    endDay     = if month isnt 'October' then @Data.numDayMonth[monthIdx] else 15
+    begDay     = 1                           # if month isnt 'May'     then 1 else 17
+    endDay     = @Data.numDayMonth[monthIdx] # if month isnt 'October' then @Data.numDayMonth[monthIdx] else 15
     weekdayIdx = new Date( 2000+year, monthIdx, 1 ).getDay()
     htm  = """<div class="MasterTitle">#{month}</div>"""
     htm += "<table><thead>"
@@ -131,7 +155,9 @@ class Master
       roomId = col
       roomId = 'N' if roomId is  9
       roomId = 'S' if roomId is 10
-      status = @res.dayBooked( @rooms[roomId], @res.toDateStr(day,monthIdx) )
+      date   = @res.toDateStr(day,monthIdx)
+      status = @res.dayBooked( roomId, date )
+      #Util.log('Master.roomDay()', date, roomId, status ) if date is '170524'
       if status isnt 'free'
         htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId}</span>"""
     htm += """</div>"""
@@ -146,4 +172,3 @@ class Master
     day = row*7 + col - begDay
     day = if 1 <= day and day <= endDay then day else ""
     day
-

@@ -6,7 +6,7 @@ class Res
   Res.Days   = require( 'data/days.json' )
   Res.States = ["free","mine","depo","book"]
 
-  constructor:( @stream, @store, @Data ) ->
+  constructor:( @stream, @store, @Data, @appName ) ->
     # Util.log( 'Res.Days', Res.Days )
     @rooms    = Res.Rooms
     @states   = Res.States
@@ -24,7 +24,7 @@ class Res
     @beg      = @toDateStr( @begDay )
     @end      = @Data.advanceDate( @beg, @numDays )
     @insertNewTables() if     @Data.insertNewTables
-    @dateRange()       if not @Data.insertNewTables
+    @dateRange()       if not @Data.insertNewTables and @appName is 'Guest'
 
   dateRange:( onComplete=null ) ->
     @beg = @toDateStr( @begDay )

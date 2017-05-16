@@ -15,10 +15,11 @@
 
     Res.States = ["free", "mine", "depo", "book"];
 
-    function Res(stream, store, Data) {
+    function Res(stream, store, Data, appName) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
+      this.appName = appName;
       this.insertRooms = bind(this.insertRooms, this);
       this.subscribeToDays = bind(this.subscribeToDays, this);
       this.subscribeToResId = bind(this.subscribeToResId, this);
@@ -40,7 +41,7 @@
       if (this.Data.insertNewTables) {
         this.insertNewTables();
       }
-      if (!this.Data.insertNewTables) {
+      if (!this.Data.insertNewTables && this.appName === 'Guest') {
         this.dateRange();
       }
     }
