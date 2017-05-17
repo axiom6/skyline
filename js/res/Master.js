@@ -55,27 +55,32 @@
     Master.prototype.onSeasonBtn = function() {
       $('#Dailys').hide();
       $('#Master').hide();
+      if (Util.isEmpty($('#Season').children())) {
+        $('#Season').append(this.seasonHtml());
+      }
+      $('.SeasonTitle').click((function(_this) {
+        return function(event) {
+          return _this.onSeasonClick(event);
+        };
+      })(this));
       return $('#Season').show();
     };
 
     Master.prototype.onDailysBtn = function() {
       $('#Season').hide();
       $('#Master').hide();
+      if (Util.isEmpty($('#Dailys').children())) {
+        $('#Dailys').append(this.dailysHtml());
+      }
       return $('#Dailys').show();
     };
 
     Master.prototype.onDateRange = function() {
       var dayId, dayRoom, ref, results;
       $('#Master').append(this.masterHtml());
-      $('#Season').append(this.seasonHtml());
       $('.MasterTitle').click((function(_this) {
         return function(event) {
           return _this.onMasterClick(event);
-        };
-      })(this));
-      $('.SeasonTitle').click((function(_this) {
-        return function(event) {
-          return _this.onSeasonClick(event);
         };
       })(this));
       ref = this.res.days;
@@ -285,6 +290,15 @@
       day = row * 7 + col - begDay;
       day = 1 <= day && day <= endDay ? day : "";
       return day;
+    };
+
+    Master.prototype.dailysHtml = function() {
+      var htm;
+      htm = "";
+      htm += "<h1 class=\"DailysH1\">Daily Activities</h1>";
+      htm += "<h2 class=\"DailysH2\">Arrivals</h2>";
+      htm += "<h2 class=\"DailysH2\">Departures</h2>";
+      return htm;
     };
 
     return Master;

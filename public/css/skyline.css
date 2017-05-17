@@ -552,6 +552,12 @@ img.center {
   height: 740px;
   display: none;
 }
+.DailysH1 {
+  text-align: center;
+}
+.DailysH2 {
+  text-align: center;
+}
 .rooms {
   background: #EEE;
 }

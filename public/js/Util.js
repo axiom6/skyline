@@ -518,6 +518,10 @@ Util = (function() {
     return /^\s*(\+|-)?((\d+(\.\d\d)?)|(\.\d\d))\s*$/.test(s);
   };
 
+  Util.isEmpty = function($elem) {
+    return ($elem != null) && ($elem.length != null) && $elem.length === 0;
+  };
+
   Util.isDefs = function() {
     var arg, j, len1;
     for (j = 0, len1 = arguments.length; j < len1; j++) {

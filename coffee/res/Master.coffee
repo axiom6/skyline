@@ -26,21 +26,21 @@ class Master
     $('#Master').show()
 
   onSeasonBtn:() =>
-
     $('#Dailys').hide()
     $('#Master').hide()
+    $('#Season').append( @seasonHtml() ) if Util.isEmpty( $('#Season').children() )
+    $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
     $('#Season').show()
 
   onDailysBtn:() =>
     $('#Season').hide()
     $('#Master').hide()
+    $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
     $('#Dailys').show()
 
   onDateRange:() =>
     $('#Master').append( @masterHtml() )
-    $('#Season').append( @seasonHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
-    $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
     #Util.log( 'Master.onDateRange', @res.days )
     for own dayId, dayRoom of @res.days
       @onAlloc( dayId, dayRoom )
@@ -148,7 +148,7 @@ class Master
     htm += """</tbody></table>"""
 
   roomDay:( monthIdx, day ) ->
-    htm = ""
+    htm  = ""
     htm += """<div class="MonthDay">#{day}</div>"""
     htm += """<div class="MonthRoom">"""
     for col in [1..10]
@@ -172,3 +172,10 @@ class Master
     day = row*7 + col - begDay
     day = if 1 <= day and day <= endDay then day else ""
     day
+
+  dailysHtml:() ->
+    htm  = ""
+    htm += """<h1 class="DailysH1">Daily Activities</h1>"""
+    htm += """<h2 class="DailysH2">Arrivals</h2>"""
+    htm += """<h2 class="DailysH2">Departures</h2>"""
+    htm
