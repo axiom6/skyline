@@ -17,6 +17,9 @@ class Pay
     @purpose = 'PayInFull' # 'Deposit' 'PayOffDeposit'
     @testing = false
     @errored = false
+    doPut = (onPut) -> Util.log('Res.subscribeToDays onPut', onPut )
+    @res.subscribeToDays( doPut )
+    @res.subscribeToDays( doPut )
 
   initPay:( totals, cust, roomUIs ) =>
     @resv      = @res.createRoomResv( 'mine', 'card', roomUIs )
@@ -150,6 +153,7 @@ class Pay
     htm
 
   canMakeDeposit:( resv ) ->
+    Util.log('Pay.canMakeDeposit()', resv.arrive, resv.booked, @Data.advanceDate( resv.booked, 7 ) )
     resv.arrive >= @Data.advanceDate( resv.booked, 7 )
 
   # Call after @res.postResv(...)

@@ -5,7 +5,7 @@ class Data
 
   @insertNewTables = false # Use Res test data
 
-  @year        = 17
+
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
   @numDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
@@ -14,6 +14,13 @@ class Data
   @persons     = ["1","2","3","4","5","6","7","8","9","10","11","12"]
   @pets        = ["0","1","2","3","4"]
   @petPrice    = 12
+  @year        = 17
+  @monthIdx    = new Date().getMonth()
+  @monthIdx    = if 4 <=  Data.monthIdx and Data.monthIdx <= 9 then Data.monthIdx else 4
+  @month       = Data.months[Data.monthIdx]
+  @numDays     = 15 # Display 15 days in Guest reservation calendar
+  @begMay      =  15
+  @begDay      = if Data.month is 'May' then Data.begMay else 1  # Being season on May 15
 
   @configSkytest = {
     apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
@@ -59,11 +66,8 @@ class Data
 
   @today:() ->
     date = new Date()
-    year  = date.getFullYear().toString()
-    month = Util.padStr( date.getMonth()+1 )
-    day   = Util.padStr( date.getDate()    )
-    #Util.log( 'Data.today', year, month, day, year + month + day )
-    year + month + day
+    year = date.getFullYear() - 2000 # Go Y2K
+    Data.toDateStr( date.getDate(), date.getMonth()+1, year )
 
   @advanceDate:( resDate, numDays ) ->
     year     =           resDate.substr( 0,2 )
@@ -84,9 +88,14 @@ class Data
     weekdayIdx = new Date( 2000+year, monthIdx, dayInt ).getDay()
     Data.weekdays[weekdayIdx]
 
-
-
   @isElem:( $elem ) ->
     not (  $elem? and $elem.length? and $elem.length is 0 )
+
+  @dayMonth:( day ) ->
+    monthDay = day + Data.begDay - 1
+    if monthDay > Data.numDayMonth[@monthIdx] then monthDay-Data.numDayMonth[Data.monthIdx] else monthDay
+
+  @toDateStr:( day, monthIdx=Data.monthIdx, year=Data.year ) ->
+    year+Util.pad(monthIdx+1)+Util.pad(day)
 
 

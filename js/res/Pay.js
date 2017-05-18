@@ -12,6 +12,7 @@
     module.exports = Pay;
 
     function Pay(stream, store, Data, res, home) {
+      var doPut;
       this.stream = stream;
       this.store = store;
       this.Data = Data;
@@ -44,6 +45,11 @@
       this.purpose = 'PayInFull';
       this.testing = false;
       this.errored = false;
+      doPut = function(onPut) {
+        return Util.log('Res.subscribeToDays onPut', onPut);
+      };
+      this.res.subscribeToDays(doPut);
+      this.res.subscribeToDays(doPut);
     }
 
     Pay.prototype.initPay = function(totals, cust, roomUIs) {
@@ -236,6 +242,7 @@
     };
 
     Pay.prototype.canMakeDeposit = function(resv) {
+      Util.log('Pay.canMakeDeposit()', resv.arrive, resv.booked, this.Data.advanceDate(resv.booked, 7));
       return resv.arrive >= this.Data.advanceDate(resv.booked, 7);
     };
 

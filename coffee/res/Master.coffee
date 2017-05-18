@@ -10,11 +10,12 @@ class Master
     @res.master  = @
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
-    @res.beg     = @res.toDateStr(  1, 4 )
-    @res.end     = @res.toDateStr( 31, 9 )
+    @res.beg     = @Data.toDateStr(  1, 4 )
+    @res.end     = @Data.toDateStr( 31, 9 )
 
   ready:() ->
     @res.dateRange( @onDateRange )
+    @listenToDays()
     $('#MasterBtn').click( @onMasterBtn )
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
@@ -44,6 +45,23 @@ class Master
     #Util.log( 'Master.onDateRange', @res.days )
     for own dayId, dayRoom of @res.days
       @onAlloc( dayId, dayRoom )
+
+  listenToDays:() =>
+    # dayId is onPut.key and dayRoom onPut.val
+    doPut = (onPut) =>
+      Util.log( 'Master.listenToDays()', onPut )
+      @onAlloc( onPut.key, onPut.val )
+    @res.subscribeToDays( doPut )
+
+  listenToResv:() =>
+    # dayId is onPut.key and dayRoom onPut.val
+    doAdd = (onAdd) =>
+      resv = onAdd.val
+      Util.log( 'Master.listenToResv() onAdd', resv )
+      for   own roomId, room of resv.rooms
+        for own  dayId, rday of room.days
+          @onAlloc( dayId, rday )
+    @res.subscribeToResv(  doAdd )
 
   onAlloc:(  dayId, dayRoom ) =>
     for own roomId, room   of dayRoom
@@ -96,7 +114,7 @@ class Master
   masterHtml:() ->
     htm = ""
     for month in @Data.season
-      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @res.year, month )}</div>"""
+      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @Data.year, month )}</div>"""
     htm
 
   roomsHtml:( year, month ) ->
@@ -117,7 +135,7 @@ class Master
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
-        date = @res.toDateStr( day, monthIdx )
+        date = @Data.toDateStr( day, monthIdx )
         htm += @createMasterCell( roomId, room, date )
       htm += """</tr>"""
     htm += "</tbody></table>"
@@ -155,7 +173,7 @@ class Master
       roomId = col
       roomId = 'N' if roomId is  9
       roomId = 'S' if roomId is 10
-      date   = @res.toDateStr(day,monthIdx)
+      date   = @Data.toDateStr( day, monthIdx )
       status = @res.dayBooked( roomId, date )
       #Util.log('Master.roomDay()', date, roomId, status ) if date is '170524'
       if status isnt 'free'

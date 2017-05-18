@@ -13,22 +13,14 @@ class Res
     @book     = null
     @master   = null
     @days     = null
-    @today    = new Date()
-    @monthIdx = @today.getMonth()
-    @monthIdx = if 4 <=  @monthIdx and @monthIdx <= 9 then @monthIdx else 4
-    @year     = @Data.year
-    @month    = @Data.months[@monthIdx]
-    @numDays  = 15
-    @begMay   = 15
-    @begDay   = if @month is 'May' then @begMay else 1
-    @beg      = @toDateStr( @begDay )
-    @end      = @Data.advanceDate( @beg, @numDays )
+    @beg      = @Data.toDateStr( @Data.begDay )
+    @end      = @Data.advanceDate( @beg, @Data.numDays )
     @insertNewTables() if     @Data.insertNewTables
     @dateRange()       if not @Data.insertNewTables and @appName is 'Guest'
 
   dateRange:( onComplete=null ) ->
-    @beg = @toDateStr( @begDay )
-    @end = @Data.advanceDate( @beg, @numDays-1 )
+    @beg = @Data.toDateStr( @Data.begDay )
+    @end = @Data.advanceDate( @beg, @Data.numDays-1 )
     @store.subscribe( 'Days', 'none',  'range', (days) =>
       @days = days
       onComplete() if onComplete? )
@@ -75,7 +67,7 @@ class Res
     resv.status   = status
     resv.method   = method
     resv.booked   = @Data.today()
-    resv.arrive   = resv.resId.substr(1,8)
+    resv.arrive   = resv.resId.substr(0,6)
     resv.rooms    = {}
     for own roomId, roomUI of roomUIs when not Util.isObjEmpty(roomUI.days)
       resv.rooms[roomId] = @toResvRoom( roomUI )
@@ -121,8 +113,16 @@ class Res
     #store.on( 'Res', 'onPut', resId )
     #store.on( 'Res', 'onDel', resId )
 
+  subscribeToResv:( doAdd ) =>
+    @store.subscribe( 'Res',  'none',    'add',   (add) => doAdd(add)   )
+
   # Does not work because we are updating Day / dayId / roomId grandchildren instead of children
-  subscribeToDays:() =>
+  subscribeToDays:( doPut ) =>
+    @store.subscribe( 'Days', 'none',  'onPut', (onPut) => doPut(onPut) )
+    @store.on(        'Days',          'onPut' )
+
+  # Does not work because we are updating Day / dayId / roomId grandchildren instead of children
+  subscribeToDays2:() =>
     #store.subscribe( 'Days', 'none',    'add',   (add) => Util.log('Res.subscribeToDays add',     add ) )
     #store.subscribe( 'Days', 'none',  'onAdd', (onAdd) => Util.log('Res.subscribeToDays onAdd', onAdd ) )
     #store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
@@ -232,18 +232,10 @@ class Res
         @setDayRoom( dayRoom, room.status, room.resId )
         # We do not publish from Days with the newDayId+'/'+roomId grand child
         # Instead @allocRoom( resv ) is driven by resv
-        @store.add( 'Days', newDayId+'/'+roomId, dayRoom )
+        @store.put( 'Days', newDayId+'/'+roomId, dayRoom )
     allDays
 
   # Used for Days / dayId / roomId and for Res / rooms[dayId] since both has status and resid properties
   setDayRoom:( dayRoom, status, resId ) ->
     dayRoom.status = status
     dayRoom.resId  = resId
-
-  dayMonth:( day ) ->
-    monthDay = day + @begDay - 1
-    if monthDay > @Data.numDayMonth[@monthIdx] then monthDay-@Data.numDayMonth[@monthIdx] else monthDay
-
-  toDateStr:( day, monthIdx=@monthIdx, year=@year ) ->
-    year+Util.pad(monthIdx+1)+Util.pad(day)
-

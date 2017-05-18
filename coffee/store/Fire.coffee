@@ -157,7 +157,7 @@ class Fire extends Store
         key = snapshot.key
         val = snapshot.val()
         @publish( table, id, onEvt, { onEvt:onEvt, table:table, key:key, val:val } )
-        Util.log( 'Fire.on()', table, onEvt, key, val )
+        #Util.log( 'Fire.on()', table, onEvt, key, val )
       else
         @onError( table, id, onEvt, {}, { error:'error' } )
     path  = if id is 'none' then table else table + '/' + id

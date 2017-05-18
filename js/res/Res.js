@@ -21,23 +21,17 @@
       this.Data = Data;
       this.appName = appName;
       this.insertRooms = bind(this.insertRooms, this);
+      this.subscribeToDays2 = bind(this.subscribeToDays2, this);
       this.subscribeToDays = bind(this.subscribeToDays, this);
+      this.subscribeToResv = bind(this.subscribeToResv, this);
       this.subscribeToResId = bind(this.subscribeToResId, this);
       this.rooms = Res.Rooms;
       this.states = Res.States;
       this.book = null;
       this.master = null;
       this.days = null;
-      this.today = new Date();
-      this.monthIdx = this.today.getMonth();
-      this.monthIdx = 4 <= this.monthIdx && this.monthIdx <= 9 ? this.monthIdx : 4;
-      this.year = this.Data.year;
-      this.month = this.Data.months[this.monthIdx];
-      this.numDays = 15;
-      this.begMay = 15;
-      this.begDay = this.month === 'May' ? this.begMay : 1;
-      this.beg = this.toDateStr(this.begDay);
-      this.end = this.Data.advanceDate(this.beg, this.numDays);
+      this.beg = this.Data.toDateStr(this.Data.begDay);
+      this.end = this.Data.advanceDate(this.beg, this.Data.numDays);
       if (this.Data.insertNewTables) {
         this.insertNewTables();
       }
@@ -50,8 +44,8 @@
       if (onComplete == null) {
         onComplete = null;
       }
-      this.beg = this.toDateStr(this.begDay);
-      this.end = this.Data.advanceDate(this.beg, this.numDays - 1);
+      this.beg = this.Data.toDateStr(this.Data.begDay);
+      this.end = this.Data.advanceDate(this.beg, this.Data.numDays - 1);
       this.store.subscribe('Days', 'none', 'range', (function(_this) {
         return function(days) {
           _this.days = days;
@@ -120,7 +114,7 @@
       resv.status = status;
       resv.method = method;
       resv.booked = this.Data.today();
-      resv.arrive = resv.resId.substr(1, 8);
+      resv.arrive = resv.resId.substr(0, 6);
       resv.rooms = {};
       for (roomId in roomUIs) {
         if (!hasProp.call(roomUIs, roomId)) continue;
@@ -199,7 +193,24 @@
       })(this));
     };
 
-    Res.prototype.subscribeToDays = function() {};
+    Res.prototype.subscribeToResv = function(doAdd) {
+      return this.store.subscribe('Res', 'none', 'add', (function(_this) {
+        return function(add) {
+          return doAdd(add);
+        };
+      })(this));
+    };
+
+    Res.prototype.subscribeToDays = function(doPut) {
+      this.store.subscribe('Days', 'none', 'onPut', (function(_this) {
+        return function(onPut) {
+          return doPut(onPut);
+        };
+      })(this));
+      return this.store.on('Days', 'onPut');
+    };
+
+    Res.prototype.subscribeToDays2 = function() {};
 
     Res.prototype.insertRooms = function(rooms) {
       this.store.subscribe('Room', 'none', 'make', (function(_this) {
@@ -356,7 +367,7 @@
           room = newDay[roomId];
           dayRoom = this.createDayRoom(allDays, newDayId, roomId);
           this.setDayRoom(dayRoom, room.status, room.resId);
-          this.store.add('Days', newDayId + '/' + roomId, dayRoom);
+          this.store.put('Days', newDayId + '/' + roomId, dayRoom);
         }
       }
       return allDays;
@@ -365,26 +376,6 @@
     Res.prototype.setDayRoom = function(dayRoom, status, resId) {
       dayRoom.status = status;
       return dayRoom.resId = resId;
-    };
-
-    Res.prototype.dayMonth = function(day) {
-      var monthDay;
-      monthDay = day + this.begDay - 1;
-      if (monthDay > this.Data.numDayMonth[this.monthIdx]) {
-        return monthDay - this.Data.numDayMonth[this.monthIdx];
-      } else {
-        return monthDay;
-      }
-    };
-
-    Res.prototype.toDateStr = function(day, monthIdx, year) {
-      if (monthIdx == null) {
-        monthIdx = this.monthIdx;
-      }
-      if (year == null) {
-        year = this.year;
-      }
-      return year + Util.pad(monthIdx + 1) + Util.pad(day);
     };
 
     return Res;

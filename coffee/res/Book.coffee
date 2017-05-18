@@ -7,19 +7,20 @@ class Book
 
   constructor:( @stream, @store, @Data, @res, @pay, @pict ) ->
     @rooms    = @res.rooms
-    @roomUIs  = @res.createRoomUIs( @rooms )
+    @roomUIs  = null
     @res.book = @
     @$cells   = []
     @totals   = 0
     @method   = 'site'
 
   ready:() ->
+    @roomUIs  = @res.createRoomUIs( @rooms )
     $('#Book'    ).empty()
     $('#Pays'    ).empty()
     $('#Book'    ).append( @bookHtml()  )
     $('#Insts'   ).append( @instructHtml() )
     $('#Inits'   ).append( @initsHtml() )
-    $('#Rooms'   ).append( @roomsHtml(@res.year,@res.monthIdx,@res.begDay,@res.numDays) )
+    $('#Rooms'   ).append( @roomsHtml(@Data.year,@Data.monthIdx,@Data.begDay,@Data.numDays) )
     $('#Guest'   ).append( @guestHtml() )
     $('.guests'  ).change( @onGuests  )
     $('.pets'    ).change( @onPets    )
@@ -52,8 +53,8 @@ class Book
     """
 
   initsHtml:() ->
-    htm  = """<label for="Months" class="InitIp">Start: #{ @htmlSelect( "Months", @Data.season, @res.month,  'months' ) }</label>"""
-    htm += """<label for="Days"   class="InitIp">       #{ @htmlSelect( "Days",   @Data.days,   @res.begDay, 'days'   ) }</label>"""
+    htm  = """<label for="Months" class="InitIp">Start: #{ @htmlSelect( "Months", @Data.season, @Data.month,  'months' ) }</label>"""
+    htm += """<label for="Days"   class="InitIp">       #{ @htmlSelect( "Days",   @Data.days,   @Data.begDay, 'days'   ) }</label>"""
     htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+@res.year}</label>"""
     htm += """<span  id="Pop"  class="Test">Pop</span>"""
     htm += """<span  id="Test" class="Test">Test</span>"""
@@ -72,7 +73,7 @@ class Book
       htm += "<th>#{weekday}</th>"
     htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th>"
     for day in [1..numDays]
-      htm += "<th>#{@res.dayMonth(day)}</th>"
+      htm += "<th>#{@Data.dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td class="td-left">#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td>#{@spa(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
@@ -161,7 +162,7 @@ class Book
     msg
 
   createCell:( roomId, roomRm, day ) ->
-    date   = @res.toDateStr( @res.dayMonth(day) )
+    date   = @Data.toDateStr( @Data.dayMonth(day) )
     status = @res.dayBooked( roomId, date )
     """<td id="#{@cellId(date,roomId)}" class="room-#{status}" data-status="#{status}"></td>"""
 
@@ -182,8 +183,8 @@ class Book
     @$cells = []
     for roomId, roomUI of @roomUIs
       roomUI.$ = $('#'+roomId) # Keep jQuery out of room database table
-      for day in [1..@res.numDays]
-        date  = @res.toDateStr( @res.dayMonth(day) )
+      for day in [1..@Data.numDays]
+        date  = @Data.toDateStr( @Data.dayMonth(day) )
         $cell = @$Cell(date,roomId)
         $cell.click( (event) => @onCellBook(event) )
         @$cells.push( $cell )
@@ -209,7 +210,7 @@ class Book
     nights = Util.keys(room.days).length
     room.total = price * nights + room.change
     # Util.log( 'Book.updateTotal()', { roomId:roomId, nights:nights, change:room.change, total:room.total } )
-    text = if room.total is 0 then '' else '$'+room.total
+    text = if room.total is 0 then '$' else '$'+room.total
     $('#'+roomId+'T').text(text)
     @updateTotals()
     return
@@ -265,18 +266,18 @@ class Book
     return
 
   onMonth:( event ) =>
-    @res.month      = event.target.value
-    @res.monthIdx   = @Data.months.indexOf(@res.month)
-    @res.begDay     = if @res.month is 'May' then @res.begMay else 1
-    $('#Days').val(@res.begDay.toString())
+    @Data.month     = event.target.value
+    @Data.monthIdx  = @Data.months.indexOf(@Data.month)
+    @Data.begDay    = if @Data.month is 'May' then @Data.begMay else 1
+    $('#Days').val(@Data.begDay.toString())
     @res.dateRange( @resetRooms )
     #@resetRooms()
     return
 
   onDay:( event ) =>
-    @res.begDay = parseInt(event.target.value)
-    if @res.month is 'October' and @res.begDay > 1
-      @res.begDay = 1
+    @Data.begDay = parseInt(event.target.value)
+    if @Data.month is 'October' and @Data.begDay > 1
+      @Data.begDay = 1
       alert( 'The Season Ends on October 15' )
     @res.dateRange( @resetRooms )
     #@resetRooms()
@@ -284,7 +285,7 @@ class Book
 
   resetRooms:() =>
     $('#Rooms').empty()
-    $('#Rooms').append( @roomsHtml( @res.year, @res.monthIdx, @res.begDay, @res.numDays ) )
+    $('#Rooms').append( @roomsHtml( @Data.year, @Data.monthIdx, @Data.begDay, @Data.numDays ) )
     @roomsJQuery()
 
   onPop:() =>

@@ -10,8 +10,6 @@
 
     Data.insertNewTables = false;
 
-    Data.year = 17;
-
     Data.season = ["May", "June", "July", "August", "September", "October"];
 
     Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -27,6 +25,20 @@
     Data.pets = ["0", "1", "2", "3", "4"];
 
     Data.petPrice = 12;
+
+    Data.year = 17;
+
+    Data.monthIdx = new Date().getMonth();
+
+    Data.monthIdx = 4 <= Data.monthIdx && Data.monthIdx <= 9 ? Data.monthIdx : 4;
+
+    Data.month = Data.months[Data.monthIdx];
+
+    Data.numDays = 15;
+
+    Data.begMay = 15;
+
+    Data.begDay = Data.month === 'May' ? Data.begMay : 1;
 
     Data.configSkytest = {
       apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
@@ -94,12 +106,10 @@
     };
 
     Data.today = function() {
-      var date, day, month, year;
+      var date, year;
       date = new Date();
-      year = date.getFullYear().toString();
-      month = Util.padStr(date.getMonth() + 1);
-      day = Util.padStr(date.getDate());
-      return year + month + day;
+      year = date.getFullYear() - 2000;
+      return Data.toDateStr(date.getDate(), date.getMonth() + 1, year);
     };
 
     Data.advanceDate = function(resDate, numDays) {
@@ -127,6 +137,26 @@
 
     Data.isElem = function($elem) {
       return !(($elem != null) && ($elem.length != null) && $elem.length === 0);
+    };
+
+    Data.dayMonth = function(day) {
+      var monthDay;
+      monthDay = day + Data.begDay - 1;
+      if (monthDay > Data.numDayMonth[this.monthIdx]) {
+        return monthDay - Data.numDayMonth[Data.monthIdx];
+      } else {
+        return monthDay;
+      }
+    };
+
+    Data.toDateStr = function(day, monthIdx, year) {
+      if (monthIdx == null) {
+        monthIdx = Data.monthIdx;
+      }
+      if (year == null) {
+        year = Data.year;
+      }
+      return year + Util.pad(monthIdx + 1) + Util.pad(day);
     };
 
     return Data;
