@@ -22,7 +22,7 @@
 
     Store.restOps = ['add', 'get', 'put', 'del'];
 
-    Store.sqlOps = ['insert', 'select', 'update', 'remove'];
+    Store.sqlOps = ['insert', 'select', 'update', 'remove', 'range'];
 
     Store.tableOps = ['open', 'show', 'make', 'drop'];
 
@@ -38,7 +38,7 @@
       return Store.tableOps.indexOf(op) !== -1;
     };
 
-    Store.methods = Store.restOps.concat(Store.sqlOps).concat(Store.tableOps).concat(['onChange']);
+    Store.methods = Store.restOps.concat(Store.sqlOps).concat(Store.tableOps).concat(['on']);
 
     Store.where = function() {
       return true;
@@ -110,11 +110,21 @@
       return Util.noop(table);
     };
 
-    Store.prototype.on = function(table, onEvt, id) {
+    Store.prototype.on = function(table, oo, id, onFunc) {
+      var onNext;
       if (id == null) {
-        id = '';
+        id = 'none';
       }
-      Util.noop(table, onEvt, id);
+      if (onFunc == null) {
+        onFunc = null;
+      }
+      table = this.tableName(t);
+      onNext = onFunc != null ? onFunc : (function(_this) {
+        return function(result) {
+          return Util.log('Store.on()', result);
+        };
+      })(this);
+      this.subscribe(table, op, id, onNext);
     };
 
     Store.prototype.createTable = function(t) {
@@ -138,7 +148,7 @@
       return name;
     };
 
-    Store.prototype.memory = function(table, id, op) {
+    Store.prototype.memory = function(table, op, id) {
       var onNext;
       onNext = (function(_this) {
         return function(data) {
@@ -148,11 +158,11 @@
       this.stream.subscribe(this.toSubject(table, op, id), onNext, this.onError, this.onComplete);
     };
 
-    Store.prototype.subscribe = function(table, id, op, onNext) {
+    Store.prototype.subscribe = function(table, op, id, onNext) {
       this.stream.subscribe(this.toSubject(table, id, op), onNext, this.onError, this.onComplete);
     };
 
-    Store.prototype.publish = function(table, id, op, data, extras) {
+    Store.prototype.publish = function(table, op, id, data, extras) {
       var params;
       if (extras == null) {
         extras = {};
@@ -164,7 +174,7 @@
       this.stream.publish(this.toSubject(table, id, op), data);
     };
 
-    Store.prototype.onError = function(table, id, op, result, error) {
+    Store.prototype.onError = function(table, op, id, result, error) {
       if (result == null) {
         result = {};
       }
@@ -174,8 +184,8 @@
       console.log('Store.onError', {
         db: this.dbName,
         table: table,
-        id: id,
         op: op,
+        id: id,
         result: result,
         error: error
       });
@@ -373,10 +383,6 @@
 
     Store.prototype.toObjectsJson = function(json, where) {
       return Util.toObjects(JSON.parse(json), where, this.keyProp);
-    };
-
-    Store.prototype.onError2 = function(error) {
-      return Util.error('Store.onError()', error.params, error.result);
     };
 
     Store.prototype.onComplete = function() {

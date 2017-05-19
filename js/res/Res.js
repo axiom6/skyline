@@ -21,9 +21,9 @@
       this.Data = Data;
       this.appName = appName;
       this.insertRooms = bind(this.insertRooms, this);
-      this.subscribeToDays = bind(this.subscribeToDays, this);
-      this.subscribeToResv = bind(this.subscribeToResv, this);
-      this.subscribeToResId = bind(this.subscribeToResId, this);
+      this.onDays = bind(this.onDays, this);
+      this.onResv = bind(this.onResv, this);
+      this.onResId = bind(this.onResId, this);
       this.rooms = Res.Rooms;
       this.states = Res.States;
       this.book = null;
@@ -183,34 +183,32 @@
       }
     };
 
-    Res.prototype.subscribeToResId = function(resId, op, onRes) {
-      return this.store.subscribe('Res', resId, op, (function(_this) {
-        return function(res) {
-          return onRes(res);
+    Res.prototype.onResId = function(onOp, doResv, resId) {
+      return this.store.on('Res', onOp, resId, (function(_this) {
+        return function(resv) {
+          return doResv(resv);
         };
       })(this));
     };
 
-    Res.prototype.subscribeToResv = function(doAdd) {
-      this.store.subscribe('Res', 'none', 'onAdd', (function(_this) {
-        return function(add) {
-          return doAdd(add);
+    Res.prototype.onResv = function(onOp, doResv) {
+      return this.store.on('Res', onOp, 'none', (function(_this) {
+        return function(resv) {
+          return doResv(resv);
         };
       })(this));
-      return this.store.on('Res', 'onAdd');
     };
 
-    Res.prototype.subscribeToDays = function(doPut) {
-      this.store.subscribe('Days', 'none', 'onPut', (function(_this) {
-        return function(onPut) {
-          return doPut(onPut);
+    Res.prototype.onDays = function(onOp, doDay) {
+      return this.store.on('Days', onOp, 'none', (function(_this) {
+        return function(day) {
+          return doDay(day);
         };
       })(this));
-      return this.store.on('Days', 'onPut');
     };
 
     Res.prototype.insertRooms = function(rooms) {
-      this.store.subscribe('Room', 'none', 'make', (function(_this) {
+      this.store.subscribe('Room', 'make', 'none', (function(_this) {
         return function(make) {
           _this.store.insert('Room', rooms);
           return Util.noop(make);
@@ -226,7 +224,7 @@
         resv = resvs[resId];
         this.allocRooms(resv);
       }
-      this.store.subscribe('Res', 'none', 'make', (function(_this) {
+      this.store.subscribe('Res', 'make', 'none', (function(_this) {
         return function() {
           return _this.store.insert('Res', resvs);
         };

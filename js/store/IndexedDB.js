@@ -31,12 +31,12 @@
       req = txo.add(obj, id);
       req.onsuccess = (function(_this) {
         return function() {
-          return _this.publish(tableName, id, 'add', object);
+          return _this.publish(tableName, 'add', id, object);
         };
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onError(tableName, id, 'add', object, {
+          return _this.onError(tableName, 'add', id, object, {
             error: req.error
           });
         };
@@ -50,12 +50,12 @@
       req = txo.get(id);
       req.onsuccess = (function(_this) {
         return function() {
-          return _this.publish(tableName, id, 'get', req.result);
+          return _this.publish(tableName, 'get', id, req.result);
         };
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onError(tableName, id, 'get', req.result, {
+          return _this.onError(tableName, 'get', id, req.result, {
             error: req.error
           });
         };
@@ -69,12 +69,12 @@
       req = txo.put(object);
       req.onsuccess = (function(_this) {
         return function() {
-          return _this.publish(tableName, id, 'put', object);
+          return _this.publish(tableName, 'put', id, object);
         };
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onError(tableName, id, 'put', object, {
+          return _this.onError(tableName, 'put', id, object, {
             error: req.error
           });
         };
@@ -88,12 +88,12 @@
       req = txo['delete'](id);
       req.onsuccess = (function(_this) {
         return function() {
-          return _this.publish(tableName, id, 'del', req.result);
+          return _this.publish(tableName, 'del', id, req.result);
         };
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onError(tableName, id, 'del', req.result, {
+          return _this.onError(tableName, 'del', id, req.result, {
             error: req.error
           });
         };
@@ -110,7 +110,7 @@
         object = this.idProp(key, object, this.key);
         txo.put(object);
       }
-      this.publish(tableName, 'none', 'insert', objects);
+      this.publish(tableName, 'insert', 'none', objects);
     };
 
     IndexedDB.prototype.select = function(t, where) {
@@ -138,7 +138,7 @@
         object = this.idProp(key, object, this.key);
         txo.put(object);
       }
-      this.publish(tableName, 'none', 'update', objects);
+      this.publish(tableName, 'update', 'none', objects);
     };
 
     IndexedDB.prototype.remove = function(t, where) {
@@ -153,7 +153,7 @@
     IndexedDB.prototype.make = function(t) {
       var tableName;
       tableName = this.tableName(t);
-      this.publish(tableName, 'none', 'open', {}, {});
+      this.publish(tableName, 'open', 'none', {}, {});
     };
 
     IndexedDB.prototype.show = function(t) {
@@ -166,18 +166,17 @@
       var tableName;
       tableName = this.tableName(t);
       this.dbs.deleteObjectStore(t);
-      this.publish(tableName, 'none', 'drop');
+      this.publish(tableName, 'drop', 'none');
     };
 
-    IndexedDB.prototype.on = function(t, id) {
-      var tableName;
+    IndexedDB.prototype.on = function(t, op, id, onFunc) {
       if (id == null) {
         id = 'none';
       }
-      tableName = this.tableName(t);
-      this.onError(tableName, id, 'onChange', {}, {
-        msg: "on() not implemeted by Store.IndexedDb"
-      });
+      if (onFunc == null) {
+        onFunc = null;
+      }
+      IndexedDB.__super__.on.apply(this, arguments).on(t, op, id, onFunc);
     };
 
     IndexedDB.prototype.idProp = function(id, object, key) {
@@ -235,14 +234,14 @@
             }
             cursor["continue"]();
           }
-          return _this.publish(t, 'none', op, objects, {
+          return _this.publish(t, op, 'none', objects, {
             where: 'all'
           });
         };
       })(this);
       req.onerror = (function(_this) {
         return function() {
-          return _this.onError(t, 'none', op, {}, {
+          return _this.onError(t, op, 'none', {}, {
             where: 'all',
             error: req.error
           });
@@ -282,7 +281,7 @@
         return function(event) {
           _this.dbs = event.target.result;
           Util.log('Store.IndexedDB', 'open', _this.dbName, _this.objectStoreNames);
-          return _this.publish('none', 'none', 'open', _this.dbs.objectStoreNames);
+          return _this.publish('none', 'open', 'none', _this.dbs.objectStoreNames);
         };
       })(this);
       return request.onerror = (function(_this) {
@@ -291,7 +290,7 @@
             database: _this.dbName,
             error: request.error
           });
-          return _this.onError('none', 'none', 'open', _this.dbName, {
+          return _this.onError('none', 'open', 'none', _this.dbName, {
             error: request.error
           });
         };

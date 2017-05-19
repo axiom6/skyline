@@ -6,8 +6,7 @@ class Fire extends Store
 
   module.exports   = Fire
 
-  @EventOn = { value:"onVal", child_added:"onAdd", child_changed:"onPut", child_removed:"onDel", child_moved:"onMov" }
-  @OnEvent = { onVal:"value", onAdd:"child_added", onPut:"child_changed", onDel:"child_removed", onMov:"child_moved" }
+  @OnFire  = { get:"value", add:"child_added", put:"child_changed", del:"child_removed" }
 
   constructor:( stream, uri, @config ) ->
     super( stream, uri, 'Fire' ) # @dbName set by Store in super constructor
@@ -25,9 +24,9 @@ class Fire extends Store
     object[@keyProp] = id
     onComplete = (error) =>
       if not error?
-        @publish( tableName, id, 'add', object )
+        @publish( tableName, 'add', id, object )
       else
-        @onError( tableName, id, 'add', object, { error:error } )
+        @onError( tableName, 'add', id, object, { error:error } )
     @fd.ref(tableName+'/'+id).set( object, onComplete )
     return
 
@@ -37,9 +36,9 @@ class Fire extends Store
       if snapshot? and snapshot.val()?
         object = snapshot.val()
         object[@keyProp] = id
-        @publish( tableName, id, 'get', object )
+        @publish( tableName, 'get', id, object )
       else
-        @onError( tableName, id, 'get', { msg:'Fire get error' } )
+        @onError( tableName, 'get', id, { msg:'Fire get error' } )
     @fd.ref(tableName+'/'+id).once('value', onComplete )
     return
 
@@ -50,9 +49,9 @@ class Fire extends Store
     onComplete = (error) =>
       if not error?
         object[@keyProp] = id
-        @publish( tableName, id, 'put', object )
+        @publish( tableName, 'put', id, object )
       else
-        @onError( tableName, id, 'put', object, { error:error } )
+        @onError( tableName, 'put', id, object, { error:error } )
     @fd.ref(tableName+'/'+id).set( object, onComplete )
     return
 
@@ -60,9 +59,9 @@ class Fire extends Store
     tableName = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, id, 'del', {} )
+        @publish( tableName, 'del', id, {} )
       else
-        @onError( tableName, id, 'del', {}, { error:error } )
+        @onError( tableName, 'del', id, {}, { error:error } )
     @fd.ref(tableName+'/'+id).remove( onComplete )
     return
 
@@ -70,9 +69,9 @@ class Fire extends Store
     tableName  = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'none', 'insert', objects )
+        @publish( tableName, 'insert', 'none', objects )
       else
-        @onError( tableName, 'none', 'insert', { error:error } )
+        @onError( tableName, 'insert', 'none', { error:error } )
     @fd.ref(tableName).set( objects, onComplete )
     return
 
@@ -82,9 +81,9 @@ class Fire extends Store
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         val = @toObjects( snapshot.val() )
-        @publish( tableName, 'none', 'select', val )
+        @publish( tableName, 'select', 'none', val )
       else
-        @publish( tableName, 'none', 'select', {} ) # Publish empty results
+        @publish( tableName, 'select', 'none', {} ) # Publish empty results
     @fd.ref(tableName).once('value', onComplete )
     return
 
@@ -94,9 +93,9 @@ class Fire extends Store
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         val = @toObjects( snapshot.val() )
-        @publish( tableName, 'none', 'range', val )
+        @publish( tableName, 'range', 'none', val )
       else
-        @publish( tableName, 'none', 'range', {} )  # Publish empty results
+        @publish( tableName, 'range', 'none', {}  )  # Publish empty results
     @fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete )
     return
 
@@ -104,9 +103,9 @@ class Fire extends Store
     tableName  = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'none', 'update', objects )
+        @publish( tableName, 'update', 'none', objects )
       else
-        @onError( tableName, 'none', 'update', { error:error } )
+        @onError( tableName, 'update', 'none', { error:error } )
     @fd.ref(tableName).update( objects, onComplete )
     return
 
@@ -114,16 +113,16 @@ class Fire extends Store
     tableName = @tableName(t)
     ref       = @fd.ref(t)
     ref.child(key).remove() for key in keys
-    @publish( tableName, 'none', 'remove', keys )
+    @publish( tableName, 'remove', 'none', keys )
     return
 
   make:( t ) ->
     tableName = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'none', 'make', {}, {} )
+        @publish( tableName, 'make', 'none', {}, {} )
       else
-        @onError( tableName, 'none', 'make', {}, { error:error } )
+        @onError( tableName, 'make', 'none', {}, { error:error } )
     @fd.ref().set( tableName, onComplete )
     return
 
@@ -132,9 +131,9 @@ class Fire extends Store
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         keys = Util.toKeys( snapshot.val(), where, @keyProp )
-        @publish( tableName, 'none', 'show', keys, { where:where.toString() } )
+        @publish( tableName, 'show', 'none', keys, { where:where.toString() } )
       else
-        @onError( tableName, 'none', 'show', {},   { where:where.toString() } )
+        @onError( tableName, 'show', 'none', {},   { where:where.toString() } )
     if t?
       @fd.ref(tableName).once('value', onComplete )
     else
@@ -145,25 +144,27 @@ class Fire extends Store
     tableName = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'none', 'drop', "OK" )
+        @publish( tableName, 'drop', 'none', "OK" )
       else
-        @onError( tableName, 'none', 'drop', {}, { error:error } )
+        @onError( tableName, 'drop', 'none', {}, { error:error } )
     @fd.ref(tableName).remove( onComplete )
     return
 
   # Have too clarify id with snapshot.key
-  on:( t, onEvt, id='none' ) ->
+  on:( t, onEvt, id='none', onFunc=null ) ->
     table  = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot?
         key = snapshot.key
         val = @toObjects( snapshot.val() )
-        #Util.log( 'Fire.on()', table, onEvt, key, val, snapshot.val() )
-        @publish( table, id, onEvt, { onEvt:onEvt, table:table, key:key, val:val } )
+        if onFunc?
+           onFunc( { key:val } )
+        else
+           @publish( table, onEvt, key, { key:val } )
       else
-        @onError( table, id, onEvt, {}, { error:'error' } )
+        @onError( table, onEvt, id, {}, { error:'error' } )
     path  = if id is 'none' then table else table + '/' + id
-    @fd.ref(path).on( Fire.OnEvent[onEvt], onComplete )
+    @fd.ref(path).on( Fire.OnFire[onEvt], onComplete )
     return
 
   # keyProp only needed if rows is away

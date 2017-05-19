@@ -18,7 +18,7 @@ class Pay
     @testing = false
     @errored = false
     #doPut = (onPut) -> Util.log('Res.subscribeToDays onPut', onPut )
-    #@res.subscribeToDays( doPut )
+    #@res.onDays( doPut )
 
   initPay:( totals, cust, roomUIs ) =>
     @resv      = @res.createRoomResv( 'mine', 'card', roomUIs )

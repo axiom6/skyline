@@ -19,16 +19,16 @@
 
     Memory.prototype.add = function(t, id, object) {
       this.table(t)[id] = object;
-      this.publish(t, id, 'add', object);
+      this.publish(t, 'add', id, object);
     };
 
     Memory.prototype.get = function(t, id) {
       var object;
       object = this.table(t)[id];
       if (object != null) {
-        this.publish(t, id, 'get', object);
+        this.publish(t, 'get', id, object);
       } else {
-        this.onError(t, id, 'get', object, {
+        this.onError(t, 'get', id, object, {
           msg: "Id " + id + " not found"
         });
       }
@@ -36,7 +36,7 @@
 
     Memory.prototype.put = function(t, id, object) {
       this.table(t)[id] = object;
-      this.publish(t, id, 'put', object);
+      this.publish(t, 'put', id, object);
     };
 
     Memory.prototype.del = function(t, id) {
@@ -44,9 +44,9 @@
       object = this.table(t)[id];
       if (object != null) {
         delete this.table(t)[id];
-        this.publish(t, id, 'del', object);
+        this.publish(t, 'del', id, object);
       } else {
-        this.onError(t, id, 'del', object, {
+        this.onError(t, 'del', id, object, {
           msg: "Id " + id + " not found"
         });
       }
@@ -60,7 +60,7 @@
         object = objects[key];
         table[key] = object;
       }
-      this.publish(t, 'none', 'insert', objects);
+      this.publish(t, 'insert', 'none', objects);
     };
 
     Memory.prototype.select = function(t, where) {
@@ -74,7 +74,7 @@
           objects[key] = object;
         }
       }
-      this.publish(t, 'none', 'select', objects, {
+      this.publish(t, 'select', 'none', objects, {
         where: where.toString()
       });
     };
@@ -90,7 +90,7 @@
           objects[key] = object;
         }
       }
-      return this.publish(t, 'none', 'range', objects, {
+      return this.publish(t, 'range', 'none', objects, {
         beg: beg.toString(),
         end: end.toString()
       });
@@ -104,7 +104,7 @@
         object = objects[key];
         table[key] = object;
       }
-      this.publish(t, id, 'update', objects);
+      this.publish(t, 'update', 'none', objects);
     };
 
     Memory.prototype.remove = function(t, where) {
@@ -123,14 +123,14 @@
         objects[key] = object;
         delete object[key];
       }
-      this.publish(t, 'none', 'remove', objects, {
+      this.publish(t, 'remove', 'none', objects, {
         where: where.toString()
       });
     };
 
     Memory.prototype.make = function(t) {
       this.createTable(t);
-      this.publish(t, 'none', 'open', {}, {});
+      this.publish(t, 'open', 'none', {}, {});
     };
 
     Memory.prototype.show = function(t) {
@@ -143,7 +143,7 @@
           val = ref[key];
           keys.push(key);
         }
-        this.publish(t, 'none', 'show', keys, {
+        this.publish(t, 'show', 'none', keys, {
           showing: 'keys'
         });
       } else {
@@ -154,7 +154,7 @@
           val = ref1[key];
           tables.push(key);
         }
-        this.publish(t, 'none', 'show', tables, {
+        this.publish(t, 'show', 'none', tables, {
           showing: 'tables'
         });
       }
@@ -165,21 +165,22 @@
       hasTable = this.tables[t] != null;
       if (hasTable) {
         delete this.tables[t];
-        this.publish(t, 'none', 'drop', {});
+        this.publish(t, 'drop', 'none', {});
       } else {
-        this.onError(t, 'none', 'drop', {}, {
+        this.onError(t, 'drop', 'none', {}, {
           msg: "Table " + t + " not found"
         });
       }
     };
 
-    Memory.prototype.on = function(t, id) {
+    Memory.prototype.on = function(t, op, id, onFunc) {
       if (id == null) {
         id = 'none';
       }
-      this.onError(t, id, 'on', {}, {
-        msg: "on() not implemeted by Store.Memory"
-      });
+      if (onFunc == null) {
+        onFunc = null;
+      }
+      Memory.__super__.on.apply(this, arguments).on(t, op, id, onFunc);
     };
 
     Memory.prototype.dbTableName = function(tableName) {
@@ -207,29 +208,27 @@
     };
 
     Memory.prototype.importIndexDb = function(op) {
-      var IDB, i, idb, len, onNext, ref, tableName;
-      IDB = require('js/store/IndexedDB');
-      idb = new IDB(this.stream, this.dbName);
+      var i, idb, len, onNext, ref, table;
+      idb = new Store.IndexedDB(this.stream, this.dbName);
       ref = idb.dbs.objectStoreNames;
       for (i = 0, len = ref.length; i < len; i++) {
-        tableName = ref[i];
+        table = ref[i];
         onNext = (function(_this) {
           return function(result) {
             if (op === 'select') {
-              return _this.tables[tableName] = result;
+              return _this.tables[table] = result;
             }
           };
         })(this);
-        this.subscribe(tableName, onNext);
-        idb.traverse('select', tableName, {}, Store.where(), false);
+        this.subscribe(table, 'select', 'none', onNext);
+        idb.traverse('select', table, {}, Store.where(), false);
       }
     };
 
     Memory.prototype.exportIndexedDb = function() {
-      var IDB, dbVersion, idb, onIdxOpen;
+      var dbVersion, idb, onIdxOpen;
       dbVersion = 1;
-      IDB = require('js/store/IndexedDB');
-      idb = new IDB(this.stream, this.dbName, dbVersion, this.tables);
+      idb = new Store.IndexedDB(this.stream, this.dbName, dbVersion, this.tables);
       onIdxOpen = (function(_this) {
         return function(dbName) {
           var name, onNext, ref, results, table;
@@ -242,13 +241,13 @@
             onNext = function(result) {
               return Util.noop(dbName, result);
             };
-            _this.subscribe(name, 'none', 'insert', onNext);
+            _this.subscribe(name, 'insert', 'none', onNext);
             results.push(idb.insert(name, table));
           }
           return results;
         };
       })(this);
-      this.subscribe('IndexedDB', dbVersion.toString(), 'open', (function(_this) {
+      this.subscribe('IndexedDB', 'export', 'none', (function(_this) {
         return function(dbName) {
           return onIdxOpen(dbName);
         };

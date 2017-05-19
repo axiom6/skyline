@@ -99,13 +99,14 @@
       return this.ajaxTable('drop', table);
     };
 
-    Rest.prototype.on = function(t, id) {
+    Rest.prototype.on = function(t, op, id, onFunc) {
       if (id == null) {
         id = 'none';
       }
-      this.onError(t, id, 'on', {}, {
-        msg: "on() not implemeted by Store.Rest"
-      });
+      if (onFunc == null) {
+        onFunc = null;
+      }
+      Rest.__super__.on.apply(this, arguments).on(t, op, id, onFunc);
     };
 
     Rest.prototype.ajaxRest = function(op, t, id, object, params) {

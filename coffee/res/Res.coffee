@@ -103,26 +103,18 @@ class Res
     @book.  onAlloc( roomId, days ) if @book?
     @master.onAlloc( roomId, days ) if @master?
 
-  subscribeToResId:( resId, op, onRes ) =>
-    @store.subscribe( 'Res',   resId,    op,   (res) => onRes(res) )
-
-  subscribeToResv:( doAdd ) =>
-    @store.subscribe( 'Res',  'none', 'onAdd', (add) => doAdd(add)   )
-    @store.on(        'Res',          'onAdd' )
-
-  # Does not work because we are updating Day / dayId / roomId grandchildren instead of children
-  subscribeToDays:( doPut ) =>
-    @store.subscribe( 'Days', 'none',  'onPut', (onPut) => doPut(onPut) )
-    @store.on(        'Days',          'onPut' )
+  onResId:( onOp, doResv, resId ) => @store.on( 'Res',  onOp,  resId, (resv) => doResv(resv) )
+  onResv:(  onOp, doResv        ) => @store.on( 'Res',  onOp, 'none', (resv) => doResv(resv) )
+  onDays:(  onOp, doDay         ) => @store.on( 'Days', onOp, 'none', (day)  => doDay(day)   )
 
   insertRooms:( rooms ) =>
-    @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
+    @store.subscribe( 'Room', 'make', 'none', (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
     @store.make( 'Room' )
     return
 
   insertRevs:( resvs ) ->
     @allocRooms( resv ) for own resId,  resv of resvs
-    @store.subscribe( 'Res', 'none', 'make',  () => @store.insert( 'Res', resvs ) )
+    @store.subscribe( 'Res', 'make', 'none', () => @store.insert( 'Res', resvs ) )
     @store.make( 'Res' )
     return
 

@@ -12,36 +12,36 @@ class Memory extends Store
 
   add:( t, id, object  )    ->
     @table(t)[id] = object
-    @publish( t, id, 'add', object )
+    @publish( t, 'add', id, object )
     return
 
   get:( t, id ) ->
     object  = @table(t)[id]
     if object?
-      @publish( t, id, 'get', object )
+      @publish( t, 'get', id, object )
     else
-      @onError( t, id, 'get', object,  { msg:"Id #{id} not found"} )
+      @onError( t, 'get', id, object,  { msg:"Id #{id} not found"} )
     return
 
   put:( t, id,  object ) ->
     @table(t)[id] = object
-    @publish( t, id, 'put', object )
+    @publish( t, 'put', id, object )
     return
 
   del:( t, id ) ->
     object  = @table(t)[id]
     if object?
       delete @table(t)[id]
-      @publish( t, id, 'del', object )
+      @publish( t, 'del', id, object )
     else
-      @onError( t, id, 'del', object,  { msg:"Id #{id} not found"} )
+      @onError( t, 'del', id, object,  { msg:"Id #{id} not found"} )
     return
 
   insert:( t, objects ) ->
     table   = @table(t)
     for own key, object of objects
       table[key] = object
-    @publish( t, 'none', 'insert', objects )
+    @publish( t, 'insert', 'none', objects )
     return
 
   select:( t, where ) ->
@@ -49,7 +49,7 @@ class Memory extends Store
     table   = @table(t)
     for own key, object of table when where(object)
       objects[key] = object
-    @publish( t, 'none', 'select', objects, { where:where.toString() } )
+    @publish( t, 'select', 'none', objects, { where:where.toString() } )
     return
 
   range:( t, beg, end ) ->
@@ -57,13 +57,13 @@ class Memory extends Store
     table   = @table(t)
     for own key, object of table when beg <= key and key <= end
       objects[key] = object
-    @publish( t, 'none', 'range', objects, { beg:beg.toString(), end:end.toString() } )
+    @publish( t, 'range', 'none', objects, { beg:beg.toString(), end:end.toString() } )
 
   update:( t, objects ) ->
     table = @table(t)
     for own key, object of objects
       table[key] = object
-    @publish( t, id, 'update', objects )
+    @publish( t, 'update', 'none', objects )
     return
 
   remove:( t, where=Store.where ) ->
@@ -72,12 +72,12 @@ class Memory extends Store
     for own key, object of table when where(object)
       objects[key] = object
       delete object[key]
-    @publish( t, 'none', 'remove', objects, { where:where.toString() } )
+    @publish( t, 'remove', 'none', objects, { where:where.toString() } )
     return
 
   make:( t ) ->
     @createTable(t)
-    @publish( t, 'none', 'open', {}, {} )
+    @publish( t, 'open', 'none', {}, {} )
     return
 
   show:( t ) ->
@@ -85,26 +85,26 @@ class Memory extends Store
       keys = []
       for own key, val of @tables[t]
         keys.push(key)
-      @publish( t, 'none', 'show', keys,  { showing:'keys' } )
+      @publish( t, 'show', 'none', keys,  { showing:'keys' } )
     else
       tables = []
       for own key, val of @tables
         tables.push(key)
-      @publish( t, 'none', 'show', tables, { showing:'tables' } )
+      @publish( t, 'show', 'none', tables, { showing:'tables' } )
     return
 
   drop:( t ) ->
     hasTable = @tables[t]?
     if hasTable
       delete  @tables[t]
-      @publish( t, 'none', 'drop', {} )
+      @publish( t, 'drop', 'none', {} )
     else
-      @onError( t, 'none', 'drop', {}, { msg:"Table #{t} not found"} )
+      @onError( t, 'drop', 'none', {}, { msg:"Table #{t} not found"} )
     return
 
   # Subscribe to  a table or object with id
-  on:(  t, id='none'   ) ->
-    @onError( t, id, 'on', {}, { msg:"on() not implemeted by Store.Memory" } )
+  on:(        t, op, id='none', onFunc=null ) ->
+    super.on( t, op, id,        onFunc )
     return
 
   dbTableName:( tableName ) ->
@@ -124,27 +124,25 @@ class Memory extends Store
     return
 
   importIndexDb:( op ) ->
-    IDB = require( 'js/store/IndexedDB')
-    idb = new IDB( @stream, @dbName )
-    for tableName in idb.dbs.objectStoreNames
+    idb = new Store.IndexedDB( @stream, @dbName )
+    for table in idb.dbs.objectStoreNames
       onNext = (result) =>
-         @tables[tableName] = result if op is 'select'
-      @subscribe( tableName, onNext )
-      idb.traverse( 'select', tableName, {}, Store.where(), false )
+         @tables[table] = result if op is 'select'
+      @subscribe( table, 'select', 'none', onNext )
+      idb.traverse( 'select', table, {}, Store.where(), false )
     return
 
   exportIndexedDb:() ->
     dbVersion = 1
-    IDB = require( 'js/store/IndexedDB')
-    idb = new IDB( @stream, @dbName, dbVersion, @tables )
+    idb = new Store.IndexedDB( @stream, @dbName, dbVersion, @tables )
     onIdxOpen = (dbName) =>
       idb.deleteDatabase( dbName )
       for own name, table of @tables
         onNext = (result) =>
           Util.noop( dbName, result )
-        @subscribe( name, 'none', 'insert', onNext )
+        @subscribe( name,    'insert', 'none', onNext )
         idb.insert( name, table  )
-    @subscribe( 'IndexedDB', dbVersion.toString(), 'open', (dbName) => onIdxOpen(dbName) )
+    @subscribe( 'IndexedDB', 'export', 'none', (dbName) => onIdxOpen(dbName) )
     idb.openDatabase()
     return
 

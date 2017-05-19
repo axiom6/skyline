@@ -26,6 +26,7 @@ class Master
     $('#Season').hide()
     $('#Dailys').hide()
     $('#Master').show()
+    return
 
   onSeasonBtn:() =>
     $('#Dailys').hide()
@@ -33,17 +34,20 @@ class Master
     $('#Season').append( @seasonHtml() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
     $('#Season').show()
+    return
 
   onDailysBtn:() =>
     $('#Season').hide()
     $('#Master').hide()
     $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
     $('#Dailys').show()
+    return
 
   readyMaster:() ->
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
     @readyCells()
+    return
 
   showResv:( resv ) =>
     str = Util.toStrObj( resv )
@@ -56,21 +60,25 @@ class Master
       status = $cell.attr('data-status')
       resId  = $cell.attr('data-res'   )
       Util.log( 'doCell', { resId:resId, status:status } )
-      @res.subscribeToResId( resId, 'get', @showResv ) if status isnt 'free'
-      @store.get( 'Res', resId )
+      if status isnt 'free'
+        @res.onResId( 'get', @showResv, resId )
+        @store.get(   'Res', resId )
     $('[data-cell="y"]').click( doCell )
+    return
 
   onDateRange:() =>
     @readyMaster()
     for own dayId, dayRoom of @res.days
       @onAlloc( dayId, dayRoom )
+    return
 
   listenToDays:() =>
     doPut = (onPut) =>
       # dayId is onPut.key and dayRoom onPut.val
       console.log( 'Master.listenToDays()', onPut.key, onPut.val )
       @onAlloc( onPut.key, onPut.val )
-    @res.subscribeToDays( doPut )
+    @res.onDays( 'put', doPut )
+    return
 
   listenToResv:() =>
     doAdd = (onAdd) =>
@@ -79,7 +87,8 @@ class Master
       for   own roomId, room of resv.rooms
         for own  dayId, rday of room.days
           @onAlloc( dayId, rday )
-    @res.subscribeToResv(  doAdd )
+    @res.onResv( 'add', doAdd )
+    return
 
   onAlloc:(  dayId, dayRoom ) =>
     for own roomId, room   of dayRoom
@@ -101,15 +110,19 @@ class Master
 
   allocMasterCell:( roomId, date, status ) ->
     @cellMasterStatus( @$cell('M',date,roomId), status )
+    return
 
   allocSeasonCell:( roomId, date, status ) ->
     @cellSeasonStatus( @$cell('S',date,roomId), status )
+    return
 
   cellMasterStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
+    return
 
   cellSeasonStatus:( $cell, status ) ->
     $cell.removeClass().addClass( "own-"+status).attr('data-status',status)
+    return
 
   onMasterClick:( event ) =>
     $title  = $(event.target)
@@ -123,7 +136,7 @@ class Master
       $month.css( @lastMaster )
       $master.children().show()
       @lastMaster.height = 0
-
+    return
 
   onSeasonClick:( event ) =>
     $title  = $(event.target)
@@ -137,6 +150,7 @@ class Master
       $month.css( @lastSeason )
       $season.children().show()
       @lastSeason.height = 0
+    return
 
   masterHtml:() ->
     htm = ""

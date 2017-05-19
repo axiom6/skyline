@@ -53,7 +53,7 @@
     Master.prototype.onMasterBtn = function() {
       $('#Season').hide();
       $('#Dailys').hide();
-      return $('#Master').show();
+      $('#Master').show();
     };
 
     Master.prototype.onSeasonBtn = function() {
@@ -67,7 +67,7 @@
           return _this.onSeasonClick(event);
         };
       })(this));
-      return $('#Season').show();
+      $('#Season').show();
     };
 
     Master.prototype.onDailysBtn = function() {
@@ -76,7 +76,7 @@
       if (Util.isEmpty($('#Dailys').children())) {
         $('#Dailys').append(this.dailysHtml());
       }
-      return $('#Dailys').show();
+      $('#Dailys').show();
     };
 
     Master.prototype.readyMaster = function() {
@@ -86,7 +86,7 @@
           return _this.onMasterClick(event);
         };
       })(this));
-      return this.readyCells();
+      this.readyCells();
     };
 
     Master.prototype.showResv = function(resv) {
@@ -108,25 +108,23 @@
             status: status
           });
           if (status !== 'free') {
-            _this.res.subscribeToResId(resId, 'get', _this.showResv);
+            _this.res.onResId('get', _this.showResv, resId);
+            return _this.store.get('Res', resId);
           }
-          return _this.store.get('Res', resId);
         };
       })(this);
-      return $('[data-cell="y"]').click(doCell);
+      $('[data-cell="y"]').click(doCell);
     };
 
     Master.prototype.onDateRange = function() {
-      var dayId, dayRoom, ref, results;
+      var dayId, dayRoom, ref;
       this.readyMaster();
       ref = this.res.days;
-      results = [];
       for (dayId in ref) {
         if (!hasProp.call(ref, dayId)) continue;
         dayRoom = ref[dayId];
-        results.push(this.onAlloc(dayId, dayRoom));
+        this.onAlloc(dayId, dayRoom);
       }
-      return results;
     };
 
     Master.prototype.listenToDays = function() {
@@ -137,7 +135,7 @@
           return _this.onAlloc(onPut.key, onPut.val);
         };
       })(this);
-      return this.res.subscribeToDays(doPut);
+      this.res.onDays('put', doPut);
     };
 
     Master.prototype.listenToResv = function() {
@@ -167,7 +165,7 @@
           return results;
         };
       })(this);
-      return this.res.subscribeToResv(doAdd);
+      this.res.onResv('add', doAdd);
     };
 
     Master.prototype.onAlloc = function(dayId, dayRoom) {
@@ -196,19 +194,19 @@
     };
 
     Master.prototype.allocMasterCell = function(roomId, date, status) {
-      return this.cellMasterStatus(this.$cell('M', date, roomId), status);
+      this.cellMasterStatus(this.$cell('M', date, roomId), status);
     };
 
     Master.prototype.allocSeasonCell = function(roomId, date, status) {
-      return this.cellSeasonStatus(this.$cell('S', date, roomId), status);
+      this.cellSeasonStatus(this.$cell('S', date, roomId), status);
     };
 
     Master.prototype.cellMasterStatus = function($cell, status) {
-      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
+      $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
     Master.prototype.cellSeasonStatus = function($cell, status) {
-      return $cell.removeClass().addClass("own-" + status).attr('data-status', status);
+      $cell.removeClass().addClass("own-" + status).attr('data-status', status);
     };
 
     Master.prototype.onMasterClick = function(event) {
@@ -224,7 +222,7 @@
           width: $month.css('width'),
           height: $month.css('height')
         };
-        return $month.css({
+        $month.css({
           left: 0,
           top: 0,
           width: '100%',
@@ -233,7 +231,7 @@
       } else {
         $month.css(this.lastMaster);
         $master.children().show();
-        return this.lastMaster.height = 0;
+        this.lastMaster.height = 0;
       }
     };
 
@@ -250,7 +248,7 @@
           width: $month.css('width'),
           height: $month.css('height')
         };
-        return $month.css({
+        $month.css({
           left: 0,
           top: 0,
           width: '100%',
@@ -259,7 +257,7 @@
       } else {
         $month.css(this.lastSeason);
         $season.children().show();
-        return this.lastSeason.height = 0;
+        this.lastSeason.height = 0;
       }
     };
 

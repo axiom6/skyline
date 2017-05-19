@@ -5,7 +5,7 @@ class Store
   Store.Memory    = require( 'js/store/Memory'     )
   Store.IndexedDB = require( 'js/store/IndexedDB'  )
   Store.Rest      = require( 'js/store/Rest'       )
-  Store.Fire      = require( 'js/store/Fire'  )
+  Store.Fire      = require( 'js/store/Fire'       )
   #Store.PouchDB  = require( 'js/store/PouchDB'    )
 
   @memories  = {} # Store.Memory instances create by getMemory() for in memory dbName
@@ -13,14 +13,14 @@ class Store
 
   # CRUD        Create    Retrieve  Update    Delete
   @restOps  = [ 'add',    'get',    'put',    'del'    ]
-  @sqlOps   = [ 'insert', 'select', 'update', 'remove' ]
+  @sqlOps   = [ 'insert', 'select', 'update', 'remove', 'range' ]
   @tableOps = [ 'open',   'show',   'make',   'drop'   ]
 
   @isRestOp:(  op ) -> Store. restOps.indexOf(op) isnt -1
   @isSqlOp:(   op ) -> Store.  sqlOps.indexOf(op) isnt -1
   @isTableOp:( op ) -> Store.tableOps.indexOf(op) isnt -1
 
-  @methods = Store.restOps.concat( Store.sqlOps ).concat( Store.tableOps ).concat(['onChange'])
+  @methods = Store.restOps.concat( Store.sqlOps ).concat( Store.tableOps ).concat(['on'])
 
   # Dafaults for empty arguments
   @where  = () -> true # Default where clause filter that returns true to access all records
@@ -53,8 +53,10 @@ class Store
   drop:( table           ) -> Util.noop( table ) # Drop the entire table - good for testing
 
   # Subscribe to CRUD changes on a table or a row with id
-  on:( table, onEvt, id='' ) ->
-    Util.noop( table, onEvt, id )
+  on:( table, oo, id='none', onFunc=null ) ->
+    table  = @tableName(t)
+    onNext = if onFunc? then onFunc else (result) => Util.log( 'Store.on()', result )
+    @subscribe( table, op, id, onNext )
     return
 
   createTable:( t  ) ->
@@ -71,25 +73,25 @@ class Store
      #Util.log( "Store.tableName()", { name:name, table:table, t:t } )
      name
 
-  memory:( table, id , op ) ->
+  memory:( table, op, id ) ->
     # Util.log( 'Store.memory()', @toSubject(table,op,id) )
     onNext = (data) => @toMemory(  op, table, id, data )
     @stream.subscribe( @toSubject(table,op,id), onNext, @onError, @onComplete )
     return
 
-  subscribe:( table, id ,op, onNext  ) ->
+  subscribe:( table, op, id, onNext  ) ->
     #Util.log( 'Store.subscribe()', @toSubject(table,id,op) )
     @stream.subscribe( @toSubject(table,id,op), onNext, @onError, @onComplete )
     return
 
-  publish:( table, id, op, data, extras={} ) ->
+  publish:( table, op, id, data, extras={} ) ->
     params = @toParams(table,id,op,extras)
     @toMemory( op, table, id, data, params ) if @hasMemory
     @stream.publish( @toSubject(table,id,op), data )
     return
 
-  onError:( table, id, op, result={}, error={} ) ->
-    console.log( 'Store.onError', { db:@dbName, table:table, id:id, op:op, result:result, error:error } )
+  onError:( table, op, id, result={}, error={} ) ->
+    console.log( 'Store.onError', { db:@dbName, table:table, op:op, id:id, result:result, error:error } )
     #@stream.onerror( @toSubject(table,op,id), @toStoreObject( @toParams(table,id,op,extras),result ) )
     return
 
@@ -188,8 +190,6 @@ class Store
   toKeysJson:( json ) -> @toKeys( JSON.parse(json) )
 
   toObjectsJson:( json, where ) -> Util.toObjects( JSON.parse(json), where, @keyProp )
-
-  onError2:( error ) -> Util.error( 'Store.onError()', error.params, error.result )
 
   onComplete:()      -> Util.log(   'Store.onComplete()', 'Completed' )
 

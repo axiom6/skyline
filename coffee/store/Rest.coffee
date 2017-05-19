@@ -24,13 +24,13 @@ class Rest extends Store
   remove:( table, where=@W, params="" )  -> @ajaxSql( 'remove', table, where, null,    params )
 
   # Table - only partially implemented
-  make:( table )  -> @ajaxTable( 'open', table )
-  show:( table )  -> @ajaxTable( 'show', table )
-  drop:( table  ) -> @ajaxTable( 'drop', table )
+  make:( table ) -> @ajaxTable( 'open', table )
+  show:( table ) -> @ajaxTable( 'show', table )
+  drop:( table ) -> @ajaxTable( 'drop', table )
 
   # Subscribe to  a table or object with id
-  on:(  t, id='none'   ) ->
-    @onError( t, id, 'on', {}, { msg:"on() not implemeted by Store.Rest" } )
+  on:(        t, op, id='none', onFunc=null ) ->
+    super.on( t, op, id,        onFunc )
     return
 
   ajaxRest:( op, t, id, object=null, params="" ) ->
