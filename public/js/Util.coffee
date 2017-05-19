@@ -313,7 +313,7 @@ class Util
   @isVal:(v)         ->  typeof(v)=="number" or typeof(v)=="string" or typeof(v)=="boolean"
   @isObjEmpty:(o)    ->  Util.isObj(o) and Object.getOwnPropertyNames(o).length is 0
   @isFunc:(f)        ->  f? and typeof(f)=="function"
-  @isArray:(a)       ->  a? and typeof(a)!="string" and a.length? and a.length > 0
+  @isArray:(a)       ->  a? and Array.isArray(a) and a.length? and a.length > 0
   @isEvent:(e)       ->  e? and e.target?
   @inIndex:(a,i)     ->  Util.isArray(a) and 0 <= i and i < a.length
   @inArray:(a,e)     ->  Util.isArray(a) and a.indexOf(e) > -1
@@ -582,19 +582,23 @@ class Util
     array
 
   # keyProp only needed if rows is away
-  @toObjects:( rows, whereIn=null, keyProp='key' ) ->
+  @toObjects:( rows, whereIn=null, key='key' ) ->
     where = if whereIn? then whereIn else () -> true
     objects = {}
     if Util.isArray(rows)
       for row in rows when where(row)
-        if row[keyProp]?
-          objects[row[keyProp]] = row
+        if row? and row[key]?
+          ckey =  Util.childKey(row[key])
+          objects[row[ckey]] = row
         else
-          Util.error( "Util.toObjects() row array element requires key property", keyProp, row )
+          Util.error( "Util.toObjects() row array element requires key property", key, row )
     else
       for own key, row of rows when where(row)
         objects[key] = row
     objects
+
+  @childKey:( key ) ->
+    key.split('/')[0]
 
   @toRange:( rows, beg, end, keyProp='key' ) ->
     objects = {}

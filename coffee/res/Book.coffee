@@ -30,6 +30,7 @@ class Book
     $('#Pop'     ).click(  @onPop     )
     $('#Test'    ).click(  @onTest     )
     $('#GoToPay' ).click(  @onGoToPay ) # .prop('disabled',true)
+    $('#Totals').css( { height:'21px' } )
     $('#Navb').hide()
     $('#Book').show()
     @roomsJQuery()
@@ -38,7 +39,7 @@ class Book
     """
     <div id="Make" class="Title">Make Your Reservation</div>
     <div id="Insts"></div>
-    <div id="Inits"></div>
+    <div><div id="Inits"></div></div>
     <div id="Rooms"></div>
     <div id="Guest"></div>
     """
@@ -55,7 +56,7 @@ class Book
   initsHtml:() ->
     htm  = """<label for="Months" class="InitIp">Start: #{ @htmlSelect( "Months", @Data.season, @Data.month,  'months' ) }</label>"""
     htm += """<label for="Days"   class="InitIp">       #{ @htmlSelect( "Days",   @Data.days,   @Data.begDay, 'days'   ) }</label>"""
-    htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+@res.year}</label>"""
+    htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+@Data.year}</label>"""
     htm += """<span  id="Pop"  class="Test">Pop</span>"""
     htm += """<span  id="Test" class="Test">Test</span>"""
     htm
@@ -210,7 +211,7 @@ class Book
     nights = Util.keys(room.days).length
     room.total = price * nights + room.change
     # Util.log( 'Book.updateTotal()', { roomId:roomId, nights:nights, change:room.change, total:room.total } )
-    text = if room.total is 0 then '$' else '$'+room.total
+    text = if room.total is 0 then '' else '$'+room.total
     $('#'+roomId+'T').text(text)
     @updateTotals()
     return

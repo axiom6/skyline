@@ -109,21 +109,19 @@
       var date, year;
       date = new Date();
       year = date.getFullYear() - 2000;
-      return Data.toDateStr(date.getDate(), date.getMonth() + 1, year);
+      return Data.toDateStr(date.getDate(), date.getMonth(), year);
     };
 
     Data.advanceDate = function(resDate, numDays) {
-      var day, dayInt, month, monthIdx, year;
+      var day, monthIdx, year;
       year = resDate.substr(0, 2);
       monthIdx = parseInt(resDate.substr(2, 2)) - 1;
-      dayInt = parseInt(resDate.substr(4, 2)) + numDays;
-      if (dayInt > this.numDayMonth[monthIdx]) {
-        dayInt = dayInt - this.numDayMonth[monthIdx];
+      day = parseInt(resDate.substr(4, 2)) + numDays;
+      if (day > Data.numDayMonth[monthIdx]) {
+        day = day - Data.numDayMonth[monthIdx];
         monthIdx++;
       }
-      day = Util.padStr(dayInt);
-      month = Util.padStr(monthIdx + 1);
-      return year + month + day;
+      return Data.toDateStr(day, monthIdx, year);
     };
 
     Data.weekday = function(date) {

@@ -21,7 +21,6 @@
       this.Data = Data;
       this.appName = appName;
       this.insertRooms = bind(this.insertRooms, this);
-      this.subscribeToDays2 = bind(this.subscribeToDays2, this);
       this.subscribeToDays = bind(this.subscribeToDays, this);
       this.subscribeToResv = bind(this.subscribeToResv, this);
       this.subscribeToResId = bind(this.subscribeToResId, this);
@@ -137,7 +136,6 @@
       }
       resv.payments = {};
       resv.cust = {};
-      this.subscribeToResId(resv.resId);
       return resv;
     };
 
@@ -185,20 +183,21 @@
       }
     };
 
-    Res.prototype.subscribeToResId = function(resId) {
-      return this.store.subscribe('Res', resId, 'add', (function(_this) {
-        return function(add) {
-          return Util.log('Res.subscribeToResId add', resId, add);
+    Res.prototype.subscribeToResId = function(resId, op, onRes) {
+      return this.store.subscribe('Res', resId, op, (function(_this) {
+        return function(res) {
+          return onRes(res);
         };
       })(this));
     };
 
     Res.prototype.subscribeToResv = function(doAdd) {
-      return this.store.subscribe('Res', 'none', 'add', (function(_this) {
+      this.store.subscribe('Res', 'none', 'onAdd', (function(_this) {
         return function(add) {
           return doAdd(add);
         };
       })(this));
+      return this.store.on('Res', 'onAdd');
     };
 
     Res.prototype.subscribeToDays = function(doPut) {
@@ -209,8 +208,6 @@
       })(this));
       return this.store.on('Days', 'onPut');
     };
-
-    Res.prototype.subscribeToDays2 = function() {};
 
     Res.prototype.insertRooms = function(rooms) {
       this.store.subscribe('Room', 'none', 'make', (function(_this) {
@@ -239,7 +236,6 @@
 
     Res.prototype.insertDays = function(resvs) {
       var day, dayId, ref;
-      this.subscribeToDays();
       this.days = this.createDaysFromResvs(resvs, {});
       ref = this.days;
       for (dayId in ref) {
@@ -247,17 +243,6 @@
         day = ref[dayId];
         this.store.add('Days', dayId, day);
       }
-    };
-
-    Res.prototype.insertDays2 = function(resvs) {
-      this.subscribeToDays();
-      this.days = this.createDaysFromResvs(resvs, {});
-      this.store.subscribe('Days', 'none', 'make', (function(_this) {
-        return function() {
-          return _this.store.insert('Days', _this.days);
-        };
-      })(this));
-      this.store.make('Days');
     };
 
     Res.prototype.createDaysFromResvs = function(resvs, days) {

@@ -55,27 +55,25 @@
 
 	    Guest.init = function() {
 	      return Util.ready(function() {
-	        var Book, Data, Fire, Home, Pay, Pict, Res, Room, Stream, Test, book, home, pay, pict, res, room, store, stream, test;
+	        var Book, Data, Fire, Home, Pay, Pict, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
 	        Util.jquery = __webpack_require__(1);
 	        Stream = __webpack_require__(2);
 	        Fire = __webpack_require__(347);
 	        Data = __webpack_require__(354);
-	        Room = __webpack_require__(355);
-	        Home = __webpack_require__(357);
-	        Pict = __webpack_require__(358);
-	        Res = __webpack_require__(360);
-	        Pay = __webpack_require__(363);
-	        Book = __webpack_require__(365);
-	        Test = __webpack_require__(366);
+	        Home = __webpack_require__(355);
+	        Pict = __webpack_require__(356);
+	        Res = __webpack_require__(358);
+	        Pay = __webpack_require__(362);
+	        Book = __webpack_require__(364);
+	        Test = __webpack_require__(365);
 	        pict = new Pict();
 	        stream = new Stream([]);
 	        store = new Fire(stream, "skytest", Data.configSkytest);
-	        room = new Room(stream, store, Data);
-	        home = new Home(stream, store, Data, room, pict);
-	        res = new Res(stream, store, Data, room);
-	        pay = new Pay(stream, store, Data, room, res, home);
-	        book = new Book(stream, store, Data, room, res, pay, pict);
-	        test = new Test(stream, store, Data, room, res, pay, pict, book);
+	        res = new Res(stream, store, Data, 'Guest');
+	        home = new Home(stream, store, Data, res, pict);
+	        pay = new Pay(stream, store, Data, res, home);
+	        book = new Book(stream, store, Data, res, pay, pict);
+	        test = new Test(stream, store, Data, res, pay, pict, book);
 	        book.test = test;
 	        return home.ready(book);
 	      });
@@ -10457,14 +10455,15 @@
 	    };
 
 	    Stream.prototype.concat = function(name, sources, onComplete) {
-	      var i, len, onError, onNext, source, sub, subs;
+	      var Obs, i, len, onError, onNext, source, sub, subs;
 	      subs = [];
 	      for (i = 0, len = sources.length; i < len; i++) {
 	        source = sources[i];
 	        sub = this.getSubject(source).take(1);
 	        subs.push(sub);
 	      }
-	      this.subjects[name] = Rx.Observable.concat(subs).take(subs.length);
+	      Obs = Rx['Observable'];
+	      this.subjects[name] = Obs.concat(subs).take(subs.length);
 	      onNext = function(object) {
 	        var params;
 	        params = object.params != null ? object.params : 'none';
@@ -10529,8 +10528,8 @@
 	      mousedown = dragTarget.bindAsObservable("mousedown").publish().refCount().map(function(event) {
 	        event.preventDefault();
 	        return {
-	          left: event.clientX - dragTarget.offset().left,
-	          top: event.clientY - dragTarget.offset().top
+	          left: event['clientX'] - dragTarget.offset().left,
+	          top: event['clientY'] - dragTarget.offset().top
 	        };
 	      });
 	      mousedrag = mousedown.selectMany(function(offset) {
@@ -10567,22 +10566,6 @@
 	      mergeSubject = subject.merge( observable )
 	      mergeSubject.mapTo( topic )
 	      @resetSubject( name, mergeSubject )
-	      return
-	    
-	     * Publishes topic on dom element event
-	    publishEvent2:( name, topic, jQuerySelector, eventType ) ->
-	      subject         = @getSubject( name )
-	      element         = @domElement( jQuerySelector )
-	      return if @notElement( element, name )
-	      observable    = Rx.Observable.fromEvent( element, eventType ).mapTo( topic )
-	      next  = ( event ) =>
-	        @processEvent(  event )
-	        object  = if topic? then topic else event.target.value
-	        observable.mapTo( object )
-	      subject = subject.merge( observable )
-	      subject.subscribe( next, @error, @complete )
-	      subject.mapTo( topic )
-	      @resetSubject( name, subject )
 	      return
 	     */
 
@@ -30104,7 +30087,7 @@
 	          if (error == null) {
 	            return _this.publish(tableName, id, 'add', object);
 	          } else {
-	            return _this.onerror(tableName, id, 'add', object, {
+	            return _this.onError(tableName, id, 'add', object, {
 	              error: error
 	            });
 	          }
@@ -30124,7 +30107,7 @@
 	            object[_this.keyProp] = id;
 	            return _this.publish(tableName, id, 'get', object);
 	          } else {
-	            return _this.onerror(tableName, id, 'get', {
+	            return _this.onError(tableName, id, 'get', {
 	              msg: 'Fire get error'
 	            });
 	          }
@@ -30143,7 +30126,7 @@
 	            object[_this.keyProp] = id;
 	            return _this.publish(tableName, id, 'put', object);
 	          } else {
-	            return _this.onerror(tableName, id, 'put', object, {
+	            return _this.onError(tableName, id, 'put', object, {
 	              error: error
 	            });
 	          }
@@ -30160,7 +30143,7 @@
 	          if (error == null) {
 	            return _this.publish(tableName, id, 'del', {});
 	          } else {
-	            return _this.onerror(tableName, id, 'del', {}, {
+	            return _this.onError(tableName, id, 'del', {}, {
 	              error: error
 	            });
 	          }
@@ -30177,7 +30160,7 @@
 	          if (error == null) {
 	            return _this.publish(tableName, 'none', 'insert', objects);
 	          } else {
-	            return _this.onerror(tableName, 'none', 'insert', {
+	            return _this.onError(tableName, 'none', 'insert', {
 	              error: error
 	            });
 	          }
@@ -30191,17 +30174,37 @@
 	      if (where == null) {
 	        where = Store.where;
 	      }
+	      Util.noop(where);
 	      tableName = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
+	          var val;
 	          if ((snapshot != null) && (snapshot.val() != null)) {
-	            return _this.publish(tableName, 'none', 'select', snapshot.val());
+	            val = _this.toObjects(snapshot.val());
+	            return _this.publish(tableName, 'none', 'select', val);
 	          } else {
-	            return _this.onerror(tableName, 'none', 'select', {});
+	            return _this.publish(tableName, 'none', 'select', {});
 	          }
 	        };
 	      })(this);
 	      this.fd.ref(tableName).once('value', onComplete);
+	    };
+
+	    Fire.prototype.range = function(t, beg, end) {
+	      var onComplete, tableName;
+	      tableName = this.tableName(t);
+	      onComplete = (function(_this) {
+	        return function(snapshot) {
+	          var val;
+	          if ((snapshot != null) && (snapshot.val() != null)) {
+	            val = _this.toObjects(snapshot.val());
+	            return _this.publish(tableName, 'none', 'range', val);
+	          } else {
+	            return _this.publish(tableName, 'none', 'range', {});
+	          }
+	        };
+	      })(this);
+	      this.fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete);
 	    };
 
 	    Fire.prototype.update = function(t, objects) {
@@ -30212,7 +30215,7 @@
 	          if (error == null) {
 	            return _this.publish(tableName, 'none', 'update', objects);
 	          } else {
-	            return _this.onerror(tableName, 'none', 'update', {
+	            return _this.onError(tableName, 'none', 'update', {
 	              error: error
 	            });
 	          }
@@ -30240,7 +30243,7 @@
 	          if (error == null) {
 	            return _this.publish(tableName, 'none', 'make', {}, {});
 	          } else {
-	            return _this.onerror(tableName, 'none', 'make', {}, {
+	            return _this.onError(tableName, 'none', 'make', {}, {
 	              error: error
 	            });
 	          }
@@ -30264,7 +30267,7 @@
 	              where: where.toString()
 	            });
 	          } else {
-	            return _this.onerror(tableName, 'none', 'show', {}, {
+	            return _this.onError(tableName, 'none', 'show', {}, {
 	              where: where.toString()
 	            });
 	          }
@@ -30285,7 +30288,7 @@
 	          if (error == null) {
 	            return _this.publish(tableName, 'none', 'drop', "OK");
 	          } else {
-	            return _this.onerror(tableName, 'none', 'drop', {}, {
+	            return _this.onError(tableName, 'none', 'drop', {}, {
 	              error: error
 	            });
 	          }
@@ -30305,7 +30308,7 @@
 	          var key, val;
 	          if (snapshot != null) {
 	            key = snapshot.key;
-	            val = snapshot.val();
+	            val = _this.toObjects(snapshot.val());
 	            return _this.publish(table, id, onEvt, {
 	              onEvt: onEvt,
 	              table: table,
@@ -30313,7 +30316,7 @@
 	              val: val
 	            });
 	          } else {
-	            return _this.onerror(table, id, onEvt, {}, {
+	            return _this.onError(table, id, onEvt, {}, {
 	              error: 'error'
 	            });
 	          }
@@ -30323,16 +30326,40 @@
 	      this.fd.ref(path).on(Fire.OnEvent[onEvt], onComplete);
 	    };
 
+	    Fire.prototype.toObjects = function(rows) {
+	      var ckey, i, len, objects, row;
+	      objects = {};
+	      if (Util.isArray(rows)) {
+	        for (i = 0, len = rows.length; i < len; i++) {
+	          row = rows[i];
+	          if ((row != null) && (row['key'] != null)) {
+	            ckey = row['key'].split('/')[0];
+	            objects[row[ckey]] = this.toObjects(row);
+	            Util.log('Fire.toObjects', {
+	              rkowKey: row['key'],
+	              ckey: ckey,
+	              row: row
+	            });
+	          } else {
+	            Util.error("Fire.toObjects() row array element requires key property", row);
+	          }
+	        }
+	      } else {
+	        objects = rows;
+	      }
+	      return objects;
+	    };
+
 	    Fire.prototype.auth = function() {
-	      var onError;
-	      onError = (function(_this) {
+	      var onerror;
+	      onerror = (function(_this) {
 	        return function(error) {
-	          return _this.onerror('none', 'none', 'anon', {}, {
+	          return _this.onError('none', 'none', 'anon', {}, {
 	            error: error
 	          });
 	        };
 	      })(this);
-	      this.fb.auth().signInAnonymously()["catch"](onError);
+	      this.fb.auth().signInAnonymously()["catch"](onerror);
 	    };
 
 	    return Fire;
@@ -30519,7 +30546,7 @@
 	      if (error == null) {
 	        error = {};
 	      }
-	      console.log('Stream.onerror', {
+	      console.log('Store.onError', {
 	        db: this.dbName,
 	        table: table,
 	        id: id,
@@ -30552,7 +30579,10 @@
 	          memory.insert(table, data);
 	          break;
 	        case 'select':
-	          memory.insert(table, data);
+	          memory.select(table, params.where);
+	          break;
+	        case 'range':
+	          memory.range(table, params.beg, params.end);
 	          break;
 	        case 'update':
 	          memory.update(table, data);
@@ -30560,17 +30590,14 @@
 	        case 'remove':
 	          memory.remove(table, params.where);
 	          break;
-	        case 'open':
-	          memory.open(table, params.schema);
+	        case 'make':
+	          memory.make(table);
 	          break;
 	        case 'show':
-	          memory.show(table, params.format);
-	          break;
-	        case 'make':
-	          memory.make(table, params.alters);
+	          memory.show(table);
 	          break;
 	        case 'drop':
-	          memory.drop(table, params.resets);
+	          memory.drop(table);
 	          break;
 	        default:
 	          Util.error('Store.toMemory() unknown op', op);
@@ -30621,14 +30648,20 @@
 	      return this.toSubject(params.table, params.op, params.id);
 	    };
 
-	    Store.prototype.toParams = function(table, id, op, extras) {
+	    Store.prototype.toParams = function(table, id, op, extras, where) {
 	      var params;
+	      if (where == null) {
+	        where = W;
+	      }
 	      params = {
 	        db: this.dbName,
 	        table: table,
 	        id: id,
 	        op: op,
-	        module: this.module
+	        module: this.module,
+	        where: where,
+	        beg: "",
+	        end: ""
 	      };
 	      return Util.copyProperties(params, extras);
 	    };
@@ -30826,7 +30859,7 @@
 	      if (object != null) {
 	        this.publish(t, id, 'get', object);
 	      } else {
-	        this.onerror(t, id, 'get', object, {
+	        this.onError(t, id, 'get', object, {
 	          msg: "Id " + id + " not found"
 	        });
 	      }
@@ -30844,7 +30877,7 @@
 	        delete this.table(t)[id];
 	        this.publish(t, id, 'del', object);
 	      } else {
-	        this.onerror(t, id, 'del', object, {
+	        this.onError(t, id, 'del', object, {
 	          msg: "Id " + id + " not found"
 	        });
 	      }
@@ -30965,7 +30998,7 @@
 	        delete this.tables[t];
 	        this.publish(t, 'none', 'drop', {});
 	      } else {
-	        this.onerror(t, 'none', 'drop', {}, {
+	        this.onError(t, 'none', 'drop', {}, {
 	          msg: "Table " + t + " not found"
 	        });
 	      }
@@ -30975,7 +31008,7 @@
 	      if (id == null) {
 	        id = 'none';
 	      }
-	      this.onerror(t, id, 'on', {}, {
+	      this.onError(t, id, 'on', {}, {
 	        msg: "on() not implemeted by Store.Memory"
 	      });
 	    };
@@ -31108,11 +31141,13 @@
 	      this.dbVersion = dbVersion != null ? dbVersion : 1;
 	      this.tableNames = tableNames != null ? tableNames : [];
 	      IndexedDB.__super__.constructor.call(this, stream, uri, 'IndexedDB');
-	      this.indexedDB = window.indexedDB;
+	      this.indexedDB = window['indexedDB'];
 	      if (!this.indexedDB) {
 	        Util.error('Store.IndexedDB.constructor indexedDB not found');
 	      }
 	      this.dbs = null;
+	      this.objectStoreNames = null;
+	      this.openDatabase();
 	    }
 
 	    IndexedDB.prototype.add = function(t, id, object) {
@@ -31127,7 +31162,7 @@
 	      })(this);
 	      req.onerror = (function(_this) {
 	        return function() {
-	          return _this.onerror(tableName, id, 'add', object, {
+	          return _this.onError(tableName, id, 'add', object, {
 	            error: req.error
 	          });
 	        };
@@ -31146,7 +31181,7 @@
 	      })(this);
 	      req.onerror = (function(_this) {
 	        return function() {
-	          return _this.onerror(tableName, id, 'get', req.result, {
+	          return _this.onError(tableName, id, 'get', req.result, {
 	            error: req.error
 	          });
 	        };
@@ -31165,7 +31200,7 @@
 	      })(this);
 	      req.onerror = (function(_this) {
 	        return function() {
-	          return _this.onerror(tableName, id, 'put', object, {
+	          return _this.onError(tableName, id, 'put', object, {
 	            error: req.error
 	          });
 	        };
@@ -31184,7 +31219,7 @@
 	      })(this);
 	      req.onerror = (function(_this) {
 	        return function() {
-	          return _this.onerror(tableName, id, 'del', req.result, {
+	          return _this.onError(tableName, id, 'del', req.result, {
 	            error: req.error
 	          });
 	        };
@@ -31266,7 +31301,7 @@
 	        id = 'none';
 	      }
 	      tableName = this.tableName(t);
-	      this.onerror(tableName, id, 'onChange', {}, {
+	      this.onError(tableName, id, 'onChange', {}, {
 	        msg: "on() not implemeted by Store.IndexedDb"
 	      });
 	    };
@@ -31286,7 +31321,7 @@
 	      txo = null;
 	      if (this.dbs == null) {
 	        Util.trace('Store.IndexedDb.txnObjectStore() @dbs null');
-	      } else if (this.dbs.objectStoreNames.contains(t)) {
+	      } else if (this.objectStoreNames.contains(t)) {
 	        txn = this.dbs.transaction(t, mode);
 	        txo = txn.objectStore(t, {
 	          keyPath: key
@@ -31333,7 +31368,7 @@
 	      })(this);
 	      req.onerror = (function(_this) {
 	        return function() {
-	          return _this.onerror(t, 'none', op, {}, {
+	          return _this.onError(t, 'none', op, {}, {
 	            where: 'all',
 	            error: req.error
 	          });
@@ -31347,7 +31382,7 @@
 	        ref = this.tableNames;
 	        for (i = 0, len = ref.length; i < len; i++) {
 	          t = ref[i];
-	          if (!this.dbs.objectStoreNames.contains(t)) {
+	          if (!this.objectStoreNames.contains(t)) {
 	            this.dbs.createObjectStore(t, {
 	              keyPath: this.key
 	            });
@@ -31364,14 +31399,15 @@
 	      request.onupgradeneeded = (function(_this) {
 	        return function(event) {
 	          _this.dbs = event.target.result;
+	          _this.objectStoreNames = _this.dbs['objectStoreNames'];
 	          _this.createObjectStores();
-	          return Util.log('Store.IndexedDB', 'upgrade', _this.dbName, _this.dbs.objectStoreNames);
+	          return Util.log('Store.IndexedDB', 'upgrade', _this.dbName, _this.objectStoreNames);
 	        };
 	      })(this);
 	      request.onsuccess = (function(_this) {
 	        return function(event) {
 	          _this.dbs = event.target.result;
-	          Util.log('Store.IndexedDB', 'open', _this.dbName, _this.dbs.objectStoreNames);
+	          Util.log('Store.IndexedDB', 'open', _this.dbName, _this.objectStoreNames);
 	          return _this.publish('none', 'none', 'open', _this.dbs.objectStoreNames);
 	        };
 	      })(this);
@@ -31381,7 +31417,7 @@
 	            database: _this.dbName,
 	            error: request.error
 	          });
-	          return _this.onerror('none', 'none', 'open', _this.dbName, {
+	          return _this.onError('none', 'none', 'open', _this.dbName, {
 	            error: request.error
 	          });
 	        };
@@ -31538,7 +31574,7 @@
 	      if (id == null) {
 	        id = 'none';
 	      }
-	      this.onerror(t, id, 'on', {}, {
+	      this.onError(t, id, 'on', {}, {
 	        msg: "on() not implemeted by Store.Rest"
 	      });
 	    };
@@ -31587,7 +31623,7 @@
 	            result = object;
 	          }
 	          extras = _this.toExtras(status, url, dataType, jqXHR.readyState, error);
-	          return _this.onerror(tableName, id, op, result, extras);
+	          return _this.onError(tableName, id, op, result, extras);
 	        };
 	      })(this);
 	      $.ajax(settings);
@@ -31648,7 +31684,7 @@
 	          if (op === 'select' || op === 'delete') {
 	            extras.where = 'all';
 	          }
-	          return _this.onerror(tableName, 'none', op, result, extras);
+	          return _this.onError(tableName, 'none', op, result, extras);
 	        };
 	      })(this);
 	      $.ajax(settings);
@@ -31679,7 +31715,7 @@
 	        return function(jqXHR, status, error) {
 	          var extras;
 	          extras = _this.toExtras(status, url, dataType, jqXHR.readyState, error);
-	          return _this.onerror(tableName, 'none', op, {}, extras);
+	          return _this.onError(tableName, 'none', op, {}, extras);
 	        };
 	      })(this);
 	      $.ajax(settings);
@@ -32068,9 +32104,7 @@
 
 	    module.exports = Data;
 
-	    Data.testing = true;
-
-	    Data.year = 17;
+	    Data.insertNewTables = false;
 
 	    Data.season = ["May", "June", "July", "August", "September", "October"];
 
@@ -32087,6 +32121,20 @@
 	    Data.pets = ["0", "1", "2", "3", "4"];
 
 	    Data.petPrice = 12;
+
+	    Data.year = 17;
+
+	    Data.monthIdx = new Date().getMonth();
+
+	    Data.monthIdx = 4 <= Data.monthIdx && Data.monthIdx <= 9 ? Data.monthIdx : 4;
+
+	    Data.month = Data.months[Data.monthIdx];
+
+	    Data.numDays = 15;
+
+	    Data.begMay = 15;
+
+	    Data.begDay = Data.month === 'May' ? Data.begMay : 1;
 
 	    Data.configSkytest = {
 	      apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
@@ -32139,13 +32187,7 @@
 	    };
 
 	    Data.genCustId = function(phone) {
-	      var custKey;
-	      custKey = Util.padEnd(phone.substr(0, 10), 10, '_');
-	      if (Data.testing) {
-	        return Data.randomCustKey();
-	      } else {
-	        return custKey;
-	      }
+	      return Util.padEnd(phone.substr(0, 10), 10, '_');
 	    };
 
 	    Data.genPaymentId = function(resId, payments) {
@@ -32160,26 +32202,22 @@
 	    };
 
 	    Data.today = function() {
-	      var date, day, month, year;
+	      var date, year;
 	      date = new Date();
-	      year = date.getFullYear().toString();
-	      month = Util.padStr(date.getMonth() + 1);
-	      day = Util.padStr(date.getDate());
-	      return year + month + day;
+	      year = date.getFullYear() - 2000;
+	      return Data.toDateStr(date.getDate(), date.getMonth(), year);
 	    };
 
 	    Data.advanceDate = function(resDate, numDays) {
-	      var day, dayInt, month, monthIdx, year;
+	      var day, monthIdx, year;
 	      year = resDate.substr(0, 2);
 	      monthIdx = parseInt(resDate.substr(2, 2)) - 1;
-	      dayInt = parseInt(resDate.substr(4, 2)) + numDays;
-	      if (dayInt > this.numDayMonth[monthIdx]) {
-	        dayInt = dayInt - this.numDayMonth[monthIdx];
+	      day = parseInt(resDate.substr(4, 2)) + numDays;
+	      if (day > Data.numDayMonth[monthIdx]) {
+	        day = day - Data.numDayMonth[monthIdx];
 	        monthIdx++;
 	      }
-	      day = Util.padStr(dayInt);
-	      month = Util.padStr(monthIdx + 1);
-	      return year + month + day;
+	      return Data.toDateStr(day, monthIdx, year);
 	    };
 
 	    Data.weekday = function(date) {
@@ -32195,6 +32233,26 @@
 	      return !(($elem != null) && ($elem.length != null) && $elem.length === 0);
 	    };
 
+	    Data.dayMonth = function(day) {
+	      var monthDay;
+	      monthDay = day + Data.begDay - 1;
+	      if (monthDay > Data.numDayMonth[this.monthIdx]) {
+	        return monthDay - Data.numDayMonth[Data.monthIdx];
+	      } else {
+	        return monthDay;
+	      }
+	    };
+
+	    Data.toDateStr = function(day, monthIdx, year) {
+	      if (monthIdx == null) {
+	        monthIdx = Data.monthIdx;
+	      }
+	      if (year == null) {
+	        year = Data.year;
+	      }
+	      return year + Util.pad(monthIdx + 1) + Util.pad(day);
+	    };
+
 	    return Data;
 
 	  })();
@@ -32208,27 +32266,372 @@
 
 	// Generated by CoffeeScript 1.12.2
 	(function() {
-	  var Room,
-	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+	  var $, Home,
+	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+	    hasProp = {}.hasOwnProperty;
 
-	  Room = (function() {
-	    module.exports = Room;
+	  $ = __webpack_require__(1);
 
-	    Room.Rooms = __webpack_require__(356);
+	  Home = (function() {
+	    module.exports = Home;
 
-	    Room.States = ["free", "mine", "depo", "book"];
-
-	    function Room(stream, store, Data) {
+	    function Home(stream, store, Data, res, pict) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
-	      this.initRooms = bind(this.initRooms, this);
-	      this.rooms = Room.Rooms;
-	      this.states = Room.States;
-	      this.initRooms();
+	      this.res = res;
+	      this.pict = pict;
+	      this.onHome = bind(this.onHome, this);
+	      this.onMakeRes = bind(this.onMakeRes, this);
 	    }
 
-	    Room.prototype.createRoomUIs = function(rooms) {
+	    Home.prototype.ready = function(book) {
+	      this.book = book;
+	      $('#MakeRes').click(this.onMakeRes);
+	      $('#HomeBtn').click(this.onHome);
+	      $('#MapDirs').click((function(_this) {
+	        return function() {
+	          return Util.toPage('rooms/X.html');
+	        };
+	      })(this));
+	      $('#Contact').click((function(_this) {
+	        return function() {
+	          return Util.toPage('rooms/Y.html');
+	        };
+	      })(this));
+	      $('#Head').append(this.headHtml());
+	      this.listRooms();
+	      this.pict.createSlideShow('Slides', 'M', 600, 600);
+	      $('#VideoSee').click(this.pict.onVideo);
+	    };
+
+	    Home.prototype.headHtml = function() {
+	      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Owner On Site</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Hiking</li>\n  <li>Free Wi-Fi</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>Kitchens in Every Cabin</li>\n  <li>3 Private Spas</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
+	    };
+
+	    Home.prototype.listRooms = function() {
+	      var htm, ref, room, roomId;
+	      $('#Slides').css({
+	        left: "22%",
+	        width: "78%"
+	      });
+	      htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
+	      htm += "<div class=\"RoomSee\">See Our Cabins</div>";
+	      htm += "<div class=\"FootSee\">Skyline Cottages Where the River Meets the Mountains</div>";
+	      htm += "<ul  class=\"RoomUL\">";
+	      ref = this.res.rooms;
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        room = ref[roomId];
+	        htm += "<li class=\"RoomLI\"><a href=\"rooms/" + roomId + ".html\">" + room.name + "</a></li>";
+	      }
+	      htm += "</ul>";
+	      $("#View").append(htm);
+	      $("#View").append("<button id=\"VideoSee\" class=\"btn btn-primary\"\">View Video</button>");
+	    };
+
+	    Home.prototype.hideMkt = function() {
+	      $('#MakeRes').hide();
+	      $('#HomeBtn').hide();
+	      $('#MapDirs').hide();
+	      $('#Contact').hide();
+	      $('#Caption').hide();
+	      $('#Head').hide();
+	      return $('#View').hide();
+	    };
+
+	    Home.prototype.showMkt = function() {
+	      $('#MakeRes').show();
+	      $('#HomeBtn').hide();
+	      $('#MapDirs').show();
+	      $('#Contact').show();
+	      $('#Caption').show();
+	      $('#Head').show();
+	      return $('#View').show();
+	    };
+
+	    Home.prototype.showConfirm = function() {
+	      $('#MakeRes').hide();
+	      $('#HomeBtn').show();
+	      $('#MapDirs').show();
+	      $('#Contact').show();
+	      $('#Caption').hide();
+	      $('#Head').hide();
+	      return $('#View').hide();
+	    };
+
+	    Home.prototype.onMakeRes = function() {
+	      this.hideMkt();
+	      this.book.ready();
+	    };
+
+	    Home.prototype.onHome = function() {
+	      this.showMkt();
+	    };
+
+	    return Home;
+
+	  })();
+
+	}).call(this);
+
+
+/***/ },
+/* 356 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(module) {// Generated by CoffeeScript 1.12.2
+	(function() {
+	  var $, Pict,
+	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+	  $ = Util.requireModule('jquery', 'skyline');
+
+	  Pict = (function() {
+	    if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
+	      module.exports = Pict;
+	    }
+
+	    window.Pict = Pict;
+
+	    Pict.page = function(title, prev, curr, next) {
+	      var pict;
+	      pict = new Pict();
+	      Util.ready(function() {
+	        pict.roomPageHtml(title, prev, next);
+	        pict.createSlideShow('RoomSlides', curr, 600, 600);
+	      });
+	    };
+
+	    function Pict() {
+	      this.onSlides = bind(this.onSlides, this);
+	      this.onVideo = bind(this.onVideo, this);
+	      this.slide = null;
+	    }
+
+	    Pict.prototype.roomPageHtml = function(title, prev, next) {
+	      var htm, nextPage, prevPage;
+	      prevPage = " '" + prev + ".html' ";
+	      nextPage = " '" + next + ".html' ";
+	      htm = "<button class=\"home\" onclick=\"Util.toPage('../index.html');\">Home Page</button>\n<button class=\"prev\" onclick=\"Util.toPage(" + prevPage + ");\"    >Prev Cabin</button>\n<span   class=\"room\">" + title + "</span>\n<button class=\"next\" onclick=\"Util.toPage(" + nextPage + ");\"    >Next Cabin</button>";
+	      $('#top').append(htm);
+	    };
+
+	    Pict.prototype.createSlideShow = function(parentId, roomId, w, h) {
+	      var images, url;
+	      $('#' + parentId).append(this.wrapperHtml());
+	      images = (function(_this) {
+	        return function(Img) {
+	          var dir, htm, i, len, pic, ref;
+	          htm = "";
+	          dir = Img[roomId].dir;
+	          ref = Img[roomId]['pics'];
+	          for (i = 0, len = ref.length; i < len; i++) {
+	            pic = ref[i];
+	            htm += _this.li(pic, dir);
+	          }
+	          $('#slideshow').append(htm);
+	          return _this.initTINY(w, h);
+	        };
+	      })(this);
+	      url = roomId === 'M' ? "../data/Img.json" : "../../data/Img.json";
+	      $.getJSON(url, images);
+	    };
+
+	    Pict.prototype.li = function(pic, dir) {
+	      return "<li><h3>" + pic.name + "</h3><span>" + dir + pic.src + "</span><p>" + pic.p + "</p><a href=\"#\"><img src=\"" + dir + pic.src + "\" width=\"100\" height=\"70\" alt=\"" + pic.name + "\"/></a></li>";
+	    };
+
+	    Pict.prototype.onVideo = function() {
+	      window.slideshow.auto = false;
+	      $('#Slides').hide();
+	      $('#Video').show();
+	      $('#ViewVid').show();
+	      $('#VideoSee').text('View Slides').click(this.onSlides);
+	    };
+
+	    Pict.prototype.onSlides = function() {
+	      $('#ViewVid').hide();
+	      $('#Slides').show();
+	      window.slideshow.auto = true;
+	      $('#VideoSee').text('View Video').click(this.onVideo);
+	    };
+
+	    Pict.prototype.wrapperHtml = function() {
+	      return "<ul id=\"slideshow\"></ul>\n<div id=\"wrapper\">\n  <div id=\"fullsize\">\n    <div id=\"imgprev\" class=\"imgnav\" title=\"Previous Image\"></div>\n    <div id=\"imglink\"></div>\n    <div id=\"imgnext\" class=\"imgnav\" title=\"Next Image\"></div>\n    <div id=\"image\"></div>\n    <div id=\"information\">\n      <h3></h3>\n      <p></p>\n    </div>\n  </div>\n  <div id=\"thumbnails\">\n    <div id=\"slideleft\" title=\"Slide Left\"></div>\n    <div id=\"slidearea\">\n      <div id=\"slider\"></div>\n    </div>\n    <div id=\"slideright\" title=\"Slide Right\"></div>\n  </div>\n</div>";
+	    };
+
+	    Pict.prototype.resizeSlideView = function(w, h) {
+	      $('#wrapper').css({
+	        width: w,
+	        height: h
+	      });
+	      $('#fullsize').css({
+	        width: w,
+	        height: h - 100
+	      });
+	      $('#slidearea').css({
+	        width: w - 45,
+	        height: 61
+	      });
+	      $('#image').css({
+	        width: w - 100,
+	        height: h - 200
+	      });
+	      $('#image img').css({
+	        width: w - 100,
+	        height: h - 200
+	      });
+	      slideshow.width = w - 100;
+	      slideshow.height = h - 200;
+	    };
+
+	    Pict.prototype.initTINY = function(w, h) {
+	      var slideshow;
+	      Util.noop(w, h);
+	      TINY.ElemById('slideshow').style.display = 'none';
+	      TINY.ElemById('wrapper').style.display = 'block';
+	      window.slideshow = new TINY.slideshow("slideshow");
+	      slideshow = window.slideshow;
+	      slideshow.auto = false;
+	      slideshow.speed = 10;
+	      slideshow.link = "linkhover";
+	      slideshow.info = "information";
+	      slideshow.thumbs = "slider";
+	      slideshow.left = "slideleft";
+	      slideshow.right = "slideright";
+	      slideshow.scrollSpeed = 4;
+	      slideshow.spacing = 5;
+	      slideshow.active = "#fff";
+	      return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
+	    };
+
+
+	    /*
+	    initSlide:( w, h ) ->
+	      Util.noop( w, h )
+	      slide = new Slide("slideshow")
+	      Slide.ElemById('slideshow').style.display='none'
+	      Slide.ElemById('wrapper'  ).style.display='block'
+	      slide.auto=false #true
+	      slide.speed=10
+	      slide.link="linkhover"
+	      slide.info="information"
+	      slide.thumbs="slider"
+	      slide.left="slideleft"
+	      slide.right="slideright"
+	      slide.scrollSpeed=4
+	      slide.spacing=5
+	      slide.active="#fff"
+	       * @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
+	      slide.init("slide","image","imgprev","imgnext","imglink")
+	      slide
+	     */
+
+	    return Pict;
+
+	  })();
+
+	}).call(this);
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(357)(module)))
+
+/***/ },
+/* 357 */
+/***/ function(module, exports) {
+
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
+		}
+		return module;
+	}
+
+
+/***/ },
+/* 358 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// Generated by CoffeeScript 1.12.2
+	(function() {
+	  var Res,
+	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+	    hasProp = {}.hasOwnProperty;
+
+	  Res = (function() {
+	    module.exports = Res;
+
+	    Res.Rooms = __webpack_require__(359);
+
+	    Res.Resvs = __webpack_require__(360);
+
+	    Res.Days = __webpack_require__(361);
+
+	    Res.States = ["free", "mine", "depo", "book"];
+
+	    function Res(stream, store, Data, appName) {
+	      this.stream = stream;
+	      this.store = store;
+	      this.Data = Data;
+	      this.appName = appName;
+	      this.insertRooms = bind(this.insertRooms, this);
+	      this.subscribeToDays = bind(this.subscribeToDays, this);
+	      this.subscribeToResv = bind(this.subscribeToResv, this);
+	      this.subscribeToResId = bind(this.subscribeToResId, this);
+	      this.rooms = Res.Rooms;
+	      this.states = Res.States;
+	      this.book = null;
+	      this.master = null;
+	      this.days = null;
+	      this.beg = this.Data.toDateStr(this.Data.begDay);
+	      this.end = this.Data.advanceDate(this.beg, this.Data.numDays);
+	      if (this.Data.insertNewTables) {
+	        this.insertNewTables();
+	      }
+	      if (!this.Data.insertNewTables && this.appName === 'Guest') {
+	        this.dateRange();
+	      }
+	    }
+
+	    Res.prototype.dateRange = function(onComplete) {
+	      if (onComplete == null) {
+	        onComplete = null;
+	      }
+	      this.beg = this.Data.toDateStr(this.Data.begDay);
+	      this.end = this.Data.advanceDate(this.beg, this.Data.numDays - 1);
+	      this.store.subscribe('Days', 'none', 'range', (function(_this) {
+	        return function(days) {
+	          _this.days = days;
+	          if (onComplete != null) {
+	            return onComplete();
+	          }
+	        };
+	      })(this));
+	      this.store.range('Days', this.beg, this.end);
+	    };
+
+	    Res.prototype.insertNewTables = function() {
+	      this.insertRooms(Res.Rooms);
+	      this.insertRevs(Res.Resvs);
+	      return this.insertDays(Res.Resvs);
+	    };
+
+	    Res.prototype.dayBooked = function(roomId, date) {
+	      var day, entry;
+	      day = this.days != null ? this.days[date] : void 0;
+	      entry = (day != null) && day[roomId] ? day[roomId] : null;
+	      if (entry != null) {
+	        return entry.status;
+	      } else {
+	        return 'free';
+	      }
+	    };
+
+	    Res.prototype.createRoomUIs = function(rooms) {
 	      var key, room, roomUI, roomUIs;
 	      roomUIs = {};
 	      for (key in rooms) {
@@ -32250,25 +32653,275 @@
 	      return roomUIs;
 	    };
 
-	    Room.prototype.optSpa = function(roomId) {
+	    Res.prototype.optSpa = function(roomId) {
 	      return this.rooms[roomId].spa === 'O';
 	    };
 
-	    Room.prototype.hasSpa = function(roomId) {
+	    Res.prototype.hasSpa = function(roomId) {
 	      return this.rooms[roomId].spa === 'O' || this.rooms[roomId].spa === 'Y';
 	    };
 
-	    Room.prototype.initRooms = function() {
+	    Res.prototype.createRoomResv = function(status, method, roomUIs) {
+	      var day, obj, ref, resv, roomId, roomUI;
+	      resv = {};
+	      resv.resId = this.Data.genResId(roomUIs);
+	      resv.totals = 0;
+	      resv.paid = 0;
+	      resv.balance = 0;
+	      resv.status = status;
+	      resv.method = method;
+	      resv.booked = this.Data.today();
+	      resv.arrive = resv.resId.substr(0, 6);
+	      resv.rooms = {};
+	      for (roomId in roomUIs) {
+	        if (!hasProp.call(roomUIs, roomId)) continue;
+	        roomUI = roomUIs[roomId];
+	        if (!(!Util.isObjEmpty(roomUI.days))) {
+	          continue;
+	        }
+	        resv.rooms[roomId] = this.toResvRoom(roomUI);
+	        ref = roomUI.days;
+	        for (day in ref) {
+	          if (!hasProp.call(ref, day)) continue;
+	          obj = ref[day];
+	          if (day.status === 'mine') {
+	            day.status = status;
+	          }
+	          if (day < resv.arrive) {
+	            resv.arrive = day;
+	          }
+	        }
+	      }
+	      resv.payments = {};
+	      resv.cust = {};
+	      return resv;
+	    };
+
+	    Res.prototype.toResvRoom = function(roomUI) {
+	      var room;
+	      room = {};
+	      room.name = roomUI.name;
+	      room.total = roomUI.total;
+	      room.price = roomUI.price;
+	      room.guests = roomUI.guests;
+	      room.pets = roomUI.pets;
+	      room.spa = roomUI.spa;
+	      room.change = roomUI.change;
+	      room.reason = roomUI.reason;
+	      room.days = roomUI.days;
+	      room.nights = Util.keys(roomUI.days).length;
+	      return room;
+	    };
+
+	    Res.prototype.allocRooms = function(resv) {
+	      var day, dayId, ref, ref1, results, room, roomId;
+	      ref = resv.rooms;
+	      results = [];
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        room = ref[roomId];
+	        ref1 = room.days;
+	        for (dayId in ref1) {
+	          if (!hasProp.call(ref1, dayId)) continue;
+	          day = ref1[dayId];
+	          this.setDayRoom(day, resv.status, resv.resId);
+	        }
+	        delete room.group;
+	        results.push(this.allocRoom(roomId, room.days));
+	      }
+	      return results;
+	    };
+
+	    Res.prototype.allocRoom = function(roomId, days) {
+	      if (this.book != null) {
+	        this.book.onAlloc(roomId, days);
+	      }
+	      if (this.master != null) {
+	        return this.master.onAlloc(roomId, days);
+	      }
+	    };
+
+	    Res.prototype.subscribeToResId = function(resId, op, onRes) {
+	      return this.store.subscribe('Res', resId, op, (function(_this) {
+	        return function(res) {
+	          return onRes(res);
+	        };
+	      })(this));
+	    };
+
+	    Res.prototype.subscribeToResv = function(doAdd) {
+	      this.store.subscribe('Res', 'none', 'onAdd', (function(_this) {
+	        return function(add) {
+	          return doAdd(add);
+	        };
+	      })(this));
+	      return this.store.on('Res', 'onAdd');
+	    };
+
+	    Res.prototype.subscribeToDays = function(doPut) {
+	      this.store.subscribe('Days', 'none', 'onPut', (function(_this) {
+	        return function(onPut) {
+	          return doPut(onPut);
+	        };
+	      })(this));
+	      return this.store.on('Days', 'onPut');
+	    };
+
+	    Res.prototype.insertRooms = function(rooms) {
 	      this.store.subscribe('Room', 'none', 'make', (function(_this) {
 	        return function(make) {
-	          _this.store.insert('Room', _this.rooms);
+	          _this.store.insert('Room', rooms);
 	          return Util.noop(make);
 	        };
 	      })(this));
-	      return this.store.make('Room');
+	      this.store.make('Room');
 	    };
 
-	    return Room;
+	    Res.prototype.insertRevs = function(resvs) {
+	      var resId, resv;
+	      for (resId in resvs) {
+	        if (!hasProp.call(resvs, resId)) continue;
+	        resv = resvs[resId];
+	        this.allocRooms(resv);
+	      }
+	      this.store.subscribe('Res', 'none', 'make', (function(_this) {
+	        return function() {
+	          return _this.store.insert('Res', resvs);
+	        };
+	      })(this));
+	      this.store.make('Res');
+	    };
+
+	    Res.prototype.insertDays = function(resvs) {
+	      var day, dayId, ref;
+	      this.days = this.createDaysFromResvs(resvs, {});
+	      ref = this.days;
+	      for (dayId in ref) {
+	        if (!hasProp.call(ref, dayId)) continue;
+	        day = ref[dayId];
+	        this.store.add('Days', dayId, day);
+	      }
+	    };
+
+	    Res.prototype.createDaysFromResvs = function(resvs, days) {
+	      var resv, resvId;
+	      for (resvId in resvs) {
+	        if (!hasProp.call(resvs, resvId)) continue;
+	        resv = resvs[resvId];
+	        days = this.createDaysFromResv(resv, days);
+	      }
+	      return days;
+	    };
+
+	    Res.prototype.createDaysFromResv = function(resv, days) {
+	      var dayId, dayRoom, rday, ref, ref1, room, roomId;
+	      ref = resv.rooms;
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        room = ref[roomId];
+	        ref1 = room.days;
+	        for (dayId in ref1) {
+	          if (!hasProp.call(ref1, dayId)) continue;
+	          rday = ref1[dayId];
+	          dayRoom = this.createDayRoom(days, dayId, roomId);
+	          this.setDayRoom(dayRoom, rday.status, rday.resId);
+	        }
+	      }
+	      return days;
+	    };
+
+	    Res.prototype.createDayRoom = function(days, dayId, roomIdA) {
+	      var roomId;
+	      roomId = roomIdA.toString();
+	      if (days[dayId] == null) {
+	        days[dayId] = {};
+	      }
+	      days[dayId][roomId] = {};
+	      return days[dayId][roomId];
+	    };
+
+	    Res.prototype.createCust = function(first, last, phone, email, source) {
+	      var cust;
+	      cust = {};
+	      cust.custId = this.Data.genCustId(phone);
+	      cust.first = first;
+	      cust.last = last;
+	      cust.phone = phone;
+	      cust.email = email;
+	      cust.source = source;
+	      return cust;
+	    };
+
+	    Res.prototype.createPayment = function(amount, method, last4, purpose) {
+	      var payment;
+	      payment = {};
+	      payment.amount = amount;
+	      payment.date = this.Data.today();
+	      payment.method = method;
+	      payment["with"] = last4;
+	      payment.purpose = purpose;
+	      payment.cc = '';
+	      payment.exp = '';
+	      payment.cvc = '';
+	      return payment;
+	    };
+
+	    Res.prototype.setResvStatus = function(resv, post, purpose) {
+	      if (post === 'post') {
+	        if (purpose === 'PayInFull' || purpose === 'PayOffDeposit') {
+	          resv.status = 'book';
+	        }
+	        if (purpose === 'Deposit') {
+	          resv.status = 'depo';
+	        }
+	      } else if (post === 'deny') {
+	        resv.status = 'free';
+	      }
+	      if (!Util.inArray(['book', 'depo', 'free'], resv.status)) {
+	        Util.error('Pay.setResStatus() unknown status ', resv.status);
+	        resv.status = 'free';
+	      }
+	      return resv.status;
+	    };
+
+	    Res.prototype.postResv = function(resv, post, totals, amount, method, last4, purpose) {
+	      var payId, status;
+	      status = this.setResvStatus(resv, post, purpose);
+	      if (status === 'book' || status === 'depo') {
+	        payId = this.Data.genPaymentId(resv.resId, resv.payments);
+	        resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
+	        resv.totals = totals;
+	        resv.paid += amount;
+	        resv.balance = totals - resv.paid;
+	        this.allocRooms(resv);
+	        this.store.add('Res', resv.resId, resv);
+	        return this.days = this.mergePostDays(resv, this.days);
+	      }
+	    };
+
+	    Res.prototype.mergePostDays = function(resv, allDays) {
+	      var dayRoom, newDay, newDayId, newDays, room, roomId;
+	      newDays = this.createDaysFromResv(resv, {});
+	      for (newDayId in newDays) {
+	        if (!hasProp.call(newDays, newDayId)) continue;
+	        newDay = newDays[newDayId];
+	        for (roomId in newDay) {
+	          if (!hasProp.call(newDay, roomId)) continue;
+	          room = newDay[roomId];
+	          dayRoom = this.createDayRoom(allDays, newDayId, roomId);
+	          this.setDayRoom(dayRoom, room.status, room.resId);
+	          this.store.put('Days', newDayId + '/' + roomId, dayRoom);
+	        }
+	      }
+	      return allDays;
+	    };
+
+	    Res.prototype.setDayRoom = function(dayRoom, status, resId) {
+	      dayRoom.status = status;
+	      return dayRoom.resId = resId;
+	    };
+
+	    return Res;
 
 	  })();
 
@@ -32276,7 +32929,7 @@
 
 
 /***/ },
-/* 356 */
+/* 359 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -32408,619 +33061,7 @@
 	};
 
 /***/ },
-/* 357 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// Generated by CoffeeScript 1.12.2
-	(function() {
-	  var $, Home,
-	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-	    hasProp = {}.hasOwnProperty;
-
-	  $ = __webpack_require__(1);
-
-	  Home = (function() {
-	    module.exports = Home;
-
-	    function Home(stream, store, Data, room1, pict) {
-	      this.stream = stream;
-	      this.store = store;
-	      this.Data = Data;
-	      this.room = room1;
-	      this.pict = pict;
-	      this.onHome = bind(this.onHome, this);
-	      this.onMakeRes = bind(this.onMakeRes, this);
-	      this.rooms = this.room.rooms;
-	      this.roomUIs = this.room.roomUIs;
-	    }
-
-	    Home.prototype.ready = function(book) {
-	      this.book = book;
-	      $('#MakeRes').click(this.onMakeRes);
-	      $('#HomeBtn').click(this.onHome);
-	      $('#MapDirs').click((function(_this) {
-	        return function() {
-	          return Util.toPage('rooms/X.html');
-	        };
-	      })(this));
-	      $('#Contact').click((function(_this) {
-	        return function() {
-	          return Util.toPage('rooms/Y.html');
-	        };
-	      })(this));
-	      $('#Head').append(this.headHtml());
-	      this.listRooms();
-	      this.pict.createSlideShow('Slides', 'M', 600, 600);
-	      $('#VideoSee').click(this.pict.onVideo);
-	    };
-
-	    Home.prototype.headHtml = function() {
-	      return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Owner On Site</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Hiking</li>\n  <li>Free Wi-Fi</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>Kitchens in Every Cabin</li>\n  <li>3 Private Spas</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
-	    };
-
-	    Home.prototype.listRooms = function() {
-	      var htm, ref, room, roomId;
-	      $('#Slides').css({
-	        left: "22%",
-	        width: "78%"
-	      });
-	      htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
-	      htm += "<div class=\"RoomSee\">See Our Cabins</div>";
-	      htm += "<div class=\"FootSee\">Skyline Cottages Where the River Meets the Mountains</div>";
-	      htm += "<ul  class=\"RoomUL\">";
-	      ref = this.rooms;
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        room = ref[roomId];
-	        htm += "<li class=\"RoomLI\"><a href=\"rooms/" + roomId + ".html\">" + room.name + "</a></li>";
-	      }
-	      htm += "</ul>";
-	      $("#View").append(htm);
-	      $("#View").append("<button id=\"VideoSee\" class=\"btn btn-primary\"\">View Video</button>");
-	    };
-
-	    Home.prototype.hideMkt = function() {
-	      $('#MakeRes').hide();
-	      $('#HomeBtn').hide();
-	      $('#MapDirs').hide();
-	      $('#Contact').hide();
-	      $('#Caption').hide();
-	      $('#Head').hide();
-	      return $('#View').hide();
-	    };
-
-	    Home.prototype.showMkt = function() {
-	      $('#MakeRes').show();
-	      $('#HomeBtn').hide();
-	      $('#MapDirs').show();
-	      $('#Contact').show();
-	      $('#Caption').show();
-	      $('#Head').show();
-	      return $('#View').show();
-	    };
-
-	    Home.prototype.showConfirm = function() {
-	      $('#MakeRes').hide();
-	      $('#HomeBtn').show();
-	      $('#MapDirs').show();
-	      $('#Contact').show();
-	      $('#Caption').hide();
-	      $('#Head').hide();
-	      return $('#View').hide();
-	    };
-
-	    Home.prototype.onMakeRes = function() {
-	      this.hideMkt();
-	      this.book.ready();
-	    };
-
-	    Home.prototype.onHome = function() {
-	      this.showMkt();
-	    };
-
-	    return Home;
-
-	  })();
-
-	}).call(this);
-
-
-/***/ },
-/* 358 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(module) {// Generated by CoffeeScript 1.12.2
-	(function() {
-	  var $, Pict,
-	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-	  $ = Util.requireModule('jquery', 'skyline');
-
-	  Pict = (function() {
-	    if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
-	      module.exports = Pict;
-	    }
-
-	    window.Pict = Pict;
-
-	    Pict.page = function(title, prev, curr, next) {
-	      var pict;
-	      pict = new Pict();
-	      Util.ready(function() {
-	        pict.roomPageHtml(title, prev, next);
-	        pict.createSlideShow('RoomSlides', curr, 600, 600);
-	      });
-	    };
-
-	    function Pict() {
-	      this.onSlides = bind(this.onSlides, this);
-	      this.onVideo = bind(this.onVideo, this);
-	      this.slide = null;
-	    }
-
-	    Pict.prototype.roomPageHtml = function(title, prev, next) {
-	      var htm, nextPage, prevPage;
-	      prevPage = " '" + prev + ".html' ";
-	      nextPage = " '" + next + ".html' ";
-	      htm = "<button class=\"home\" onclick=\"Util.toPage('../index.html');\">Home Page</button>\n<button class=\"prev\" onclick=\"Util.toPage(" + prevPage + ");\"    >Prev Cabin</button>\n<span   class=\"room\">" + title + "</span>\n<button class=\"next\" onclick=\"Util.toPage(" + nextPage + ");\"    >Next Cabin</button>";
-	      $('#top').append(htm);
-	    };
-
-	    Pict.prototype.createSlideShow = function(parentId, roomId, w, h) {
-	      var images, url;
-	      $('#' + parentId).append(this.wrapperHtml());
-	      images = (function(_this) {
-	        return function(Img) {
-	          var dir, htm, i, len, pic, ref;
-	          htm = "";
-	          dir = Img[roomId].dir;
-	          ref = Img[roomId]['pics'];
-	          for (i = 0, len = ref.length; i < len; i++) {
-	            pic = ref[i];
-	            htm += _this.li(pic, dir);
-	          }
-	          $('#slideshow').append(htm);
-	          return _this.initTINY(w, h);
-	        };
-	      })(this);
-	      url = roomId === 'M' ? "../data/Img.json" : "../../data/Img.json";
-	      $.getJSON(url, images);
-	    };
-
-	    Pict.prototype.li = function(pic, dir) {
-	      return "<li><h3>" + pic.name + "</h3><span>" + dir + pic.src + "</span><p>" + pic.p + "</p><a href=\"#\"><img src=\"" + dir + pic.src + "\" width=\"100\" height=\"70\" alt=\"" + pic.name + "\"/></a></li>";
-	    };
-
-	    Pict.prototype.onVideo = function() {
-	      window.slideshow.auto = false;
-	      $('#Slides').hide();
-	      $('#Video').show();
-	      $('#ViewVid').show();
-	      $('#VideoSee').text('View Slides').click(this.onSlides);
-	    };
-
-	    Pict.prototype.onSlides = function() {
-	      $('#ViewVid').hide();
-	      $('#Slides').show();
-	      window.slideshow.auto = true;
-	      $('#VideoSee').text('View Video').click(this.onVideo);
-	    };
-
-	    Pict.prototype.wrapperHtml = function() {
-	      return "<ul id=\"slideshow\"></ul>\n<div id=\"wrapper\">\n  <div id=\"fullsize\">\n    <div id=\"imgprev\" class=\"imgnav\" title=\"Previous Image\"></div>\n    <div id=\"imglink\"></div>\n    <div id=\"imgnext\" class=\"imgnav\" title=\"Next Image\"></div>\n    <div id=\"image\"></div>\n    <div id=\"information\">\n      <h3></h3>\n      <p></p>\n    </div>\n  </div>\n  <div id=\"thumbnails\">\n    <div id=\"slideleft\" title=\"Slide Left\"></div>\n    <div id=\"slidearea\">\n      <div id=\"slider\"></div>\n    </div>\n    <div id=\"slideright\" title=\"Slide Right\"></div>\n  </div>\n</div>";
-	    };
-
-	    Pict.prototype.initTINY = function(w, h) {
-	      var slideshow;
-	      Util.noop(w, h);
-	      TINY.ElemById('slideshow').style.display = 'none';
-	      TINY.ElemById('wrapper').style.display = 'block';
-	      window.slideshow = new TINY.slideshow("slideshow");
-	      slideshow = window.slideshow;
-	      slideshow.auto = false;
-	      slideshow.speed = 10;
-	      slideshow.link = "linkhover";
-	      slideshow.info = "information";
-	      slideshow.thumbs = "slider";
-	      slideshow.left = "slideleft";
-	      slideshow.right = "slideright";
-	      slideshow.scrollSpeed = 4;
-	      slideshow.spacing = 5;
-	      slideshow.active = "#fff";
-	      return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
-	    };
-
-	    Pict.prototype.initSlide = function(w, h) {
-	      var slide;
-	      Util.noop(w, h);
-	      slide = new Slide("slideshow");
-	      Slide.ElemById('slideshow').style.display = 'none';
-	      Slide.ElemById('wrapper').style.display = 'block';
-	      slide.auto = false;
-	      slide.speed = 10;
-	      slide.link = "linkhover";
-	      slide.info = "information";
-	      slide.thumbs = "slider";
-	      slide.left = "slideleft";
-	      slide.right = "slideright";
-	      slide.scrollSpeed = 4;
-	      slide.spacing = 5;
-	      slide.active = "#fff";
-	      slide.init("slide", "image", "imgprev", "imgnext", "imglink");
-	      return slide;
-	    };
-
-	    Pict.prototype.resizeSlideView = function(w, h) {
-	      $('#wrapper').css({
-	        width: w,
-	        height: h
-	      });
-	      $('#fullsize').css({
-	        width: w,
-	        height: h - 100
-	      });
-	      $('#slidearea').css({
-	        width: w - 45,
-	        height: 61
-	      });
-	      $('#image').css({
-	        width: w - 100,
-	        height: h - 200
-	      });
-	      $('#image img').css({
-	        width: w - 100,
-	        height: h - 200
-	      });
-	      slideshow.width = w - 100;
-	      slideshow.height = h - 200;
-	    };
-
-	    return Pict;
-
-	  })();
-
-	}).call(this);
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(359)(module)))
-
-/***/ },
-/* 359 */
-/***/ function(module, exports) {
-
-	module.exports = function(module) {
-		if(!module.webpackPolyfill) {
-			module.deprecate = function() {};
-			module.paths = [];
-			// module.parent = undefined by default
-			module.children = [];
-			module.webpackPolyfill = 1;
-		}
-		return module;
-	}
-
-
-/***/ },
 /* 360 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// Generated by CoffeeScript 1.12.2
-	(function() {
-	  var Res,
-	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-	    hasProp = {}.hasOwnProperty;
-
-	  Res = (function() {
-	    module.exports = Res;
-
-	    Res.Resvs = __webpack_require__(361);
-
-	    Res.Days = __webpack_require__(362);
-
-	    function Res(stream, store, Data, room1) {
-	      this.stream = stream;
-	      this.store = store;
-	      this.Data = Data;
-	      this.room = room1;
-	      this.subscribeToDays = bind(this.subscribeToDays, this);
-	      this.subscribeToResId = bind(this.subscribeToResId, this);
-	      if (this.Data.testing) {
-	        this.insertTestResvs();
-	      }
-	      if (this.Data.testing) {
-	        this.insertDaysResvs();
-	      }
-	      this.book = null;
-	      this.master = null;
-	    }
-
-	    Res.prototype.dayBooked = function(roomId, date) {
-	      var day, entry;
-	      day = Res.Days[date];
-	      entry = (day != null) && day[roomId] ? day[roomId] : null;
-	      if (entry != null) {
-	        return entry.status;
-	      } else {
-	        return 'free';
-	      }
-	    };
-
-	    Res.prototype.createRoomResv = function(status, method, roomUIs) {
-	      var day, obj, ref, resv, roomId, roomUI;
-	      resv = {};
-	      resv.resId = this.Data.genResId(roomUIs);
-	      resv.totals = 0;
-	      resv.paid = 0;
-	      resv.balance = 0;
-	      resv.status = status;
-	      resv.method = method;
-	      resv.booked = this.Data.today();
-	      resv.arrive = resv.resId.substr(1, 8);
-	      resv.rooms = {};
-	      for (roomId in roomUIs) {
-	        if (!hasProp.call(roomUIs, roomId)) continue;
-	        roomUI = roomUIs[roomId];
-	        if (!(!Util.isObjEmpty(roomUI.days))) {
-	          continue;
-	        }
-	        resv.rooms[roomId] = this.toResvRoom(roomUI);
-	        ref = roomUI.days;
-	        for (day in ref) {
-	          if (!hasProp.call(ref, day)) continue;
-	          obj = ref[day];
-	          if (day.status === 'mine') {
-	            day.status = status;
-	          }
-	          if (day < resv.arrive) {
-	            resv.arrive = day;
-	          }
-	        }
-	      }
-	      resv.payments = {};
-	      resv.cust = {};
-	      this.subscribeToResId(resv.resId);
-	      return resv;
-	    };
-
-	    Res.prototype.toResvRoom = function(roomUI) {
-	      var room;
-	      room = {};
-	      room.name = roomUI.name;
-	      room.total = roomUI.total;
-	      room.price = roomUI.price;
-	      room.guests = roomUI.guests;
-	      room.pets = roomUI.pets;
-	      room.spa = roomUI.spa;
-	      room.change = roomUI.change;
-	      room.reason = roomUI.reason;
-	      room.days = roomUI.days;
-	      room.nights = Util.keys(roomUI.days).length;
-	      return room;
-	    };
-
-	    Res.prototype.updateRooms = function(resv) {
-	      var day, dayId, ref, ref1, results, room, roomId;
-	      ref = resv.rooms;
-	      results = [];
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        room = ref[roomId];
-	        ref1 = room.days;
-	        for (dayId in ref1) {
-	          if (!hasProp.call(ref1, dayId)) continue;
-	          day = ref1[dayId];
-	          day.status = resv.status;
-	          day.resId = resv.resId;
-	        }
-	        delete room.group;
-	        results.push(this.allocRoom(roomId, room.days));
-	      }
-	      return results;
-	    };
-
-	    Res.prototype.allocRoom = function(roomId, days) {
-	      if (this.book != null) {
-	        this.book.onAlloc(roomId, days);
-	      }
-	      if (this.master != null) {
-	        return this.master.onAlloc(roomId, days);
-	      }
-	    };
-
-	    Res.prototype.subscribeToResId = function(resId) {
-	      this.store.subscribe('Res', resId, 'onAdd', (function(_this) {
-	        return function(onAdd) {
-	          return Util.log('Res.subscribeToResId onAdd', resId, onAdd);
-	        };
-	      })(this));
-	      this.store.subscribe('Res', resId, 'onPut', (function(_this) {
-	        return function(onPut) {
-	          return Util.log('Res.subscribeToResId onPut', resId, onPut);
-	        };
-	      })(this));
-	      this.store.subscribe('Res', resId, 'onDel', (function(_this) {
-	        return function(onDel) {
-	          return Util.log('Res.subscribeToResId onDel', resId, onDel);
-	        };
-	      })(this));
-	      this.store.on('Res', 'onAdd', resId);
-	      this.store.on('Res', 'onPut', resId);
-	      return this.store.on('Res', 'onDel', resId);
-	    };
-
-	    Res.prototype.subscribeToDays = function() {
-	      this.store.subscribe('Days', 'none', 'onAdd', (function(_this) {
-	        return function(onAdd) {
-	          return Util.log('Res.subscribeToDays onAdd', onAdd);
-	        };
-	      })(this));
-	      this.store.subscribe('Days', 'none', 'onPut', (function(_this) {
-	        return function(onPut) {
-	          return Util.log('Res.subscribeToDays onPut', onPut);
-	        };
-	      })(this));
-	      this.store.subscribe('Days', 'none', 'onDel', (function(_this) {
-	        return function(onDel) {
-	          return Util.log('Res.subscribeToDays onDel', onDel);
-	        };
-	      })(this));
-	      this.store.on('Days', 'onAdd');
-	      this.store.on('Days', 'onPut');
-	      return this.store.on('Days', 'onDel');
-	    };
-
-	    Res.prototype.insertTestResvs = function() {
-	      var ref, resId, resv;
-	      this.store.subscribe('Res', 'none', 'make', (function(_this) {
-	        return function(make) {
-	          _this.store.insert('Res', Res.Resvs);
-	          return Util.noop(make);
-	        };
-	      })(this));
-	      this.store.make('Res');
-	      ref = this.testResvs;
-	      for (resId in ref) {
-	        if (!hasProp.call(ref, resId)) continue;
-	        resv = ref[resId];
-	        this.updateRooms(resv);
-	      }
-	    };
-
-	    Res.prototype.insertDaysResvs = function() {
-	      var dayId, dayd, dayr, days, ref, ref1, ref2, resv, resvId, room, roomId;
-	      days = {};
-	      ref = this.testResvs;
-	      for (resvId in ref) {
-	        if (!hasProp.call(ref, resvId)) continue;
-	        resv = ref[resvId];
-	        ref1 = resv.rooms;
-	        for (roomId in ref1) {
-	          if (!hasProp.call(ref1, roomId)) continue;
-	          room = ref1[roomId];
-	          ref2 = room.days;
-	          for (dayId in ref2) {
-	            if (!hasProp.call(ref2, dayId)) continue;
-	            dayr = ref2[dayId];
-	            if (days[dayId] == null) {
-	              days[dayId] = {};
-	            }
-	            days[dayId][roomId] = {};
-	            dayd = days[dayId][roomId];
-	            dayd.status = dayr.status;
-	            dayd.resId = dayr.resId;
-	          }
-	        }
-	      }
-	      this.store.subscribe('Days', 'none', 'make', (function(_this) {
-	        return function(make) {
-	          _this.store.insert('Days', days);
-	          return Util.noop(make);
-	        };
-	      })(this));
-	      this.store.make('Days');
-	      this.subscribeToDays();
-	    };
-
-	    Res.prototype.makeAllTables = function() {
-	      this.store.make('Res');
-	      this.store.make('Room');
-	      this.store.make('Days');
-	      this.store.make('Payment');
-	      return this.store.make('Cust');
-	    };
-
-	    Res.prototype.createCust = function(first, last, phone, email, source) {
-	      var cust;
-	      cust = {};
-	      cust.custId = this.Data.genCustId(phone);
-	      cust.first = first;
-	      cust.last = last;
-	      cust.phone = phone;
-	      cust.email = email;
-	      cust.source = source;
-	      return cust;
-	    };
-
-	    Res.prototype.createPayment = function(amount, method, last4, purpose) {
-	      var payment;
-	      payment = {};
-	      payment.amount = amount;
-	      payment.date = this.Data.today();
-	      payment.method = method;
-	      payment["with"] = last4;
-	      payment.purpose = purpose;
-	      payment.cc = '';
-	      payment.exp = '';
-	      payment.cvc = '';
-	      return payment;
-	    };
-
-	    Res.prototype.setResvStatus = function(resv, post, purpose) {
-	      if (post === 'post') {
-	        if (purpose === 'PayInFull' || purpose === 'PayOffDeposit') {
-	          resv.status = 'book';
-	        }
-	        if (purpose === 'Deposit') {
-	          resv.status = 'depo';
-	        }
-	      } else if (post === 'deny') {
-	        resv.status = 'free';
-	      }
-	      if (!Util.inArray(['book', 'depo', 'free'], resv.status)) {
-	        Util.error('Pay.setResStatus() unknown status ', resv.status);
-	        resv.status = 'free';
-	      }
-	    };
-
-	    Res.prototype.postResv = function(resv, post, totals, amount, method, last4, purpose) {
-	      var payId;
-	      this.setResvStatus(resv, post, purpose);
-	      payId = this.Data.genPaymentId(resv.resId, resv.payments);
-	      resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
-	      resv.totals = totals;
-	      resv.paid += amount;
-	      resv.balance = totals - resv.paid;
-	      this.updateRooms(resv);
-	      if (status === 'post') {
-	        this.store.add('Res', resv.resId, resv);
-	        this.postDays(resv);
-	      }
-	      return Util.log('Res.postResv()', resv);
-	    };
-
-	    Res.prototype.postDays = function(resv) {
-	      var dayId, dayd, dayr, ref, results, room, roomId;
-	      ref = resv.rooms;
-	      results = [];
-	      for (roomId in ref) {
-	        if (!hasProp.call(ref, roomId)) continue;
-	        room = ref[roomId];
-	        results.push((function() {
-	          var ref1, results1;
-	          ref1 = room.days;
-	          results1 = [];
-	          for (dayId in ref1) {
-	            if (!hasProp.call(ref1, dayId)) continue;
-	            dayr = ref1[dayId];
-	            dayd = {};
-	            dayd.status = dayr.status;
-	            dayd.resId = dayr.resId;
-	            results1.push(this.store.add('Days/' + dayId, roomId, dayd));
-	          }
-	          return results1;
-	        }).call(this));
-	      }
-	      return results;
-	    };
-
-	    return Res;
-
-	  })();
-
-	}).call(this);
-
-
-/***/ },
-/* 361 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -33421,7 +33462,7 @@
 	};
 
 /***/ },
-/* 362 */
+/* 361 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -33532,7 +33573,7 @@
 	};
 
 /***/ },
-/* 363 */
+/* 362 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -33543,16 +33584,15 @@
 
 	  $ = __webpack_require__(1);
 
-	  Credit = __webpack_require__(364);
+	  Credit = __webpack_require__(363);
 
 	  Pay = (function() {
 	    module.exports = Pay;
 
-	    function Pay(stream, store, Data, room, res, home) {
+	    function Pay(stream, store, Data, res, home) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
-	      this.room = room;
 	      this.res = res;
 	      this.home = home;
 	      this.onError = bind(this.onError, this);
@@ -33745,7 +33785,7 @@
 	    Pay.prototype.spa = function(roomId) {
 	      var change, has;
 	      change = this.resv.rooms[roomId].change;
-	      has = this.room.hasSpa(roomId);
+	      has = this.res.hasSpa(roomId);
 	      if (!has) {
 	        return '';
 	      } else if (change === -20) {
@@ -33774,7 +33814,10 @@
 	    };
 
 	    Pay.prototype.canMakeDeposit = function(resv) {
-	      return resv.arrive >= this.Data.advanceDate(resv.booked, 7);
+	      var advance, arrive;
+	      arrive = parseInt(resv.arrive);
+	      advance = parseInt(this.Data.advanceDate(resv.booked, 7));
+	      return arrive >= advance;
 	    };
 
 	    Pay.prototype.confirmEmail = function(resv) {
@@ -33933,8 +33976,7 @@
 	    Pay.prototype.onCharge = function(obj) {
 	      if (obj['outcome'].type === 'authorized') {
 	        this.doPost(this.resv);
-	        this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
-	        return this.confirmEmail(this.resv);
+	        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
 	      } else {
 	        this.amount = 0;
 	        this.doDeny(this.resv);
@@ -34025,7 +34067,7 @@
 
 
 /***/ },
-/* 364 */
+/* 363 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {// Generated by CoffeeScript 1.12.2
@@ -34103,7 +34145,7 @@
 	        };
 	      })(this);
 	      num.addEventListener('input', updateType);
-	      return validate = (function(_this) {
+	      validate = (function(_this) {
 	        return function(e) {
 	          var card, expiryObj;
 	          Util.noop(e);
@@ -34120,6 +34162,7 @@
 	          }
 	        };
 	      })(this);
+	      return Util.noop(validate);
 
 	      /*
 	      validateF = (e) =>
@@ -34770,10 +34813,10 @@
 
 	}).call(this);
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(359)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(357)(module)))
 
 /***/ },
-/* 365 */
+/* 364 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -34787,20 +34830,18 @@
 	  Book = (function() {
 	    module.exports = Book;
 
-	    function Book(stream, store, Data, room1, res, pay, pict) {
+	    function Book(stream, store, Data, res, pay, pict) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
-	      this.room = room1;
 	      this.res = res;
 	      this.pay = pay;
 	      this.pict = pict;
-	      this.insert = bind(this.insert, this);
-	      this.make = bind(this.make, this);
 	      this.onAlloc = bind(this.onAlloc, this);
 	      this.onCellBook = bind(this.onCellBook, this);
 	      this.onTest = bind(this.onTest, this);
 	      this.onPop = bind(this.onPop, this);
+	      this.resetRooms = bind(this.resetRooms, this);
 	      this.onDay = bind(this.onDay, this);
 	      this.onMonth = bind(this.onMonth, this);
 	      this.onSpa = bind(this.onSpa, this);
@@ -34809,32 +34850,22 @@
 	      this.updatePrice = bind(this.updatePrice, this);
 	      this.calcPrice = bind(this.calcPrice, this);
 	      this.onGoToPay = bind(this.onGoToPay, this);
-	      this.rooms = null;
+	      this.rooms = this.res.rooms;
 	      this.roomUIs = null;
 	      this.res.book = this;
-	      this.myDays = 0;
-	      this.today = new Date();
-	      this.monthIdx = this.today.getMonth();
-	      this.monthIdx = 4 <= this.monthIdx && this.monthIdx <= 9 ? this.monthIdx : 4;
-	      this.year = this.Data.year;
-	      this.month = this.Data.months[this.monthIdx];
-	      this.numDays = 15;
-	      this.begMay = 15;
-	      this.begDay = this.month === 'May' ? this.begMay : 1;
 	      this.$cells = [];
 	      this.totals = 0;
 	      this.method = 'site';
 	    }
 
 	    Book.prototype.ready = function() {
-	      this.rooms = this.room.rooms;
-	      this.roomUIs = this.room.createRoomUIs(this.rooms);
+	      this.roomUIs = this.res.createRoomUIs(this.rooms);
 	      $('#Book').empty();
 	      $('#Pays').empty();
 	      $('#Book').append(this.bookHtml());
 	      $('#Insts').append(this.instructHtml());
 	      $('#Inits').append(this.initsHtml());
-	      $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
+	      $('#Rooms').append(this.roomsHtml(this.Data.year, this.Data.monthIdx, this.Data.begDay, this.Data.numDays));
 	      $('#Guest').append(this.guestHtml());
 	      $('.guests').change(this.onGuests);
 	      $('.pets').change(this.onPets);
@@ -34844,13 +34875,16 @@
 	      $('#Pop').click(this.onPop);
 	      $('#Test').click(this.onTest);
 	      $('#GoToPay').click(this.onGoToPay);
+	      $('#Totals').css({
+	        height: '21px'
+	      });
 	      $('#Navb').hide();
 	      $('#Book').show();
 	      return this.roomsJQuery();
 	    };
 
 	    Book.prototype.bookHtml = function() {
-	      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Insts\"></div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
+	      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Insts\"></div>\n<div><div id=\"Inits\"></div></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
 	    };
 
 	    Book.prototype.instructHtml = function() {
@@ -34859,9 +34893,9 @@
 
 	    Book.prototype.initsHtml = function() {
 	      var htm;
-	      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (this.htmlSelect("Months", this.Data.season, this.month, 'months')) + "</label>";
-	      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.begDay, 'days')) + "</label>";
-	      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + this.year + "</label>";
+	      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (this.htmlSelect("Months", this.Data.season, this.Data.month, 'months')) + "</label>";
+	      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.Data.begDay, 'days')) + "</label>";
+	      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + (2000 + this.Data.year) + "</label>";
 	      htm += "<span  id=\"Pop\"  class=\"Test\">Pop</span>";
 	      htm += "<span  id=\"Test\" class=\"Test\">Test</span>";
 	      return htm;
@@ -34876,13 +34910,13 @@
 	      weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
 	      htm = "<table><thead>";
 	      htm += "<tr><th></th><th></th><th></th><th></th><th></th>";
-	      for (day = i = 1, ref = this.numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
-	        weekday = this.Data.weekdays[(weekdayIdx + this.begDay + day - 2) % 7];
+	      for (day = i = 1, ref = numDays; 1 <= ref ? i <= ref : i >= ref; day = 1 <= ref ? ++i : --i) {
+	        weekday = this.Data.weekdays[(weekdayIdx + begDay + day - 2) % 7];
 	        htm += "<th>" + weekday + "</th>";
 	      }
 	      htm += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th>";
-	      for (day = j = 1, ref1 = this.numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
-	        htm += "<th>" + (this.dayMonth(day)) + "</th>";
+	      for (day = j = 1, ref1 = numDays; 1 <= ref1 ? j <= ref1 : j >= ref1; day = 1 <= ref1 ? ++j : --j) {
+	        htm += "<th>" + (this.Data.dayMonth(day)) + "</th>";
 	      }
 	      htm += "<th>Total</th></tr></thead><tbody>";
 	      ref2 = this.rooms;
@@ -34891,12 +34925,12 @@
 	        room = ref2[roomId];
 	        htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td>" + (this.spa(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
 	        for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
-	          htm += this.createCell(roomId, room, this.toDateStr(day));
+	          htm += this.createCell(roomId, room, day);
 	        }
 	        htm += "<td class=\"room-total\" id=\"" + roomId + "T\"></td></tr>";
 	      }
 	      htm += "<tr>";
-	      for (day = l = 1, ref4 = this.numDays + 5; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
+	      for (day = l = 1, ref4 = numDays + 5; 1 <= ref4 ? l <= ref4 : l >= ref4; day = 1 <= ref4 ? ++l : --l) {
 	        htm += "<td></td>";
 	      }
 	      htm += "<td class=\"room-total\" id=\"Totals\">&nbsp;</td></tr>";
@@ -34978,10 +35012,27 @@
 	      return msg;
 	    };
 
-	    Book.prototype.createCell = function(roomId, roomRm, date) {
-	      var status;
+	    Book.prototype.createCell = function(roomId, roomRm, day) {
+	      var date, status;
+	      date = this.Data.toDateStr(this.Data.dayMonth(day));
 	      status = this.res.dayBooked(roomId, date);
-	      return "<td id=\"R" + (roomId + date) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
+	      return "<td id=\"" + (this.cellId(date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
+	    };
+
+	    Book.prototype.cellId = function(date, roomId) {
+	      return 'R' + date + roomId;
+	    };
+
+	    Book.prototype.roomIdCell = function($cell) {
+	      return $cell.attr('id').substr(7, 1);
+	    };
+
+	    Book.prototype.dateCell = function($cell) {
+	      return $cell.attr('id').substr(1, 6);
+	    };
+
+	    Book.prototype.$Cell = function(date, roomId) {
+	      return $('#' + this.cellId(date, roomId));
 	    };
 
 	    Book.prototype.roomsJQuery = function() {
@@ -34996,9 +35047,9 @@
 	      for (roomId in ref1) {
 	        roomUI = ref1[roomId];
 	        roomUI.$ = $('#' + roomId);
-	        for (day = j = 1, ref2 = this.numDays; 1 <= ref2 ? j <= ref2 : j >= ref2; day = 1 <= ref2 ? ++j : --j) {
-	          date = this.toDateStr(day);
-	          $cell = $('#R' + roomId + date);
+	        for (day = j = 1, ref2 = this.Data.numDays; 1 <= ref2 ? j <= ref2 : j >= ref2; day = 1 <= ref2 ? ++j : --j) {
+	          date = this.Data.toDateStr(this.Data.dayMonth(day));
+	          $cell = this.$Cell(date, roomId);
 	          $cell.click((function(_this) {
 	            return function(event) {
 	              return _this.onCellBook(event);
@@ -35052,14 +35103,6 @@
 	      }
 	    };
 
-	    Book.prototype.toDay = function(date) {
-	      if (date.charAt(6) === '0') {
-	        return date.substr(7, 8);
-	      } else {
-	        return date.substr(6, 8);
-	      }
-	    };
-
 	    Book.prototype.g = function(roomId) {
 	      return this.htmlSelect(roomId + 'G', this.Data.persons, 2, 'guests', this.rooms[roomId].max);
 	    };
@@ -35105,7 +35148,7 @@
 	    };
 
 	    Book.prototype.spa = function(roomId) {
-	      if (this.room.optSpa(roomId)) {
+	      if (this.res.optSpa(roomId)) {
 	        return "<input id=\"" + roomId + "SpaCheck\" class=\"SpaCheck\" type=\"checkbox\" value=\"" + roomId + "\" checked>";
 	      } else {
 	        return "";
@@ -35128,26 +35171,25 @@
 	    };
 
 	    Book.prototype.onMonth = function(event) {
-	      this.month = event.target.value;
-	      this.monthIdx = this.Data.months.indexOf(this.month);
-	      this.begDay = this.month === 'May' ? this.begMay : 1;
-	      $('#Days').val(this.begDay.toString());
-	      this.resetRooms();
+	      this.Data.month = event.target.value;
+	      this.Data.monthIdx = this.Data.months.indexOf(this.Data.month);
+	      this.Data.begDay = this.Data.month === 'May' ? this.Data.begMay : 1;
+	      $('#Days').val(this.Data.begDay.toString());
+	      this.res.dateRange(this.resetRooms);
 	    };
 
 	    Book.prototype.onDay = function(event) {
-	      this.begDay = parseInt(event.target.value);
-	      if (this.month === 'October' && this.begDay > 1) {
-	        this.begDay = 1;
+	      this.Data.begDay = parseInt(event.target.value);
+	      if (this.Data.month === 'October' && this.Data.begDay > 1) {
+	        this.Data.begDay = 1;
 	        alert('The Season Ends on October 15');
-	      } else {
-	        this.resetRooms();
 	      }
+	      this.res.dateRange(this.resetRooms);
 	    };
 
 	    Book.prototype.resetRooms = function() {
 	      $('#Rooms').empty();
-	      $('#Rooms').append(this.roomsHtml(this.year, this.monthIdx, this.begDay, this.numDays));
+	      $('#Rooms').append(this.roomsHtml(this.Data.year, this.Data.monthIdx, this.Data.begDay, this.Data.numDays));
 	      return this.roomsJQuery();
 	    };
 
@@ -35174,7 +35216,7 @@
 	    Book.prototype.cellBook = function($cell) {
 	      var group, isEmpty, roomId, status;
 	      status = $cell.attr('data-status');
-	      roomId = $cell.attr('id').substr(1, 1);
+	      roomId = this.roomIdCell($cell);
 	      group = this.roomUIs[roomId].group;
 	      isEmpty = Util.isObjEmpty(group);
 	      if (status === 'free') {
@@ -35191,13 +35233,13 @@
 	    };
 
 	    Book.prototype.updateCellGroup = function(roomId, group, status) {
-	      var $cell, day, obj;
-	      for (day in group) {
-	        if (!hasProp.call(group, day)) continue;
-	        obj = group[day];
-	        $cell = $('#R' + roomId + day);
+	      var $cell, date, obj;
+	      for (date in group) {
+	        if (!hasProp.call(group, date)) continue;
+	        obj = group[date];
+	        $cell = this.$Cell(date, roomId);
 	        Util.log('Book.updateCellGroup()', {
-	          day: day,
+	          date: date,
 	          group: group
 	        });
 	        this.updateCellStatus($cell, status);
@@ -35207,13 +35249,13 @@
 	    Book.prototype.updateCellStatus = function($cell, status) {
 	      var date, roomId, roomUI;
 	      this.cellStatus($cell, status);
-	      roomId = $cell.attr('id').substr(1, 1);
-	      date = $cell.attr('id').substr(2, 8);
+	      roomId = this.roomIdCell($cell);
+	      date = this.dateCell($cell);
 	      roomUI = this.roomUIs[roomId];
 	      if (status === 'mine') {
 	        roomUI.days[date] = {
 	          "status": status,
-	          "resId": ""
+	          "resId": "none"
 	        };
 	      } else if (status === 'free') {
 	        delete roomUI.days[date];
@@ -35240,9 +35282,10 @@
 	    };
 
 	    Book.prototype.fillInWeekend = function(roomId, bday) {
-	      var group, nday;
+	      var $cell, group, nday;
 	      nday = this.Data.advanceDate(bday, 1);
-	      if ($('#R' + roomId + nday).attr('data-status') === 'free') {
+	      $cell = this.$Cell(nday, roomId);
+	      if ($cell.attr('data-status') === 'free') {
 	        group = this.roomUIs[roomId].group;
 	        group[bday] = {
 	          status: 'mine'
@@ -35250,7 +35293,7 @@
 	        group[nday] = {
 	          status: 'mine'
 	        };
-	        this.updateCellStatus($('#R' + roomId + nday), 'mine');
+	        this.updateCellStatus($cell, 'mine');
 	      }
 	    };
 
@@ -35260,7 +35303,7 @@
 	      eday = days[days.length - 1];
 	      nday = this.Data.advanceDate(bday, 1);
 	      while (nday < eday) {
-	        $cell = $('#R' + roomId + nday);
+	        $cell = this.$Cell(nday, roomId);
 	        if (!this.Data.isElem($cell) || $cell.attr('data-status') !== 'free') {
 	          $last.attr('data-status', 'mine');
 	          this.cellBook($last);
@@ -35277,8 +35320,8 @@
 	      nday = this.Data.advanceDate(bday, 1);
 	      eday = days[days.length - 1];
 	      while (nday < eday) {
-	        $cell = $('#R' + roomId + nday);
-	        if (this.Data.isElem($('#R' + roomId + nday))) {
+	        $cell = this.$Cell(nday, roomId);
+	        if (this.Data.isElem($cell)) {
 	          this.cellBook($cell);
 	        }
 	        nday = this.Data.advanceDate(nday, 1);
@@ -35295,33 +35338,11 @@
 	    };
 
 	    Book.prototype.allocCell = function(dayId, status, roomId) {
-	      return this.cellStatus($('#R' + roomId + dayId), status);
+	      return this.cellStatus(this.$Cell(dayId, roomId), status);
 	    };
 
 	    Book.prototype.cellStatus = function($cell, status) {
 	      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
-	    };
-
-	    Book.prototype.dayMonth = function(day) {
-	      var monthDay;
-	      monthDay = day + this.begDay - 1;
-	      if (monthDay > this.Data.numDayMonth[this.monthIdx]) {
-	        return monthDay - this.Data.numDayMonth[this.monthIdx];
-	      } else {
-	        return monthDay;
-	      }
-	    };
-
-	    Book.prototype.toDateStr = function(day) {
-	      return this.year + Util.pad(this.monthIdx + 1) + Util.pad(this.dayMonth(day, this.begDay));
-	    };
-
-	    Book.prototype.make = function() {
-	      return this.store.make('Room');
-	    };
-
-	    Book.prototype.insert = function() {
-	      return this.store.insert('Room', this.rooms);
 	    };
 
 	    return Book;
@@ -35332,7 +35353,7 @@
 
 
 /***/ },
-/* 366 */
+/* 365 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -35345,18 +35366,16 @@
 	  Test = (function() {
 	    module.exports = Test;
 
-	    Test.Data = __webpack_require__(361);
+	    Test.Data = __webpack_require__(360);
 
-	    function Test(stream, store, Data, room1, res1, pay, pict, book) {
+	    function Test(stream, store, Data, res1, pay, pict, book) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
-	      this.room = room1;
 	      this.res = res1;
 	      this.pay = pay;
 	      this.pict = pict;
 	      this.book = book;
-	      this.rooms = this.room.rooms;
 	    }
 
 	    Test.prototype.doTest = function() {

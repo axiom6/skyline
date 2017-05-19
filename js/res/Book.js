@@ -54,13 +54,16 @@
       $('#Pop').click(this.onPop);
       $('#Test').click(this.onTest);
       $('#GoToPay').click(this.onGoToPay);
+      $('#Totals').css({
+        height: '21px'
+      });
       $('#Navb').hide();
       $('#Book').show();
       return this.roomsJQuery();
     };
 
     Book.prototype.bookHtml = function() {
-      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Insts\"></div>\n<div id=\"Inits\"></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
+      return "<div id=\"Make\" class=\"Title\">Make Your Reservation</div>\n<div id=\"Insts\"></div>\n<div><div id=\"Inits\"></div></div>\n<div id=\"Rooms\"></div>\n<div id=\"Guest\"></div>";
     };
 
     Book.prototype.instructHtml = function() {
@@ -71,7 +74,7 @@
       var htm;
       htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (this.htmlSelect("Months", this.Data.season, this.Data.month, 'months')) + "</label>";
       htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.Data.begDay, 'days')) + "</label>";
-      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + (2000 + this.res.year) + "</label>";
+      htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + (2000 + this.Data.year) + "</label>";
       htm += "<span  id=\"Pop\"  class=\"Test\">Pop</span>";
       htm += "<span  id=\"Test\" class=\"Test\">Test</span>";
       return htm;
@@ -258,7 +261,7 @@
       room = this.roomUIs[roomId];
       nights = Util.keys(room.days).length;
       room.total = price * nights + room.change;
-      text = room.total === 0 ? '$' : '$' + room.total;
+      text = room.total === 0 ? '' : '$' + room.total;
       $('#' + roomId + 'T').text(text);
       this.updateTotals();
     };

@@ -171,7 +171,7 @@
       if (error == null) {
         error = {};
       }
-      console.log('Store.onerror', {
+      console.log('Store.onError', {
         db: this.dbName,
         table: table,
         id: id,

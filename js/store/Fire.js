@@ -142,8 +142,10 @@
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(snapshot) {
+          var val;
           if ((snapshot != null) && (snapshot.val() != null)) {
-            return _this.publish(tableName, 'none', 'select', snapshot.val());
+            val = _this.toObjects(snapshot.val());
+            return _this.publish(tableName, 'none', 'select', val);
           } else {
             return _this.publish(tableName, 'none', 'select', {});
           }
@@ -157,8 +159,10 @@
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(snapshot) {
+          var val;
           if ((snapshot != null) && (snapshot.val() != null)) {
-            return _this.publish(tableName, 'none', 'range', snapshot.val());
+            val = _this.toObjects(snapshot.val());
+            return _this.publish(tableName, 'none', 'range', val);
           } else {
             return _this.publish(tableName, 'none', 'range', {});
           }
@@ -268,7 +272,7 @@
           var key, val;
           if (snapshot != null) {
             key = snapshot.key;
-            val = snapshot.val();
+            val = _this.toObjects(snapshot.val());
             return _this.publish(table, id, onEvt, {
               onEvt: onEvt,
               table: table,
@@ -284,6 +288,30 @@
       })(this);
       path = id === 'none' ? table : table + '/' + id;
       this.fd.ref(path).on(Fire.OnEvent[onEvt], onComplete);
+    };
+
+    Fire.prototype.toObjects = function(rows) {
+      var ckey, i, len, objects, row;
+      objects = {};
+      if (Util.isArray(rows)) {
+        for (i = 0, len = rows.length; i < len; i++) {
+          row = rows[i];
+          if ((row != null) && (row['key'] != null)) {
+            ckey = row['key'].split('/')[0];
+            objects[row[ckey]] = this.toObjects(row);
+            Util.log('Fire.toObjects', {
+              rkowKey: row['key'],
+              ckey: ckey,
+              row: row
+            });
+          } else {
+            Util.error("Fire.toObjects() row array element requires key property", row);
+          }
+        }
+      } else {
+        objects = rows;
+      }
+      return objects;
     };
 
     Fire.prototype.auth = function() {

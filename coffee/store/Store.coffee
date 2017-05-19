@@ -89,7 +89,7 @@ class Store
     return
 
   onError:( table, id, op, result={}, error={} ) ->
-    console.log( 'Store.onerror', { db:@dbName, table:table, id:id, op:op, result:result, error:error } )
+    console.log( 'Store.onError', { db:@dbName, table:table, id:id, op:op, result:result, error:error } )
     #@stream.onerror( @toSubject(table,op,id), @toStoreObject( @toParams(table,id,op,extras),result ) )
     return
 

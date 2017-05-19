@@ -10,12 +10,13 @@ class Master
     @res.master  = @
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
-    @res.beg     = @Data.toDateStr(  1, 4 )
-    @res.end     = @Data.toDateStr( 31, 9 )
+    @res.beg     = @Data.toDateStr(  1, 4 ) # May  1
+    @res.end     = @Data.toDateStr( 31, 9 ) # Oct 31
 
   ready:() ->
-    @res.dateRange( @onDateRange )
+    @res.dateRange( @onDateRange )  # Call readyMaster
     @listenToDays()
+    #listenToResv()
     $('#MasterBtn').click( @onMasterBtn )
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
@@ -39,22 +40,39 @@ class Master
     $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
     $('#Dailys').show()
 
-  onDateRange:() =>
+  readyMaster:() ->
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
-    #Util.log( 'Master.onDateRange', @res.days )
+    @readyCells()
+
+  showResv:( resv ) =>
+    str = Util.toStrObj( resv )
+    alert( str )
+    return
+
+  readyCells:() ->
+    doCell   = (event) =>
+      $cell  = $(event.target)
+      status = $cell.attr('data-status')
+      resId  = $cell.attr('data-res'   )
+      Util.log( 'doCell', { resId:resId, status:status } )
+      @res.subscribeToResId( resId, 'get', @showResv ) if status isnt 'free'
+      @store.get( 'Res', resId )
+    $('[data-cell="y"]').click( doCell )
+
+  onDateRange:() =>
+    @readyMaster()
     for own dayId, dayRoom of @res.days
       @onAlloc( dayId, dayRoom )
 
   listenToDays:() =>
-    # dayId is onPut.key and dayRoom onPut.val
     doPut = (onPut) =>
-      Util.log( 'Master.listenToDays()', onPut )
+      # dayId is onPut.key and dayRoom onPut.val
+      console.log( 'Master.listenToDays()', onPut.key, onPut.val )
       @onAlloc( onPut.key, onPut.val )
     @res.subscribeToDays( doPut )
 
   listenToResv:() =>
-    # dayId is onPut.key and dayRoom onPut.val
     doAdd = (onAdd) =>
       resv = onAdd.val
       Util.log( 'Master.listenToResv() onAdd', resv )
@@ -65,19 +83,27 @@ class Master
 
   onAlloc:(  dayId, dayRoom ) =>
     for own roomId, room   of dayRoom
+      #console.log( 'Master.onAlloc', dayId, roomId, room )
       @allocMasterCell( roomId, dayId, room.status )
       @allocSeasonCell( roomId, dayId, room.status )
     return
 
-  createMasterCell:( roomId,  room, date ) ->
+  cellId:( pre,  date,  roomId ) ->
+           pre + date + roomId
+
+  $cell:( pre,  date,  roomId ) ->
+    $( '#'+@cellId(pre,date,roomId) )
+
+  createMasterCell:( roomId, room, date ) ->
     status = @res.dayBooked( room, date )
-    """<td id="M#{date+roomId}" class="room-#{status}" data-status="#{status}"></td>"""
+    resId  = @res.resId(     room, date )
+    """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-cell="y"></td>"""
 
-  allocMasterCell:( roomId, day, status ) ->
-    @cellMasterStatus( $('#M'+day+roomId), status )
+  allocMasterCell:( roomId, date, status ) ->
+    @cellMasterStatus( @$cell('M',date,roomId), status )
 
-  allocSeasonCell:( roomId, day, status ) ->
-    @cellSeasonStatus( $('#S'+day+roomId), status )
+  allocSeasonCell:( roomId, date, status ) ->
+    @cellSeasonStatus( @$cell('S',date,roomId), status )
 
   cellMasterStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
@@ -97,6 +123,7 @@ class Master
       $month.css( @lastMaster )
       $master.children().show()
       @lastMaster.height = 0
+
 
   onSeasonClick:( event ) =>
     $title  = $(event.target)
@@ -177,14 +204,13 @@ class Master
       status = @res.dayBooked( roomId, date )
       #Util.log('Master.roomDay()', date, roomId, status ) if date is '170524'
       if status isnt 'free'
-        htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId}</span>"""
+        htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId} data-res="y"</span>"""
     htm += """</div>"""
     htm
 
-  roomDayId:( monthIdx, day, roomId ) ->
-    monPad = Util.pad( monthIdx+1 )
-    dayPad = Util.pad( day )
-    'S' + roomId + @res.year + monPad + dayPad
+  roomDayId:(  monthIdx,  day, roomId ) ->
+    date = @Data.dateStr( day, monthIdx )
+    @cellId( 'S', roomId, date )
 
   monthDay:( begDay, endDay, row, col ) ->
     day = row*7 + col - begDay

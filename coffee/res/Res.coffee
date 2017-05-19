@@ -7,7 +7,6 @@ class Res
   Res.States = ["free","mine","depo","book"]
 
   constructor:( @stream, @store, @Data, @appName ) ->
-    # Util.log( 'Res.Days', Res.Days )
     @rooms    = Res.Rooms
     @states   = Res.States
     @book     = null
@@ -76,7 +75,7 @@ class Res
         resv.arrive = day   if day < resv.arrive
     resv.payments = {}
     resv.cust     = {}
-    @subscribeToResId( resv.resId )
+    #@subscribeToResId( resv.resId, 'add', (resv), Util.log( 'Resv', { resId:resv.resId, resv:resv )
     resv
 
   toResvRoom:( roomUI ) ->
@@ -104,33 +103,17 @@ class Res
     @book.  onAlloc( roomId, days ) if @book?
     @master.onAlloc( roomId, days ) if @master?
 
-  subscribeToResId:( resId ) =>
-    @store.subscribe( 'Res',   resId,    'add',   (add) => Util.log('Res.subscribeToResId add',   resId,   add ) )
-    #store.subscribe( 'Res',   resId,  'onAdd', (onAdd) => Util.log('Res.subscribeToResId onAdd', resId, onAdd ) )
-    #store.subscribe( 'Res',   resId,  'onPut', (onPut) => Util.log('Res.subscribeToResId onPut', resId, onPut ) )
-    #store.subscribe( 'Res',   resId,  'onDel', (onDel) => Util.log('Res.subscribeToResId onDel', resId, onDel ) )
-    #store.on( 'Res', 'onAdd', resId )
-    #store.on( 'Res', 'onPut', resId )
-    #store.on( 'Res', 'onDel', resId )
+  subscribeToResId:( resId, op, onRes ) =>
+    @store.subscribe( 'Res',   resId,    op,   (res) => onRes(res) )
 
   subscribeToResv:( doAdd ) =>
-    @store.subscribe( 'Res',  'none',    'add',   (add) => doAdd(add)   )
+    @store.subscribe( 'Res',  'none', 'onAdd', (add) => doAdd(add)   )
+    @store.on(        'Res',          'onAdd' )
 
   # Does not work because we are updating Day / dayId / roomId grandchildren instead of children
   subscribeToDays:( doPut ) =>
     @store.subscribe( 'Days', 'none',  'onPut', (onPut) => doPut(onPut) )
     @store.on(        'Days',          'onPut' )
-
-  # Does not work because we are updating Day / dayId / roomId grandchildren instead of children
-  subscribeToDays2:() =>
-    #store.subscribe( 'Days', 'none',    'add',   (add) => Util.log('Res.subscribeToDays add',     add ) )
-    #store.subscribe( 'Days', 'none',  'onAdd', (onAdd) => Util.log('Res.subscribeToDays onAdd', onAdd ) )
-    #store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
-    #store.subscribe( 'Days', 'none',  'onPut', (onPut) => Util.log('Res.subscribeToDays onPut', onPut ) )
-    #store.subscribe( 'Days', 'none',  'onDel', (onDel) => Util.log('Res.subscribeToDays onDel', onDel ) )
-    #store.on(        'Days',          'onAdd' )
-    #store.on(        'Days',          'onPut' )
-    #store.on(        'Days',          'onDel' )
 
   insertRooms:( rooms ) =>
     @store.subscribe( 'Room', 'none', 'make',  (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
@@ -144,18 +127,9 @@ class Res
     return
 
   insertDays:( resvs ) ->
-    @subscribeToDays()
     @days = @createDaysFromResvs( resvs, {} )
     for own dayId, day of @days
       @store.add( 'Days', dayId, day )
-    return
-
-  # Inexplicable this is randomly generating arrays on [roomId]
-  insertDays2:( resvs ) ->
-    @subscribeToDays()
-    @days = @createDaysFromResvs( resvs, {} )
-    @store.subscribe( 'Days', 'none', 'make',  () => @store.insert( 'Days', @days  ) )
-    @store.make( 'Days' )
     return
 
   createDaysFromResvs:( resvs, days ) ->

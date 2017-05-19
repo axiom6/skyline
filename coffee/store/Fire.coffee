@@ -81,7 +81,8 @@ class Fire extends Store
     tableName = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
-        @publish( tableName, 'none', 'select', snapshot.val() )
+        val = @toObjects( snapshot.val() )
+        @publish( tableName, 'none', 'select', val )
       else
         @publish( tableName, 'none', 'select', {} ) # Publish empty results
     @fd.ref(tableName).once('value', onComplete )
@@ -92,7 +93,8 @@ class Fire extends Store
     #Util.log( 'Fire.range  beg', t, beg, end )
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
-        @publish( tableName, 'none', 'range', snapshot.val() )
+        val = @toObjects( snapshot.val() )
+        @publish( tableName, 'none', 'range', val )
       else
         @publish( tableName, 'none', 'range', {} )  # Publish empty results
     @fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete )
@@ -155,14 +157,29 @@ class Fire extends Store
     onComplete = (snapshot) =>
       if snapshot?
         key = snapshot.key
-        val = snapshot.val()
+        val = @toObjects( snapshot.val() )
+        #Util.log( 'Fire.on()', table, onEvt, key, val, snapshot.val() )
         @publish( table, id, onEvt, { onEvt:onEvt, table:table, key:key, val:val } )
-        #Util.log( 'Fire.on()', table, onEvt, key, val )
       else
         @onError( table, id, onEvt, {}, { error:'error' } )
     path  = if id is 'none' then table else table + '/' + id
     @fd.ref(path).on( Fire.OnEvent[onEvt], onComplete )
     return
+
+  # keyProp only needed if rows is away
+  toObjects:( rows ) ->
+    objects = {}
+    if Util.isArray(rows)
+      for row in rows
+        if row? and row['key']?
+          ckey = row['key'].split('/')[0]
+          objects[row[ckey]] = @toObjects(row)
+          Util.log( 'Fire.toObjects', { rkowKey:row['key'], ckey:ckey, row:row } )
+        else
+          Util.error( "Fire.toObjects() row array element requires key property", row )
+    else
+      objects = rows
+    objects
 
   # Sign Anonymously
   auth:( ) ->

@@ -463,7 +463,7 @@ Util = (function() {
   };
 
   Util.isArray = function(a) {
-    return (a != null) && typeof a !== "string" && (a.length != null) && a.length > 0;
+    return (a != null) && Array.isArray(a) && (a.length != null) && a.length > 0;
   };
 
   Util.isEvent = function(e) {
@@ -942,13 +942,13 @@ Util = (function() {
     return array;
   };
 
-  Util.toObjects = function(rows, whereIn, keyProp) {
-    var j, key, len1, objects, row, where;
+  Util.toObjects = function(rows, whereIn, key) {
+    var ckey, j, len1, objects, row, where;
     if (whereIn == null) {
       whereIn = null;
     }
-    if (keyProp == null) {
-      keyProp = 'key';
+    if (key == null) {
+      key = 'key';
     }
     where = whereIn != null ? whereIn : function() {
       return true;
@@ -958,10 +958,11 @@ Util = (function() {
       for (j = 0, len1 = rows.length; j < len1; j++) {
         row = rows[j];
         if (where(row)) {
-          if (row[keyProp] != null) {
-            objects[row[keyProp]] = row;
+          if ((row != null) && (row[key] != null)) {
+            ckey = Util.childKey(row[key]);
+            objects[row[ckey]] = row;
           } else {
-            Util.error("Util.toObjects() row array element requires key property", keyProp, row);
+            Util.error("Util.toObjects() row array element requires key property", key, row);
           }
         }
       }
@@ -975,6 +976,10 @@ Util = (function() {
       }
     }
     return objects;
+  };
+
+  Util.childKey = function(key) {
+    return key.split('/')[0];
   };
 
   Util.toRange = function(rows, beg, end, keyProp) {

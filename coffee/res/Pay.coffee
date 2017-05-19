@@ -17,9 +17,8 @@ class Pay
     @purpose = 'PayInFull' # 'Deposit' 'PayOffDeposit'
     @testing = false
     @errored = false
-    doPut = (onPut) -> Util.log('Res.subscribeToDays onPut', onPut )
-    @res.subscribeToDays( doPut )
-    @res.subscribeToDays( doPut )
+    #doPut = (onPut) -> Util.log('Res.subscribeToDays onPut', onPut )
+    #@res.subscribeToDays( doPut )
 
   initPay:( totals, cust, roomUIs ) =>
     @resv      = @res.createRoomResv( 'mine', 'card', roomUIs )
@@ -153,8 +152,10 @@ class Pay
     htm
 
   canMakeDeposit:( resv ) ->
-    Util.log('Pay.canMakeDeposit()', resv.arrive, resv.booked, @Data.advanceDate( resv.booked, 7 ) )
-    resv.arrive >= @Data.advanceDate( resv.booked, 7 )
+    arrive  = parseInt( resv.arrive )
+    advance = parseInt( @Data.advanceDate( resv.booked, 7 ) )
+    #Util.log('Pay.canMakeDeposit()', { booked:resv.booked, arrive:arrive, advance:advance, can:arrive >= advance } )
+    arrive >= advance
 
   # Call after @res.postResv(...)
   confirmEmail:( resv ) ->
@@ -274,7 +275,6 @@ class Pay
       $('#'+name).val(test)
       value = test
       valid = true
-    #$('#'+name+'ER').show() if not valid
     [value,valid]
 
   cardAccept:( cardType ) ->

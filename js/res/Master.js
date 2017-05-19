@@ -20,6 +20,7 @@
       this.listenToResv = bind(this.listenToResv, this);
       this.listenToDays = bind(this.listenToDays, this);
       this.onDateRange = bind(this.onDateRange, this);
+      this.showResv = bind(this.showResv, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
       this.onSeasonBtn = bind(this.onSeasonBtn, this);
       this.onMasterBtn = bind(this.onMasterBtn, this);
@@ -78,14 +79,46 @@
       return $('#Dailys').show();
     };
 
-    Master.prototype.onDateRange = function() {
-      var dayId, dayRoom, ref, results;
+    Master.prototype.readyMaster = function() {
       $('#Master').append(this.masterHtml());
       $('.MasterTitle').click((function(_this) {
         return function(event) {
           return _this.onMasterClick(event);
         };
       })(this));
+      return this.readyCells();
+    };
+
+    Master.prototype.showResv = function(resv) {
+      var str;
+      str = Util.toStrObj(resv);
+      alert(str);
+    };
+
+    Master.prototype.readyCells = function() {
+      var doCell;
+      doCell = (function(_this) {
+        return function(event) {
+          var $cell, resId, status;
+          $cell = $(event.target);
+          status = $cell.attr('data-status');
+          resId = $cell.attr('data-res');
+          Util.log('doCell', {
+            resId: resId,
+            status: status
+          });
+          if (status !== 'free') {
+            _this.res.subscribeToResId(resId, 'get', _this.showResv);
+          }
+          return _this.store.get('Res', resId);
+        };
+      })(this);
+      return $('[data-cell="y"]').click(doCell);
+    };
+
+    Master.prototype.onDateRange = function() {
+      var dayId, dayRoom, ref, results;
+      this.readyMaster();
       ref = this.res.days;
       results = [];
       for (dayId in ref) {
@@ -100,7 +133,7 @@
       var doPut;
       doPut = (function(_this) {
         return function(onPut) {
-          Util.log('Master.listenToDays()', onPut);
+          console.log('Master.listenToDays()', onPut.key, onPut.val);
           return _this.onAlloc(onPut.key, onPut.val);
         };
       })(this);
@@ -147,18 +180,27 @@
       }
     };
 
+    Master.prototype.cellId = function(pre, date, roomId) {
+      return pre + date + roomId;
+    };
+
+    Master.prototype.$cell = function(pre, date, roomId) {
+      return $('#' + this.cellId(pre, date, roomId));
+    };
+
     Master.prototype.createMasterCell = function(roomId, room, date) {
-      var status;
+      var resId, status;
       status = this.res.dayBooked(room, date);
-      return "<td id=\"M" + (date + roomId) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
+      resId = this.res.resId(room, date);
+      return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-cell=\"y\"></td>";
     };
 
-    Master.prototype.allocMasterCell = function(roomId, day, status) {
-      return this.cellMasterStatus($('#M' + day + roomId), status);
+    Master.prototype.allocMasterCell = function(roomId, date, status) {
+      return this.cellMasterStatus(this.$cell('M', date, roomId), status);
     };
 
-    Master.prototype.allocSeasonCell = function(roomId, day, status) {
-      return this.cellSeasonStatus($('#S' + day + roomId), status);
+    Master.prototype.allocSeasonCell = function(roomId, date, status) {
+      return this.cellSeasonStatus(this.$cell('S', date, roomId), status);
     };
 
     Master.prototype.cellMasterStatus = function($cell, status) {
@@ -315,7 +357,7 @@
         date = this.Data.toDateStr(day, monthIdx);
         status = this.res.dayBooked(roomId, date);
         if (status !== 'free') {
-          htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + "</span>";
+          htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + " data-res=\"y\"</span>";
         }
       }
       htm += "</div>";
@@ -323,10 +365,9 @@
     };
 
     Master.prototype.roomDayId = function(monthIdx, day, roomId) {
-      var dayPad, monPad;
-      monPad = Util.pad(monthIdx + 1);
-      dayPad = Util.pad(day);
-      return 'S' + roomId + this.res.year + monPad + dayPad;
+      var date;
+      date = this.Data.dateStr(day, monthIdx);
+      return this.cellId('S', roomId, date);
     };
 
     Master.prototype.monthDay = function(begDay, endDay, row, col) {

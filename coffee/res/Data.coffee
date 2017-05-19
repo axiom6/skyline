@@ -67,19 +67,16 @@ class Data
   @today:() ->
     date = new Date()
     year = date.getFullYear() - 2000 # Go Y2K
-    Data.toDateStr( date.getDate(), date.getMonth()+1, year )
+    Data.toDateStr( date.getDate(), date.getMonth(), year )
 
   @advanceDate:( resDate, numDays ) ->
     year     =           resDate.substr( 0,2 )
     monthIdx = parseInt( resDate.substr( 2,2 ) ) - 1
-    dayInt   = parseInt( resDate.substr( 4,2 ) ) + numDays
-    if dayInt > @numDayMonth[monthIdx]
-       dayInt = dayInt - @numDayMonth[monthIdx]
+    day      = parseInt( resDate.substr( 4,2 ) ) + numDays
+    if day  >       Data.numDayMonth[monthIdx]
+       day  = day - Data.numDayMonth[monthIdx]
        monthIdx++
-    day   = Util.padStr( dayInt     )
-    month = Util.padStr( monthIdx+1 )
-    #Util.log( 'Data.advanceDate', resDate, year + month + day )
-    year + month + day
+    Data.toDateStr( day, monthIdx, year )
 
   @weekday:( date ) ->
     year       = parseInt( date.substr( 0,2 ) )
