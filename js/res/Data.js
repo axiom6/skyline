@@ -8,8 +8,6 @@
 
     module.exports = Data;
 
-    Data.insertNewTables = false;
-
     Data.season = ["May", "June", "July", "August", "September", "October"];
 
     Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -154,7 +152,7 @@
       if (year == null) {
         year = Data.year;
       }
-      return year + Util.pad(monthIdx + 1) + Util.pad(day);
+      return year.toString() + Util.pad(monthIdx + 1) + Util.pad(day);
     };
 
     return Data;

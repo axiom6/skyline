@@ -25,7 +25,7 @@ class Util
   Util.globalPaths   = []
   Util.root          = '../' # Used internally
   Util.rootJS        = Util.root + 'js/'
-  Util.databases     = {}
+  Util.databases     = {} # Provides global access to databases in Store
   Util.htmlIds       = {} # Object of unique Html Ids
   Util.logStackNum   = 0
   Util.logStackMax   = 100
@@ -503,7 +503,7 @@ class Util
     (Util.quicksort(small)).concat([head]).concat( Util.quicksort(large) )
 
   @pad:( n ) ->
-    if n < 10 then '0'+n else n
+    if n < 10 then '0'+n.toString() else n.toString()
 
   @padStr:( n ) ->
     if n < 10 then '0'+n.toString() else n.toString()

@@ -271,7 +271,9 @@ class Book
     @Data.monthIdx  = @Data.months.indexOf(@Data.month)
     @Data.begDay    = if @Data.month is 'May' then @Data.begMay else 1
     $('#Days').val(@Data.begDay.toString())
-    @res.dateRange( @resetRooms )
+    beg = @Data.toDateStr( @Data.begDay, @Data.monthIdx )
+    end = @Data.advanceDate( beg, @Data.numDays-1 )
+    @res.dateRange( beg, end, @resetRooms )
     #@resetRooms()
     return
 
@@ -280,7 +282,9 @@ class Book
     if @Data.month is 'October' and @Data.begDay > 1
       @Data.begDay = 1
       alert( 'The Season Ends on October 15' )
-    @res.dateRange( @resetRooms )
+    beg = @Data.toDateStr( @Data.begDay, @Data.monthIdx )
+    end = @Data.advanceDate( beg, @Data.numDays-1 )
+    @res.dateRange( beg, end, @resetRooms )
     #@resetRooms()
     return
 

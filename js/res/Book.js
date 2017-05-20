@@ -350,20 +350,26 @@
     };
 
     Book.prototype.onMonth = function(event) {
+      var beg, end;
       this.Data.month = event.target.value;
       this.Data.monthIdx = this.Data.months.indexOf(this.Data.month);
       this.Data.begDay = this.Data.month === 'May' ? this.Data.begMay : 1;
       $('#Days').val(this.Data.begDay.toString());
-      this.res.dateRange(this.resetRooms);
+      beg = this.Data.toDateStr(this.Data.begDay, this.Data.monthIdx);
+      end = this.Data.advanceDate(beg, this.Data.numDays - 1);
+      this.res.dateRange(beg, end, this.resetRooms);
     };
 
     Book.prototype.onDay = function(event) {
+      var beg, end;
       this.Data.begDay = parseInt(event.target.value);
       if (this.Data.month === 'October' && this.Data.begDay > 1) {
         this.Data.begDay = 1;
         alert('The Season Ends on October 15');
       }
-      this.res.dateRange(this.resetRooms);
+      beg = this.Data.toDateStr(this.Data.begDay, this.Data.monthIdx);
+      end = this.Data.advanceDate(beg, this.Data.numDays - 1);
+      this.res.dateRange(beg, end, this.resetRooms);
     };
 
     Book.prototype.resetRooms = function() {

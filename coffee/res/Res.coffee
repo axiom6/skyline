@@ -12,29 +12,34 @@ class Res
     @book     = null
     @master   = null
     @days     = null
-    @beg      = @Data.toDateStr( @Data.begDay )
-    @end      = @Data.advanceDate( @beg, @Data.numDays )
-    @insertNewTables() if     @Data.insertNewTables
-    @dateRange()       if not @Data.insertNewTables and @appName is 'Guest'
+    beg      = @Data.toDateStr(   @Data.begDay )
+    end      = @Data.advanceDate( beg, @Data.numDays-1 )
+    @dateRange( beg, end )       if @appName is 'Guest'
+    @onResv(  'add', (resv) => console.log( 'onResv', resv ) ) if @store.justMemory
+    @onDays(  'put', (days) => console.log( 'onDays', days ) ) if @store.justMemory
 
-  dateRange:( onComplete=null ) ->
-    @beg = @Data.toDateStr( @Data.begDay )
-    @end = @Data.advanceDate( @beg, @Data.numDays-1 )
-    @store.subscribe( 'Days', 'none',  'range', (days) =>
+  dateRange:( beg, end, onComplete=null ) ->
+    @store.subscribe( 'Days', 'range', 'none', (days) =>
       @days = days
+      console.log( 'Res.dateRange()', beg, end, @days )
       onComplete() if onComplete? )
-    @store.range( 'Days', @beg, @end )
+    @store.range( 'Days', beg, end )
     return
 
   insertNewTables:() ->
     @insertRooms( Res.Rooms )
-    @insertRevs(  Res.Resvs )
+    @insertResvs( Res.Resvs )
     @insertDays(  Res.Resvs )
 
   dayBooked:( roomId, date ) ->
     day   = if @days? then @days[date]
-    entry = if  day?  and  day[roomId] then day[roomId] else null
+    entry = if  day?  and  day[roomId]? then day[roomId] else null
     if entry? then entry.status else 'free'
+
+  resId:(    roomId, date ) ->
+    day   = if @days? then @days[date]
+    entry = if day? and day[roomId]? then day[roomId] else null
+    if entry? then entry.resId else 'none' # Need to determine if resId == 'none' if the way to go
 
   createRoomUIs:( rooms ) ->
     roomUIs = {}
@@ -103,16 +108,16 @@ class Res
     @book.  onAlloc( roomId, days ) if @book?
     @master.onAlloc( roomId, days ) if @master?
 
-  onResId:( onOp, doResv, resId ) => @store.on( 'Res',  onOp,  resId, (resv) => doResv(resv) )
-  onResv:(  onOp, doResv        ) => @store.on( 'Res',  onOp, 'none', (resv) => doResv(resv) )
-  onDays:(  onOp, doDay         ) => @store.on( 'Days', onOp, 'none', (day)  => doDay(day)   )
+  onResId:( op, doResv, resId ) => @store.on( 'Res',  op,  resId, (resv) => doResv(resv) )
+  onResv:(  op, doResv        ) => @store.on( 'Res',  op, 'none', (resv) => doResv(resv) )
+  onDays:(  op, doDay         ) => @store.on( 'Days', op, 'none', (day)  => doDay(day)   )
 
   insertRooms:( rooms ) =>
     @store.subscribe( 'Room', 'make', 'none', (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
     @store.make( 'Room' )
     return
 
-  insertRevs:( resvs ) ->
+  insertResvs:( resvs ) ->
     @allocRooms( resv ) for own resId,  resv of resvs
     @store.subscribe( 'Res', 'make', 'none', () => @store.insert( 'Res', resvs ) )
     @store.make( 'Res' )
@@ -122,6 +127,7 @@ class Res
     @days = @createDaysFromResvs( resvs, {} )
     for own dayId, day of @days
       @store.add( 'Days', dayId, day )
+    #console.log('Res.insertDays() days', @days  )
     return
 
   createDaysFromResvs:( resvs, days ) ->
@@ -134,7 +140,6 @@ class Res
       for own  dayId, rday of room.days
         dayRoom = @createDayRoom( days, dayId, roomId )
         @setDayRoom( dayRoom, rday.status, rday.resId )
-    #Util.log('Res.createDaysFromResv() days', days  )
     days
 
   # Inexplicable this maybe randomly generating arrays on [roomId]

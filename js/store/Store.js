@@ -8,13 +8,13 @@
 
     module.exports = Store;
 
-    Store.Memory = require('js/store/Memory');
 
-    Store.IndexedDB = require('js/store/IndexedDB');
-
-    Store.Rest = require('js/store/Rest');
-
-    Store.Fire = require('js/store/Fire');
+    /*
+    Store.Memory    = require( 'js/store/Memory'     )
+    Store.IndexedDB = require( 'js/store/IndexedDB'  )
+    Store.Rest      = require( 'js/store/Rest'       )
+    Store.Fire      = require( 'js/store/Fire'       )
+     */
 
     Store.memories = {};
 
@@ -54,6 +54,7 @@
       this.dbName = Store.nameDb(this.uri);
       this.tables = {};
       this.hasMemory = false;
+      this.justMemory = false;
     }
 
     Store.prototype.add = function(table, id, object) {
@@ -110,8 +111,8 @@
       return Util.noop(table);
     };
 
-    Store.prototype.on = function(table, oo, id, onFunc) {
-      var onNext;
+    Store.prototype.on = function(t, op, id, onFunc) {
+      var onNext, table;
       if (id == null) {
         id = 'none';
       }
@@ -163,14 +164,10 @@
     };
 
     Store.prototype.publish = function(table, op, id, data, extras) {
-      var params;
       if (extras == null) {
         extras = {};
       }
-      params = this.toParams(table, id, op, extras);
-      if (this.hasMemory) {
-        this.toMemory(op, table, id, data, params);
-      }
+      Util.noop(extras);
       this.stream.publish(this.toSubject(table, id, op), data);
     };
 

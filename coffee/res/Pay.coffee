@@ -286,12 +286,14 @@ class Pay
 
   token:( number, exp_month, exp_year, cvc ) ->
     input = { "card[number]":number, "card[exp_month]":exp_month, "card[exp_year]":exp_year, "card[cvc]":cvc }
-    @ajaxRest( "tokens", 'post', input, @onTokenError )
+    #ajaxRest( "tokens", 'post', input, @onTokenError )
+    @memToken( "tokens", 'post', input, @onTokenError )
     return
 
   charge:( token, amount, currency, description ) ->
     input = { source:token, amount:amount, currency:currency, description:description }
-    @ajaxRest( "charges", 'post', input, @onChargeError )
+    #ajaxRest(  "charges", 'post', input, @onChargeError )
+    @memCharge( "charges", 'post', input, @onChargeError )
     return
 
   onTokenError:( error, status ) =>
@@ -312,8 +314,18 @@ class Pay
     @cardId   = obj.card.id
     @charge( @tokenId, @amount, 'usd', @resv.cust.first + " " + @resv.cust.last )
 
+  memToken:( table, op, input, onError ) ->
+    result = { id:"tokenId", card:{ id:"cardId" } }
+    @stream.publish( table, result )
+    return
+
+  memCharge:( table, op, input, onError ) ->
+    result = { outcome: { type:"authorized" } }
+    @stream.publish( table, result )
+    return
+
   onCharge:(obj) =>
-    #Util.log( 'StoreRest.onCharge()', obj )
+    #Util.log( 'Pay.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
       @doPost(       @resv )
       @res.postResv( @resv, 'post', @totals, @amount, 'card', @last4, @purpose )

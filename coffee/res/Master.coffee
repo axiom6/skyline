@@ -10,11 +10,12 @@ class Master
     @res.master  = @
     @lastMaster  = { left:0, top:0, width:0, height:0 }
     @lastSeason  = { left:0, top:0, width:0, height:0 }
-    @res.beg     = @Data.toDateStr(  1, 4 ) # May  1
-    @res.end     = @Data.toDateStr( 31, 9 ) # Oct 31
 
   ready:() ->
-    @res.dateRange( @onDateRange )  # Call readyMaster
+    beg = @Data.toDateStr(  1, 4 ) # May  1
+    end = @Data.toDateStr( 31, 9 ) # Oct 31
+    @res.dateRange( beg, end, @onDateRange )  # Call readyMaster
+    #@selectToDays() if @store.justMemory
     @listenToDays()
     #listenToResv()
     $('#MasterBtn').click( @onMasterBtn )
@@ -73,11 +74,20 @@ class Master
     return
 
   listenToDays:() =>
-    doPut = (onPut) =>
+    doDays = (data) =>
       # dayId is onPut.key and dayRoom onPut.val
-      console.log( 'Master.listenToDays()', onPut.key, onPut.val )
-      @onAlloc( onPut.key, onPut.val )
-    @res.onDays( 'put', doPut )
+      console.log( 'Master.listenToDays()', data.key, data.val )
+      @onAlloc( data.key, data.val )
+    @res.onDays( 'put',    doDays )
+    return
+
+  selectToDays:() =>
+    doDays = (days) =>
+      console.log( 'Master.selectDays()', days )
+      for own dayId, day of days
+        @onAlloc( dayId, day )
+    @res.onDays( 'select', doDays )
+    @store.select( 'Days' )
     return
 
   listenToResv:() =>
@@ -103,9 +113,9 @@ class Master
   $cell:( pre,  date,  roomId ) ->
     $( '#'+@cellId(pre,date,roomId) )
 
-  createMasterCell:( roomId, room, date ) ->
-    status = @res.dayBooked( room, date )
-    resId  = @res.resId(     room, date )
+  createMasterCell:(         roomId, date ) ->
+    status = @res.dayBooked( roomId, date )
+    resId  = @res.resId(     roomId, date )
     """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-cell="y"></td>"""
 
   allocMasterCell:( roomId, date, status ) ->
@@ -177,7 +187,7 @@ class Master
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
         date = @Data.toDateStr( day, monthIdx )
-        htm += @createMasterCell( roomId, room, date )
+        htm += @createMasterCell( roomId, date )
       htm += """</tr>"""
     htm += "</tbody></table>"
     htm

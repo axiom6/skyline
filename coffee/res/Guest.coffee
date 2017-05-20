@@ -24,7 +24,9 @@ class Guest
       stream = new Stream( [] )
       #store = new Fire(   stream, "skytest", Data.configSkytest )
       store  = new Memory( stream, "skytest"  )
+      store.justMemory = true
       res    = new Res(    stream, store, Data, 'Guest' )
+      res.insertNewTables() if store.justMemory # Populate Memory
       home   = new Home(   stream, store, Data, res, pict )
       pay    = new Pay(    stream, store, Data, res, home )
       book   = new Book(   stream, store, Data, res, pay, pict )
@@ -32,5 +34,6 @@ class Guest
 
       book.test = test
       home.ready( book )
+
 
 Guest.init()

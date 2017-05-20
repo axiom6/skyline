@@ -3,9 +3,6 @@ class Data
 
   module.exports = Data
 
-  @insertNewTables = false # Use Res test data
-
-
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
   @numDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
@@ -93,6 +90,6 @@ class Data
     if monthDay > Data.numDayMonth[@monthIdx] then monthDay-Data.numDayMonth[Data.monthIdx] else monthDay
 
   @toDateStr:( day, monthIdx=Data.monthIdx, year=Data.year ) ->
-    year+Util.pad(monthIdx+1)+Util.pad(day)
+    year.toString() + Util.pad(monthIdx+1) + Util.pad(day)
 
 

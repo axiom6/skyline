@@ -12,7 +12,8 @@ class Memory extends Store
 
   add:( t, id, object  )    ->
     @table(t)[id] = object
-    @publish( t, 'add', id, object )
+    @publish( t, 'add', id,     object )
+    @publish( t, 'add', 'none', object )
     return
 
   get:( t, id ) ->
@@ -25,7 +26,8 @@ class Memory extends Store
 
   put:( t, id,  object ) ->
     @table(t)[id] = object
-    @publish( t, 'put', id, object )
+    @publish( t, 'put', id,     object )
+    @publish( t, 'put', 'none', object )
     return
 
   del:( t, id ) ->
@@ -44,7 +46,7 @@ class Memory extends Store
     @publish( t, 'insert', 'none', objects )
     return
 
-  select:( t, where ) ->
+  select:( t, where=Store.where ) ->
     objects =  {}
     table   = @table(t)
     for own key, object of table when where(object)
@@ -53,11 +55,11 @@ class Memory extends Store
     return
 
   range:( t, beg, end ) ->
-    objects =  {}
+    rows    =  {}
     table   = @table(t)
-    for own key, object of table when beg <= key and key <= end
-      objects[key] = object
-    @publish( t, 'range', 'none', objects, { beg:beg.toString(), end:end.toString() } )
+    for key, row of table when beg <= key and key <= end
+      rows[key] = row
+    @publish( t, 'range', 'none', rows, { beg:beg.toString(), end:end.toString() } )
 
   update:( t, objects ) ->
     table = @table(t)
@@ -77,7 +79,7 @@ class Memory extends Store
 
   make:( t ) ->
     @createTable(t)
-    @publish( t, 'open', 'none', {}, {} )
+    @publish( t, 'make', 'none', {}, {} )
     return
 
   show:( t ) ->
@@ -103,8 +105,11 @@ class Memory extends Store
     return
 
   # Subscribe to  a table or object with id
-  on:(        t, op, id='none', onFunc=null ) ->
-    super.on( t, op, id,        onFunc )
+  on:( t, op, id='none', onFunc=null ) ->
+    table  = @tableName(t)
+    onNext = if onFunc? then onFunc else (data) => Util.log( 'Memory.on()', data )
+    Util.log( 'Memory.on()', table, op, id )
+    @subscribe( table, op, id, onNext )
     return
 
   dbTableName:( tableName ) ->

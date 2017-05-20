@@ -803,9 +803,9 @@ Util = (function() {
 
   Util.pad = function(n) {
     if (n < 10) {
-      return '0' + n;
+      return '0' + n.toString();
     } else {
-      return n;
+      return n.toString();
     }
   };
 

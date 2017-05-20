@@ -363,7 +363,7 @@
         "card[exp_year]": exp_year,
         "card[cvc]": cvc
       };
-      this.ajaxRest("tokens", 'post', input, this.onTokenError);
+      this.memToken("tokens", 'post', input, this.onTokenError);
     };
 
     Pay.prototype.charge = function(token, amount, currency, description) {
@@ -374,7 +374,7 @@
         currency: currency,
         description: description
       };
-      this.ajaxRest("charges", 'post', input, this.onChargeError);
+      this.memCharge("charges", 'post', input, this.onChargeError);
     };
 
     Pay.prototype.onTokenError = function(error, status) {
@@ -393,6 +393,27 @@
       this.tokenId = obj.id;
       this.cardId = obj.card.id;
       return this.charge(this.tokenId, this.amount, 'usd', this.resv.cust.first + " " + this.resv.cust.last);
+    };
+
+    Pay.prototype.memToken = function(table, op, input, onError) {
+      var result;
+      result = {
+        id: "tokenId",
+        card: {
+          id: "cardId"
+        }
+      };
+      this.stream.publish(table, result);
+    };
+
+    Pay.prototype.memCharge = function(table, op, input, onError) {
+      var result;
+      result = {
+        outcome: {
+          type: "authorized"
+        }
+      };
+      this.stream.publish(table, result);
     };
 
     Pay.prototype.onCharge = function(obj) {

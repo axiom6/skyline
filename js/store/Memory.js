@@ -20,6 +20,7 @@
     Memory.prototype.add = function(t, id, object) {
       this.table(t)[id] = object;
       this.publish(t, 'add', id, object);
+      this.publish(t, 'add', 'none', object);
     };
 
     Memory.prototype.get = function(t, id) {
@@ -37,6 +38,7 @@
     Memory.prototype.put = function(t, id, object) {
       this.table(t)[id] = object;
       this.publish(t, 'put', id, object);
+      this.publish(t, 'put', 'none', object);
     };
 
     Memory.prototype.del = function(t, id) {
@@ -65,6 +67,9 @@
 
     Memory.prototype.select = function(t, where) {
       var key, object, objects, table;
+      if (where == null) {
+        where = Store.where;
+      }
       objects = {};
       table = this.table(t);
       for (key in table) {
@@ -80,17 +85,16 @@
     };
 
     Memory.prototype.range = function(t, beg, end) {
-      var key, object, objects, table;
-      objects = {};
+      var key, row, rows, table;
+      rows = {};
       table = this.table(t);
       for (key in table) {
-        if (!hasProp.call(table, key)) continue;
-        object = table[key];
+        row = table[key];
         if (beg <= key && key <= end) {
-          objects[key] = object;
+          rows[key] = row;
         }
       }
-      return this.publish(t, 'range', 'none', objects, {
+      return this.publish(t, 'range', 'none', rows, {
         beg: beg.toString(),
         end: end.toString()
       });
@@ -130,7 +134,7 @@
 
     Memory.prototype.make = function(t) {
       this.createTable(t);
-      this.publish(t, 'open', 'none', {}, {});
+      this.publish(t, 'make', 'none', {}, {});
     };
 
     Memory.prototype.show = function(t) {
@@ -174,13 +178,21 @@
     };
 
     Memory.prototype.on = function(t, op, id, onFunc) {
+      var onNext, table;
       if (id == null) {
         id = 'none';
       }
       if (onFunc == null) {
         onFunc = null;
       }
-      Memory.__super__.on.apply(this, arguments).on(t, op, id, onFunc);
+      table = this.tableName(t);
+      onNext = onFunc != null ? onFunc : (function(_this) {
+        return function(data) {
+          return Util.log('Memory.on()', data);
+        };
+      })(this);
+      Util.log('Memory.on()', table, op, id);
+      this.subscribe(table, op, id, onNext);
     };
 
     Memory.prototype.dbTableName = function(tableName) {

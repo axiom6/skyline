@@ -2,10 +2,12 @@
 class Store
 
   module.exports  = Store
+  ###
   Store.Memory    = require( 'js/store/Memory'     )
   Store.IndexedDB = require( 'js/store/IndexedDB'  )
   Store.Rest      = require( 'js/store/Rest'       )
   Store.Fire      = require( 'js/store/Fire'       )
+  ###
   #Store.PouchDB  = require( 'js/store/PouchDB'    )
 
   @memories  = {} # Store.Memory instances create by getMemory() for in memory dbName
@@ -29,10 +31,11 @@ class Store
   # @uri     = REST URI where the file part is the database
   # @keyProp = The key id property = default is ['key']
   constructor:( @stream, @uri, @module ) ->
-    @keyProp   = 'key'
-    @dbName    = Store.nameDb( @uri )
-    @tables    = {}
-    @hasMemory = false
+    @keyProp    = 'key'
+    @dbName     = Store.nameDb( @uri )
+    @tables     = {}
+    @hasMemory  = false
+    @justMemory = false
 
   # REST Api  CRUD + Subscribe for objectect records
   add:( table, id, object )  -> Util.noop(  table, id, object )  # Post    Create   an object into table with id
@@ -53,13 +56,13 @@ class Store
   drop:( table           ) -> Util.noop( table ) # Drop the entire table - good for testing
 
   # Subscribe to CRUD changes on a table or a row with id
-  on:( table, oo, id='none', onFunc=null ) ->
+  on:( t, op, id='none', onFunc=null ) ->
     table  = @tableName(t)
     onNext = if onFunc? then onFunc else (result) => Util.log( 'Store.on()', result )
     @subscribe( table, op, id, onNext )
     return
 
-  createTable:( t  ) ->
+  createTable:( t ) ->
     @tables[t] = {}
     @tables[t]
 
@@ -85,8 +88,9 @@ class Store
     return
 
   publish:( table, op, id, data, extras={} ) ->
-    params = @toParams(table,id,op,extras)
-    @toMemory( op, table, id, data, params ) if @hasMemory
+    Util.noop( extras )
+    #params = @toParams(table,id,op,extras)
+    #@toMemory( op, table, id, data, params ) if @hasMemory
     @stream.publish( @toSubject(table,id,op), data )
     return
 

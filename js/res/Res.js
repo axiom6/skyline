@@ -16,6 +16,7 @@
     Res.States = ["free", "mine", "depo", "book"];
 
     function Res(stream, store, Data, appName) {
+      var beg, end;
       this.stream = stream;
       this.store = store;
       this.Data = Data;
@@ -29,47 +30,68 @@
       this.book = null;
       this.master = null;
       this.days = null;
-      this.beg = this.Data.toDateStr(this.Data.begDay);
-      this.end = this.Data.advanceDate(this.beg, this.Data.numDays);
-      if (this.Data.insertNewTables) {
-        this.insertNewTables();
+      beg = this.Data.toDateStr(this.Data.begDay);
+      end = this.Data.advanceDate(beg, this.Data.numDays - 1);
+      if (this.appName === 'Guest') {
+        this.dateRange(beg, end);
       }
-      if (!this.Data.insertNewTables && this.appName === 'Guest') {
-        this.dateRange();
+      if (this.store.justMemory) {
+        this.onResv('add', (function(_this) {
+          return function(resv) {
+            return console.log('onResv', resv);
+          };
+        })(this));
+      }
+      if (this.store.justMemory) {
+        this.onDays('put', (function(_this) {
+          return function(days) {
+            return console.log('onDays', days);
+          };
+        })(this));
       }
     }
 
-    Res.prototype.dateRange = function(onComplete) {
+    Res.prototype.dateRange = function(beg, end, onComplete) {
       if (onComplete == null) {
         onComplete = null;
       }
-      this.beg = this.Data.toDateStr(this.Data.begDay);
-      this.end = this.Data.advanceDate(this.beg, this.Data.numDays - 1);
-      this.store.subscribe('Days', 'none', 'range', (function(_this) {
+      this.store.subscribe('Days', 'range', 'none', (function(_this) {
         return function(days) {
           _this.days = days;
+          console.log('Res.dateRange()', beg, end, _this.days);
           if (onComplete != null) {
             return onComplete();
           }
         };
       })(this));
-      this.store.range('Days', this.beg, this.end);
+      this.store.range('Days', beg, end);
     };
 
     Res.prototype.insertNewTables = function() {
       this.insertRooms(Res.Rooms);
-      this.insertRevs(Res.Resvs);
+      this.insertResvs(Res.Resvs);
       return this.insertDays(Res.Resvs);
     };
 
     Res.prototype.dayBooked = function(roomId, date) {
       var day, entry;
       day = this.days != null ? this.days[date] : void 0;
-      entry = (day != null) && day[roomId] ? day[roomId] : null;
+      entry = (day != null) && (day[roomId] != null) ? day[roomId] : null;
       if (entry != null) {
         return entry.status;
       } else {
         return 'free';
+      }
+    };
+
+    Res.prototype.resId = function(roomId, date) {
+      var day, entry;
+      day = this.days != null ? this.days[date] : void 0;
+      entry = (day != null) && (day[roomId] != null) ? day[roomId] : null;
+      if (entry != null) {
+        return entry.resId;
+      } else {
+        return 'none';
       }
     };
 
@@ -183,24 +205,24 @@
       }
     };
 
-    Res.prototype.onResId = function(onOp, doResv, resId) {
-      return this.store.on('Res', onOp, resId, (function(_this) {
+    Res.prototype.onResId = function(op, doResv, resId) {
+      return this.store.on('Res', op, resId, (function(_this) {
         return function(resv) {
           return doResv(resv);
         };
       })(this));
     };
 
-    Res.prototype.onResv = function(onOp, doResv) {
-      return this.store.on('Res', onOp, 'none', (function(_this) {
+    Res.prototype.onResv = function(op, doResv) {
+      return this.store.on('Res', op, 'none', (function(_this) {
         return function(resv) {
           return doResv(resv);
         };
       })(this));
     };
 
-    Res.prototype.onDays = function(onOp, doDay) {
-      return this.store.on('Days', onOp, 'none', (function(_this) {
+    Res.prototype.onDays = function(op, doDay) {
+      return this.store.on('Days', op, 'none', (function(_this) {
         return function(day) {
           return doDay(day);
         };
@@ -217,7 +239,7 @@
       this.store.make('Room');
     };
 
-    Res.prototype.insertRevs = function(resvs) {
+    Res.prototype.insertResvs = function(resvs) {
       var resId, resv;
       for (resId in resvs) {
         if (!hasProp.call(resvs, resId)) continue;

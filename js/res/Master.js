@@ -18,6 +18,7 @@
       this.onMasterClick = bind(this.onMasterClick, this);
       this.onAlloc = bind(this.onAlloc, this);
       this.listenToResv = bind(this.listenToResv, this);
+      this.selectToDays = bind(this.selectToDays, this);
       this.listenToDays = bind(this.listenToDays, this);
       this.onDateRange = bind(this.onDateRange, this);
       this.showResv = bind(this.showResv, this);
@@ -38,12 +39,13 @@
         width: 0,
         height: 0
       };
-      this.res.beg = this.Data.toDateStr(1, 4);
-      this.res.end = this.Data.toDateStr(31, 9);
     }
 
     Master.prototype.ready = function() {
-      this.res.dateRange(this.onDateRange);
+      var beg, end;
+      beg = this.Data.toDateStr(1, 4);
+      end = this.Data.toDateStr(31, 9);
+      this.res.dateRange(beg, end, this.onDateRange);
       this.listenToDays();
       $('#MasterBtn').click(this.onMasterBtn);
       $('#SeasonBtn').click(this.onSeasonBtn);
@@ -128,14 +130,33 @@
     };
 
     Master.prototype.listenToDays = function() {
-      var doPut;
-      doPut = (function(_this) {
-        return function(onPut) {
-          console.log('Master.listenToDays()', onPut.key, onPut.val);
-          return _this.onAlloc(onPut.key, onPut.val);
+      var doDays;
+      doDays = (function(_this) {
+        return function(data) {
+          console.log('Master.listenToDays()', data.key, data.val);
+          return _this.onAlloc(data.key, data.val);
         };
       })(this);
-      this.res.onDays('put', doPut);
+      this.res.onDays('put', doDays);
+    };
+
+    Master.prototype.selectToDays = function() {
+      var doDays;
+      doDays = (function(_this) {
+        return function(days) {
+          var day, dayId, results;
+          console.log('Master.selectDays()', days);
+          results = [];
+          for (dayId in days) {
+            if (!hasProp.call(days, dayId)) continue;
+            day = days[dayId];
+            results.push(_this.onAlloc(dayId, day));
+          }
+          return results;
+        };
+      })(this);
+      this.res.onDays('select', doDays);
+      this.store.select('Days');
     };
 
     Master.prototype.listenToResv = function() {
@@ -186,10 +207,10 @@
       return $('#' + this.cellId(pre, date, roomId));
     };
 
-    Master.prototype.createMasterCell = function(roomId, room, date) {
+    Master.prototype.createMasterCell = function(roomId, date) {
       var resId, status;
-      status = this.res.dayBooked(room, date);
-      resId = this.res.resId(room, date);
+      status = this.res.dayBooked(roomId, date);
+      resId = this.res.resId(roomId, date);
       return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-cell=\"y\"></td>";
     };
 
@@ -297,7 +318,7 @@
         htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
         for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
           date = this.Data.toDateStr(day, monthIdx);
-          htm += this.createMasterCell(roomId, room, date);
+          htm += this.createMasterCell(roomId, date);
         }
         htm += "</tr>";
       }
