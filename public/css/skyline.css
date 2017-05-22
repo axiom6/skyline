@@ -384,6 +384,14 @@ img.center {
   height: 40px;
   border-radius: 12px;
 }
+#LookupBtn {
+  position: absolute;
+  left: 64%;
+  top: 2%;
+  width: 16%;
+  height: 40px;
+  border-radius: 12px;
+}
 .Master {
   position: relative;
   left: 3%;
@@ -557,6 +565,14 @@ img.center {
 }
 .DailysH2 {
   text-align: center;
+}
+.Lookup {
+  position: relative;
+  left: 3%;
+  top: 3%;
+  width: 94%;
+  height: 740px;
+  display: none;
 }
 .rooms {
   background: #EEE;

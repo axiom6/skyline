@@ -6,7 +6,7 @@ class Pay
 
   module.exports = Pay
 
-  constructor:( @stream, @store, @Data, @res, @home ) ->
+  constructor:( @stream, @store, @Data, @res, @home=null ) ->
     @credit = new Credit()
     @uri    = "https://api.stripe.com/v1/"
     @subscribe()
@@ -70,7 +70,7 @@ class Pay
 
   onCancel:( e ) =>
     e.preventDefault()
-    @home.onHome()
+    @home.onHome()  if @home?
     return
 
   calcDeposit:() ->
@@ -93,8 +93,8 @@ class Pay
     amount
 
   confirmHead:( resv ) ->
-    htm   = """<div id="ConfirmTitle" class= "Title">Confirmation # #{resv.resId}</div>"""
-    htm  += """<div><div id="ConfirmName"><span>For: #{resv.cust.first} </span><span>#{resv.cust.last} </span></div></div>"""
+    htm   = """<div id="ConfirmTitle" class= "Title"><span>Confirmation # #{resv.resId}</span><span>  For: #{resv.cust.first} </span><span>#{resv.cust.last} </span></div>"""
+    #tm  += """<div><div id="ConfirmName"></div></div>"""
     htm  += """<div id="ConfirmBlock" class="DivCenter"></div>"""
     htm
  
@@ -102,21 +102,23 @@ class Pay
     htm   = """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
-    htm  += @confirmContent( resv.rooms, 'html' )
-    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{@totals}</td></tr>"""
+    htm  += @confirmContent( resv, 'html' )
+    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{resv.totals}</td></tr>"""
     htm  += """</tbody></table>"""
+    htm  += """<div>Totals:$#{resv.totals} Paid:$#{resv.paid} Balance:$#{resv.balance}</div>"""
     htm
 
   confirmBody:( resv ) =>
     body  = """\n      Confirmation ##{resv.resId}\nFor: #{resv.cust.first} #{resv.cust.last}\nPhone: #{resv.cust.phone}\n\n"""
-    body += @confirmContent( resv.rooms, 'body' )
+    body += @confirmContent( resv, 'body' )
     body += """\n Totals:$#{resv.totals} Paid:$#{resv.paid} Balance:$#{resv.balance} """
     body = escape(body)
     body
 
-  confirmContent:( rooms, stuff ) ->
+  confirmContent:( resv, stuff ) ->
     content = ""
-    for own roomId, r of rooms
+    Util.log( 'Pay.confirmContent rooms', resv.rooms )
+    for own roomId, r of resv.rooms
       name   = Util.padEnd( r.name+' ', 26, '-' )
       days   = Util.keys(r.days).sort()
       bday   = days[0]
@@ -127,15 +129,15 @@ class Pay
           arrive   = @confirmDate( bday, "", false )
           depart   = @confirmDate( eday, "", true  )
           if      stuff is 'html'
-            content += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{r.nights}</td><td id="#{roomId}TR" class="room-total">$#{r.total}</td></tr>"""
+            content += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(resv,roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{r.nights}</td><td id="#{roomId}TR" class="room-total">$#{r.total}</td></tr>"""
           else if stuff is 'body'
             content  += """#{name} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{r.nights}-Nights $#{r.total}\n"""
           bday     = days[i+1]
         i++
     content
 
-  spa:( roomId ) ->
-    change = @resv.rooms[roomId].change
+  spa:( resv,roomId ) ->
+    change = resv.rooms[roomId].change
     has    = @res.hasSpa(roomId)
     if  !has then '' else if change is -20 then 'N' else 'Y'
 
@@ -338,7 +340,7 @@ class Pay
   doPost:( resv ) ->
     @hidePay()
     $('#Approval').text("Approved: A Confirnation Email Been Sent To #{resv.cust.email}")
-    @home.showConfirm()
+    @home.showConfirm()  if @home?
 
   doDeny:( resv ) ->
     @showPay()

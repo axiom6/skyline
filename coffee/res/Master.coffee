@@ -5,7 +5,7 @@ class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @Data, @res ) ->
+  constructor:( @stream, @store, @Data, @res, @pay ) ->
     @rooms       = @res.rooms
     @res.master  = @
     @lastMaster  = { left:0, top:0, width:0, height:0 }
@@ -24,22 +24,36 @@ class Master
     return
 
   onMasterBtn:() =>
+    $('#Lookup').hide()
     $('#Season').hide()
     $('#Dailys').hide()
     $('#Master').show()
     return
 
-  onSeasonBtn:() =>
-    $('#Dailys').hide()
+  onLookup:( resv ) =>
     $('#Master').hide()
+    $('#Season').hide()
+    $('#Dailys').hide()
+    $('#Lookup').empty()
+    Util.log( 'Master.onLookup', resv )
+    $('#Lookup').append( @pay.confirmHead(  resv ) ) if not Util.isObjEmpty(resv)
+    $('#Lookup').append( @pay.confirmTable( resv ) ) if not Util.isObjEmpty(resv)
+    $('#Lookup').show()
+    return
+
+  onSeasonBtn:() =>
+    $('#Master').hide()
+    $('#Lookup').hide()
+    $('#Dailys').hide()
     $('#Season').append( @seasonHtml() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
     $('#Season').show()
     return
 
   onDailysBtn:() =>
-    $('#Season').hide()
     $('#Master').hide()
+    $('#Lookup').hide()
+    $('#Season').hide()
     $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
     $('#Dailys').show()
     return
@@ -50,11 +64,6 @@ class Master
     @readyCells()
     return
 
-  showResv:( resv ) =>
-    str = Util.toStrObj( resv )
-    alert( str )
-    return
-
   readyCells:() ->
     doCell   = (event) =>
       $cell  = $(event.target)
@@ -62,7 +71,7 @@ class Master
       resId  = $cell.attr('data-res'   )
       Util.log( 'doCell', { resId:resId, status:status } )
       if status isnt 'free'
-        @res.onResId( 'get', @showResv, resId )
+        @res.onResId( 'get', @onLookup, resId )
         @store.get(   'Res', resId )
     $('[data-cell="y"]').click( doCell )
     return

@@ -9,11 +9,12 @@
   Master = (function() {
     module.exports = Master;
 
-    function Master(stream, store, Data, res) {
+    function Master(stream, store, Data, res, pay) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
       this.res = res;
+      this.pay = pay;
       this.onSeasonClick = bind(this.onSeasonClick, this);
       this.onMasterClick = bind(this.onMasterClick, this);
       this.onAlloc = bind(this.onAlloc, this);
@@ -21,9 +22,9 @@
       this.selectToDays = bind(this.selectToDays, this);
       this.listenToDays = bind(this.listenToDays, this);
       this.onDateRange = bind(this.onDateRange, this);
-      this.showResv = bind(this.showResv, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
       this.onSeasonBtn = bind(this.onSeasonBtn, this);
+      this.onLookup = bind(this.onLookup, this);
       this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
       this.res.master = this;
@@ -53,14 +54,31 @@
     };
 
     Master.prototype.onMasterBtn = function() {
+      $('#Lookup').hide();
       $('#Season').hide();
       $('#Dailys').hide();
       $('#Master').show();
     };
 
-    Master.prototype.onSeasonBtn = function() {
-      $('#Dailys').hide();
+    Master.prototype.onLookup = function(resv) {
       $('#Master').hide();
+      $('#Season').hide();
+      $('#Dailys').hide();
+      $('#Lookup').empty();
+      Util.log('Master.onLookup', resv);
+      if (!Util.isObjEmpty(resv)) {
+        $('#Lookup').append(this.pay.confirmHead(resv));
+      }
+      if (!Util.isObjEmpty(resv)) {
+        $('#Lookup').append(this.pay.confirmTable(resv));
+      }
+      $('#Lookup').show();
+    };
+
+    Master.prototype.onSeasonBtn = function() {
+      $('#Master').hide();
+      $('#Lookup').hide();
+      $('#Dailys').hide();
       if (Util.isEmpty($('#Season').children())) {
         $('#Season').append(this.seasonHtml());
       }
@@ -73,8 +91,9 @@
     };
 
     Master.prototype.onDailysBtn = function() {
-      $('#Season').hide();
       $('#Master').hide();
+      $('#Lookup').hide();
+      $('#Season').hide();
       if (Util.isEmpty($('#Dailys').children())) {
         $('#Dailys').append(this.dailysHtml());
       }
@@ -91,12 +110,6 @@
       this.readyCells();
     };
 
-    Master.prototype.showResv = function(resv) {
-      var str;
-      str = Util.toStrObj(resv);
-      alert(str);
-    };
-
     Master.prototype.readyCells = function() {
       var doCell;
       doCell = (function(_this) {
@@ -110,7 +123,7 @@
             status: status
           });
           if (status !== 'free') {
-            _this.res.onResId('get', _this.showResv, resId);
+            _this.res.onResId('get', _this.onLookup, resId);
             return _this.store.get('Res', resId);
           }
         };

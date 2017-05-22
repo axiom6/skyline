@@ -9,11 +9,12 @@
 
     Owner.init = function() {
       return Util.ready(function() {
-        var Data, Master, Memory, Res, Stream, master, res, store, stream;
+        var Data, Master, Memory, Pay, Res, Stream, master, pay, res, store, stream;
         Stream = require('js/store/Stream');
         Memory = require('js/store/Memory');
         Data = require('js/res/Data');
         Res = require('js/res/Res');
+        Pay = require('js/res/Pay');
         Master = require('js/res/Master');
         stream = new Stream([]);
         store = new Memory(stream, "skytest");
@@ -22,7 +23,8 @@
         if (store.justMemory) {
           res.insertNewTables();
         }
-        master = new Master(stream, store, Data, res);
+        pay = new Pay(stream, store, Data, res);
+        master = new Master(stream, store, Data, res, pay);
         return master.ready();
       });
     };

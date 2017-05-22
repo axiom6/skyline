@@ -16,7 +16,7 @@
       this.store = store;
       this.Data = Data;
       this.res = res;
-      this.home = home;
+      this.home = home != null ? home : null;
       this.onError = bind(this.onError, this);
       this.onCharge = bind(this.onCharge, this);
       this.onToken = bind(this.onToken, this);
@@ -118,7 +118,9 @@
 
     Pay.prototype.onCancel = function(e) {
       e.preventDefault();
-      this.home.onHome();
+      if (this.home != null) {
+        this.home.onHome();
+      }
     };
 
     Pay.prototype.calcDeposit = function() {
@@ -150,8 +152,7 @@
 
     Pay.prototype.confirmHead = function(resv) {
       var htm;
-      htm = "<div id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + resv.resId + "</div>";
-      htm += "<div><div id=\"ConfirmName\"><span>For: " + resv.cust.first + " </span><span>" + resv.cust.last + " </span></div></div>";
+      htm = "<div id=\"ConfirmTitle\" class= \"Title\"><span>Confirmation # " + resv.resId + "</span><span>  For: " + resv.cust.first + " </span><span>" + resv.cust.last + " </span></div>";
       htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"></div>";
       return htm;
     };
@@ -161,27 +162,30 @@
       htm = "<table id=\"ConfirmTable\"><thead>";
       htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
       htm += "</thead><tbody>";
-      htm += this.confirmContent(resv.rooms, 'html');
-      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.totals + "</td></tr>";
+      htm += this.confirmContent(resv, 'html');
+      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + resv.totals + "</td></tr>";
       htm += "</tbody></table>";
+      htm += "<div>Totals:$" + resv.totals + " Paid:$" + resv.paid + " Balance:$" + resv.balance + "</div>";
       return htm;
     };
 
     Pay.prototype.confirmBody = function(resv) {
       var body;
       body = "\n      Confirmation #" + resv.resId + "\nFor: " + resv.cust.first + " " + resv.cust.last + "\nPhone: " + resv.cust.phone + "\n\n";
-      body += this.confirmContent(resv.rooms, 'body');
+      body += this.confirmContent(resv, 'body');
       body += "\n Totals:$" + resv.totals + " Paid:$" + resv.paid + " Balance:$" + resv.balance + " ";
       body = escape(body);
       return body;
     };
 
-    Pay.prototype.confirmContent = function(rooms, stuff) {
-      var arrive, bday, content, days, depart, eday, i, name, r, roomId;
+    Pay.prototype.confirmContent = function(resv, stuff) {
+      var arrive, bday, content, days, depart, eday, i, name, r, ref, roomId;
       content = "";
-      for (roomId in rooms) {
-        if (!hasProp.call(rooms, roomId)) continue;
-        r = rooms[roomId];
+      Util.log('Pay.confirmContent rooms', resv.rooms);
+      ref = resv.rooms;
+      for (roomId in ref) {
+        if (!hasProp.call(ref, roomId)) continue;
+        r = ref[roomId];
         name = Util.padEnd(r.name + ' ', 26, '-');
         days = Util.keys(r.days).sort();
         bday = days[0];
@@ -192,7 +196,7 @@
             arrive = this.confirmDate(bday, "", false);
             depart = this.confirmDate(eday, "", true);
             if (stuff === 'html') {
-              content += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+              content += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(resv, roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
             } else if (stuff === 'body') {
               content += name + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + r.nights + "-Nights $" + r.total + "\n";
             }
@@ -204,9 +208,9 @@
       return content;
     };
 
-    Pay.prototype.spa = function(roomId) {
+    Pay.prototype.spa = function(resv, roomId) {
       var change, has;
-      change = this.resv.rooms[roomId].change;
+      change = resv.rooms[roomId].change;
       has = this.res.hasSpa(roomId);
       if (!has) {
         return '';
@@ -430,7 +434,9 @@
     Pay.prototype.doPost = function(resv) {
       this.hidePay();
       $('#Approval').text("Approved: A Confirnation Email Been Sent To " + resv.cust.email);
-      return this.home.showConfirm();
+      if (this.home != null) {
+        return this.home.showConfirm();
+      }
     };
 
     Pay.prototype.doDeny = function(resv) {
