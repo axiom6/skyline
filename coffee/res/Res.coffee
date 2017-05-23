@@ -164,7 +164,8 @@ class Res
     payment.amount  = amount
     payment.date    = @Data.today()
     payment.method  = method
-    payment.with    = last4
+    payment.with    = method
+    payment.last4   = last4
     payment.purpose = purpose
     payment.cc      = ''
     payment.exp     = ''
@@ -173,7 +174,7 @@ class Res
 
   setResvStatus:( resv, post, purpose ) ->
     if        post is 'post'
-        resv.status = 'book' if purpose is 'PayInFull' or purpose is 'PayOffDeposit'
+        resv.status = 'book' if purpose is 'PayInFull' or purpose is 'Complete'
         resv.status = 'depo' if purpose is 'Deposit'
     else if   post is 'deny'
         resv.status = 'free'

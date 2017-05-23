@@ -23,7 +23,7 @@
       this.onChargeError = bind(this.onChargeError, this);
       this.onTokenError = bind(this.onTokenError, this);
       this.submitPayment = bind(this.submitPayment, this);
-      this.confirmBody = bind(this.confirmBody, this);
+      this.confirmEmailBody = bind(this.confirmEmailBody, this);
       this.onMakePayment = bind(this.onMakePayment, this);
       this.onMakeDeposit = bind(this.onMakeDeposit, this);
       this.onCancel = bind(this.onCancel, this);
@@ -53,7 +53,7 @@
       this.amount = totals - this.resv.paid;
       $('#Pays').empty();
       $('#Pays').append(this.confirmHead(this.resv));
-      $('#ConfirmBlock').append(this.confirmTable(this.resv));
+      $('#ConfirmBlock').append(this.confirmTable(this.resv, 'Guest'));
       $('#Pays').append(this.confirmBtns(this.resv));
       $('#PayDiv').append(this.payHtml());
       $('#Pays').append(this.termsHtml());
@@ -157,28 +157,88 @@
       return htm;
     };
 
-    Pay.prototype.confirmTable = function(resv) {
+    Pay.prototype.confirmTable = function(resv, appName) {
       var htm;
-      htm = "<table id=\"ConfirmTable\"><thead>";
-      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
-      htm += "</thead><tbody>";
-      htm += this.confirmContent(resv, 'html');
-      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + resv.totals + "</td></tr>";
-      htm += "</tbody></table>";
-      htm += "<div>Totals:$" + resv.totals + " Paid:$" + resv.paid + " Balance:$" + resv.balance + "</div>";
+      htm = "";
+      htm += this.confirmRooms(resv, appName);
+      htm += this.confirmPayments(resv);
       return htm;
     };
 
-    Pay.prototype.confirmBody = function(resv) {
+    Pay.prototype.confirmRooms = function(resv, appName) {
+      var arrive, arriveTimes, days, depart, departTimes, htm, r, ref, roomId;
+      htm = "<table id=\"ConfirmTable\"><thead>";
+      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
+      htm += "</thead><tbody>";
+      arriveTimes = appName === 'Guest' ? "Arrival is from 3:00-8:00PM" : "";
+      departTimes = appName === 'Guest' ? "Checkout is before 10:00AM" : "";
+      ref = resv.rooms;
+      for (roomId in ref) {
+        if (!hasProp.call(ref, roomId)) continue;
+        r = ref[roomId];
+        days = Util.keys(r.days).sort();
+        arrive = this.confirmDate(days[0], "", false);
+        depart = this.confirmDate(days[days.length - 1], "", true);
+        htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(resv, roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+      }
+      htm;
+      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">" + arriveTimes + "</td><td class=\"depart-times\">" + departTimes + "</td><td></td><td  id=\"TT\" class=\"room-total\">$" + resv.totals + "</td></tr>";
+      return htm += "</tbody></table>";
+    };
+
+    Pay.prototype.confirmPayments = function(resv) {
+      var date, htm, pay, payId, ref;
+      htm = "<table id=\"ConfirmPayment\"><thead>";
+      htm += "<tr><th>Amount</th><th>Purpose</th><th>Date</th><th>With</th><th>Last 4</th></tr>";
+      htm += "</thead><tbody>";
+      ref = resv.payments;
+      for (payId in ref) {
+        if (!hasProp.call(ref, payId)) continue;
+        pay = ref[payId];
+        date = this.confirmDate(pay.date, "", false);
+        htm += "<tr><td>$" + pay.amount + "</td><td>" + pay.purpose + "</td><td>" + date + "</td><td>" + pay["with"] + "</td><td>" + pay.num + "</td></tr>";
+      }
+      htm += "</tbody></table>";
+      htm += "<table id=\"ConfirmBalance\" style=\"margin-top:20px;\"><thead>";
+      htm += "<tr><th>Total</th><th>Paid</th><th>Balance</th></tr>";
+      htm += "</thead><tbody>";
+      htm += "<tr><td>$" + resv.totals + "</td><td>$" + resv.paid + "</td><td>$" + resv.balance + "</td></tr>";
+      htm += "</tbody></table>";
+      return htm;
+    };
+
+    Pay.prototype.confirmEmail = function(resv) {
+      var win;
+      win = window.open("mailto:" + resv.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmEmailBody(resv)), "EMail");
+      Util.noop(win);
+    };
+
+    Pay.prototype.confirmEmailBody = function(resv) {
       var body;
       body = "\n      Confirmation #" + resv.resId + "\nFor: " + resv.cust.first + " " + resv.cust.last + "\nPhone: " + resv.cust.phone + "\n\n";
-      body += this.confirmContent(resv, 'body');
+      body += this.confirmEmailRooms(resv);
       body += "\n Totals:$" + resv.totals + " Paid:$" + resv.paid + " Balance:$" + resv.balance + " ";
       body = escape(body);
       return body;
     };
 
-    Pay.prototype.confirmContent = function(resv, stuff) {
+    Pay.prototype.confirmEmailRooms = function(resv) {
+      var arrive, days, depart, name, r, ref, roomId, text;
+      text = "";
+      ref = resv.rooms;
+      for (roomId in ref) {
+        if (!hasProp.call(ref, roomId)) continue;
+        r = ref[roomId];
+        name = Util.padEnd(r.name + ' ', 26, '-');
+        days = Util.keys(r.days).sort();
+        arrive = this.confirmDate(days[0], "", false);
+        depart = this.confirmDate(days[days.length - 1], "", true);
+        text += name + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + r.nights + "-Nights $" + r.total + "\n";
+      }
+      return text;
+    };
+
+    Pay.prototype.confirmContent2 = function(resv, stuff) {
       var arrive, bday, content, days, depart, eday, i, name, r, ref, roomId;
       content = "";
       Util.log('Pay.confirmContent rooms', resv.rooms);
@@ -244,12 +304,6 @@
       arrive = parseInt(resv.arrive);
       advance = parseInt(this.Data.advanceDate(resv.booked, 7));
       return arrive >= advance;
-    };
-
-    Pay.prototype.confirmEmail = function(resv) {
-      var win;
-      win = window.open("mailto:" + resv.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody(resv)), "EMail");
-      Util.noop(win);
     };
 
     Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
@@ -423,11 +477,11 @@
     Pay.prototype.onCharge = function(obj) {
       if (obj['outcome'].type === 'authorized') {
         this.doPost(this.resv);
-        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
+        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'Credit', this.last4, this.purpose);
       } else {
         this.amount = 0;
         this.doDeny(this.resv);
-        return this.res.postResv(this.resv, 'deny', this.totals, this.amount, 'card', this.last4, this.purpose);
+        return this.res.postResv(this.resv, 'deny', this.totals, this.amount, 'Credit', this.last4, this.purpose);
       }
     };
 

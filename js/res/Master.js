@@ -70,7 +70,7 @@
         $('#Lookup').append(this.pay.confirmHead(resv));
       }
       if (!Util.isObjEmpty(resv)) {
-        $('#Lookup').append(this.pay.confirmTable(resv));
+        $('#Lookup').append(this.pay.confirmTable(resv, 'Owner'));
       }
       $('#Lookup').show();
     };

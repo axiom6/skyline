@@ -36,8 +36,8 @@ class Master
     $('#Dailys').hide()
     $('#Lookup').empty()
     Util.log( 'Master.onLookup', resv )
-    $('#Lookup').append( @pay.confirmHead(  resv ) ) if not Util.isObjEmpty(resv)
-    $('#Lookup').append( @pay.confirmTable( resv ) ) if not Util.isObjEmpty(resv)
+    $('#Lookup').append( @pay.confirmHead(  resv          ) ) if not Util.isObjEmpty(resv)
+    $('#Lookup').append( @pay.confirmTable( resv, 'Owner' ) ) if not Util.isObjEmpty(resv)
     $('#Lookup').show()
     return
 

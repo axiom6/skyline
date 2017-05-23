@@ -27,7 +27,7 @@ class Pay
     @amount    = totals - @resv.paid
     $('#Pays'        ).empty()
     $('#Pays'        ).append( @confirmHead(  @resv ) )
-    $('#ConfirmBlock').append( @confirmTable( @resv ) )
+    $('#ConfirmBlock').append( @confirmTable( @resv, 'Guest' ) )
     $('#Pays'        ).append( @confirmBtns(  @resv ) )
     $('#PayDiv'      ).append( @payHtml()      )
     $('#Pays'        ).append( @termsHtml()    )
@@ -98,24 +98,67 @@ class Pay
     htm  += """<div id="ConfirmBlock" class="DivCenter"></div>"""
     htm
  
-  confirmTable:( resv ) ->
+  confirmTable:( resv, appName ) ->
+    htm  = ""
+    htm += @confirmRooms(    resv, appName )
+    htm += @confirmPayments( resv )
+    htm
+
+  confirmRooms:( resv, appName ) ->
     htm   = """<table id="ConfirmTable"><thead>"""
     htm  += """<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class="arrive">Arrive</th><th class="depart">Depart</th><th>Nights</th><th>Total</th></tr>"""
     htm  += """</thead><tbody>"""
-    htm  += @confirmContent( resv, 'html' )
-    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">Arrival is from 3:00-8:00PM</td><td class="depart-times">Checkout is before 10:00AM</td><td></td><td  id="TT" class="room-total">$#{resv.totals}</td></tr>"""
+    arriveTimes = if appName is 'Guest' then "Arrival is from 3:00-8:00PM" else ""
+    departTimes = if appName is 'Guest' then "Checkout is before 10:00AM"  else ""
+    for own roomId, r of resv.rooms
+      days   = Util.keys(r.days).sort()
+      arrive = @confirmDate( days[0],             "", false )
+      depart = @confirmDate( days[days.length-1], "", true  )
+      htm += """<tr><td class="td-left">#{r.name}</td><td class="guests">#{r.guests}</td><td class="pets">#{r.pets}</td><td>#{@spa(resv,roomId)}</td><td class="room-price">$#{r.price}</td><td>#{arrive}</td><td>#{depart}</td><td class="nights">#{r.nights}</td><td id="#{roomId}TR" class="room-total">$#{r.total}</td></tr>"""
+    htm
+    htm  += """<tr><td></td><td></td><td></td><td></td><td></td><td class="arrive-times">#{arriveTimes}</td><td class="depart-times">#{departTimes}</td><td></td><td  id="TT" class="room-total">$#{resv.totals}</td></tr>"""
     htm  += """</tbody></table>"""
-    htm  += """<div>Totals:$#{resv.totals} Paid:$#{resv.paid} Balance:$#{resv.balance}</div>"""
+
+  confirmPayments:( resv ) ->
+    htm   = """<table id="ConfirmPayment"><thead>"""
+    htm  += """<tr><th>Amount</th><th>Purpose</th><th>Date</th><th>With</th><th>Last 4</th></tr>"""
+    htm  += """</thead><tbody>"""
+    for own payId, pay of resv.payments
+      date  = @confirmDate( pay.date, "", false )
+      htm  += """<tr><td>$#{pay.amount}</td><td>#{pay.purpose}</td><td>#{date}</td><td>#{pay.with}</td><td>#{pay.num}</td></tr>"""
+    htm  += """</tbody></table>"""
+    htm  += """<table id="ConfirmBalance" style="margin-top:20px;"><thead>"""
+    htm  += """<tr><th>Total</th><th>Paid</th><th>Balance</th></tr>"""
+    htm  += """</thead><tbody>"""
+    htm  += """<tr><td>$#{resv.totals}</td><td>$#{resv.paid}</td><td>$#{resv.balance}</td></tr>"""
+    htm  += """</tbody></table>"""
     htm
 
-  confirmBody:( resv ) =>
+  # Call after @res.postResv(...)
+  confirmEmail:( resv ) ->
+    win = window.open("""mailto:#{resv.cust.email}?subject=Skyline Cottages Confirmation&body=#{@confirmEmailBody(resv)}""","EMail")
+    #win.close() if win? and not win.closed
+    Util.noop( win )
+    return
+
+  confirmEmailBody:( resv ) =>
     body  = """\n      Confirmation ##{resv.resId}\nFor: #{resv.cust.first} #{resv.cust.last}\nPhone: #{resv.cust.phone}\n\n"""
-    body += @confirmContent( resv, 'body' )
+    body += @confirmEmailRooms( resv )
     body += """\n Totals:$#{resv.totals} Paid:$#{resv.paid} Balance:$#{resv.balance} """
     body = escape(body)
     body
 
-  confirmContent:( resv, stuff ) ->
+  confirmEmailRooms:( resv) ->
+    text = ""
+    for own roomId, r of resv.rooms
+      name   = Util.padEnd( r.name+' ', 26, '-' )
+      days   = Util.keys(r.days).sort()
+      arrive = @confirmDate( days[0],             "", false )
+      depart = @confirmDate( days[days.length-1], "", true  )
+      text  += """#{name} $#{r.price}  #{r.guests}-Guests #{r.pets}-Pets Arrive:#{arrive} Depart:#{depart} #{r.nights}-Nights $#{r.total}\n"""
+    text
+
+  confirmContent2:( resv, stuff ) ->
     content = ""
     Util.log( 'Pay.confirmContent rooms', resv.rooms )
     for own roomId, r of resv.rooms
@@ -158,13 +201,6 @@ class Pay
     advance = parseInt( @Data.advanceDate( resv.booked, 7 ) )
     #Util.log('Pay.canMakeDeposit()', { booked:resv.booked, arrive:arrive, advance:advance, can:arrive >= advance } )
     arrive >= advance
-
-  # Call after @res.postResv(...)
-  confirmEmail:( resv ) ->
-    win = window.open("""mailto:#{resv.cust.email}?subject=Skyline Cottages Confirmation&body=#{@confirmBody(resv)}""","EMail")
-    #win.close() if win? and not win.closed
-    Util.noop( win )
-    return
 
   departDate:( monthI, dayI, weekdayI ) ->
     dayO     = dayI + 1
@@ -330,12 +366,12 @@ class Pay
     #Util.log( 'Pay.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
       @doPost(       @resv )
-      @res.postResv( @resv, 'post', @totals, @amount, 'card', @last4, @purpose )
+      @res.postResv( @resv, 'post', @totals, @amount, 'Credit', @last4, @purpose )
       #confirmEmail( @resv )
     else
       @amount = 0
       @doDeny(       @resv )
-      @res.postResv( @resv, 'deny', @totals, @amount, 'card', @last4, @purpose )
+      @res.postResv( @resv, 'deny', @totals, @amount, 'Credit', @last4, @purpose )
 
   doPost:( resv ) ->
     @hidePay()

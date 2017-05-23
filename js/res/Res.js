@@ -320,7 +320,8 @@
       payment.amount = amount;
       payment.date = this.Data.today();
       payment.method = method;
-      payment["with"] = last4;
+      payment["with"] = method;
+      payment.last4 = last4;
       payment.purpose = purpose;
       payment.cc = '';
       payment.exp = '';
@@ -330,7 +331,7 @@
 
     Res.prototype.setResvStatus = function(resv, post, purpose) {
       if (post === 'post') {
-        if (purpose === 'PayInFull' || purpose === 'PayOffDeposit') {
+        if (purpose === 'PayInFull' || purpose === 'Complete') {
           resv.status = 'book';
         }
         if (purpose === 'Deposit') {
