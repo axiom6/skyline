@@ -78,7 +78,6 @@ class Slide
 
     if @auto then @is(0,0) else @is(0,1)
 
-
   mv:(d,c) ->
     t=@c+d
     t = if t<0 then @l-1 else if t> @l-1  then 0 else t

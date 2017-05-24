@@ -52,7 +52,7 @@
           return _this.initTINY(w, h);
         };
       })(this);
-      url = roomId === 'M' ? "../data/Img.json" : "../../data/Img.json";
+      url = roomId === 'M' ? '../public/img/img.json' : '../img/img.json';
       $.getJSON(url, images);
     };
 
@@ -124,27 +124,25 @@
       return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
     };
 
-
-    /*
-    initSlide:( w, h ) ->
-      Util.noop( w, h )
-      slide = new Slide("slideshow")
-      Slide.ElemById('slideshow').style.display='none'
-      Slide.ElemById('wrapper'  ).style.display='block'
-      slide.auto=false #true
-      slide.speed=10
-      slide.link="linkhover"
-      slide.info="information"
-      slide.thumbs="slider"
-      slide.left="slideleft"
-      slide.right="slideright"
-      slide.scrollSpeed=4
-      slide.spacing=5
-      slide.active="#fff"
-       * @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
-      slide.init("slide","image","imgprev","imgnext","imglink")
-      slide
-     */
+    Pict.prototype.initSlide = function(w, h) {
+      var slide;
+      Util.noop(w, h);
+      slide = new Slide("slideshow");
+      Slide.ElemById('slideshow').style.display = 'none';
+      Slide.ElemById('wrapper').style.display = 'block';
+      slide.auto = false;
+      slide.speed = 10;
+      slide.link = "linkhover";
+      slide.info = "information";
+      slide.thumbs = "slider";
+      slide.left = "slideleft";
+      slide.right = "slideright";
+      slide.scrollSpeed = 4;
+      slide.spacing = 5;
+      slide.active = "#fff";
+      slide.init("slide", "image", "imgprev", "imgnext", "imglink");
+      return slide;
+    };
 
     return Pict;
 

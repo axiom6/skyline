@@ -107,8 +107,8 @@ class Memory extends Store
   # Subscribe to  a table or object with id
   on:( t, op, id='none', onFunc=null ) ->
     table  = @tableName(t)
-    onNext = if onFunc? then onFunc else (data) => Util.log( 'Memory.on()', data )
-    Util.log( 'Memory.on()', table, op, id )
+    onNext = if onFunc? then onFunc else (data) => Util.noop( 'Memory.on()', data )
+    #Util.log( 'Memory.on()', table, op, id )
     @subscribe( table, op, id, onNext )
     return
 

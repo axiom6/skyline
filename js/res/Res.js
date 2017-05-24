@@ -58,7 +58,6 @@
       this.store.subscribe('Days', 'range', 'none', (function(_this) {
         return function(days) {
           _this.days = days;
-          console.log('Res.dateRange()', beg, end, _this.days);
           if (onComplete != null) {
             return onComplete();
           }

@@ -30228,10 +30228,9 @@
 	      table = this.tableName(t);
 	      onNext = onFunc != null ? onFunc : (function(_this) {
 	        return function(data) {
-	          return Util.log('Memory.on()', data);
+	          return Util.noop('Memory.on()', data);
 	        };
 	      })(this);
-	      Util.log('Memory.on()', table, op, id);
 	      this.subscribe(table, op, id, onNext);
 	    };
 
@@ -32448,7 +32447,7 @@
 	          return _this.initTINY(w, h);
 	        };
 	      })(this);
-	      url = roomId === 'M' ? "../data/Img.json" : "../../data/Img.json";
+	      url = roomId === 'M' ? '../public/img/img.json' : '../img/img.json';
 	      $.getJSON(url, images);
 	    };
 
@@ -32520,27 +32519,25 @@
 	      return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
 	    };
 
-
-	    /*
-	    initSlide:( w, h ) ->
-	      Util.noop( w, h )
-	      slide = new Slide("slideshow")
-	      Slide.ElemById('slideshow').style.display='none'
-	      Slide.ElemById('wrapper'  ).style.display='block'
-	      slide.auto=false #true
-	      slide.speed=10
-	      slide.link="linkhover"
-	      slide.info="information"
-	      slide.thumbs="slider"
-	      slide.left="slideleft"
-	      slide.right="slideright"
-	      slide.scrollSpeed=4
-	      slide.spacing=5
-	      slide.active="#fff"
-	       * @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
-	      slide.init("slide","image","imgprev","imgnext","imglink")
-	      slide
-	     */
+	    Pict.prototype.initSlide = function(w, h) {
+	      var slide;
+	      Util.noop(w, h);
+	      slide = new Slide("slideshow");
+	      Slide.ElemById('slideshow').style.display = 'none';
+	      Slide.ElemById('wrapper').style.display = 'block';
+	      slide.auto = false;
+	      slide.speed = 10;
+	      slide.link = "linkhover";
+	      slide.info = "information";
+	      slide.thumbs = "slider";
+	      slide.left = "slideleft";
+	      slide.right = "slideright";
+	      slide.scrollSpeed = 4;
+	      slide.spacing = 5;
+	      slide.active = "#fff";
+	      slide.init("slide", "image", "imgprev", "imgnext", "imglink");
+	      return slide;
+	    };
 
 	    return Pict;
 
@@ -32630,7 +32627,6 @@
 	      this.store.subscribe('Days', 'range', 'none', (function(_this) {
 	        return function(days) {
 	          _this.days = days;
-	          console.log('Res.dateRange()', beg, end, _this.days);
 	          if (onComplete != null) {
 	            return onComplete();
 	          }
@@ -32892,7 +32888,8 @@
 	      payment.amount = amount;
 	      payment.date = this.Data.today();
 	      payment.method = method;
-	      payment["with"] = last4;
+	      payment["with"] = method;
+	      payment.last4 = last4;
 	      payment.purpose = purpose;
 	      payment.cc = '';
 	      payment.exp = '';
@@ -32902,7 +32899,7 @@
 
 	    Res.prototype.setResvStatus = function(resv, post, purpose) {
 	      if (post === 'post') {
-	        if (purpose === 'PayInFull' || purpose === 'PayOffDeposit') {
+	        if (purpose === 'PayInFull' || purpose === 'Complete') {
 	          resv.status = 'book';
 	        }
 	        if (purpose === 'Deposit') {
@@ -33110,11 +33107,13 @@
 			"arrive": "170709",
 			"rooms": {
 				"1": {
+					"name": "1 Cozy 1-Room Cabin",
 					"total": 250,
 					"price": 125,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170709": {},
 						"170710": {}
@@ -33122,10 +33121,11 @@
 				}
 			},
 			"payments": {
-				"11707091": {
+				"17070911": {
 					"amount": 250,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028",
 					"cc": "",
 					"exp": "",
@@ -33143,8 +33143,8 @@
 		},
 		"1707102": {
 			"resId": "1707102",
-			"totals": 250,
-			"paid": 250,
+			"totals": 330,
+			"paid": 330,
 			"balance": 0,
 			"status": "depo",
 			"method": "booking",
@@ -33152,11 +33152,13 @@
 			"arrive": "170710",
 			"rooms": {
 				"2": {
-					"total": 250,
-					"price": 125,
+					"name": "#2 Mountain Spa",
+					"total": 330,
+					"price": 165,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170710": {},
 						"170711": {}
@@ -33164,10 +33166,11 @@
 				}
 			},
 			"payments": {
-				"11707101": {
-					"amount": 250,
+				"17071021": {
+					"amount": 330,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33182,8 +33185,8 @@
 		},
 		"1707113": {
 			"resId": "1707113",
-			"totals": 250,
-			"paid": 250,
+			"totals": 550,
+			"paid": 550,
 			"balance": 0,
 			"status": "book",
 			"method": "walkin",
@@ -33191,11 +33194,13 @@
 			"arrive": "170711",
 			"rooms": {
 				"3": {
-					"total": 250,
-					"price": 125,
+					"name": "#3 Southwest Spa",
+					"total": 550,
+					"price": 275,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170711": {},
 						"170712": {}
@@ -33203,10 +33208,11 @@
 				}
 			},
 			"payments": {
-				"31707111": {
-					"amount": 250,
+				"17071131": {
+					"amount": 550,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33230,11 +33236,13 @@
 			"arrive": "170712",
 			"rooms": {
 				"4": {
+					"name": "#4 Cozy 1-Room Cabin",
 					"total": 250,
 					"price": 125,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170712": {},
 						"170713": {}
@@ -33242,13 +33250,13 @@
 				}
 			},
 			"payments": {
-				"41707121": {
+				"17071241": {
 					"amount": 250,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
-				},
-				"resId": ""
+				}
 			},
 			"cust": {
 				"custId": "3038984232",
@@ -33261,8 +33269,8 @@
 		},
 		"1707145": {
 			"resId": "1707145",
-			"totals": 250,
-			"paid": 250,
+			"totals": 390,
+			"paid": 390,
 			"balance": 0,
 			"status": "depo",
 			"method": "email",
@@ -33270,11 +33278,13 @@
 			"arrive": "170714",
 			"rooms": {
 				"5": {
-					"total": 250,
-					"price": 125,
+					"name": "#5 River Cabin With View",
+					"total": 390,
+					"price": 195,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170714": {},
 						"170715": {}
@@ -33282,10 +33292,11 @@
 				}
 			},
 			"payments": {
-				"51707141": {
-					"amount": 250,
+				"17071451": {
+					"amount": 390,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33300,8 +33311,8 @@
 		},
 		"1707156": {
 			"resId": "1707156",
-			"totals": 250,
-			"paid": 250,
+			"totals": 470,
+			"paid": 470,
 			"balance": 0,
 			"status": "book",
 			"method": "site",
@@ -33309,11 +33320,13 @@
 			"arrive": "170715",
 			"rooms": {
 				"6": {
-					"total": 250,
-					"price": 125,
+					"name": "#6 Large River Cabin",
+					"total": 470,
+					"price": 235,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170715": {},
 						"170716": {}
@@ -33321,10 +33334,11 @@
 				}
 			},
 			"payments": {
-				"61707151": {
-					"amount": 250,
+				"17071561": {
+					"amount": 470,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33339,8 +33353,8 @@
 		},
 		"1707167": {
 			"resId": "1707167",
-			"totals": 250,
-			"paid": 250,
+			"totals": 330,
+			"paid": 330,
 			"balance": 0,
 			"status": "book",
 			"method": "booking",
@@ -33348,11 +33362,13 @@
 			"arrive": "170716",
 			"rooms": {
 				"7": {
-					"total": 250,
-					"price": 125,
+					"name": "#7 Western Spa",
+					"total": 330,
+					"price": 165,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170716": {},
 						"170717": {}
@@ -33360,10 +33376,11 @@
 				}
 			},
 			"payments": {
-				"71707161": {
-					"amount": 250,
+				"17071671": {
+					"amount": 330,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33387,11 +33404,13 @@
 			"arrive": "170717",
 			"rooms": {
 				"8": {
+					"name": "#8 Western Unit",
 					"total": 250,
 					"price": 125,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170717": {},
 						"170718": {}
@@ -33399,10 +33418,11 @@
 				}
 			},
 			"payments": {
-				"81707171": {
+				"17071781": {
 					"amount": 250,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33417,8 +33437,8 @@
 		},
 		"170718N": {
 			"resId": "170718N",
-			"totals": 250,
-			"paid": 250,
+			"totals": 290,
+			"paid": 290,
 			"balance": 0,
 			"status": "book",
 			"method": "email",
@@ -33426,11 +33446,13 @@
 			"arrive": "170718",
 			"rooms": {
 				"N": {
-					"total": 250,
-					"price": 125,
+					"name": "Upper Skyline North",
+					"total": 290,
+					"price": 145,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170718": {},
 						"170719": {}
@@ -33438,10 +33460,11 @@
 				}
 			},
 			"payments": {
-				"N1707181": {
-					"amount": 250,
+				"170718N1": {
+					"amount": 290,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33456,8 +33479,8 @@
 		},
 		"170719S": {
 			"resId": "170719S",
-			"totals": 250,
-			"paid": 250,
+			"totals": 270,
+			"paid": 270,
 			"balance": 0,
 			"status": "book",
 			"method": "site",
@@ -33465,11 +33488,13 @@
 			"arrive": "170719",
 			"rooms": {
 				"S": {
-					"total": 250,
-					"price": 125,
+					"name": "Upper Skyline South",
+					"total": 270,
+					"price": 135,
 					"guests": 2,
 					"pets": 1,
 					"spa": false,
+					"nights": 2,
 					"days": {
 						"170719": {},
 						"170720": {}
@@ -33477,10 +33502,11 @@
 				}
 			},
 			"payments": {
-				"S1707191": {
-					"amount": 250,
+				"170719S1": {
+					"amount": 270,
 					"date": "170517",
-					"with": "check",
+					"purpose": "PayInFull",
+					"with": "Check",
 					"num": "4028"
 				}
 			},
@@ -33628,14 +33654,14 @@
 	      this.store = store;
 	      this.Data = Data;
 	      this.res = res;
-	      this.home = home;
+	      this.home = home != null ? home : null;
 	      this.onError = bind(this.onError, this);
 	      this.onCharge = bind(this.onCharge, this);
 	      this.onToken = bind(this.onToken, this);
 	      this.onChargeError = bind(this.onChargeError, this);
 	      this.onTokenError = bind(this.onTokenError, this);
 	      this.submitPayment = bind(this.submitPayment, this);
-	      this.confirmBody = bind(this.confirmBody, this);
+	      this.confirmEmailBody = bind(this.confirmEmailBody, this);
 	      this.onMakePayment = bind(this.onMakePayment, this);
 	      this.onMakeDeposit = bind(this.onMakeDeposit, this);
 	      this.onCancel = bind(this.onCancel, this);
@@ -33665,7 +33691,7 @@
 	      this.amount = totals - this.resv.paid;
 	      $('#Pays').empty();
 	      $('#Pays').append(this.confirmHead(this.resv));
-	      $('#ConfirmBlock').append(this.confirmTable(this.resv));
+	      $('#ConfirmBlock').append(this.confirmTable(this.resv, 'Guest'));
 	      $('#Pays').append(this.confirmBtns(this.resv));
 	      $('#PayDiv').append(this.payHtml());
 	      $('#Pays').append(this.termsHtml());
@@ -33730,7 +33756,9 @@
 
 	    Pay.prototype.onCancel = function(e) {
 	      e.preventDefault();
-	      this.home.onHome();
+	      if (this.home != null) {
+	        this.home.onHome();
+	      }
 	    };
 
 	    Pay.prototype.calcDeposit = function() {
@@ -33762,38 +33790,100 @@
 
 	    Pay.prototype.confirmHead = function(resv) {
 	      var htm;
-	      htm = "<div id=\"ConfirmTitle\" class= \"Title\">Confirmation # " + resv.resId + "</div>";
-	      htm += "<div><div id=\"ConfirmName\"><span>For: " + resv.cust.first + " </span><span>" + resv.cust.last + " </span></div></div>";
+	      htm = "<div id=\"ConfirmTitle\" class= \"Title\"><span>Confirmation # " + resv.resId + "</span><span>  For: " + resv.cust.first + " </span><span>" + resv.cust.last + " </span></div>";
 	      htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"></div>";
 	      return htm;
 	    };
 
-	    Pay.prototype.confirmTable = function(resv) {
+	    Pay.prototype.confirmTable = function(resv, appName) {
 	      var htm;
+	      htm = "";
+	      htm += this.confirmRooms(resv, appName);
+	      htm += this.confirmPayments(resv);
+	      return htm;
+	    };
+
+	    Pay.prototype.confirmRooms = function(resv, appName) {
+	      var arrive, arriveTimes, days, depart, departTimes, htm, r, ref, roomId;
 	      htm = "<table id=\"ConfirmTable\"><thead>";
 	      htm += "<tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th><th class=\"arrive\">Arrive</th><th class=\"depart\">Depart</th><th>Nights</th><th>Total</th></tr>";
 	      htm += "</thead><tbody>";
-	      htm += this.confirmContent(resv.rooms, 'html');
-	      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">Arrival is from 3:00-8:00PM</td><td class=\"depart-times\">Checkout is before 10:00AM</td><td></td><td  id=\"TT\" class=\"room-total\">$" + this.totals + "</td></tr>";
+	      arriveTimes = appName === 'Guest' ? "Arrival is from 3:00-8:00PM" : "";
+	      departTimes = appName === 'Guest' ? "Checkout is before 10:00AM" : "";
+	      ref = resv.rooms;
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        r = ref[roomId];
+	        days = Util.keys(r.days).sort();
+	        arrive = this.confirmDate(days[0], "", false);
+	        depart = this.confirmDate(days[days.length - 1], "", true);
+	        htm += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(resv, roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+	      }
+	      htm;
+	      htm += "<tr><td></td><td></td><td></td><td></td><td></td><td class=\"arrive-times\">" + arriveTimes + "</td><td class=\"depart-times\">" + departTimes + "</td><td></td><td  id=\"TT\" class=\"room-total\">$" + resv.totals + "</td></tr>";
+	      return htm += "</tbody></table>";
+	    };
+
+	    Pay.prototype.confirmPayments = function(resv) {
+	      var date, htm, pay, payId, ref;
+	      htm = "<table id=\"ConfirmPayment\"><thead>";
+	      htm += "<tr><th>Amount</th><th>Purpose</th><th>Date</th><th>With</th><th>Last 4</th></tr>";
+	      htm += "</thead><tbody>";
+	      ref = resv.payments;
+	      for (payId in ref) {
+	        if (!hasProp.call(ref, payId)) continue;
+	        pay = ref[payId];
+	        date = this.confirmDate(pay.date, "", false);
+	        htm += "<tr><td>$" + pay.amount + "</td><td>" + pay.purpose + "</td><td>" + date + "</td><td>" + pay["with"] + "</td><td>" + pay.num + "</td></tr>";
+	      }
+	      htm += "</tbody></table>";
+	      htm += "<table id=\"ConfirmBalance\" style=\"margin-top:20px;\"><thead>";
+	      htm += "<tr><th>Total</th><th>Paid</th><th>Balance</th></tr>";
+	      htm += "</thead><tbody>";
+	      htm += "<tr><td>$" + resv.totals + "</td><td>$" + resv.paid + "</td><td>$" + resv.balance + "</td></tr>";
 	      htm += "</tbody></table>";
 	      return htm;
 	    };
 
-	    Pay.prototype.confirmBody = function(resv) {
+	    Pay.prototype.confirmEmail = function(resv) {
+	      var win;
+	      win = window.open("mailto:" + resv.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmEmailBody(resv)), "EMail");
+	      Util.noop(win);
+	    };
+
+	    Pay.prototype.confirmEmailBody = function(resv) {
 	      var body;
 	      body = "\n      Confirmation #" + resv.resId + "\nFor: " + resv.cust.first + " " + resv.cust.last + "\nPhone: " + resv.cust.phone + "\n\n";
-	      body += this.confirmContent(resv.rooms, 'body');
+	      body += this.confirmEmailRooms(resv);
 	      body += "\n Totals:$" + resv.totals + " Paid:$" + resv.paid + " Balance:$" + resv.balance + " ";
 	      body = escape(body);
 	      return body;
 	    };
 
-	    Pay.prototype.confirmContent = function(rooms, stuff) {
-	      var arrive, bday, content, days, depart, eday, i, name, r, roomId;
+	    Pay.prototype.confirmEmailRooms = function(resv) {
+	      var arrive, days, depart, name, r, ref, roomId, text;
+	      text = "";
+	      ref = resv.rooms;
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        r = ref[roomId];
+	        name = Util.padEnd(r.name + ' ', 26, '-');
+	        days = Util.keys(r.days).sort();
+	        arrive = this.confirmDate(days[0], "", false);
+	        depart = this.confirmDate(days[days.length - 1], "", true);
+	        text += name + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + r.nights + "-Nights $" + r.total + "\n";
+	      }
+	      return text;
+	    };
+
+	    Pay.prototype.confirmContent2 = function(resv, stuff) {
+	      var arrive, bday, content, days, depart, eday, i, name, r, ref, roomId;
 	      content = "";
-	      for (roomId in rooms) {
-	        if (!hasProp.call(rooms, roomId)) continue;
-	        r = rooms[roomId];
+	      Util.log('Pay.confirmContent rooms', resv.rooms);
+	      ref = resv.rooms;
+	      for (roomId in ref) {
+	        if (!hasProp.call(ref, roomId)) continue;
+	        r = ref[roomId];
 	        name = Util.padEnd(r.name + ' ', 26, '-');
 	        days = Util.keys(r.days).sort();
 	        bday = days[0];
@@ -33804,7 +33894,7 @@
 	            arrive = this.confirmDate(bday, "", false);
 	            depart = this.confirmDate(eday, "", true);
 	            if (stuff === 'html') {
-	              content += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
+	              content += "<tr><td class=\"td-left\">" + r.name + "</td><td class=\"guests\">" + r.guests + "</td><td class=\"pets\">" + r.pets + "</td><td>" + (this.spa(resv, roomId)) + "</td><td class=\"room-price\">$" + r.price + "</td><td>" + arrive + "</td><td>" + depart + "</td><td class=\"nights\">" + r.nights + "</td><td id=\"" + roomId + "TR\" class=\"room-total\">$" + r.total + "</td></tr>";
 	            } else if (stuff === 'body') {
 	              content += name + " $" + r.price + "  " + r.guests + "-Guests " + r.pets + "-Pets Arrive:" + arrive + " Depart:" + depart + " " + r.nights + "-Nights $" + r.total + "\n";
 	            }
@@ -33816,9 +33906,9 @@
 	      return content;
 	    };
 
-	    Pay.prototype.spa = function(roomId) {
+	    Pay.prototype.spa = function(resv, roomId) {
 	      var change, has;
-	      change = this.resv.rooms[roomId].change;
+	      change = resv.rooms[roomId].change;
 	      has = this.res.hasSpa(roomId);
 	      if (!has) {
 	        return '';
@@ -33852,12 +33942,6 @@
 	      arrive = parseInt(resv.arrive);
 	      advance = parseInt(this.Data.advanceDate(resv.booked, 7));
 	      return arrive >= advance;
-	    };
-
-	    Pay.prototype.confirmEmail = function(resv) {
-	      var win;
-	      win = window.open("mailto:" + resv.cust.email + "?subject=Skyline Cottages Confirmation&body=" + (this.confirmBody(resv)), "EMail");
-	      Util.noop(win);
 	    };
 
 	    Pay.prototype.departDate = function(monthI, dayI, weekdayI) {
@@ -34031,18 +34115,20 @@
 	    Pay.prototype.onCharge = function(obj) {
 	      if (obj['outcome'].type === 'authorized') {
 	        this.doPost(this.resv);
-	        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'card', this.last4, this.purpose);
+	        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'Credit', this.last4, this.purpose);
 	      } else {
 	        this.amount = 0;
 	        this.doDeny(this.resv);
-	        return this.res.postResv(this.resv, 'deny', this.totals, this.amount, 'card', this.last4, this.purpose);
+	        return this.res.postResv(this.resv, 'deny', this.totals, this.amount, 'Credit', this.last4, this.purpose);
 	      }
 	    };
 
 	    Pay.prototype.doPost = function(resv) {
 	      this.hidePay();
 	      $('#Approval').text("Approved: A Confirnation Email Been Sent To " + resv.cust.email);
-	      return this.home.showConfirm();
+	      if (this.home != null) {
+	        return this.home.showConfirm();
+	      }
 	    };
 
 	    Pay.prototype.doDeny = function(resv) {

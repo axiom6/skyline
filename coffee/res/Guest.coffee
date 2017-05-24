@@ -14,7 +14,7 @@ class Guest
       Memory = require( 'js/store/Memory' )
       Data   = require( 'js/res/Data'     )
       Home   = require( 'js/res/Home'     )
-      Pict   = require( 'js/res/Pict'     )
+      Pict   = require( 'public/js/Pict'  )
       Res    = require( 'js/res/Res'      )
       Pay    = require( 'js/res/Pay'      )
       Book   = require( 'js/res/Book'     )

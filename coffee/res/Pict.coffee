@@ -1,6 +1,8 @@
 
-$      = Util.requireModule('jquery',       'skyline')
-#Slide = require('js/res/Slide') # Util.requireModule('js/res/Slide', 'skyline')
+$      = Util.requireModule('jquery',   'skyline')
+#Slide = Util.requireModule('js/Slide', 'skyline')
+#$     = require('jquery')
+#Slide = require('js/res/Slide')
 
 class Pict
 
@@ -34,12 +36,16 @@ class Pict
     $('#'+parentId).append( @wrapperHtml() )
     images = (Img) =>
       htm = ""
+      #Util.log('Pict.createSlideShow()', Img )
       dir = Img[roomId].dir
       for pic in Img[roomId]['pics']
         htm += @li( pic, dir )
       $('#slideshow').append( htm )
-      @initTINY( w, h ) # @slide = @initSlide( w, h )
-    url = if roomId is 'M' then "../data/Img.json" else "../../data/Img.json"
+      @initTINY( w, h )
+      #@slide = @initSlide( w, h )
+    url = if roomId is 'M' then '../public/img/img.json' else '../img/img.json'
+    #url  = '../public/img/img.json'
+    #url  = '../data/img.json'
     $.getJSON( url, images )
     return
 
@@ -114,7 +120,7 @@ class Pict
     # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slideshow.init("slideshow","image","imgprev","imgnext","imglink")
 
-  ###
+
   initSlide:( w, h ) ->
     Util.noop( w, h )
     slide = new Slide("slideshow")
@@ -133,6 +139,3 @@ class Pict
     # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slide.init("slide","image","imgprev","imgnext","imglink")
     slide
-  ###
-
-

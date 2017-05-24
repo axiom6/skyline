@@ -21,7 +21,7 @@ class Res
   dateRange:( beg, end, onComplete=null ) ->
     @store.subscribe( 'Days', 'range', 'none', (days) =>
       @days = days
-      console.log( 'Res.dateRange()', beg, end, @days )
+      #console.log( 'Res.dateRange()', beg, end, @days )
       onComplete() if onComplete? )
     @store.range( 'Days', beg, end )
     return

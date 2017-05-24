@@ -188,10 +188,9 @@
       table = this.tableName(t);
       onNext = onFunc != null ? onFunc : (function(_this) {
         return function(data) {
-          return Util.log('Memory.on()', data);
+          return Util.noop('Memory.on()', data);
         };
       })(this);
-      Util.log('Memory.on()', table, op, id);
       this.subscribe(table, op, id, onNext);
     };
 
