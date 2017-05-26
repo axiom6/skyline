@@ -9,10 +9,10 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Book, Data, Home, Memory, Pay, Pict, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
+        var Book, Data, Fire, Home, Pay, Pict, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
         Util.jquery = require('jquery');
         Stream = require('js/store/Stream');
-        Memory = require('js/store/Memory');
+        Fire = require('js/store/Fire');
         Data = require('js/res/Data');
         Home = require('js/res/Home');
         Pict = require('public/js/Pict');
@@ -22,12 +22,8 @@
         Test = require('js/res/Test');
         pict = new Pict();
         stream = new Stream([]);
-        store = new Memory(stream, "skytest");
-        store.justMemory = true;
+        store = new Fire(stream, "skyline", Data.configSkyline);
         res = new Res(stream, store, Data, 'Guest');
-        if (store.justMemory) {
-          res.insertNewTables();
-        }
         home = new Home(stream, store, Data, res, pict);
         pay = new Pay(stream, store, Data, res, home);
         book = new Book(stream, store, Data, res, pay, pict);

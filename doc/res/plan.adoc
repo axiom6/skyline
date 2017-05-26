@@ -4,6 +4,13 @@ include::../dir/inc/DefBook.adoc[]
 
 # [.black]#Plan#
 
+### [.black]#Integrate#
+* Stripe Reader
+  ** Contact Fred
+  ** Place Order
+* Bookings
+* Site
+
 ## [.black]#Guest Site#
 
 ### [.black]#Test#
@@ -21,9 +28,7 @@ include::../dir/inc/DefBook.adoc[]
 * Confirmation EMail
 * Rooms M 1-8 N S, fix sign.jpg
 
-### [.black]#Integrate#
-* Stripe Reader
-* Bookings
+
 
 ## [.black]#Owner Site#
 * Owner reservation - maybe just a link

@@ -93,6 +93,7 @@ class Pay
     amount
 
   confirmHead:( resv ) ->
+    console.log( 'Pay.confirmHead', resv )
     htm   = """<div id="ConfirmTitle" class= "Title"><span>Confirmation # #{resv.resId}</span><span>  For: #{resv.cust.first} </span><span>#{resv.cust.last} </span></div>"""
     #tm  += """<div><div id="ConfirmName"></div></div>"""
     htm  += """<div id="ConfirmBlock" class="DivCenter"></div>"""
@@ -267,9 +268,10 @@ class Pay
     e.preventDefault() if e?
     @hideCCErrors()
 
-    num = $('#cc-num').val()
-    exp = $('#cc-exp').val()
-    cvc = $('#cc-cvc').val()
+    num = $('#cc-num').val().toString()
+    exp = $('#cc-exp').val().toString()
+    cvc = $('#cc-cvc').val().toString()
+    @last4 = num.substr( 11, 4 )
 
     card   = @credit.cardFromNumber(  num )
     iry    = @credit.parseCardExpiry( exp )
@@ -285,7 +287,7 @@ class Pay
       @hidePay()
       $('#Approval').text("Waiting For Approval...").show()
       @token( num, mon, yer, cvc )  # Call Stripe
-      @last4 = num.substr( 11, 4 )
+
     else
       ae = card.type + ' not accepted'
       $('#er-num').text(ae) if not accept

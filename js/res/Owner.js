@@ -9,20 +9,16 @@
 
     Owner.init = function() {
       return Util.ready(function() {
-        var Data, Master, Memory, Pay, Res, Stream, master, pay, res, store, stream;
+        var Data, Fire, Master, Pay, Res, Stream, master, pay, res, store, stream;
         Stream = require('js/store/Stream');
-        Memory = require('js/store/Memory');
+        Fire = require('js/store/Fire');
         Data = require('js/res/Data');
         Res = require('js/res/Res');
         Pay = require('js/res/Pay');
         Master = require('js/res/Master');
         stream = new Stream([]);
-        store = new Memory(stream, "skytest");
-        store.justMemory = true;
+        store = new Fire(stream, "skyline", Data.configSkyline);
         res = new Res(stream, store, Data, 'Owner');
-        if (store.justMemory) {
-          res.insertNewTables();
-        }
         pay = new Pay(stream, store, Data, res);
         master = new Master(stream, store, Data, res, pay);
         return master.ready();

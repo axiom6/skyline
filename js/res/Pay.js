@@ -152,6 +152,7 @@
 
     Pay.prototype.confirmHead = function(resv) {
       var htm;
+      console.log('Pay.confirmHead', resv);
       htm = "<div id=\"ConfirmTitle\" class= \"Title\"><span>Confirmation # " + resv.resId + "</span><span>  For: " + resv.cust.first + " </span><span>" + resv.cust.last + " </span></div>";
       htm += "<div id=\"ConfirmBlock\" class=\"DivCenter\"></div>";
       return htm;
@@ -344,9 +345,10 @@
         e.preventDefault();
       }
       this.hideCCErrors();
-      num = $('#cc-num').val();
-      exp = $('#cc-exp').val();
-      cvc = $('#cc-cvc').val();
+      num = $('#cc-num').val().toString();
+      exp = $('#cc-exp').val().toString();
+      cvc = $('#cc-cvc').val().toString();
+      this.last4 = num.substr(11, 4);
       card = this.credit.cardFromNumber(num);
       iry = this.credit.parseCardExpiry(exp);
       accept = this.cardAccept(card.type);
@@ -359,7 +361,6 @@
         this.hidePay();
         $('#Approval').text("Waiting For Approval...").show();
         this.token(num, mon, yer, cvc);
-        this.last4 = num.substr(11, 4);
       } else {
         ae = card.type + ' not accepted';
         if (!accept) {

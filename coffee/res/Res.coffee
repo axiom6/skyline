@@ -2,8 +2,8 @@ class Res
 
   module.exports = Res
   Res.Rooms  = require( 'data/room.json' )
-  Res.Resvs  = require( 'data/res.json'  )
-  Res.Days   = require( 'data/days.json' )
+  Res.Resvs  = {} #require( 'data/res.json'  )
+  Res.Days   = {} #require( 'data/days.json' )
   Res.States = ["free","mine","depo","book"]
 
   constructor:( @stream, @store, @Data, @appName ) ->
@@ -14,9 +14,13 @@ class Res
     @days     = null
     beg      = @Data.toDateStr(   @Data.begDay )
     end      = @Data.advanceDate( beg, @Data.numDays-1 )
-    @dateRange( beg, end )       if @appName is 'Guest'
-    @onResv(  'add', (resv) => console.log( 'onResv', resv ) ) if @store.justMemory
+    @dateRange( beg, end ) if @appName is 'Guest'
+    @populateMemory()      if @store.justMemory
+
+  populateMemory:() ->
+    @onResv(  'add', (resv) => console.log( 'onResv', resv ) )
     @onDays(  'put', (days) => console.log( 'onDays', days ) ) if @store.justMemory
+    @insertNewTables() # Populate Memory
 
   dateRange:( beg, end, onComplete=null ) ->
     @store.subscribe( 'Days', 'range', 'none', (days) =>

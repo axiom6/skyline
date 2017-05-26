@@ -54,6 +54,14 @@
       messagingSenderId: "279547846849"
     };
 
+    Data.config = function(uri) {
+      if (name === 'skyline') {
+        return this.configSkyline;
+      } else {
+        return this.configSkytest;
+      }
+    };
+
     Data.databases = {
       skyline: "skyline-fed2b",
       skytest: "skytest-25d1c"

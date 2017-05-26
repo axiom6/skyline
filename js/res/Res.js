@@ -9,9 +9,9 @@
 
     Res.Rooms = require('data/room.json');
 
-    Res.Resvs = require('data/res.json');
+    Res.Resvs = {};
 
-    Res.Days = require('data/days.json');
+    Res.Days = {};
 
     Res.States = ["free", "mine", "depo", "book"];
 
@@ -36,12 +36,16 @@
         this.dateRange(beg, end);
       }
       if (this.store.justMemory) {
-        this.onResv('add', (function(_this) {
-          return function(resv) {
-            return console.log('onResv', resv);
-          };
-        })(this));
+        this.populateMemory();
       }
+    }
+
+    Res.prototype.populateMemory = function() {
+      this.onResv('add', (function(_this) {
+        return function(resv) {
+          return console.log('onResv', resv);
+        };
+      })(this));
       if (this.store.justMemory) {
         this.onDays('put', (function(_this) {
           return function(days) {
@@ -49,7 +53,8 @@
           };
         })(this));
       }
-    }
+      return this.insertNewTables();
+    };
 
     Res.prototype.dateRange = function(beg, end, onComplete) {
       if (onComplete == null) {

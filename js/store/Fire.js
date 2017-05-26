@@ -56,11 +56,8 @@
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(snapshot) {
-          var object;
           if ((snapshot != null) && (snapshot.val() != null)) {
-            object = snapshot.val();
-            object[_this.keyProp] = id;
-            return _this.publish(tableName, 'get', id, object);
+            return _this.publish(tableName, 'get', id, snapshot.val());
           } else {
             return _this.onError(tableName, 'get', id, {
               msg: 'Fire get error'
@@ -268,13 +265,9 @@
             key = snapshot.key;
             val = _this.toObjects(snapshot.val());
             if (onFunc != null) {
-              return onFunc({
-                key: val
-              });
+              return onFunc(val);
             } else {
-              return _this.publish(table, onEvt, key, {
-                key: val
-              });
+              return _this.publish(table, onEvt, key, val);
             }
           } else {
             return _this.onError(table, onEvt, id, {}, {

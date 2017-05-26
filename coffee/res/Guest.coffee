@@ -9,24 +9,22 @@ class Guest
 
       Util.jquery = require( 'jquery' ) # Allows Pick cto be called outside of CommonJS
 
-      Stream = require( 'js/store/Stream' )
-      #Fire  = require( 'js/store/Fire'   )
-      Memory = require( 'js/store/Memory' )
-      Data   = require( 'js/res/Data'     )
-      Home   = require( 'js/res/Home'     )
-      Pict   = require( 'public/js/Pict'  )
-      Res    = require( 'js/res/Res'      )
-      Pay    = require( 'js/res/Pay'      )
-      Book   = require( 'js/res/Book'     )
-      Test   = require( 'js/res/Test'     )
+      Stream  = require( 'js/store/Stream' )
+      Fire    = require( 'js/store/Fire'   )
+      #Memory = require( 'js/store/Memory' )
+      Data    = require( 'js/res/Data'     )
+      Home    = require( 'js/res/Home'     )
+      Pict    = require( 'public/js/Pict'  )
+      Res     = require( 'js/res/Res'      )
+      Pay     = require( 'js/res/Pay'      )
+      Book    = require( 'js/res/Book'     )
+      Test    = require( 'js/res/Test'     )
 
       pict   = new Pict()
       stream = new Stream( [] )
-      #store = new Fire(   stream, "skytest", Data.configSkytest )
-      store  = new Memory( stream, "skytest"  )
-      store.justMemory = true
+      store  = new Fire(   stream, "skyline", Data.configSkyline )
+      #store = new Memory( stream, "skyline"  )
       res    = new Res(    stream, store, Data, 'Guest' )
-      res.insertNewTables() if store.justMemory # Populate Memory
       home   = new Home(   stream, store, Data, res, pict )
       pay    = new Pay(    stream, store, Data, res, home )
       book   = new Book(   stream, store, Data, res, pay, pict )

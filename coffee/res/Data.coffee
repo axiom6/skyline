@@ -33,6 +33,9 @@ class Data
     storageBucket: "skyline-fed2b.appspot.com/",
     messagingSenderId: "279547846849" }
 
+  @config:( uri ) ->
+    if name is 'skyline' then @configSkyline else @configSkytest
+
   @databases = { skyline:"skyline-fed2b", skytest:"skytest-25d1c" }
 
   @stripeTestKey = "sk_test_FCa6Z3AusbsdhyV93B4CdWnV"

@@ -34,9 +34,7 @@ class Fire extends Store
     tableName = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
-        object = snapshot.val()
-        object[@keyProp] = id
-        @publish( tableName, 'get', id, object )
+        @publish( tableName, 'get', id, snapshot.val() )
       else
         @onError( tableName, 'get', id, { msg:'Fire get error' } )
     @fd.ref(tableName+'/'+id).once('value', onComplete )
@@ -158,9 +156,9 @@ class Fire extends Store
         key = snapshot.key
         val = @toObjects( snapshot.val() )
         if onFunc?
-           onFunc( { key:val } )
+           onFunc( val )  # { key:val }
         else
-           @publish( table, onEvt, key, { key:val } )
+           @publish( table, onEvt, key, val ) # { key:val }
       else
         @onError( table, onEvt, id, {}, { error:'error' } )
     path  = if id is 'none' then table else table + '/' + id
