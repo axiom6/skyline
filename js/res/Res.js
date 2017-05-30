@@ -29,7 +29,7 @@
       this.states = Res.States;
       this.book = null;
       this.master = null;
-      this.days = null;
+      this.days = {};
       beg = this.Data.toDateStr(this.Data.begDay);
       end = this.Data.advanceDate(beg, this.Data.numDays - 1);
       if (this.appName === 'Guest') {
@@ -77,7 +77,7 @@
       return this.insertDays(Res.Resvs);
     };
 
-    Res.prototype.dayBooked = function(roomId, date) {
+    Res.prototype.getStatus = function(roomId, date) {
       var day, entry;
       day = this.days != null ? this.days[date] : void 0;
       entry = (day != null) && (day[roomId] != null) ? day[roomId] : null;
@@ -115,8 +115,6 @@
         roomUI.spa = room.spa;
         roomUI.change = 0;
         roomUI.reason = 'No Changes';
-        roomUI.days = {};
-        roomUI.group = {};
       }
       return roomUIs;
     };
@@ -129,11 +127,11 @@
       return this.rooms[roomId].spa === 'O' || this.rooms[roomId].spa === 'Y';
     };
 
-    Res.prototype.createRoomResv = function(status, method, roomUIs) {
+    Res.prototype.createRoomResv = function(status, method, totals, cust, roomUIs) {
       var day, obj, ref, resv, roomId, roomUI;
       resv = {};
       resv.resId = this.Data.genResId(roomUIs);
-      resv.totals = 0;
+      resv.totals = totals;
       resv.paid = 0;
       resv.balance = 0;
       resv.status = status;
@@ -161,7 +159,7 @@
         }
       }
       resv.payments = {};
-      resv.cust = {};
+      resv.cust = cust;
       return resv;
     };
 
@@ -351,15 +349,14 @@
       return resv.status;
     };
 
-    Res.prototype.postResv = function(resv, post, totals, amount, method, last4, purpose) {
+    Res.prototype.postResv = function(resv, post, amount, method, last4, purpose) {
       var payId, status;
       status = this.setResvStatus(resv, post, purpose);
       if (status === 'book' || status === 'depo') {
         payId = this.Data.genPaymentId(resv.resId, resv.payments);
         resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
-        resv.totals = totals;
         resv.paid += amount;
-        resv.balance = totals - resv.paid;
+        resv.balance = resv.totals - resv.paid;
         this.allocRooms(resv);
         this.store.add('Res', resv.resId, resv);
         return this.days = this.mergePostDays(resv, this.days);

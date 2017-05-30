@@ -22,8 +22,8 @@ class Guest
 
       pict   = new Pict()
       stream = new Stream( [] )
-      store  = new Fire(   stream, "skyline", Data.configSkyline )
-      #store = new Memory( stream, "skyline"  )
+      store  = new Fire(   stream, "skytest", Data.configSkytest )
+      #store = new Memory( stream, "skytest"  )
       res    = new Res(    stream, store, Data, 'Guest' )
       home   = new Home(   stream, store, Data, res, pict )
       pay    = new Pay(    stream, store, Data, res, home )

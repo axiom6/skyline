@@ -12,18 +12,15 @@ class Pay
     @subscribe()
     $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
     @resv    = null
-    @totals  = 0
     @amount  = 0
-    @purpose = 'PayInFull' # 'Deposit' 'PayOffDeposit'
+    @purpose = 'PayInFull' # 'Deposit' 'PayBalance'
     @testing = false
     @errored = false
     #doPut = (onPut) -> Util.log('Res.subscribeToDays onPut', onPut )
     #@res.onDays( doPut )
 
-  initPay:( totals, cust, roomUIs ) =>
-    @resv      = @res.createRoomResv( 'mine', 'card', roomUIs )
-    @resv.cust = cust
-    @totals    = totals
+  initPayResv:( totals, cust, roomUIs ) =>
+    @resv      = @res.createRoomResv( 'mine', 'card', totals, cust, roomUIs )
     @amount    = totals - @resv.paid
     $('#Pays'        ).empty()
     $('#Pays'        ).append( @confirmHead(  @resv ) )
@@ -74,7 +71,7 @@ class Pay
     return
 
   calcDeposit:() ->
-    Math.round(   @totals * 50 ) / 100
+    Math.round(   @resv.totals * 50 ) / 100
 
   onMakeDeposit:( e ) =>
     e.preventDefault()
@@ -88,7 +85,7 @@ class Pay
 
   ccAmt:( purpose=@purpose ) ->
     @purpose = purpose
-    amount   = if @purpose is 'Deposit' then @calcDeposit() else @totals
+    amount   = if @purpose is 'Deposit' then @calcDeposit() else @resv.totals
     $("#cc-amt" ).text('$'+amount)
     amount
 
@@ -368,12 +365,12 @@ class Pay
     #Util.log( 'Pay.onCharge()', obj )
     if obj['outcome'].type is 'authorized'
       @doPost(       @resv )
-      @res.postResv( @resv, 'post', @totals, @amount, 'Credit', @last4, @purpose )
+      @res.postResv( @resv, 'post', @amount, 'Credit', @last4, @purpose )
       #confirmEmail( @resv )
     else
       @amount = 0
       @doDeny(       @resv )
-      @res.postResv( @resv, 'deny', @totals, @amount, 'Credit', @last4, @purpose )
+      @res.postResv( @resv, 'deny', @amount, 'Credit', @last4, @purpose )
 
   doPost:( resv ) ->
     @hidePay()

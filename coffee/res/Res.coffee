@@ -11,9 +11,9 @@ class Res
     @states   = Res.States
     @book     = null
     @master   = null
-    @days     = null
-    beg      = @Data.toDateStr(   @Data.begDay )
-    end      = @Data.advanceDate( beg, @Data.numDays-1 )
+    @days     = {}
+    beg       = @Data.toDateStr(   @Data.begDay )
+    end       = @Data.advanceDate( beg, @Data.numDays-1 )
     @dateRange( beg, end ) if @appName is 'Guest'
     @populateMemory()      if @store.justMemory
 
@@ -35,7 +35,7 @@ class Res
     @insertResvs( Res.Resvs )
     @insertDays(  Res.Resvs )
 
-  dayBooked:( roomId, date ) ->
+  getStatus:( roomId, date ) ->
     day   = if @days? then @days[date]
     entry = if  day?  and  day[roomId]? then day[roomId] else null
     if entry? then entry.status else 'free'
@@ -59,17 +59,15 @@ class Res
       roomUI.spa     = room.spa
       roomUI.change  = 0         # Changes usually to spa opt out
       roomUI.reason  = 'No Changes'
-      roomUI.days    = {}
-      roomUI.group   = {} # All days in group at maintained at the same status
     roomUIs
 
   optSpa:( roomId ) -> @rooms[roomId].spa is 'O'
   hasSpa:( roomId ) -> @rooms[roomId].spa is 'O' or @rooms[roomId].spa is 'Y'
 
-  createRoomResv:( status, method, roomUIs ) ->
+  createRoomResv:( status, method, totals, cust, roomUIs ) ->
     resv          = {}
     resv.resId    = @Data.genResId( roomUIs )
-    resv.totals   = 0
+    resv.totals   = totals
     resv.paid     = 0
     resv.balance  = 0
     resv.status   = status
@@ -83,7 +81,7 @@ class Res
         day.status = status if day.status is 'mine'
         resv.arrive = day   if day < resv.arrive
     resv.payments = {}
-    resv.cust     = {}
+    resv.cust     = cust
     #@subscribeToResId( resv.resId, 'add', (resv), Util.log( 'Resv', { resId:resv.resId, resv:resv )
     resv
 
@@ -187,14 +185,13 @@ class Res
       resv.status = 'free'
     resv.status
 
-  postResv:( resv, post, totals, amount, method, last4, purpose ) ->
+  postResv:( resv, post, amount, method, last4, purpose ) ->
     status = @setResvStatus( resv, post, purpose )
     if status is 'book' or status is 'depo'
       payId = @Data.genPaymentId( resv.resId, resv.payments )
       resv.payments[payId] = @createPayment( amount, method, last4, purpose )
-      resv.totals  = totals
       resv.paid   += amount
-      resv.balance = totals - resv.paid
+      resv.balance = resv.totals - resv.paid
       @allocRooms( resv )
       @store.add( 'Res', resv.resId, resv )
       @days = @mergePostDays( resv, @days )

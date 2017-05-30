@@ -132,7 +132,7 @@ class Book
     #$('#'+name+'ER').show() if not valid
     [value,valid]
 
-  getCust:( testing=false ) ->
+  createCust:( testing=false ) ->
     [first,fv] = @isValid('First', 'Samuel',      testing )
     [last, lv] = @isValid('Last',  'Hosendecker', testing )
     [phone,pv] = @isValid('Phone', '3037977129',  testing )
@@ -141,13 +141,14 @@ class Book
     cust = @res.createCust( first, last, phone, email, "site" )
     [tv,fv,lv,pv,ev,cust]
 
+  # Significant transition from Book to Pay
   onGoToPay:( e ) =>
     e.preventDefault() if e?
-    [tv,fv,lv,pv,ev,cust] = @getCust()
+    [tv,fv,lv,pv,ev,cust] = createCust()
     if tv and fv and lv and pv and ev
       $('.NameER').hide()
       $('#Book').hide()
-      @pay.initPay( @totals, cust, @roomUIs )
+      @pay.initPayResv( @totals, cust, @roomUIs )
     else
       alert( @onGoToMsg( tv,fv,lv,pv,ev ) )
     return
@@ -164,11 +165,14 @@ class Book
 
   createCell:( roomId, roomRm, day ) ->
     date   = @Data.toDateStr( @Data.dayMonth(day) )
-    status = @res.dayBooked( roomId, date )
+    status = @res.getStatus( roomId, date )
     """<td id="#{@cellId(date,roomId)}" class="room-#{status}" data-status="#{status}"></td>"""
 
   cellId:( date,  roomId ) ->
      'R' + date + roomId
+
+  resId:( date,  roomId ) ->
+          date + roomId
 
   roomIdCell:( $cell ) ->
     $cell.attr('id').substr(7,1)
@@ -200,13 +204,9 @@ class Book
     roomUI.price = price
     price
 
-  updatePrice:(   roomId ) =>
-    $('#'+roomId+'M').text("#{'$'+ @calcPrice(roomId) }")
-    @updateTotal( roomId )
-    return
-
   updateTotal:( roomId ) ->
     price  = @calcPrice( roomId )
+    $('#'+roomId+'M').text("#{'$'+ price }")
     room   = @roomUIs[roomId]
     nights = Util.keys(room.days).length
     room.total = price * nights + room.change
@@ -240,14 +240,14 @@ class Book
     roomId = $(event.target).attr('id').charAt(0)
     @roomUIs[roomId].guests = event.target.value
     #Util.log( 'Book.onGuests', roomId, @roomUIs[roomId].guests, @calcPrice(roomId) )
-    @updatePrice(roomId)
+    @updateTotal(roomId)
     return
 
   onPets:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
     @roomUIs[roomId].pets = event.target.value
     #Util.log( 'Book.onPets', roomId, @roomUIs[roomId].pets, @calcPrice(roomId) )
-    @updatePrice(roomId)
+    @updateTotal(roomId)
     return
 
   spa:( roomId ) ->
@@ -311,43 +311,37 @@ class Book
   cellBook:( $cell ) ->
     status  = $cell.attr('data-status')
     roomId  = @roomIdCell( $cell )
-    group   = @roomUIs[roomId].group
-    isEmpty = Util.isObjEmpty(group)
     if      status is 'free'
       status = 'mine'
       @updateCellStatus( $cell, 'mine' )
-    else if status is 'mine' and     isEmpty
+    else if status is 'mine'
       status = 'free'
       @updateCellStatus( $cell, 'free' )
-    else if status is 'mine' and not isEmpty
-      status = 'free'
-      @updateCellGroup( roomId, group, 'free' )
     [roomId,status]
 
-  updateCellGroup:( roomId, group, status ) ->
-    for own date, obj of group
-      $cell = @$Cell(date,roomId)
-      Util.log( 'Book.updateCellGroup()', { date:date,  group } )
-      @updateCellStatus( $cell, status )
-    return
-
-  updateCellStatus:( $cell, status ) ->
+  updateCellStatus:( $cell, status, resId='none' ) ->
     @cellStatus(     $cell, status )
-    roomId = @roomIdCell( $cell )
-    date   = @dateCell(   $cell )
-    roomUI = @roomUIs[roomId]
+    roomId   = @roomIdCell( $cell )
+    dateCell = @dateCell(   $cell )
     if status is 'mine'
-      roomUI.days[date] = { "status":status, "resId":"none" }
+      @res.days[dateCell] = {} if not @res.days[dateCell]?
+      @res.days[dateCell][roomId] = { "status":status, "resId":resId }
     else if status is 'free'
-      delete roomUI.days[ date]
-      delete roomUI.group[date] if roomUI.group[date]?
+      if resId is 'none'
+        delete @res.days[dateCell][roomId]
+      else
+        resId = @resId( dateCell, roomId )
+        for date, day of @res.days when day.resId is resId
+          @CellStatus( @$Cell(date, roomId), 'free' )
+          delete    @res.days[date][roomId]
     @updateTotal( roomId  )
     [roomId,status]
 
   # Only status of 'mine' is supported
-  fillInRooms:( roomId, $last ) ->
-    roomUI  = @roomUIs[roomId]
-    days    = Util.keys(roomUI.days).sort()
+  fillInRooms:( roomId,  $last ) ->
+    date    = @dateCell( $last )
+    days    = @roomDays( date, roomId )
+    Util.log( 'Book.fillRooms()', days )
     bday    = days[0]
     weekday = @Data.weekday(days[0])
     weekend = weekday is 'Fri' or weekday is 'Sat'
@@ -357,15 +351,19 @@ class Book
       @doFillInRooms( roomId, days )
     return
 
+  roomDays:( dateCell, roomId ) ->
+    days = []
+    for date, day of @res.days when day[roomId]?
+       days.push( date )
+    days.sort()
+
   fillInWeekend:( roomId, bday ) ->
     nday  = @Data.advanceDate( bday, 1 )
     $cell = @$Cell(nday,roomId)
     if $cell.attr('data-status') is 'free'
-      group = @roomUIs[roomId].group
-      group[bday] = { status:'mine' }
-      group[nday] = { status:'mine' }
-      #Util.log( 'Book.fillInRooms()', { bday:bday, nday:nday, group })
-      @updateCellStatus( $cell, 'mine' )
+      resId = @resId( roomId, bday )
+      @res.days[bday][roomId] = { "status":'mine', "resId":resId }
+      @updateCellStatus( $cell, 'mine', resId )
     return
 
   fillIsConsistent:( roomId, days, $last ) ->
@@ -404,10 +402,3 @@ class Book
 
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
-
-
-
-
-
-
-

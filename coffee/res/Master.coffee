@@ -123,7 +123,7 @@ class Master
     $( '#'+@cellId(pre,date,roomId) )
 
   createMasterCell:(         roomId, date ) ->
-    status = @res.dayBooked( roomId, date )
+    status = @res.getStatus( roomId, date )
     resId  = @res.resId(     roomId, date )
     """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-cell="y"></td>"""
 
@@ -234,7 +234,7 @@ class Master
       roomId = 'N' if roomId is  9
       roomId = 'S' if roomId is 10
       date   = @Data.toDateStr( day, monthIdx )
-      status = @res.dayBooked( roomId, date )
+      status = @res.getStatus( roomId, date )
       #Util.log('Master.roomDay()', date, roomId, status ) if date is '170524'
       if status isnt 'free'
         htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId} data-res="y"</span>"""

@@ -6,39 +6,31 @@ include::../dir/inc/DefBook.adoc[]
 
 ### [.black]#Integrate#
 * Stripe Reader
-  ** Contact Fred
-  ** Place Order
+  ** Call for setup and Merchant Id
 * Bookings
-* Site
-
-## [.black]#Guest Site#
-
-### [.black]#Test#
-* Days posting
-* Reservation Lifecycle
-* Test Suite, Weekend, Pop, Deposit, Payment
-* Populate Beth Reservations into Skyline
-
-### [.black]#Deploy#
-* Move domain from GoDaddy
-* Bank Account
-* Deploy to Firebase
-
-### [.black]#Feature#
-* Confirmation EMail
-* Rooms M 1-8 N S, fix sign.jpg
-
-
-
-## [.black]#Owner Site#
-* Owner reservation - maybe just a link
-* Weekend group hint on Guest
-* Refine Owner site
-* Master Calendar
-* Confirmation
-* Payments Track - Tax, Deposit, OTS
-* Work Schedule
-* Customer - Marking
+  ** Set Up #6 and block  June, Beth Adrus
+  ** Enlarge and upload more photos
+  ** Review listings
+  ** Determine steps for going live
+* Guest
+  ** Fix guest, pet and spa opt out
+  ** Weekend Hint
+  ** Guest Lookup Checkin with PayBalance
+  ** Confirmation EMail from Firebase
+  ** Guest content - Review
+  ** Terms and Conditions - review
+  ** Test Manual amd Test Suite
+  ** Strip Bank Account
+  ** Firebase auth and deploy
+  ** Move www.skylinecottages.com from GoDaddy
+* Owner
+  ** Group Reservation Days
+  ** Clean Up Confirmation
+  ** Guest Check In Link
+  ** Guest Update Link - Revs Form?
+  ** Fix Season Calander
+  ** Create Daily Activies
+  ** Payments Track - Tax, Deposit, OTS
 
 ## [.black]#Marketing#
 * Google Search
