@@ -12,9 +12,6 @@ class Master
     @lastSeason  = { left:0, top:0, width:0, height:0 }
 
   ready:() ->
-    beg = @Data.toDateStr(  1, 4 ) # May  1
-    end = @Data.toDateStr( 31, 9 ) # Oct 31
-    @res.dateRange( beg, end, @onDateRange )  # Call readyMaster
     #@selectToDays() if @store.justMemory
     @listenToDays()
     #listenToResv()

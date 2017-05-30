@@ -29,7 +29,6 @@
       this.calcPrice = bind(this.calcPrice, this);
       this.onGoToPay = bind(this.onGoToPay, this);
       this.rooms = this.res.rooms;
-      this.roomUIs = null;
       this.res.book = this;
       this.$cells = [];
       this.totals = 0;
@@ -37,7 +36,7 @@
     }
 
     Book.prototype.ready = function() {
-      this.roomUIs = this.res.createRoomUIs(this.rooms);
+      this.res.roomUI(this.rooms);
       $('#Book').empty();
       $('#Pays').empty();
       $('#Book').append(this.bookHtml());
@@ -156,11 +155,11 @@
       if (e != null) {
         e.preventDefault();
       }
-      ref = createCust(), tv = ref[0], fv = ref[1], lv = ref[2], pv = ref[3], ev = ref[4], cust = ref[5];
+      ref = this.createCust(), tv = ref[0], fv = ref[1], lv = ref[2], pv = ref[3], ev = ref[4], cust = ref[5];
       if (tv && fv && lv && pv && ev) {
         $('.NameER').hide();
         $('#Book').hide();
-        this.pay.initPayResv(this.totals, cust, this.roomUIs);
+        this.pay.initPayResv(this.totals, cust, this.rooms);
       } else {
         alert(this.onGoToMsg(tv, fv, lv, pv, ev));
       }
@@ -193,8 +192,18 @@
     Book.prototype.createCell = function(roomId, roomRm, day) {
       var date, status;
       date = this.Data.toDateStr(this.Data.dayMonth(day));
-      status = this.res.getStatus(roomId, date);
+      status = this.getStatus(roomId, date);
       return "<td id=\"" + (this.cellId(date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
+    };
+
+    Book.prototype.getStatus = function(roomId, date) {
+      var room;
+      room = this.rooms[roomId];
+      if (!Util.isObjEmpty(room.days) && (room.days[date].status != null)) {
+        return room.days[date].status;
+      } else {
+        return this.res.getStatus(roomId, date);
+      }
     };
 
     Book.prototype.cellId = function(date, roomId) {
@@ -213,25 +222,25 @@
       return $cell.attr('id').substr(1, 6);
     };
 
-    Book.prototype.$Cell = function(date, roomId) {
+    Book.prototype.$cell = function(date, roomId) {
       return $('#' + this.cellId(date, roomId));
     };
 
     Book.prototype.roomsJQuery = function() {
-      var $cell, date, day, i, j, len, ref, ref1, ref2, roomId, roomUI;
+      var $cell, date, day, i, j, len, ref, ref1, ref2, room, roomId;
       ref = this.$cells;
       for (i = 0, len = ref.length; i < len; i++) {
         $cell = ref[i];
         $cell.unbind("click");
       }
       this.$cells = [];
-      ref1 = this.roomUIs;
+      ref1 = this.rooms;
       for (roomId in ref1) {
-        roomUI = ref1[roomId];
-        roomUI.$ = $('#' + roomId);
+        room = ref1[roomId];
+        room.$ = $('#' + roomId);
         for (day = j = 1, ref2 = this.Data.numDays; 1 <= ref2 ? j <= ref2 : j >= ref2; day = 1 <= ref2 ? ++j : --j) {
           date = this.Data.toDateStr(this.Data.dayMonth(day));
-          $cell = this.$Cell(date, roomId);
+          $cell = this.$cell(date, roomId);
           $cell.click((function(_this) {
             return function(event) {
               return _this.onCellBook(event);
@@ -244,12 +253,12 @@
     };
 
     Book.prototype.calcPrice = function(roomId) {
-      var guests, pets, price, roomUI;
-      roomUI = this.roomUIs[roomId];
-      guests = roomUI.guests;
-      pets = roomUI.pets;
+      var guests, pets, price, room;
+      room = this.rooms[roomId];
+      guests = room.guests;
+      pets = room.pets;
       price = this.rooms[roomId][guests] + pets * this.Data.petPrice;
-      roomUI.price = price;
+      room.price = price;
       return price;
     };
 
@@ -257,7 +266,7 @@
       var nights, price, room, text;
       price = this.calcPrice(roomId);
       $('#' + roomId + 'M').text("" + ('$' + price));
-      room = this.roomUIs[roomId];
+      room = this.rooms[roomId];
       nights = Util.keys(room.days).length;
       room.total = price * nights + room.change;
       text = room.total === 0 ? '' : '$' + room.total;
@@ -268,7 +277,7 @@
     Book.prototype.updateTotals = function() {
       var ref, room, roomId, text;
       this.totals = 0;
-      ref = this.roomUIs;
+      ref = this.rooms;
       for (roomId in ref) {
         if (!hasProp.call(ref, roomId)) continue;
         room = ref[roomId];
@@ -314,14 +323,14 @@
     Book.prototype.onGuests = function(event) {
       var roomId;
       roomId = $(event.target).attr('id').charAt(0);
-      this.roomUIs[roomId].guests = event.target.value;
+      this.rooms[roomId].guests = event.target.value;
       this.updateTotal(roomId);
     };
 
     Book.prototype.onPets = function(event) {
       var roomId;
       roomId = $(event.target).attr('id').charAt(0);
-      this.roomUIs[roomId].pets = event.target.value;
+      this.rooms[roomId].pets = event.target.value;
       this.updateTotal(roomId);
     };
 
@@ -334,41 +343,42 @@
     };
 
     Book.prototype.onSpa = function(event) {
-      var $elem, checked, reason, roomId, roomUI, spaFee;
+      var $elem, checked, reason, room, roomId, spaFee;
       $elem = $(event.target);
       roomId = $elem.attr('id').charAt(0);
-      roomUI = this.roomUIs[roomId];
+      room = this.rooms[roomId];
       checked = $elem.is(':checked');
       spaFee = checked ? 20 : -20;
       reason = checked ? 'Spa Added' : 'Spa Opted Out';
-      roomUI.change += spaFee;
-      roomUI.reason = reason;
-      if (roomUI.total > 0) {
+      room.change += spaFee;
+      room.reason = reason;
+      if (room.total > 0) {
         this.updateTotal(roomId);
       }
     };
 
     Book.prototype.onMonth = function(event) {
-      var beg, end;
       this.Data.month = event.target.value;
       this.Data.monthIdx = this.Data.months.indexOf(this.Data.month);
       this.Data.begDay = this.Data.month === 'May' ? this.Data.begMay : 1;
       $('#Days').val(this.Data.begDay.toString());
-      beg = this.Data.toDateStr(this.Data.begDay, this.Data.monthIdx);
-      end = this.Data.advanceDate(beg, this.Data.numDays - 1);
-      this.res.dateRange(beg, end, this.resetRooms);
+      this.resetRooms();
     };
 
     Book.prototype.onDay = function(event) {
-      var beg, end;
       this.Data.begDay = parseInt(event.target.value);
       if (this.Data.month === 'October' && this.Data.begDay > 1) {
         this.Data.begDay = 1;
         alert('The Season Ends on October 15');
       }
+      this.resetRooms();
+    };
+
+    Book.prototype.resetDateRange = function() {
+      var beg, end;
       beg = this.Data.toDateStr(this.Data.begDay, this.Data.monthIdx);
       end = this.Data.advanceDate(beg, this.Data.numDays - 1);
-      this.res.dateRange(beg, end, this.resetRooms);
+      return this.res.dateRange(beg, end, this.resetRooms);
     };
 
     Book.prototype.resetRooms = function() {
@@ -378,7 +388,7 @@
     };
 
     Book.prototype.onPop = function() {
-      this.getCust(true);
+      this.createCust(true);
       this.pay.testing = true;
     };
 
@@ -398,107 +408,97 @@
     };
 
     Book.prototype.cellBook = function($cell) {
-      var roomId, status;
+      var date, resId, roomId, status;
       status = $cell.attr('data-status');
+      date = this.dateCell($cell);
       roomId = this.roomIdCell($cell);
+      resId = this.resId(date, roomId);
       if (status === 'free') {
         status = 'mine';
-        this.updateCellStatus($cell, 'mine');
+        this.updateCellStatus($cell, 'mine', resId);
       } else if (status === 'mine') {
         status = 'free';
-        this.updateCellStatus($cell, 'free');
+        this.updateCellStatus($cell, 'free', resId);
       }
       return [roomId, status];
     };
 
     Book.prototype.updateCellStatus = function($cell, status, resId) {
-      var date, dateCell, day, ref, roomId;
-      if (resId == null) {
-        resId = 'none';
-      }
+      var date, nday, room, roomId, weekday;
       this.cellStatus($cell, status);
+      date = this.dateCell($cell);
       roomId = this.roomIdCell($cell);
-      dateCell = this.dateCell($cell);
+      room = this.rooms[roomId];
+      resId = this.resId(date, roomId);
       if (status === 'mine') {
-        if (this.res.days[dateCell] == null) {
-          this.res.days[dateCell] = {};
-        }
-        this.res.days[dateCell][roomId] = {
+        room.days[date] = {
           "status": status,
           "resId": resId
         };
       } else if (status === 'free') {
-        if (resId === 'none') {
-          delete this.res.days[dateCell][roomId];
-        } else {
-          resId = this.resId(dateCell, roomId);
-          ref = this.res.days;
-          for (date in ref) {
-            day = ref[date];
-            if (!(day.resId === resId)) {
-              continue;
-            }
-            this.CellStatus(this.$Cell(date, roomId), 'free');
-            delete this.res.days[date][roomId];
-          }
+        delete room.days[date];
+        weekday = this.Data.weekday(date);
+        if (weekday === 'Fri' || weekday === 'Sat') {
+          nday = this.Data.advanceDate(date, 1);
+          this.cellStatus(this.$cell(nday, roomId), 'free');
+          delete room.days[nday];
         }
       }
       this.updateTotal(roomId);
       return [roomId, status];
     };
 
-    Book.prototype.fillInRooms = function(roomId, $last) {
-      var bday, date, days, weekday, weekend;
-      date = this.dateCell($last);
-      days = this.roomDays(date, roomId);
-      Util.log('Book.fillRooms()', days);
+    Book.prototype.fillInRooms = function(roomId, $end) {
+      var bday, days, weekday, weekend;
+      days = this.dayArray(roomId);
+      if (days === 'none') {
+        return;
+      }
       bday = days[0];
-      weekday = this.Data.weekday(days[0]);
+      weekday = this.Data.weekday(bday);
       weekend = weekday === 'Fri' || weekday === 'Sat';
       if (days.length === 1 && weekend) {
-        this.fillInWeekend(roomId, bday);
-      } else if (days.length === 2 && this.fillIsConsistent(roomId, days, $last)) {
-        this.doFillInRooms(roomId, days);
+        this.fillInNextDay(bday, roomId);
+      } else if (days.length === 2 && this.fillIsConsistent(roomId, days, $end)) {
+        this.doFillInRooms(days, roomId);
       }
     };
 
-    Book.prototype.roomDays = function(dateCell, roomId) {
+    Book.prototype.dayArray = function(roomId) {
       var date, day, days, ref;
       days = [];
-      ref = this.res.days;
+      ref = this.rooms[roomId].days;
       for (date in ref) {
         day = ref[date];
-        if (day[roomId] != null) {
-          days.push(date);
-        }
+        days.push(date);
       }
-      return days.sort();
+      if (Util.isArray(days)) {
+        return days.sort();
+      } else {
+        return 'none';
+      }
     };
 
-    Book.prototype.fillInWeekend = function(roomId, bday) {
+    Book.prototype.fillInNextDay = function(bday, roomId) {
       var $cell, nday, resId;
+      resId = this.resId(bday, roomId);
       nday = this.Data.advanceDate(bday, 1);
-      $cell = this.$Cell(nday, roomId);
+      $cell = this.$cell(nday, roomId);
       if ($cell.attr('data-status') === 'free') {
-        resId = this.resId(roomId, bday);
-        this.res.days[bday][roomId] = {
-          "status": 'mine',
-          "resId": resId
-        };
         this.updateCellStatus($cell, 'mine', resId);
       }
     };
 
-    Book.prototype.fillIsConsistent = function(roomId, days, $last) {
+    Book.prototype.fillIsConsistent = function(roomId, days, $end) {
       var $cell, bday, eday, nday;
       bday = days[0];
       eday = days[days.length - 1];
       nday = this.Data.advanceDate(bday, 1);
       while (nday < eday) {
-        $cell = this.$Cell(nday, roomId);
+        $cell = this.$cell(nday, roomId);
         if (!this.Data.isElem($cell) || $cell.attr('data-status') !== 'free') {
-          $last.attr('data-status', 'mine');
-          this.cellBook($last);
+          $end.attr('data-status', 'mine');
+          this.cellBook($end);
           return false;
         }
         nday = this.Data.advanceDate(nday, 1);
@@ -506,13 +506,13 @@
       return true;
     };
 
-    Book.prototype.doFillInRooms = function(roomId, days) {
+    Book.prototype.doFillInRooms = function(days, roomId) {
       var $cell, bday, eday, nday;
       bday = days[0];
       nday = this.Data.advanceDate(bday, 1);
       eday = days[days.length - 1];
       while (nday < eday) {
-        $cell = this.$Cell(nday, roomId);
+        $cell = this.$cell(nday, roomId);
         if (this.Data.isElem($cell)) {
           this.cellBook($cell);
         }
@@ -530,7 +530,7 @@
     };
 
     Book.prototype.allocCell = function(dayId, status, roomId) {
-      return this.cellStatus(this.$Cell(dayId, roomId), status);
+      return this.cellStatus(this.$cell(dayId, roomId), status);
     };
 
     Book.prototype.cellStatus = function($cell, status) {

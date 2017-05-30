@@ -43,10 +43,6 @@
     }
 
     Master.prototype.ready = function() {
-      var beg, end;
-      beg = this.Data.toDateStr(1, 4);
-      end = this.Data.toDateStr(31, 9);
-      this.res.dateRange(beg, end, this.onDateRange);
       this.listenToDays();
       $('#MasterBtn').click(this.onMasterBtn);
       $('#SeasonBtn').click(this.onSeasonBtn);
@@ -222,7 +218,7 @@
 
     Master.prototype.createMasterCell = function(roomId, date) {
       var resId, status;
-      status = this.res.dayBooked(roomId, date);
+      status = this.res.getStatus(roomId, date);
       resId = this.res.resId(roomId, date);
       return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-cell=\"y\"></td>";
     };
@@ -387,7 +383,7 @@
           roomId = 'S';
         }
         date = this.Data.toDateStr(day, monthIdx);
-        status = this.res.dayBooked(roomId, date);
+        status = this.res.getStatus(roomId, date);
         if (status !== 'free') {
           htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + " data-res=\"y\"</span>";
         }

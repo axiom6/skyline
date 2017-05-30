@@ -5,22 +5,20 @@ include::../dir/inc/DefBook.adoc[]
 # [.black]#Plan#
 
 ### [.black]#Integrate#
-* Stripe Reader
-  ** Call for setup and Merchant Id
+
 * Bookings
   ** Set Up #6 and block  June, Beth Adrus
   ** Enlarge and upload more photos
   ** Review listings
   ** Determine steps for going live
 * Guest
-  ** Fix guest, pet and spa opt out
   ** Weekend Hint
   ** Guest Lookup Checkin with PayBalance
   ** Confirmation EMail from Firebase
   ** Guest content - Review
   ** Terms and Conditions - review
-  ** Test Manual amd Test Suite
-  ** Strip Bank Account
+  ** UI Test amd Test Suite
+  ** Stripe Bank Account
   ** Firebase auth and deploy
   ** Move www.skylinecottages.com from GoDaddy
 * Owner
@@ -39,7 +37,10 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets
 
 ## [.black]#Guest Site Completed#
-* Terms and Conditions - review
+* Stripe Reader
+  ** Call for setup and Merchant Id
+* Fix weekend and fill in
+* Fix guest, pet and spa opt out
 * Slide.coffee ?
 * Video
 * Fixed require

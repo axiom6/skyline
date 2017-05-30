@@ -19,8 +19,8 @@ class Pay
     #doPut = (onPut) -> Util.log('Res.subscribeToDays onPut', onPut )
     #@res.onDays( doPut )
 
-  initPayResv:( totals, cust, roomUIs ) =>
-    @resv      = @res.createRoomResv( 'mine', 'card', totals, cust, roomUIs )
+  initPayResv:( totals, cust, rooms ) =>
+    @resv      = @res.createRoomResv( 'mine', 'card', totals, cust, rooms )
     @amount    = totals - @resv.paid
     $('#Pays'        ).empty()
     $('#Pays'        ).append( @confirmHead(  @resv ) )

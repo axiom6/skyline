@@ -16,8 +16,10 @@ class Data
   @monthIdx    = if 4 <=  Data.monthIdx and Data.monthIdx <= 9 then Data.monthIdx else 4
   @month       = Data.months[Data.monthIdx]
   @numDays     = 15 # Display 15 days in Guest reservation calendar
-  @begMay      =  15
+  @begMay      = 15
   @begDay      = if Data.month is 'May' then Data.begMay else 1  # Being season on May 15
+  @beg         = '170515'  # Beg seasom on May 15, 2017
+  @end         = '171009'  # Beg seasom on Oct  9, 2017
 
   @configSkytest = {
     apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",

@@ -12,9 +12,7 @@ class Res
     @book     = null
     @master   = null
     @days     = {}
-    beg       = @Data.toDateStr(   @Data.begDay )
-    end       = @Data.advanceDate( beg, @Data.numDays-1 )
-    @dateRange( beg, end ) if @appName is 'Guest'
+    @dateRange( @Data.beg, @Data.end ) # Get entire season for both Guest and Owner
     @populateMemory()      if @store.justMemory
 
   populateMemory:() ->
@@ -45,28 +43,24 @@ class Res
     entry = if day? and day[roomId]? then day[roomId] else null
     if entry? then entry.resId else 'none' # Need to determine if resId == 'none' if the way to go
 
-  createRoomUIs:( rooms ) ->
-    roomUIs = {}
+  # Note the expanded roomUI is for Book.coffee and should never be persisted
+  roomUI:( rooms ) ->
     for key, room of rooms
-      roomUIs[key]   = {}
-      roomUI         = roomUIs[key]
-      roomUI.$       = {}
-      roomUI.name    = room.name
-      roomUI.total   = 0
-      roomUI.price   = 0
-      roomUI.guests  = 2
-      roomUI.pets    = 0
-      roomUI.spa     = room.spa
-      roomUI.change  = 0         # Changes usually to spa opt out
-      roomUI.reason  = 'No Changes'
-    roomUIs
+      room.$       = {}
+      room.days    = {}
+      room.total   = 0
+      room.price   = 0
+      room.guests  = 2
+      room.pets    = 0
+      room.change  = 0         # Changes usually to spa opt out
+      room.reason  = 'No Changes'
 
   optSpa:( roomId ) -> @rooms[roomId].spa is 'O'
   hasSpa:( roomId ) -> @rooms[roomId].spa is 'O' or @rooms[roomId].spa is 'Y'
 
-  createRoomResv:( status, method, totals, cust, roomUIs ) ->
+  createRoomResv:( status, method, totals, cust, rooms ) ->
     resv          = {}
-    resv.resId    = @Data.genResId( roomUIs )
+    resv.resId    = @Data.genResId( rooms )
     resv.totals   = totals
     resv.paid     = 0
     resv.balance  = 0
@@ -75,29 +69,17 @@ class Res
     resv.booked   = @Data.today()
     resv.arrive   = resv.resId.substr(0,6)
     resv.rooms    = {}
-    for own roomId, roomUI of roomUIs when not Util.isObjEmpty(roomUI.days)
-      resv.rooms[roomId] = @toResvRoom( roomUI )
-      for own day, obj of roomUI.days
+    for own roomId, room of rooms when not Util.isObjEmpty(room.days)
+      delete room.$ # So not to persist jQuery
+      room.nights  = Util.keys(room.days).length
+      resv.rooms[roomId] = room
+      for own day, obj of room.days
         day.status = status if day.status is 'mine'
         resv.arrive = day   if day < resv.arrive
     resv.payments = {}
     resv.cust     = cust
     #@subscribeToResId( resv.resId, 'add', (resv), Util.log( 'Resv', { resId:resv.resId, resv:resv )
     resv
-
-  toResvRoom:( roomUI ) ->
-    room = {}
-    room.name    = roomUI.name
-    room.total   = roomUI.total
-    room.price   = roomUI.price
-    room.guests  = roomUI.guests
-    room.pets    = roomUI.pets
-    room.spa     = roomUI.spa
-    room.change  = roomUI.change # Changes usually to spa opt out
-    room.reason  = roomUI.reason
-    room.days    = roomUI.days
-    room.nights  = Util.keys(roomUI.days).length
-    room
 
   allocRooms:( resv ) ->
     for own  roomId, room of resv.rooms

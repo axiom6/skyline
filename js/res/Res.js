@@ -16,7 +16,6 @@
     Res.States = ["free", "mine", "depo", "book"];
 
     function Res(stream, store, Data, appName) {
-      var beg, end;
       this.stream = stream;
       this.store = store;
       this.Data = Data;
@@ -30,11 +29,7 @@
       this.book = null;
       this.master = null;
       this.days = {};
-      beg = this.Data.toDateStr(this.Data.begDay);
-      end = this.Data.advanceDate(beg, this.Data.numDays - 1);
-      if (this.appName === 'Guest') {
-        this.dateRange(beg, end);
-      }
+      this.dateRange(this.Data.beg, this.Data.end);
       if (this.store.justMemory) {
         this.populateMemory();
       }
@@ -99,24 +94,21 @@
       }
     };
 
-    Res.prototype.createRoomUIs = function(rooms) {
-      var key, room, roomUI, roomUIs;
-      roomUIs = {};
+    Res.prototype.roomUI = function(rooms) {
+      var key, results, room;
+      results = [];
       for (key in rooms) {
         room = rooms[key];
-        roomUIs[key] = {};
-        roomUI = roomUIs[key];
-        roomUI.$ = {};
-        roomUI.name = room.name;
-        roomUI.total = 0;
-        roomUI.price = 0;
-        roomUI.guests = 2;
-        roomUI.pets = 0;
-        roomUI.spa = room.spa;
-        roomUI.change = 0;
-        roomUI.reason = 'No Changes';
+        room.$ = {};
+        room.days = {};
+        room.total = 0;
+        room.price = 0;
+        room.guests = 2;
+        room.pets = 0;
+        room.change = 0;
+        results.push(room.reason = 'No Changes');
       }
-      return roomUIs;
+      return results;
     };
 
     Res.prototype.optSpa = function(roomId) {
@@ -127,10 +119,10 @@
       return this.rooms[roomId].spa === 'O' || this.rooms[roomId].spa === 'Y';
     };
 
-    Res.prototype.createRoomResv = function(status, method, totals, cust, roomUIs) {
-      var day, obj, ref, resv, roomId, roomUI;
+    Res.prototype.createRoomResv = function(status, method, totals, cust, rooms) {
+      var day, obj, ref, resv, room, roomId;
       resv = {};
-      resv.resId = this.Data.genResId(roomUIs);
+      resv.resId = this.Data.genResId(rooms);
       resv.totals = totals;
       resv.paid = 0;
       resv.balance = 0;
@@ -139,14 +131,16 @@
       resv.booked = this.Data.today();
       resv.arrive = resv.resId.substr(0, 6);
       resv.rooms = {};
-      for (roomId in roomUIs) {
-        if (!hasProp.call(roomUIs, roomId)) continue;
-        roomUI = roomUIs[roomId];
-        if (!(!Util.isObjEmpty(roomUI.days))) {
+      for (roomId in rooms) {
+        if (!hasProp.call(rooms, roomId)) continue;
+        room = rooms[roomId];
+        if (!(!Util.isObjEmpty(room.days))) {
           continue;
         }
-        resv.rooms[roomId] = this.toResvRoom(roomUI);
-        ref = roomUI.days;
+        delete room.$;
+        room.nights = Util.keys(room.days).length;
+        resv.rooms[roomId] = room;
+        ref = room.days;
         for (day in ref) {
           if (!hasProp.call(ref, day)) continue;
           obj = ref[day];
@@ -161,22 +155,6 @@
       resv.payments = {};
       resv.cust = cust;
       return resv;
-    };
-
-    Res.prototype.toResvRoom = function(roomUI) {
-      var room;
-      room = {};
-      room.name = roomUI.name;
-      room.total = roomUI.total;
-      room.price = roomUI.price;
-      room.guests = roomUI.guests;
-      room.pets = roomUI.pets;
-      room.spa = roomUI.spa;
-      room.change = roomUI.change;
-      room.reason = roomUI.reason;
-      room.days = roomUI.days;
-      room.nights = Util.keys(roomUI.days).length;
-      return room;
     };
 
     Res.prototype.allocRooms = function(resv) {

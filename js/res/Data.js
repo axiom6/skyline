@@ -38,6 +38,10 @@
 
     Data.begDay = Data.month === 'May' ? Data.begMay : 1;
 
+    Data.beg = '170515';
+
+    Data.end = '171009';
+
     Data.configSkytest = {
       apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
       authDomain: "skytest-25d1c.firebaseapp.com",

@@ -29,7 +29,7 @@
       this.onCancel = bind(this.onCancel, this);
       this.onChangeReser = bind(this.onChangeReser, this);
       this.initCCPayment = bind(this.initCCPayment, this);
-      this.initPay = bind(this.initPay, this);
+      this.initPayResv = bind(this.initPayResv, this);
       this.credit = new Credit();
       this.uri = "https://api.stripe.com/v1/";
       this.subscribe();
@@ -39,17 +39,14 @@
         }
       });
       this.resv = null;
-      this.totals = 0;
       this.amount = 0;
       this.purpose = 'PayInFull';
       this.testing = false;
       this.errored = false;
     }
 
-    Pay.prototype.initPay = function(totals, cust, roomUIs) {
-      this.resv = this.res.createRoomResv('mine', 'card', roomUIs);
-      this.resv.cust = cust;
-      this.totals = totals;
+    Pay.prototype.initPayResv = function(totals, cust, rooms) {
+      this.resv = this.res.createRoomResv('mine', 'card', totals, cust, rooms);
       this.amount = totals - this.resv.paid;
       $('#Pays').empty();
       $('#Pays').append(this.confirmHead(this.resv));
@@ -124,7 +121,7 @@
     };
 
     Pay.prototype.calcDeposit = function() {
-      return Math.round(this.totals * 50) / 100;
+      return Math.round(this.resv.totals * 50) / 100;
     };
 
     Pay.prototype.onMakeDeposit = function(e) {
@@ -145,7 +142,7 @@
         purpose = this.purpose;
       }
       this.purpose = purpose;
-      amount = this.purpose === 'Deposit' ? this.calcDeposit() : this.totals;
+      amount = this.purpose === 'Deposit' ? this.calcDeposit() : this.resv.totals;
       $("#cc-amt").text('$' + amount);
       return amount;
     };
@@ -478,11 +475,11 @@
     Pay.prototype.onCharge = function(obj) {
       if (obj['outcome'].type === 'authorized') {
         this.doPost(this.resv);
-        return this.res.postResv(this.resv, 'post', this.totals, this.amount, 'Credit', this.last4, this.purpose);
+        return this.res.postResv(this.resv, 'post', this.amount, 'Credit', this.last4, this.purpose);
       } else {
         this.amount = 0;
         this.doDeny(this.resv);
-        return this.res.postResv(this.resv, 'deny', this.totals, this.amount, 'Credit', this.last4, this.purpose);
+        return this.res.postResv(this.resv, 'deny', this.amount, 'Credit', this.last4, this.purpose);
       }
     };
 
