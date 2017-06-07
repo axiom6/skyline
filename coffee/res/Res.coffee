@@ -12,7 +12,7 @@ class Res
     @book     = null
     @master   = null
     @days     = {}
-    @dateRange( @Data.beg, @Data.end ) # Get entire season for both Guest and Owner
+    @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
     @populateMemory()      if @store.justMemory
 
   populateMemory:() ->

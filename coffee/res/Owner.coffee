@@ -16,8 +16,8 @@ class Owner
       Master   = require( 'js/res/Master'    )
 
       stream   = new Stream( [] )
-      store    = new Fire(   stream, "skytest", Data.configSkytest )
-      #store   = new Memory( stream, "skytest" )
+      store    = new Fire(   stream, "skyline", Data.configSkyline )
+      #store   = new Memory( stream, "skyline" )
       res      = new Res(    stream, store, Data, 'Owner' )
       pay      = new Pay(    stream, store, Data, res )  # Pay is used to lookup confirmations
       master   = new Master( stream, store, Data, res, pay )

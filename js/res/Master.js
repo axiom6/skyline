@@ -22,6 +22,7 @@
       this.selectToDays = bind(this.selectToDays, this);
       this.listenToDays = bind(this.listenToDays, this);
       this.onDateRange = bind(this.onDateRange, this);
+      this.readyMaster = bind(this.readyMaster, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
       this.onSeasonBtn = bind(this.onSeasonBtn, this);
       this.onLookup = bind(this.onLookup, this);
@@ -47,6 +48,7 @@
       $('#MasterBtn').click(this.onMasterBtn);
       $('#SeasonBtn').click(this.onSeasonBtn);
       $('#DailysBtn').click(this.onDailysBtn);
+      this.res.dateRange(this.Data.beg, this.Data.end, this.readyMaster);
     };
 
     Master.prototype.onMasterBtn = function() {

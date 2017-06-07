@@ -29,7 +29,9 @@
       this.book = null;
       this.master = null;
       this.days = {};
-      this.dateRange(this.Data.beg, this.Data.end);
+      if (this.appName === 'Guest') {
+        this.dateRange(this.Data.beg, this.Data.end);
+      }
       if (this.store.justMemory) {
         this.populateMemory();
       }

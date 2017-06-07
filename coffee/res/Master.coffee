@@ -18,6 +18,7 @@ class Master
     $('#MasterBtn').click( @onMasterBtn )
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
+    @res.dateRange( @Data.beg, @Data.end, @readyMaster )
     return
 
   onMasterBtn:() =>
@@ -55,7 +56,7 @@ class Master
     $('#Dailys').show()
     return
 
-  readyMaster:() ->
+  readyMaster:() =>
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
     @readyCells()
