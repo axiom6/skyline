@@ -8,6 +8,8 @@
 
     module.exports = Data;
 
+    Data.tax = 0.1055;
+
     Data.season = ["May", "June", "July", "August", "September", "October"];
 
     Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -132,6 +134,21 @@
         monthIdx++;
       }
       return Data.toDateStr(day, monthIdx, year);
+    };
+
+    Data.nights = function(arrive, depart) {
+      var arriveDay, arriveMon, departDay, departMon, num;
+      num = 0;
+      arriveDay = parseInt(arrive.substr(4, 2));
+      arriveMon = parseInt(arrive.substr(2, 2));
+      departDay = parseInt(depart.substr(4, 2));
+      departMon = parseInt(depart.substr(2, 2));
+      if (arriveMon === departMon) {
+        num = departDay - arriveDay;
+      } else if (arriveMon + 1 === departMon) {
+        num = Data.numDayMonth[arriveMon - 1] - arriveDay + departDay;
+      }
+      return num;
     };
 
     Data.weekday = function(date) {

@@ -6,10 +6,11 @@ class Master
   module.exports = Master
 
   constructor:( @stream, @store, @Data, @res, @pay ) ->
-    @rooms       = @res.rooms
-    @res.master  = @
-    @lastMaster  = { left:0, top:0, width:0, height:0 }
-    @lastSeason  = { left:0, top:0, width:0, height:0 }
+    @rooms        = @res.rooms
+    @uploadedText = ""
+    @res.master   = @
+    @lastMaster   = { left:0, top:0, width:0, height:0 }
+    @lastSeason   = { left:0, top:0, width:0, height:0 }
 
   ready:() ->
     #@selectToDays() if @store.justMemory
@@ -18,6 +19,7 @@ class Master
     $('#MasterBtn').click( @onMasterBtn )
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
+    $('#UploadBtn').click( @onUploadBtn )
     @res.dateRange( @Data.beg, @Data.end, @readyMaster )
     return
 
@@ -25,6 +27,7 @@ class Master
     $('#Lookup').hide()
     $('#Season').hide()
     $('#Dailys').hide()
+    $('#Upload').hide()
     $('#Master').show()
     return
 
@@ -32,6 +35,7 @@ class Master
     $('#Master').hide()
     $('#Season').hide()
     $('#Dailys').hide()
+    $('#Upload').hide()
     $('#Lookup').empty()
     Util.log( 'Master.onLookup', resv )
     $('#Lookup').append( @pay.confirmHead(  resv          ) ) if not Util.isObjEmpty(resv)
@@ -43,6 +47,7 @@ class Master
     $('#Master').hide()
     $('#Lookup').hide()
     $('#Dailys').hide()
+    $('#Upload').hide()
     $('#Season').append( @seasonHtml() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
     $('#Season').show()
@@ -52,8 +57,19 @@ class Master
     $('#Master').hide()
     $('#Lookup').hide()
     $('#Season').hide()
+    $('#Upload').hide()
     $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
     $('#Dailys').show()
+    return
+
+  onUploadBtn:() =>
+    $('#Master').hide()
+    $('#Lookup').hide()
+    $('#Season').hide()
+    $('#Dailys').hide()
+    $('#Upload').append( @uploadHtml() ) if Util.isEmpty( $('#Upload').children() )
+    @bindUploadPaste()
+    $('#Upload').show()
     return
 
   readyMaster:() =>
@@ -254,3 +270,76 @@ class Master
     htm += """<h2 class="DailysH2">Arrivals</h2>"""
     htm += """<h2 class="DailysH2">Departures</h2>"""
     htm
+
+  uploadHtml:() ->
+    htm  = ""
+    htm += """<h1 class="UploadH1">Upload Booking.com</h1>"""
+    htm += """<textarea id="UploadText" class="UploadText" rows="50" cols="100"></textarea>"""
+    htm
+
+  bindUploadPaste:() ->
+    onPaste = (event) =>
+      if window.clipboardData and window.clipboardData.getData # IE
+        @uploadedText = window.clipboardData.getData('Text')
+      else if event.clipboardData and event.clipboardData.getData
+        @uploadedText = event.clipboardData.getData('text/plain')
+      event.preventDefault()
+      if Util.isStr(    @uploadedText )
+         Util.log('Master.onPaste()'  )
+         Util.log(      @uploadedText )
+         @uploadParse(  @uploadedText )
+         $('#UploadText').text( @uploadedText )
+    document.addEventListener( "paste", onPaste )
+    #ocument.getElementById("UploadText").addEventListener("paste", onPaste, false )
+
+  uploadParse:( text ) ->
+    obj   = {}
+    return obj if not Util.isStr( text ) 
+    lines = text.split('\n')
+    for line in lines
+      toks = line.split('\t')
+      book           = {}
+      resv           = {}
+      book.nameg     = toks[0]
+      book.arrive    = toks[1]
+      book.depart    = toks[2]
+      book.room      = toks[3]
+      book.booked    = toks[4]
+      book.status    = toks[5]
+      book.total     = toks[6]
+      book.commis    = toks[7]
+      book.bookingId = toks[8]
+      namesg         = book.nameg.split(' ')
+      #resv.booking   = book
+      resv.first     = namesg[0]
+      resv.last      = namesg[1]
+      resv.guests    = namesg[2].charAt(0)
+      resv.arrive    = @toResvDate( book.arrive )
+      resv.depart    = @toResvDate( book.depart )
+      resv.pets      = 0
+      resv.spa       = false
+      resv.nights    = @Data.nights( resv.arrive, resv.depart )
+      resv.roomId    = @toResvRoomId( book.room )
+      resv.id        = resv.arrive + resv.roomId
+      obj[resv.id]   = resv
+      Util.log( 'Book......')
+      Util.log(  book )
+      Util.log( 'Resv......')
+      Util.log(  resv )
+    obj
+
+  toResvDate:( bookDate ) ->
+    toks  = bookDate.split(' ')
+    year  = @Data.year
+    month = @Data.months.indexOf(toks[1]) + 1
+    day   = toks[0]
+    year.toString() + Util.pad(month) + day
+
+  toResvRoomId:( bookRoom ) ->
+    toks  = bookRoom.split(' ')
+    if toks[0].charAt(0) is '#'
+       toks[0].charAt(1)
+    else
+       toks[2].charAt(0)
+
+  uploadTable:() ->

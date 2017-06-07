@@ -3,6 +3,7 @@ class Data
 
   module.exports = Data
 
+  @tax         = 0.1055 # Official Estes Park tax rate. Also in Booking.com
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
   @numDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
@@ -79,6 +80,20 @@ class Data
        day  = day - Data.numDayMonth[monthIdx]
        monthIdx++
     Data.toDateStr( day, monthIdx, year )
+
+  # Only good for a 28 to 30 day interval
+  @nights:( arrive, depart ) ->
+    num       = 0
+    arriveDay = parseInt( arrive.substr( 4,2 ) )
+    arriveMon = parseInt( arrive.substr( 2,2 ) )
+    departDay = parseInt( depart.substr( 4,2 ) )
+    departMon = parseInt( depart.substr( 2,2 ) )
+    if      arriveMon   is departMon
+      num = departDay - arriveDay
+    else if arriveMon+1 is departMon
+      num = Data.numDayMonth[arriveMon-1] - arriveDay + departDay
+    num
+
 
   @weekday:( date ) ->
     year       = parseInt( date.substr( 0,2 ) )

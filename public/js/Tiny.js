@@ -1,7 +1,7 @@
 var TINY={};
 
 function ElemById(i){return document.getElementById(i)}
-function ElemByTag(e,p){p=p||document; return p.getElementsByTagName(e)}
+function ElemByTag(e,p){p=p||document; if(e!=null) { return p.getElementsByTagName(e) } }
 
 TINY.ElemById  = ElemById;
 

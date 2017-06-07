@@ -1,4 +1,3 @@
-Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
 Rebecca James 4 guests	07 June 2017	11 June 2017	#8 Western Unit	06 June 2017	OK	US$520	US$78	1600674048
 Ann Knowlton 1 guest	09 June 2017	11 June 2017	#1 One Room Cabin	07 June 2017	OK	US$290	US$43.50	1868036266
 Brian Papini 4 guests	10 June 2017	11 June 2017	#4 One Room Cabin	06 June 2017	OK	US$145	US$21.75	1558956033

@@ -23,11 +23,13 @@
       this.listenToDays = bind(this.listenToDays, this);
       this.onDateRange = bind(this.onDateRange, this);
       this.readyMaster = bind(this.readyMaster, this);
+      this.onUploadBtn = bind(this.onUploadBtn, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
       this.onSeasonBtn = bind(this.onSeasonBtn, this);
       this.onLookup = bind(this.onLookup, this);
       this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
+      this.uploadedText = "";
       this.res.master = this;
       this.lastMaster = {
         left: 0,
@@ -48,6 +50,7 @@
       $('#MasterBtn').click(this.onMasterBtn);
       $('#SeasonBtn').click(this.onSeasonBtn);
       $('#DailysBtn').click(this.onDailysBtn);
+      $('#UploadBtn').click(this.onUploadBtn);
       this.res.dateRange(this.Data.beg, this.Data.end, this.readyMaster);
     };
 
@@ -55,6 +58,7 @@
       $('#Lookup').hide();
       $('#Season').hide();
       $('#Dailys').hide();
+      $('#Upload').hide();
       $('#Master').show();
     };
 
@@ -62,6 +66,7 @@
       $('#Master').hide();
       $('#Season').hide();
       $('#Dailys').hide();
+      $('#Upload').hide();
       $('#Lookup').empty();
       Util.log('Master.onLookup', resv);
       if (!Util.isObjEmpty(resv)) {
@@ -77,6 +82,7 @@
       $('#Master').hide();
       $('#Lookup').hide();
       $('#Dailys').hide();
+      $('#Upload').hide();
       if (Util.isEmpty($('#Season').children())) {
         $('#Season').append(this.seasonHtml());
       }
@@ -92,10 +98,23 @@
       $('#Master').hide();
       $('#Lookup').hide();
       $('#Season').hide();
+      $('#Upload').hide();
       if (Util.isEmpty($('#Dailys').children())) {
         $('#Dailys').append(this.dailysHtml());
       }
       $('#Dailys').show();
+    };
+
+    Master.prototype.onUploadBtn = function() {
+      $('#Master').hide();
+      $('#Lookup').hide();
+      $('#Season').hide();
+      $('#Dailys').hide();
+      if (Util.isEmpty($('#Upload').children())) {
+        $('#Upload').append(this.uploadHtml());
+      }
+      this.bindUploadPaste();
+      $('#Upload').show();
     };
 
     Master.prototype.readyMaster = function() {
@@ -415,6 +434,97 @@
       htm += "<h2 class=\"DailysH2\">Departures</h2>";
       return htm;
     };
+
+    Master.prototype.uploadHtml = function() {
+      var htm;
+      htm = "";
+      htm += "<h1 class=\"UploadH1\">Upload Booking.com</h1>";
+      htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
+      return htm;
+    };
+
+    Master.prototype.bindUploadPaste = function() {
+      var onPaste;
+      onPaste = (function(_this) {
+        return function(event) {
+          if (window.clipboardData && window.clipboardData.getData) {
+            _this.uploadedText = window.clipboardData.getData('Text');
+          } else if (event.clipboardData && event.clipboardData.getData) {
+            _this.uploadedText = event.clipboardData.getData('text/plain');
+          }
+          event.preventDefault();
+          if (Util.isStr(_this.uploadedText)) {
+            Util.log('Master.onPaste()');
+            Util.log(_this.uploadedText);
+            _this.uploadParse(_this.uploadedText);
+            return $('#UploadText').text(_this.uploadedText);
+          }
+        };
+      })(this);
+      return document.addEventListener("paste", onPaste);
+    };
+
+    Master.prototype.uploadParse = function(text) {
+      var book, i, len, line, lines, namesg, obj, resv, toks;
+      obj = {};
+      if (!Util.isStr(text)) {
+        return obj;
+      }
+      lines = text.split('\n');
+      for (i = 0, len = lines.length; i < len; i++) {
+        line = lines[i];
+        toks = line.split('\t');
+        book = {};
+        resv = {};
+        book.nameg = toks[0];
+        book.arrive = toks[1];
+        book.depart = toks[2];
+        book.room = toks[3];
+        book.booked = toks[4];
+        book.status = toks[5];
+        book.total = toks[6];
+        book.commis = toks[7];
+        book.bookingId = toks[8];
+        namesg = book.nameg.split(' ');
+        resv.first = namesg[0];
+        resv.last = namesg[1];
+        resv.guests = namesg[2].charAt(0);
+        resv.arrive = this.toResvDate(book.arrive);
+        resv.depart = this.toResvDate(book.depart);
+        resv.pets = 0;
+        resv.spa = false;
+        resv.nights = this.Data.nights(resv.arrive, resv.depart);
+        resv.roomId = this.toResvRoomId(book.room);
+        resv.id = resv.arrive + resv.roomId;
+        obj[resv.id] = resv;
+        Util.log('Book......');
+        Util.log(book);
+        Util.log('Resv......');
+        Util.log(resv);
+      }
+      return obj;
+    };
+
+    Master.prototype.toResvDate = function(bookDate) {
+      var day, month, toks, year;
+      toks = bookDate.split(' ');
+      year = this.Data.year;
+      month = this.Data.months.indexOf(toks[1]) + 1;
+      day = toks[0];
+      return year.toString() + Util.pad(month) + day;
+    };
+
+    Master.prototype.toResvRoomId = function(bookRoom) {
+      var toks;
+      toks = bookRoom.split(' ');
+      if (toks[0].charAt(0) === '#') {
+        return toks[0].charAt(1);
+      } else {
+        return toks[2].charAt(0);
+      }
+    };
+
+    Master.prototype.uploadTable = function() {};
 
     return Master;
 

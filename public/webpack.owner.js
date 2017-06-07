@@ -1,13 +1,11 @@
-
-
 var path  = require( "path"  );
 
 module.exports = {
   context: __dirname,
-  entry: 'js/res/Guest.js',
+  entry: 'js/res/Owner.js',
   output: {
     path: './',
-    filename: 'js/PackGuest.js' },
+    filename: 'js/PackOwner.js' },
   resolve: {
     root: [
       path.resolve('../') ] },
