@@ -75,6 +75,7 @@ class Master
     return
 
   readyMaster:() =>
+    $('#Master').empty()
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
     @readyCells()
@@ -323,21 +324,49 @@ class Master
       resv.spa       = false
       resv.nights    = @Data.nights( resv.arrive, resv.depart )
       resv.roomId    = @toResvRoomId( book.room )
+      resv.total     = parseFloat( book.total.substr(3) )
+      resv.price     = if resv.total > 0 then resv.total  / resv.nights else @rooms[resv.roomId].booking
       resv.id        = resv.arrive + resv.roomId
       obj[resv.id]   = resv
       Util.log( 'Book......')
       Util.log(  book )
-      Util.log( 'Resv......')
-      Util.log(  resv )
+
     obj
 
   onUpdateRes:() =>
-    return if Util.isObjEmpty( @uploadedResvs )
+
+    if not Util.isStr( @uploadedText )
+      @uploadedText  = @Data.bookingResvs
+      @uploadedResvs = @uploadParse(  @uploadedText )
+      $('#UploadText').text( @uploadedText )
+
+    return if Util.isObjEmpty(  @uploadedResvs )
+    return if not @updateValid( @uploadedResvs )
     resvs     = @updateResv( @uploadedResvs )
     @res.days = @res.createDaysFromResvs( resvs, @res.days ) # Not sure about this
     for own resId, resv of resvs
       @res.postResvChan( resv )
+    @res.dateRange( @Data.beg, @Data.end, @readyMaster )
     @uploadedResv = {}
+
+  updateValid:( uploadedResvs ) ->
+    valid = true
+    for own resId, u of uploadedResvs
+      u.v  = true
+      u.v &= Util.isStr( u.first )
+      u.v &= Util.isStr( u.last  )
+      u.v &= 1 <= u.guests and u.guests <= 12
+      u.v &= @Data.isDate( u.arrive )
+      u.v &= @Data.isDate( u.depart )
+      u.v &= 0 <= u.pets   and u.pets   <=  4
+      u.v &= 0 <= u.nights and u.nights <= 28
+      u.v &= Util.inArray( @res.roomKeys, u.roomId )
+      u.v &=   0.00 <= u.total and u.total <= 8820.00
+      u.v &= 120.00 <= u.price and u.price <=  315.00
+      valid &= u.v
+      Util.log( 'Resv......', u.v )
+      Util.log(  u )
+    valid
 
   updateResv:( uploadedResvs ) ->
     resvs = {}

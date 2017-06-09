@@ -7,7 +7,7 @@ class Memory extends Store
 
   constructor:( stream, uri ) ->
     super( stream, uri, 'Memory' )
-    store.justMemory = true
+    @justMemory = true
     Store.databases[@dbName] = @tables
     Util .databases[@dbName] = @tables
 

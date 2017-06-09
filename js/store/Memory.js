@@ -13,7 +13,7 @@
 
     function Memory(stream, uri) {
       Memory.__super__.constructor.call(this, stream, uri, 'Memory');
-      store.justMemory = true;
+      this.justMemory = true;
       Store.databases[this.dbName] = this.tables;
       Util.databases[this.dbName] = this.tables;
     }

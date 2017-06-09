@@ -61,7 +61,7 @@
     };
 
     Data.config = function(uri) {
-      if (name === 'skyline') {
+      if (uri === 'skyline') {
         return this.configSkyline;
       } else {
         return this.configSkytest;
@@ -160,6 +160,18 @@
       return Data.weekdays[weekdayIdx];
     };
 
+    Data.isDate = function(date) {
+      var dayInt, monthIdx, valid, year;
+      year = parseInt(date.substr(0, 2));
+      monthIdx = parseInt(date.substr(2, 2)) - 1;
+      dayInt = parseInt(date.substr(4, 2));
+      valid = true;
+      valid &= year === Data.year;
+      valid &= 0 <= monthIdx && monthIdx <= 11;
+      valid &= 1 <= dayInt && dayInt <= 31;
+      return valid;
+    };
+
     Data.isElem = function($elem) {
       return !(($elem != null) && ($elem.length != null) && $elem.length === 0);
     };
@@ -183,6 +195,8 @@
       }
       return year.toString() + Util.pad(monthIdx + 1) + Util.pad(day);
     };
+
+    Data.bookingResvs = "Rebecca James 4 guests	07 June 2017	11 June 2017	#8 Western Unit	06 June 2017	OK	US$520	US$78	1600674048\nAnn Knowlton 1 guest	09 June 2017	11 June 2017	#1 One Room Cabin	07 June 2017	OK	US$290	US$43.50	1868036266\nBrian Papini 4 guests	10 June 2017	11 June 2017	#4 One Room Cabin	06 June 2017	OK	US$145	US$21.75	1558956033\nBOBBY HADEN 1 guest	10 June 2017	11 June 2017	#4 One Room Cabin	01 June 2017	Canceled	US$0		1669544104\nlinda Nelsen 4 guests	16 June 2017	18 June 2017	#8 Western Unit	03 June 2017	OK	US$290	US$43.50	1346970369\nDesiree Schwalm 8 guests	16 June 2017	18 June 2017	#3 Southwest Spa	04 June 2017	Canceled	US$0		1516613627\njohn peterson 4 guests	16 June 2017	18 June 2017	Upper Skyline South	06 June 2017	OK	US$310	US$46.50	2035897444\nKristi Stoll 2 guests	22 June 2017	24 June 2017	#8 Western Unit	06 June 2017	Canceled	US$0		1120838596\nCherry Lofstrom 1 guest	23 June 2017	25 June 2017	#1 One Room Cabin	01 June 2017	OK	US$290	US$43.50	1065507845\nEncarnita Pascuzzi 4 guests	23 June 2017	26 June 2017	#8 Western Unit	01 June 2017	Canceled	US$0		1361910794\nYessenia Chan;Che Yun Chan;So Sum Daphne Chan 8 guests 3 guest messages to answer	23 June 2017	25 June 2017	#3 Southwest Spa	04 June 2017	OK	US$630	US$94.50	1362060631\nTanya Thomas 2 guests 3 guest messages to answer	23 June 2017	25 June 2017	Upper Skyline North	03 June 2017	OK	US$330	US$49.50	1584941695\nJoseph Shuck 4 guests	23 June 2017	25 June 2017	Upper Skyline South	01 June 2017	OK	US$310	US$46.50	1716314897\nJacen Roper 4 guests	23 June 2017	26 June 2017	#4 One Room Cabin	31 May 2017	OK	US$435	US$65.25	1771276433\nJana Green 4 guests	25 June 2017	27 June 2017	#2 Mountain Spa	01 June 2017	OK	US$370	US$55.50	1065504281\nCHARLES FREEMAN 4 guests	26 June 2017	30 June 2017	#4 One Room Cabin	06 June 2017	OK	US$580	US$87	1525366564\nHari Nepal 4 guests	27 June 2017	29 June 2017	#8 Western Unit	06 June 2017	OK	US$260	US$39	1277611253\nKelli Pachner 4 guests	29 June 2017	07 July 2017	#2 Mountain Spa	05 June 2017	OK	US$1480	US$222	1150950465\nAman Hota 4 guests	30 June 2017	03 July 2017	Upper Skyline South	01 June 2017	OK	US$465	US$69.75	1540200140\nOlga Diachuk 2 guests	01 July 2017	04 July 2017	Upper Skyline North	03 June 2017	OK	US$495	US$74.25	1276208822\nDesiree Schwalm 12 guests 1 guest message to answer	01 July 2017	03 July 2017	#6 Large River Cabin	01 June 2017	Canceled	US$0		1724384266\nJeremy Goldsmith 1 guest	01 July 2017	04 July 2017	#7 Western Spa	01 June 2017	Canceled	US$0		1849068878\nKarthikeyan Shanmugavadivel 4 guests	01 July 2017	03 July 2017	#8 Western Unit	01 June 2017	OK	US$290	US$43.50	1919159565\nWanda Markotter 8 guests	02 July 2017	05 July 2017	#3 Southwest Spa	03 June 2017	OK	US$945	US$141.75	1480632756\nWanda Markotter 8 guests	02 July 2017	05 July 2017	#3 Southwest Spa	02 June 2017	Canceled	US$0		1936424490\nConsuelo Chavarria 4 guests 2 guest messages to answer	03 July 2017	05 July 2017	#8 Western Unit	02 June 2017	OK	US$290	US$43.50	1289646030\nTeresa Kile 4 guests	03 July 2017	07 July 2017	Upper Skyline South	06 June 2017	OK	US$620	US$93	1529786552\nRyan Martin 4 guests	05 July 2017	08 July 2017	#8 Western Unit	07 June 2017	OK	US$390	US$58.50	1490387834\nLinda Kroeger 12 guests	05 July 2017	09 July 2017	#6 Large River Cabin	02 June 2017	OK	US$1260	US$189	1784265520\nPatricia Curtis 4 guests	08 July 2017	11 July 2017	#4 One Room Cabin	07 June 2017	OK	US$435	US$65.25	2065156596\nDebra Hakar 2 guests	09 July 2017	11 July 2017	#8 Western Unit	05 June 2017	OK	US$260	US$39	1529718572\nEric Johnson 2 guests	10 July 2017	14 July 2017	Upper Skyline North	02 June 2017	OK	US$660	US$99	1159618525\nLance richardson 2 guests 1 guest message to answer	11 July 2017	13 July 2017	#8 Western Unit	05 June 2017	OK	US$260	US$39	1853235506\nTaylor Robertson 3 guests	14 July 2017	16 July 2017	#4 One Room Cabin	04 June 2017	OK	US$290	US$43.50	1034229994\nVanessa Garcia 4 guests	16 July 2017	19 July 2017	#4 One Room Cabin	02 June 2017	OK	US$435	US$65.25	2047390051\nMichael Villanueva 12 guests	20 July 2017	22 July 2017	#6 Large River Cabin	03 June 2017	OK	US$630	US$94.50	1197903266\nJeffrey Sterup 2 guests	21 July 2017	23 July 2017	#4 One Room Cabin	01 June 2017	OK	US$290	US$43.50	1065585580\nNirmala Narasimhan 10 guests 1 guest message to answer	23 July 2017	26 July 2017	#6 Large River Cabin	05 June 2017	OK	US$945	US$141.75	1258789416\nGregory Church 4 guests	30 July 2017	01 August 2017	#8 Western Unit	03 June 2017	Canceled	US$0		1357716307\nStephanie Buel 4 guests	01 August 2017	05 August 2017	#8 Western Unit	07 June 2017	OK	US$520	US$78	1120884797\nvinay singh 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	07 June 2017	Canceled	US$0		1438534254\nVirginia Clark 4 guests	10 August 2017	13 August 2017	#8 Western Unit	06 June 2017	OK	US$390	US$58.50	1853252311\nJohnathan Koeltzow 2 guests	11 August 2017	13 August 2017	#8 Western Unit	02 June 2017	Canceled	US$0		1756807815\nsusannah mitchell 1 guest	31 August 2017	03 September 2017	#1 One Room Cabin	04 June 2017	Canceled	US$0		1034276945\nTodd Featherstun 1 guest	08 September 2017	10 September 2017	#1 One Room Cabin	02 June 2017	OK	US$290	US$43.50	1489205592";
 
     return Data;
 

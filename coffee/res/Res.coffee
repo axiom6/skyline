@@ -4,10 +4,11 @@ class Res
   Res.Rooms  = require( 'data/room.json' )
   Res.Resvs  = {} #require( 'data/res.json'  )
   Res.Days   = {} #require( 'data/days.json' )
-  Res.States = ["free","mine","depo","book"]
+  Res.States = ["free","mine","depo","book","prep","chan"]
 
   constructor:( @stream, @store, @Data, @appName ) ->
     @rooms    = Res.Rooms
+    @roomKeys = Util.keys( @rooms )
     @states   = Res.States
     @book     = null
     @master   = null

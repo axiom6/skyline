@@ -55,15 +55,16 @@
 
 	    Owner.init = function() {
 	      return Util.ready(function() {
-	        var Data, Fire, Master, Pay, Res, Stream, master, pay, res, store, stream;
+	        var Data, Fire, Master, Memory, Pay, Res, Stream, master, pay, res, store, stream;
 	        Stream = __webpack_require__(1);
 	        Fire = __webpack_require__(347);
+	        Memory = __webpack_require__(351);
 	        Data = __webpack_require__(354);
 	        Res = __webpack_require__(355);
 	        Pay = __webpack_require__(357);
 	        Master = __webpack_require__(360);
 	        stream = new Stream([]);
-	        store = new Fire(stream, "skyline", Data.configSkyline);
+	        store = new Memory(stream, "skytest");
 	        res = new Res(stream, store, Data, 'Owner');
 	        pay = new Pay(stream, store, Data, res);
 	        master = new Master(stream, store, Data, res, pay);
@@ -31207,7 +31208,7 @@
 
 	    function Memory(stream, uri) {
 	      Memory.__super__.constructor.call(this, stream, uri, 'Memory');
-	      store.justMemory = true;
+	      this.justMemory = true;
 	      Store.databases[this.dbName] = this.tables;
 	      Util.databases[this.dbName] = this.tables;
 	    }
@@ -32154,7 +32155,7 @@
 	    };
 
 	    Data.config = function(uri) {
-	      if (name === 'skyline') {
+	      if (uri === 'skyline') {
 	        return this.configSkyline;
 	      } else {
 	        return this.configSkytest;
@@ -32253,6 +32254,18 @@
 	      return Data.weekdays[weekdayIdx];
 	    };
 
+	    Data.isDate = function(date) {
+	      var dayInt, monthIdx, valid, year;
+	      year = parseInt(date.substr(0, 2));
+	      monthIdx = parseInt(date.substr(2, 2)) - 1;
+	      dayInt = parseInt(date.substr(4, 2));
+	      valid = true;
+	      valid &= year === Data.year;
+	      valid &= 0 <= monthIdx && monthIdx <= 11;
+	      valid &= 1 <= dayInt && dayInt <= 31;
+	      return valid;
+	    };
+
 	    Data.isElem = function($elem) {
 	      return !(($elem != null) && ($elem.length != null) && $elem.length === 0);
 	    };
@@ -32303,7 +32316,7 @@
 
 	    Res.Days = {};
 
-	    Res.States = ["free", "mine", "depo", "book"];
+	    Res.States = ["free", "mine", "depo", "book", "prep", "chan"];
 
 	    function Res(stream, store, Data, appName) {
 	      this.stream = stream;
@@ -32315,6 +32328,7 @@
 	      this.onResv = bind(this.onResv, this);
 	      this.onResId = bind(this.onResId, this);
 	      this.rooms = Res.Rooms;
+	      this.roomKeys = Util.keys(this.rooms);
 	      this.states = Res.States;
 	      this.book = null;
 	      this.master = null;
@@ -32387,20 +32401,24 @@
 	    };
 
 	    Res.prototype.roomUI = function(rooms) {
-	      var key, results, room;
-	      results = [];
+	      var key, room;
 	      for (key in rooms) {
+	        if (!hasProp.call(rooms, key)) continue;
 	        room = rooms[key];
 	        room.$ = {};
-	        room.days = {};
-	        room.total = 0;
-	        room.price = 0;
-	        room.guests = 2;
-	        room.pets = 0;
-	        room.change = 0;
-	        results.push(room.reason = 'No Changes');
+	        room = this.populateRoom(room, {}, 0, 0, 2, 0);
 	      }
-	      return results;
+	    };
+
+	    Res.prototype.populateRoom = function(room, days, total, price, guests, pets) {
+	      room.days = days;
+	      room.total = total;
+	      room.price = price;
+	      room.guests = guests;
+	      room.pets = pets;
+	      room.change = 0;
+	      room.reason = 'No Changes';
+	      return room;
 	    };
 
 	    Res.prototype.optSpa = function(roomId) {
@@ -32619,6 +32637,11 @@
 	      return resv.status;
 	    };
 
+	    Res.prototype.postResvChan = function(resv) {
+	      this.allocRooms(resv);
+	      return this.store.add('Res', resv.resId, resv);
+	    };
+
 	    Res.prototype.postResv = function(resv, post, amount, method, last4, purpose) {
 	      var payId, status;
 	      status = this.setResvStatus(resv, post, purpose);
@@ -32648,6 +32671,17 @@
 	        }
 	      }
 	      return allDays;
+	    };
+
+	    Res.prototype.createRoomDays = function(arrive, nights, status, resId) {
+	      var dayId, days, i, j, ref;
+	      days = {};
+	      for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
+	        dayId = this.Data.advanceDate(arrive, i);
+	        days[dayId] = {};
+	        this.setDayRoom(days[dayId], status, resId);
+	      }
+	      return days;
 	    };
 
 	    Res.prototype.setDayRoom = function(dayRoom, status, resId) {
@@ -34153,6 +34187,7 @@
 	      this.Data = Data;
 	      this.res = res;
 	      this.pay = pay;
+	      this.onUpdateRes = bind(this.onUpdateRes, this);
 	      this.onSeasonClick = bind(this.onSeasonClick, this);
 	      this.onMasterClick = bind(this.onMasterClick, this);
 	      this.onAlloc = bind(this.onAlloc, this);
@@ -34168,6 +34203,7 @@
 	      this.onMasterBtn = bind(this.onMasterBtn, this);
 	      this.rooms = this.res.rooms;
 	      this.uploadedText = "";
+	      this.uploadedResvs = {};
 	      this.res.master = this;
 	      this.lastMaster = {
 	        left: 0,
@@ -34252,6 +34288,7 @@
 	        $('#Upload').append(this.uploadHtml());
 	      }
 	      this.bindUploadPaste();
+	      $('#UpdateRes').click(this.onUpdateRes);
 	      $('#Upload').show();
 	    };
 
@@ -34577,6 +34614,7 @@
 	      var htm;
 	      htm = "";
 	      htm += "<h1 class=\"UploadH1\">Upload Booking.com</h1>";
+	      htm += "<button id=\"UpdateRes\" class=\"btn btn-primary\">Update Res</button>";
 	      htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
 	      return htm;
 	    };
@@ -34594,7 +34632,7 @@
 	          if (Util.isStr(_this.uploadedText)) {
 	            Util.log('Master.onPaste()');
 	            Util.log(_this.uploadedText);
-	            _this.uploadParse(_this.uploadedText);
+	            _this.uploadedResvs = _this.uploadParse(_this.uploadedText);
 	            return $('#UploadText').text(_this.uploadedText);
 	          }
 	        };
@@ -34637,10 +34675,64 @@
 	        obj[resv.id] = resv;
 	        Util.log('Book......');
 	        Util.log(book);
-	        Util.log('Resv......');
-	        Util.log(resv);
 	      }
 	      return obj;
+	    };
+
+	    Master.prototype.onUpdateRes = function() {
+	      var resId, resv, resvs;
+	      if (Util.isObjEmpty(this.uploadedResvs)) {
+	        return;
+	      }
+	      if (!this.updateValid(this.uploadedResvs)) {
+	        return;
+	      }
+	      resvs = this.updateResv(this.uploadedResvs);
+	      this.res.days = this.res.createDaysFromResvs(resvs, this.res.days);
+	      for (resId in resvs) {
+	        if (!hasProp.call(resvs, resId)) continue;
+	        resv = resvs[resId];
+	        this.res.postResvChan(resv);
+	      }
+	      return this.uploadedResv = {};
+	    };
+
+	    Master.prototype.updateValid = function(uploadedResvs) {
+	      var resId, u, valid;
+	      valid = true;
+	      for (resId in uploadedResvs) {
+	        if (!hasProp.call(uploadedResvs, resId)) continue;
+	        u = uploadedResvs[resId];
+	        u.v = true;
+	        u.v &= Util.isStr(u.first);
+	        u.v &= Util.isStr(u.last);
+	        u.v &= 1 <= u.guests && u.guests <= 12;
+	        u.v &= this.Data.isDate(u.arrive);
+	        u.v &= this.Data.isDate(u.depart);
+	        u.v &= 0 <= u.pets && u.pets <= 4;
+	        u.v &= 0 <= u.nights && u.nights <= 28;
+	        u.v &= Util.inArray(this.res.roomKeys, v.roomId);
+	        valid &= u.v;
+	        Util.log('Resv......', u.v);
+	        Util.log(u);
+	      }
+	      return valid;
+	    };
+
+	    Master.prototype.updateResv = function(uploadedResvs) {
+	      var cust, days, resId, resv, resvs, rooms, u;
+	      resvs = {};
+	      for (resId in uploadedResvs) {
+	        if (!hasProp.call(uploadedResvs, resId)) continue;
+	        u = uploadedResvs[resId];
+	        rooms = {};
+	        cust = this.res.createCust(u.first, u.last, "", "", "Booking");
+	        days = this.res.createRoomDays(u.arrive, u.depart, 'chan', u.id);
+	        rooms[u.roomId] = this.populateRoom({}, days, u.total, u.total / u.nights, u.guests, 0);
+	        resv = this.res.createRoomResv('chan', 'vcard', u.total, cust, rooms);
+	        resvs[resId] = resv;
+	      }
+	      return resvs;
 	    };
 
 	    Master.prototype.toResvDate = function(bookDate) {

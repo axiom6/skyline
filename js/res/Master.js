@@ -121,6 +121,7 @@
     };
 
     Master.prototype.readyMaster = function() {
+      $('#Master').empty();
       $('#Master').append(this.masterHtml());
       $('.MasterTitle').click((function(_this) {
         return function(event) {
@@ -499,19 +500,27 @@
         resv.spa = false;
         resv.nights = this.Data.nights(resv.arrive, resv.depart);
         resv.roomId = this.toResvRoomId(book.room);
+        resv.total = parseFloat(book.total.substr(3));
+        resv.price = resv.total > 0 ? resv.total / resv.nights : this.rooms[resv.roomId].booking;
         resv.id = resv.arrive + resv.roomId;
         obj[resv.id] = resv;
         Util.log('Book......');
         Util.log(book);
-        Util.log('Resv......');
-        Util.log(resv);
       }
       return obj;
     };
 
     Master.prototype.onUpdateRes = function() {
       var resId, resv, resvs;
+      if (!Util.isStr(this.uploadedText)) {
+        this.uploadedText = this.Data.bookingResvs;
+        this.uploadedResvs = this.uploadParse(this.uploadedText);
+        $('#UploadText').text(this.uploadedText);
+      }
       if (Util.isObjEmpty(this.uploadedResvs)) {
+        return;
+      }
+      if (!this.updateValid(this.uploadedResvs)) {
         return;
       }
       resvs = this.updateResv(this.uploadedResvs);
@@ -521,7 +530,32 @@
         resv = resvs[resId];
         this.res.postResvChan(resv);
       }
+      this.res.dateRange(this.Data.beg, this.Data.end, this.readyMaster);
       return this.uploadedResv = {};
+    };
+
+    Master.prototype.updateValid = function(uploadedResvs) {
+      var resId, u, valid;
+      valid = true;
+      for (resId in uploadedResvs) {
+        if (!hasProp.call(uploadedResvs, resId)) continue;
+        u = uploadedResvs[resId];
+        u.v = true;
+        u.v &= Util.isStr(u.first);
+        u.v &= Util.isStr(u.last);
+        u.v &= 1 <= u.guests && u.guests <= 12;
+        u.v &= this.Data.isDate(u.arrive);
+        u.v &= this.Data.isDate(u.depart);
+        u.v &= 0 <= u.pets && u.pets <= 4;
+        u.v &= 0 <= u.nights && u.nights <= 28;
+        u.v &= Util.inArray(this.res.roomKeys, u.roomId);
+        u.v &= 0.00 <= u.total && u.total <= 8820.00;
+        u.v &= 120.00 <= u.price && u.price <= 315.00;
+        valid &= u.v;
+        Util.log('Resv......', u.v);
+        Util.log(u);
+      }
+      return valid;
     };
 
     Master.prototype.updateResv = function(uploadedResvs) {

@@ -13,7 +13,7 @@
 
     Res.Days = {};
 
-    Res.States = ["free", "mine", "depo", "book"];
+    Res.States = ["free", "mine", "depo", "book", "prep", "chan"];
 
     function Res(stream, store, Data, appName) {
       this.stream = stream;
@@ -25,6 +25,7 @@
       this.onResv = bind(this.onResv, this);
       this.onResId = bind(this.onResId, this);
       this.rooms = Res.Rooms;
+      this.roomKeys = Util.keys(this.rooms);
       this.states = Res.States;
       this.book = null;
       this.master = null;
