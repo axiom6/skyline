@@ -6,11 +6,12 @@ class Master
   module.exports = Master
 
   constructor:( @stream, @store, @Data, @res, @pay ) ->
-    @rooms        = @res.rooms
-    @uploadedText = ""
-    @res.master   = @
-    @lastMaster   = { left:0, top:0, width:0, height:0 }
-    @lastSeason   = { left:0, top:0, width:0, height:0 }
+    @rooms         = @res.rooms
+    @uploadedText  = ""
+    @uploadedResvs = {}
+    @res.master    = @
+    @lastMaster    = { left:0, top:0, width:0, height:0 }
+    @lastSeason    = { left:0, top:0, width:0, height:0 }
 
   ready:() ->
     #@selectToDays() if @store.justMemory
@@ -69,6 +70,7 @@ class Master
     $('#Dailys').hide()
     $('#Upload').append( @uploadHtml() ) if Util.isEmpty( $('#Upload').children() )
     @bindUploadPaste()
+    $('#UpdateRes').click( @onUpdateRes )
     $('#Upload').show()
     return
 
@@ -274,6 +276,7 @@ class Master
   uploadHtml:() ->
     htm  = ""
     htm += """<h1 class="UploadH1">Upload Booking.com</h1>"""
+    htm += """<button id="UpdateRes" class="btn btn-primary">Update Res</button>"""
     htm += """<textarea id="UploadText" class="UploadText" rows="50" cols="100"></textarea>"""
     htm
 
@@ -287,7 +290,7 @@ class Master
       if Util.isStr(    @uploadedText )
          Util.log('Master.onPaste()'  )
          Util.log(      @uploadedText )
-         @uploadParse(  @uploadedText )
+         @uploadedResvs = @uploadParse(  @uploadedText )
          $('#UploadText').text( @uploadedText )
     document.addEventListener( "paste", onPaste )
     #ocument.getElementById("UploadText").addEventListener("paste", onPaste, false )
@@ -327,6 +330,25 @@ class Master
       Util.log( 'Resv......')
       Util.log(  resv )
     obj
+
+  onUpdateRes:() =>
+    return if Util.isObjEmpty( @uploadedResvs )
+    resvs     = @updateResv( @uploadedResvs )
+    @res.days = @res.createDaysFromResvs( resvs, @res.days ) # Not sure about this
+    for own resId, resv of resvs
+      @res.postResvChan( resv )
+    @uploadedResv = {}
+
+  updateResv:( uploadedResvs ) ->
+    resvs = {}
+    for own resId, u of uploadedResvs
+      rooms = {}
+      cust  = @res.createCust( u.first, u.last, "", "", "Booking" )
+      days  = @res.createRoomDays( u.arrive, u.depart, 'chan', u.id )
+      rooms[u.roomId] = @populateRoom( {}, days,  u.total, u.total/u.nights, u.guests, 0 )
+      resv = @res.createRoomResv( 'chan', 'vcard', u.total, cust, rooms )
+      resvs[resId] = resv
+    resvs
 
   toResvDate:( bookDate ) ->
     toks  = bookDate.split(' ')

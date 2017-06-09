@@ -97,20 +97,24 @@
     };
 
     Res.prototype.roomUI = function(rooms) {
-      var key, results, room;
-      results = [];
+      var key, room;
       for (key in rooms) {
+        if (!hasProp.call(rooms, key)) continue;
         room = rooms[key];
         room.$ = {};
-        room.days = {};
-        room.total = 0;
-        room.price = 0;
-        room.guests = 2;
-        room.pets = 0;
-        room.change = 0;
-        results.push(room.reason = 'No Changes');
+        room = this.populateRoom(room, {}, 0, 0, 2, 0);
       }
-      return results;
+    };
+
+    Res.prototype.populateRoom = function(room, days, total, price, guests, pets) {
+      room.days = days;
+      room.total = total;
+      room.price = price;
+      room.guests = guests;
+      room.pets = pets;
+      room.change = 0;
+      room.reason = 'No Changes';
+      return room;
     };
 
     Res.prototype.optSpa = function(roomId) {
@@ -329,6 +333,11 @@
       return resv.status;
     };
 
+    Res.prototype.postResvChan = function(resv) {
+      this.allocRooms(resv);
+      return this.store.add('Res', resv.resId, resv);
+    };
+
     Res.prototype.postResv = function(resv, post, amount, method, last4, purpose) {
       var payId, status;
       status = this.setResvStatus(resv, post, purpose);
@@ -358,6 +367,17 @@
         }
       }
       return allDays;
+    };
+
+    Res.prototype.createRoomDays = function(arrive, nights, status, resId) {
+      var dayId, days, i, j, ref;
+      days = {};
+      for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
+        dayId = this.Data.advanceDate(arrive, i);
+        days[dayId] = {};
+        this.setDayRoom(days[dayId], status, resId);
+      }
+      return days;
     };
 
     Res.prototype.setDayRoom = function(dayRoom, status, resId) {

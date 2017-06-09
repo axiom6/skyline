@@ -45,15 +45,20 @@ class Res
 
   # Note the expanded roomUI is for Book.coffee and should never be persisted
   roomUI:( rooms ) ->
-    for key, room of rooms
-      room.$       = {}
-      room.days    = {}
-      room.total   = 0
-      room.price   = 0
-      room.guests  = 2
-      room.pets    = 0
-      room.change  = 0         # Changes usually to spa opt out
-      room.reason  = 'No Changes'
+    for own key, room of rooms
+      room.$ = {}
+      room   = @populateRoom( room, {}, 0, 0, 2, 0 )
+    return
+
+  populateRoom:( room, days, total, price, guests, pets ) ->
+   room.days    = days
+   room.total   = total
+   room.price   = price
+   room.guests  = guests
+   room.pets    = pets
+   room.change  = 0         # Changes usually to spa opt out
+   room.reason  = 'No Changes'
+   room
 
   optSpa:( roomId ) -> @rooms[roomId].spa is 'O'
   hasSpa:( roomId ) -> @rooms[roomId].spa is 'O' or @rooms[roomId].spa is 'Y'
@@ -167,6 +172,10 @@ class Res
       resv.status = 'free'
     resv.status
 
+  postResvChan:( resv ) ->
+    @allocRooms( resv )
+    @store.add( 'Res', resv.resId, resv )
+
   postResv:( resv, post, amount, method, last4, purpose ) ->
     status = @setResvStatus( resv, post, purpose )
     if status is 'book' or status is 'depo'
@@ -189,6 +198,15 @@ class Res
         # Instead @allocRoom( resv ) is driven by resv
         @store.put( 'Days', newDayId+'/'+roomId, dayRoom )
     allDays
+
+  createRoomDays:( arrive, nights, status, resId ) ->
+    days = {}
+    for i in [0...nights]
+      dayId = @Data.advanceDate( arrive, i )
+      days[dayId] = {}
+      @setDayRoom( days[dayId], status, resId )
+    days
+
 
   # Used for Days / dayId / roomId and for Res / rooms[dayId] since both has status and resid properties
   setDayRoom:( dayRoom, status, resId ) ->

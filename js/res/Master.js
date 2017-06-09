@@ -15,6 +15,7 @@
       this.Data = Data;
       this.res = res;
       this.pay = pay;
+      this.onUpdateRes = bind(this.onUpdateRes, this);
       this.onSeasonClick = bind(this.onSeasonClick, this);
       this.onMasterClick = bind(this.onMasterClick, this);
       this.onAlloc = bind(this.onAlloc, this);
@@ -30,6 +31,7 @@
       this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
       this.uploadedText = "";
+      this.uploadedResvs = {};
       this.res.master = this;
       this.lastMaster = {
         left: 0,
@@ -114,6 +116,7 @@
         $('#Upload').append(this.uploadHtml());
       }
       this.bindUploadPaste();
+      $('#UpdateRes').click(this.onUpdateRes);
       $('#Upload').show();
     };
 
@@ -439,6 +442,7 @@
       var htm;
       htm = "";
       htm += "<h1 class=\"UploadH1\">Upload Booking.com</h1>";
+      htm += "<button id=\"UpdateRes\" class=\"btn btn-primary\">Update Res</button>";
       htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
       return htm;
     };
@@ -456,7 +460,7 @@
           if (Util.isStr(_this.uploadedText)) {
             Util.log('Master.onPaste()');
             Util.log(_this.uploadedText);
-            _this.uploadParse(_this.uploadedText);
+            _this.uploadedResvs = _this.uploadParse(_this.uploadedText);
             return $('#UploadText').text(_this.uploadedText);
           }
         };
@@ -503,6 +507,37 @@
         Util.log(resv);
       }
       return obj;
+    };
+
+    Master.prototype.onUpdateRes = function() {
+      var resId, resv, resvs;
+      if (Util.isObjEmpty(this.uploadedResvs)) {
+        return;
+      }
+      resvs = this.updateResv(this.uploadedResvs);
+      this.res.days = this.res.createDaysFromResvs(resvs, this.res.days);
+      for (resId in resvs) {
+        if (!hasProp.call(resvs, resId)) continue;
+        resv = resvs[resId];
+        this.res.postResvChan(resv);
+      }
+      return this.uploadedResv = {};
+    };
+
+    Master.prototype.updateResv = function(uploadedResvs) {
+      var cust, days, resId, resv, resvs, rooms, u;
+      resvs = {};
+      for (resId in uploadedResvs) {
+        if (!hasProp.call(uploadedResvs, resId)) continue;
+        u = uploadedResvs[resId];
+        rooms = {};
+        cust = this.res.createCust(u.first, u.last, "", "", "Booking");
+        days = this.res.createRoomDays(u.arrive, u.depart, 'chan', u.id);
+        rooms[u.roomId] = this.populateRoom({}, days, u.total, u.total / u.nights, u.guests, 0);
+        resv = this.res.createRoomResv('chan', 'vcard', u.total, cust, rooms);
+        resvs[resId] = resv;
+      }
+      return resvs;
     };
 
     Master.prototype.toResvDate = function(bookDate) {
