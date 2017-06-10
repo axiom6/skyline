@@ -13,6 +13,7 @@ class Res
     @book     = null
     @master   = null
     @days     = {}
+    @resvs    = {}  # Only use occasionally
     @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
     @populateMemory()      if @store.justMemory
 
@@ -101,6 +102,12 @@ class Res
   onResId:( op, doResv, resId ) => @store.on( 'Res',  op,  resId, (resv) => doResv(resv) )
   onResv:(  op, doResv        ) => @store.on( 'Res',  op, 'none', (resv) => doResv(resv) )
   onDays:(  op, doDay         ) => @store.on( 'Days', op, 'none', (day)  => doDay(day)   )
+
+  dayResvs:( today ) ->
+    resvs = {}
+    for own date, day of @days when date is today
+      resvs[day.resId] = @resvs[day.resId]
+    resvs
 
   insertRooms:( rooms ) =>
     @store.subscribe( 'Room', 'make', 'none', (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
@@ -207,7 +214,6 @@ class Res
       days[dayId] = {}
       @setDayRoom( days[dayId], status, resId )
     days
-
 
   # Used for Days / dayId / roomId and for Res / rooms[dayId] since both has status and resid properties
   setDayRoom:( dayRoom, status, resId ) ->

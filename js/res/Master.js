@@ -27,12 +27,14 @@
       this.onUploadBtn = bind(this.onUploadBtn, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
       this.onSeasonBtn = bind(this.onSeasonBtn, this);
+      this.onResTable = bind(this.onResTable, this);
       this.onLookup = bind(this.onLookup, this);
       this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
       this.uploadedText = "";
       this.uploadedResvs = {};
       this.res.master = this;
+      this.resDate = this.Data.today();
       this.lastMaster = {
         left: 0,
         top: 0,
@@ -61,10 +63,12 @@
       $('#Season').hide();
       $('#Dailys').hide();
       $('#Upload').hide();
+      $('#ResTbl').show();
       $('#Master').show();
     };
 
     Master.prototype.onLookup = function(resv) {
+      $('#ResTbl').hide();
       $('#Master').hide();
       $('#Season').hide();
       $('#Dailys').hide();
@@ -80,6 +84,11 @@
       $('#Lookup').show();
     };
 
+    Master.prototype.onResTable = function() {
+      $('#ResTbl').empty();
+      return $('#ResTbl').append(this.resvTable(this.resDate));
+    };
+
     Master.prototype.onSeasonBtn = function() {
       $('#Master').hide();
       $('#Lookup').hide();
@@ -93,10 +102,12 @@
           return _this.onSeasonClick(event);
         };
       })(this));
+      $('#ResTbl').show();
       $('#Season').show();
     };
 
     Master.prototype.onDailysBtn = function() {
+      $('#ResTbl').hide();
       $('#Master').hide();
       $('#Lookup').hide();
       $('#Season').hide();
@@ -108,6 +119,7 @@
     };
 
     Master.prototype.onUploadBtn = function() {
+      $('#ResTbl').hide();
       $('#Master').hide();
       $('#Lookup').hide();
       $('#Season').hide();
@@ -121,6 +133,8 @@
     };
 
     Master.prototype.readyMaster = function() {
+      $('#ResTbl').empty();
+      $('#ResTbl').append(this.resvTable(this.Data.today()));
       $('#Master').empty();
       $('#Master').append(this.masterHtml());
       $('.MasterTitle').click((function(_this) {
@@ -139,12 +153,13 @@
           $cell = $(event.target);
           status = $cell.attr('data-status');
           resId = $cell.attr('data-res');
+          _this.resDate = resId.substr(0, 6);
           Util.log('doCell', {
             resId: resId,
             status: status
           });
           if (status !== 'free') {
-            _this.res.onResId('get', _this.onLookup, resId);
+            _this.res.onResId('get', _this.onResTable, resId);
             return _this.store.get('Res', resId);
           }
         };
@@ -317,18 +332,39 @@
     };
 
     Master.prototype.masterHtml = function() {
-      var htm, i, len, month, ref;
+      var htm, j, len, month, ref;
       htm = "";
       ref = this.Data.season;
-      for (i = 0, len = ref.length; i < len; i++) {
-        month = ref[i];
+      for (j = 0, len = ref.length; j < len; j++) {
+        month = ref[j];
         htm += "<div id=\"" + month + "\" class=\"" + month + "\">" + (this.roomsHtml(this.Data.year, month)) + "</div>";
       }
       return htm;
     };
 
+    Master.prototype.resvTable = function(today) {
+      var charge, htm, r, ref, resId, tax, u;
+      htm = "<div class=\"ResTbl\"><table><thead>";
+      htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
+      htm += "</thead><tbody>";
+      ref = this.res.resvs;
+      for (resId in ref) {
+        if (!hasProp.call(ref, resId)) continue;
+        r = ref[resId];
+        if (!(r.u.arrive === today)) {
+          continue;
+        }
+        u = r.u;
+        tax = Util.toFixed(u.total * this.Data.tax);
+        charge = u.total + parseFloat(tax);
+        htm += "<tr><td>" + u.arrive + "</td><td>" + u.nights + "</td><td>" + u.roomId + "</td><td>" + u.last + "</td><td>" + u.guests + "</td><td>" + u.price + "</td><td>" + u.total + "</td><td>" + tax + "</td><td>" + charge + "</td></tr>";
+      }
+      htm += "</tbody></table></div>";
+      return htm;
+    };
+
     Master.prototype.roomsHtml = function(year, month) {
-      var begDay, date, day, endDay, htm, i, j, k, monthIdx, ref, ref1, ref2, ref3, ref4, ref5, ref6, room, roomId, weekday, weekdayIdx;
+      var begDay, date, day, endDay, htm, j, k, l, monthIdx, ref, ref1, ref2, ref3, ref4, ref5, ref6, room, roomId, weekday, weekdayIdx;
       monthIdx = this.Data.months.indexOf(month);
       begDay = 1;
       endDay = this.Data.numDayMonth[monthIdx];
@@ -336,12 +372,12 @@
       htm = "<div class=\"MasterTitle\">" + month + "</div>";
       htm += "<table><thead>";
       htm += "<tr><th></th>";
-      for (day = i = ref = begDay, ref1 = endDay; ref <= ref1 ? i <= ref1 : i >= ref1; day = ref <= ref1 ? ++i : --i) {
+      for (day = j = ref = begDay, ref1 = endDay; ref <= ref1 ? j <= ref1 : j >= ref1; day = ref <= ref1 ? ++j : --j) {
         weekday = this.Data.weekdays[(weekdayIdx + day - 1) % 7].charAt(0);
         htm += "<th>" + weekday + "</th>";
       }
       htm += "</tr><tr><th></th>";
-      for (day = j = ref2 = begDay, ref3 = endDay; ref2 <= ref3 ? j <= ref3 : j >= ref3; day = ref2 <= ref3 ? ++j : --j) {
+      for (day = k = ref2 = begDay, ref3 = endDay; ref2 <= ref3 ? k <= ref3 : k >= ref3; day = ref2 <= ref3 ? ++k : --k) {
         htm += "<th>" + day + "</th>";
       }
       htm += "</tr></thead><tbody>";
@@ -350,7 +386,7 @@
         if (!hasProp.call(ref4, roomId)) continue;
         room = ref4[roomId];
         htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
-        for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
+        for (day = l = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? l <= ref6 : l >= ref6; day = ref5 <= ref6 ? ++l : --l) {
           date = this.Data.toDateStr(day, monthIdx);
           htm += this.createMasterCell(roomId, date);
         }
@@ -361,31 +397,31 @@
     };
 
     Master.prototype.seasonHtml = function() {
-      var htm, i, len, month, ref;
+      var htm, j, len, month, ref;
       htm = "";
       ref = this.Data.season;
-      for (i = 0, len = ref.length; i < len; i++) {
-        month = ref[i];
+      for (j = 0, len = ref.length; j < len; j++) {
+        month = ref[j];
         htm += "<div id=\"" + month + "\" class=\"" + month + "C\">" + (this.monthTable(month)) + "</div>";
       }
       return htm;
     };
 
     Master.prototype.monthTable = function(month) {
-      var begDay, col, day, endDay, htm, i, j, k, monthIdx, row, weekday;
+      var begDay, col, day, endDay, htm, j, k, l, monthIdx, row, weekday;
       monthIdx = this.Data.months.indexOf(month);
       begDay = new Date(2000 + this.res.year, monthIdx, 1).getDay() - 1;
       endDay = this.Data.numDayMonth[monthIdx];
       htm = "<div class=\"SeasonTitle\">" + month + "</div>";
       htm += "<table class=\"MonthTable\"><thead><tr>";
-      for (day = i = 0; i < 7; day = ++i) {
+      for (day = j = 0; j < 7; day = ++j) {
         weekday = this.Data.weekdays[day];
         htm += "<th>" + weekday + "</th>";
       }
       htm += "</tr></thead><tbody>";
-      for (row = j = 0; j < 6; row = ++j) {
+      for (row = k = 0; k < 6; row = ++k) {
         htm += "<tr>";
-        for (col = k = 0; k < 7; col = ++k) {
+        for (col = l = 0; l < 7; col = ++l) {
           day = this.monthDay(begDay, endDay, row, col);
           htm += day !== "" ? "<td>" + (this.roomDay(monthIdx, day)) + "</td>" : "<td></td>";
         }
@@ -395,11 +431,11 @@
     };
 
     Master.prototype.roomDay = function(monthIdx, day) {
-      var col, date, htm, i, roomId, status;
+      var col, date, htm, j, roomId, status;
       htm = "";
       htm += "<div class=\"MonthDay\">" + day + "</div>";
       htm += "<div class=\"MonthRoom\">";
-      for (col = i = 1; i <= 10; col = ++i) {
+      for (col = j = 1; j <= 10; col = ++j) {
         roomId = col;
         if (roomId === 9) {
           roomId = 'N';
@@ -470,18 +506,18 @@
     };
 
     Master.prototype.uploadParse = function(text) {
-      var book, i, len, line, lines, namesg, obj, resv, toks;
-      obj = {};
+      var book, j, len, line, lines, names, resv, resvs, toks;
+      resvs = {};
       if (!Util.isStr(text)) {
         return obj;
       }
       lines = text.split('\n');
-      for (i = 0, len = lines.length; i < len; i++) {
-        line = lines[i];
+      for (j = 0, len = lines.length; j < len; j++) {
+        line = lines[j];
         toks = line.split('\t');
         book = {};
         resv = {};
-        book.nameg = toks[0];
+        book.names = toks[0];
         book.arrive = toks[1];
         book.depart = toks[2];
         book.room = toks[3];
@@ -490,10 +526,12 @@
         book.total = toks[6];
         book.commis = toks[7];
         book.bookingId = toks[8];
-        namesg = book.nameg.split(' ');
-        resv.first = namesg[0];
-        resv.last = namesg[1];
-        resv.guests = namesg[2].charAt(0);
+        Util.log('Book......');
+        Util.log(book);
+        names = book.names.split(' ');
+        resv.first = names[0];
+        resv.last = names[1];
+        resv.guests = this.toNumGuests(names);
         resv.arrive = this.toResvDate(book.arrive);
         resv.depart = this.toResvDate(book.depart);
         resv.pets = 0;
@@ -502,16 +540,14 @@
         resv.roomId = this.toResvRoomId(book.room);
         resv.total = parseFloat(book.total.substr(3));
         resv.price = resv.total > 0 ? resv.total / resv.nights : this.rooms[resv.roomId].booking;
-        resv.id = resv.arrive + resv.roomId;
-        obj[resv.id] = resv;
-        Util.log('Book......');
-        Util.log(book);
+        resv.resId = resv.arrive + resv.roomId;
+        resvs[resv.resId] = resv;
       }
-      return obj;
+      return resvs;
     };
 
     Master.prototype.onUpdateRes = function() {
-      var resId, resv, resvs;
+      var ref, resId, resv;
       if (!Util.isStr(this.uploadedText)) {
         this.uploadedText = this.Data.bookingResvs;
         this.uploadedResvs = this.uploadParse(this.uploadedText);
@@ -523,14 +559,15 @@
       if (!this.updateValid(this.uploadedResvs)) {
         return;
       }
-      resvs = this.updateResv(this.uploadedResvs);
-      this.res.days = this.res.createDaysFromResvs(resvs, this.res.days);
-      for (resId in resvs) {
-        if (!hasProp.call(resvs, resId)) continue;
-        resv = resvs[resId];
+      this.res.resvs = this.updateResv(this.uploadedResvs);
+      this.res.days = this.res.createDaysFromResvs(this.res.resvs, this.res.days);
+      ref = this.res.resvs;
+      for (resId in ref) {
+        if (!hasProp.call(ref, resId)) continue;
+        resv = ref[resId];
         this.res.postResvChan(resv);
       }
-      this.res.dateRange(this.Data.beg, this.Data.end, this.readyMaster);
+      this.onDateRange();
       return this.uploadedResv = {};
     };
 
@@ -555,23 +592,40 @@
         Util.log('Resv......', u.v);
         Util.log(u);
       }
+      Util.log('Master.updateValid()', valid);
       return valid;
     };
 
     Master.prototype.updateResv = function(uploadedResvs) {
-      var cust, days, resId, resv, resvs, rooms, u;
+      var cust, days, resId, resvs, rooms, u;
       resvs = {};
       for (resId in uploadedResvs) {
         if (!hasProp.call(uploadedResvs, resId)) continue;
         u = uploadedResvs[resId];
         rooms = {};
         cust = this.res.createCust(u.first, u.last, "", "", "Booking");
-        days = this.res.createRoomDays(u.arrive, u.depart, 'chan', u.id);
-        rooms[u.roomId] = this.populateRoom({}, days, u.total, u.total / u.nights, u.guests, 0);
-        resv = this.res.createRoomResv('chan', 'vcard', u.total, cust, rooms);
-        resvs[resId] = resv;
+        days = this.res.createRoomDays(u.arrive, u.nights, 'chan', u.resId);
+        rooms[u.roomId] = this.res.populateRoom({}, days, u.total, u.price, u.guests, 0);
+        resvs[resId] = this.res.createRoomResv('chan', 'vcard', u.total, cust, rooms);
+        resvs[resId].u = u;
+        Util.noop('None', resId);
+        Util.log('Resu', u);
+        Util.log('Cust', cust);
+        Util.log('Days', days);
+        Util.log('Room', rooms[u.roomId]);
+        Util.log('Resv', resvs[resId]);
       }
       return resvs;
+    };
+
+    Master.prototype.toNumGuests = function(names) {
+      var i, j, ref;
+      for (i = j = 0, ref = names.length; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
+        if (names[i] === 'guest' || names[i] === 'guests') {
+          return names[i - 1];
+        }
+      }
+      return '0';
     };
 
     Master.prototype.toResvDate = function(bookDate) {
@@ -592,8 +646,6 @@
         return toks[2].charAt(0);
       }
     };
-
-    Master.prototype.uploadTable = function() {};
 
     return Master;
 

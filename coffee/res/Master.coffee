@@ -10,6 +10,7 @@ class Master
     @uploadedText  = ""
     @uploadedResvs = {}
     @res.master    = @
+    @resDate       = @Data.today()
     @lastMaster    = { left:0, top:0, width:0, height:0 }
     @lastSeason    = { left:0, top:0, width:0, height:0 }
 
@@ -29,10 +30,12 @@ class Master
     $('#Season').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
+    $('#ResTbl').show()
     $('#Master').show()
     return
 
   onLookup:( resv ) =>
+    $('#ResTbl').hide()
     $('#Master').hide()
     $('#Season').hide()
     $('#Dailys').hide()
@@ -44,17 +47,24 @@ class Master
     $('#Lookup').show()
     return
 
+  onResTable:() =>
+    $('#ResTbl').empty()
+    $('#ResTbl').append( @resvTable( @resDate ) )
+
   onSeasonBtn:() =>
+
     $('#Master').hide()
     $('#Lookup').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
     $('#Season').append( @seasonHtml() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
+    $('#ResTbl').show()
     $('#Season').show()
     return
 
   onDailysBtn:() =>
+    $('#ResTbl').hide()
     $('#Master').hide()
     $('#Lookup').hide()
     $('#Season').hide()
@@ -64,6 +74,7 @@ class Master
     return
 
   onUploadBtn:() =>
+    $('#ResTbl').hide()
     $('#Master').hide()
     $('#Lookup').hide()
     $('#Season').hide()
@@ -75,6 +86,8 @@ class Master
     return
 
   readyMaster:() =>
+    $('#ResTbl').empty()
+    $('#ResTbl').append( @resvTable( @Data.today() ) )
     $('#Master').empty()
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
@@ -82,13 +95,14 @@ class Master
     return
 
   readyCells:() ->
-    doCell   = (event) =>
-      $cell  = $(event.target)
-      status = $cell.attr('data-status')
-      resId  = $cell.attr('data-res'   )
+    doCell = (event) =>
+      $cell    = $(event.target)
+      status   = $cell.attr('data-status')
+      resId    = $cell.attr('data-res'   )
+      @resDate = resId.substr(0,6)
       Util.log( 'doCell', { resId:resId, status:status } )
       if status isnt 'free'
-        @res.onResId( 'get', @onLookup, resId )
+        @res.onResId( 'get', @onResTable, resId ) #
         @store.get(   'Res', resId )
     $('[data-cell="y"]').click( doCell )
     return
@@ -194,6 +208,19 @@ class Master
       htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @Data.year, month )}</div>"""
     htm
 
+  resvTable:( today ) ->
+    #esvs = @res.dayResvs( today )
+    htm   = """<div class="ResTbl"><table><thead>"""
+    htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm  += """</thead><tbody>"""
+    for own resId, r of @res.resvs when r.u.arrive is today
+      u      = r.u
+      tax    = Util.toFixed( u.total * @Data.tax )
+      charge = u.total + parseFloat( tax )
+      htm += """<tr><td>#{u.arrive}</td><td>#{u.nights}</td><td>#{u.roomId}</td><td>#{u.last}</td><td>#{u.guests}</td><td>#{u.price}</td><td>#{u.total}</td><td>#{tax}</td><td>#{charge}</td></tr>"""
+    htm += """</tbody></table></div>"""
+    htm
+
   roomsHtml:( year, month ) ->
     monthIdx   = @Data.months.indexOf(month)
     begDay     = 1                           # if month isnt 'May'     then 1 else 17
@@ -297,14 +324,14 @@ class Master
     #ocument.getElementById("UploadText").addEventListener("paste", onPaste, false )
 
   uploadParse:( text ) ->
-    obj   = {}
+    resvs   = {}
     return obj if not Util.isStr( text ) 
     lines = text.split('\n')
     for line in lines
       toks = line.split('\t')
       book           = {}
       resv           = {}
-      book.nameg     = toks[0]
+      book.names     = toks[0]
       book.arrive    = toks[1]
       book.depart    = toks[2]
       book.room      = toks[3]
@@ -313,11 +340,13 @@ class Master
       book.total     = toks[6]
       book.commis    = toks[7]
       book.bookingId = toks[8]
-      namesg         = book.nameg.split(' ')
-      #resv.booking   = book
-      resv.first     = namesg[0]
-      resv.last      = namesg[1]
-      resv.guests    = namesg[2].charAt(0)
+      Util.log( 'Book......')
+      Util.log(  book )
+      names          = book.names.split(' ')
+      #resv.booking  = book
+      resv.first     = names[0]
+      resv.last      = names[1]
+      resv.guests    = @toNumGuests( names )
       resv.arrive    = @toResvDate( book.arrive )
       resv.depart    = @toResvDate( book.depart )
       resv.pets      = 0
@@ -326,12 +355,9 @@ class Master
       resv.roomId    = @toResvRoomId( book.room )
       resv.total     = parseFloat( book.total.substr(3) )
       resv.price     = if resv.total > 0 then resv.total  / resv.nights else @rooms[resv.roomId].booking
-      resv.id        = resv.arrive + resv.roomId
-      obj[resv.id]   = resv
-      Util.log( 'Book......')
-      Util.log(  book )
-
-    obj
+      resv.resId     = resv.arrive + resv.roomId
+      resvs[resv.resId ] = resv
+    resvs
 
   onUpdateRes:() =>
 
@@ -342,11 +368,11 @@ class Master
 
     return if Util.isObjEmpty(  @uploadedResvs )
     return if not @updateValid( @uploadedResvs )
-    resvs     = @updateResv( @uploadedResvs )
-    @res.days = @res.createDaysFromResvs( resvs, @res.days ) # Not sure about this
-    for own resId, resv of resvs
-      @res.postResvChan( resv )
-    @res.dateRange( @Data.beg, @Data.end, @readyMaster )
+    @res.resvs = @updateResv(    @uploadedResvs )
+    @res.days  = @res.createDaysFromResvs( @res.resvs, @res.days ) # Not sure about this
+    @res.postResvChan( resv ) for own resId, resv of @res.resvs
+    #res.dateRange( @Data.beg, @Data.end, @readyMaster ) # Latter
+    @onDateRange()
     @uploadedResv = {}
 
   updateValid:( uploadedResvs ) ->
@@ -366,18 +392,30 @@ class Master
       valid &= u.v
       Util.log( 'Resv......', u.v )
       Util.log(  u )
+    Util.log( 'Master.updateValid()', valid )
     valid
 
   updateResv:( uploadedResvs ) ->
     resvs = {}
     for own resId, u of uploadedResvs
       rooms = {}
-      cust  = @res.createCust( u.first, u.last, "", "", "Booking" )
-      days  = @res.createRoomDays( u.arrive, u.depart, 'chan', u.id )
-      rooms[u.roomId] = @populateRoom( {}, days,  u.total, u.total/u.nights, u.guests, 0 )
-      resv = @res.createRoomResv( 'chan', 'vcard', u.total, cust, rooms )
-      resvs[resId] = resv
+      cust            = @res.createCust( u.first, u.last, "", "", "Booking" )
+      days            = @res.createRoomDays( u.arrive, u.nights, 'chan', u.resId )
+      rooms[u.roomId] = @res.populateRoom( {}, days,  u.total, u.price, u.guests, 0 )
+      resvs[resId]    = @res.createRoomResv( 'chan', 'vcard', u.total, cust, rooms )
+      resvs[resId].u  = u
+      Util.noop( 'None', resId )
+      Util.log(  'Resu', u     )
+      Util.log(  'Cust', cust  )
+      Util.log(  'Days', days  )
+      Util.log(  'Room', rooms[u.roomId] )
+      Util.log(  'Resv', resvs[resId] )
     resvs
+
+  toNumGuests:( names ) ->
+    for i in [0...names.length] when names[i] is 'guest' or names[i] is 'guests'
+      return names[i-1]
+    return '0' # This will invalidate
 
   toResvDate:( bookDate ) ->
     toks  = bookDate.split(' ')
@@ -393,4 +431,3 @@ class Master
     else
        toks[2].charAt(0)
 
-  uploadTable:() ->

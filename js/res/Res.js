@@ -30,6 +30,7 @@
       this.book = null;
       this.master = null;
       this.days = {};
+      this.resvs = {};
       if (this.appName === 'Guest') {
         this.dateRange(this.Data.beg, this.Data.end);
       }
@@ -214,6 +215,20 @@
           return doDay(day);
         };
       })(this));
+    };
+
+    Res.prototype.dayResvs = function(today) {
+      var date, day, ref, resvs;
+      resvs = {};
+      ref = this.days;
+      for (date in ref) {
+        if (!hasProp.call(ref, date)) continue;
+        day = ref[date];
+        if (date === today) {
+          resvs[day.resId] = this.resvs[day.resId];
+        }
+      }
+      return resvs;
     };
 
     Res.prototype.insertRooms = function(rooms) {
