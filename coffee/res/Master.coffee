@@ -41,7 +41,7 @@ class Master
     $('#Dailys').hide()
     $('#Upload').hide()
     $('#Lookup').empty()
-    Util.log( 'Master.onLookup', resv )
+    #Util.log( 'Master.onLookup', resv )
     $('#Lookup').append( @pay.confirmHead(  resv          ) ) if not Util.isObjEmpty(resv)
     $('#Lookup').append( @pay.confirmTable( resv, 'Owner' ) ) if not Util.isObjEmpty(resv)
     $('#Lookup').show()
@@ -100,7 +100,7 @@ class Master
       status   = $cell.attr('data-status')
       resId    = $cell.attr('data-res'   )
       @resDate = resId.substr(0,6)
-      Util.log( 'doCell', { resId:resId, status:status } )
+      #Util.log( 'doCell', { resId:resId, status:status } )
       if status isnt 'free'
         @res.onResId( 'get', @onResTable, resId ) #
         @store.get(   'Res', resId )
@@ -116,14 +116,14 @@ class Master
   listenToDays:() =>
     doDays = (data) =>
       # dayId is onPut.key and dayRoom onPut.val
-      console.log( 'Master.listenToDays()', data.key, data.val )
+      #console.log( 'Master.listenToDays()', data.key, data.val )
       @onAlloc( data.key, data.val )
     @res.onDays( 'put',    doDays )
     return
 
   selectToDays:() =>
     doDays = (days) =>
-      console.log( 'Master.selectDays()', days )
+      #console.log( 'Master.selectDays()', days )
       for own dayId, day of days
         @onAlloc( dayId, day )
     @res.onDays( 'select', doDays )
@@ -133,7 +133,7 @@ class Master
   listenToResv:() =>
     doAdd = (onAdd) =>
       resv = onAdd.val
-      Util.log( 'Master.listenToResv() onAdd', resv )
+      #Util.log( 'Master.listenToResv() onAdd', resv )
       for   own roomId, room of resv.rooms
         for own  dayId, rday of room.days
           @onAlloc( dayId, rday )
@@ -211,13 +211,13 @@ class Master
   resvTable:( today ) ->
     #esvs = @res.dayResvs( today )
     htm   = """<div class="ResTbl"><table><thead>"""
-    htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm  += """</thead><tbody>"""
     for own resId, r of @res.resvs when r.u.arrive is today
       u      = r.u
       tax    = Util.toFixed( u.total * @Data.tax )
       charge = u.total + parseFloat( tax )
-      htm += """<tr><td>#{u.arrive}</td><td>#{u.nights}</td><td>#{u.roomId}</td><td>#{u.last}</td><td>#{u.guests}</td><td>#{u.price}</td><td>#{u.total}</td><td>#{tax}</td><td>#{charge}</td></tr>"""
+      htm += """<tr><td>#{u.arrive}</td><td>#{u.nights}</td><td>#{u.roomId}</td><td>#{u.last}</td><td>#{u.guests}</td><td>#{u.status}</td><td>#{u.price}</td><td>#{u.total}</td><td>#{tax}</td><td>#{charge}</td></tr>"""
     htm += """</tbody></table></div>"""
     htm
 
@@ -316,8 +316,8 @@ class Master
         @uploadedText = event.clipboardData.getData('text/plain')
       event.preventDefault()
       if Util.isStr(    @uploadedText )
-         Util.log('Master.onPaste()'  )
-         Util.log(      @uploadedText )
+         #Util.log('Master.onPaste()'  )
+         #Util.log(      @uploadedText )
          @uploadedResvs = @uploadParse(  @uploadedText )
          $('#UploadText').text( @uploadedText )
     document.addEventListener( "paste", onPaste )
@@ -329,6 +329,7 @@ class Master
     lines = text.split('\n')
     for line in lines
       toks = line.split('\t')
+      continue if toks[0] is 'Guest name'
       book           = {}
       resv           = {}
       book.names     = toks[0]
@@ -340,8 +341,8 @@ class Master
       book.total     = toks[6]
       book.commis    = toks[7]
       book.bookingId = toks[8]
-      Util.log( 'Book......')
-      Util.log(  book )
+      #Util.log( 'Book......')
+      #Util.log(  book )
       names          = book.names.split(' ')
       #resv.booking  = book
       resv.first     = names[0]
@@ -349,6 +350,7 @@ class Master
       resv.guests    = @toNumGuests( names )
       resv.arrive    = @toResvDate( book.arrive )
       resv.depart    = @toResvDate( book.depart )
+      resv.status    = @toStatus(   book.status )
       resv.pets      = 0
       resv.spa       = false
       resv.nights    = @Data.nights( resv.arrive, resv.depart )
@@ -390,8 +392,8 @@ class Master
       u.v &=   0.00 <= u.total and u.total <= 8820.00
       u.v &= 120.00 <= u.price and u.price <=  315.00
       valid &= u.v
-      Util.log( 'Resv......', u.v )
-      Util.log(  u )
+      #Util.log( 'Resv......', u.v )
+      #Util.log(  u )
     Util.log( 'Master.updateValid()', valid )
     valid
 
@@ -400,16 +402,16 @@ class Master
     for own resId, u of uploadedResvs
       rooms = {}
       cust            = @res.createCust( u.first, u.last, "", "", "Booking" )
-      days            = @res.createRoomDays( u.arrive, u.nights, 'chan', u.resId )
+      days            = @res.createRoomDays( u.arrive, u.nights, u.status, u.resId )
       rooms[u.roomId] = @res.populateRoom( {}, days,  u.total, u.price, u.guests, 0 )
-      resvs[resId]    = @res.createRoomResv( 'chan', 'vcard', u.total, cust, rooms )
+      resvs[resId]    = @res.createRoomResv( u.status, 'vcard', u.total, cust, rooms )
       resvs[resId].u  = u
-      Util.noop( 'None', resId )
-      Util.log(  'Resu', u     )
-      Util.log(  'Cust', cust  )
-      Util.log(  'Days', days  )
-      Util.log(  'Room', rooms[u.roomId] )
-      Util.log(  'Resv', resvs[resId] )
+      #Util.noop( 'None', resId )
+      #Util.log(  'Resu', u     )
+      #Util.log(  'Cust', cust  )
+      #Util.log(  'Days', days  )
+      #Util.log(  'Room', rooms[u.roomId] )
+      #Util.log(  'Resv', resvs[resId] )
     resvs
 
   toNumGuests:( names ) ->
@@ -430,4 +432,11 @@ class Master
        toks[0].charAt(1)
     else
        toks[2].charAt(0)
+
+  toStatus:( bookingStatus ) ->
+    switch   bookingStatus
+      when 'OK'       then 'chan'
+      when 'Canceled' then 'canc'
+      else                 'unkn'
+
 

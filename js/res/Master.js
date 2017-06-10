@@ -74,7 +74,6 @@
       $('#Dailys').hide();
       $('#Upload').hide();
       $('#Lookup').empty();
-      Util.log('Master.onLookup', resv);
       if (!Util.isObjEmpty(resv)) {
         $('#Lookup').append(this.pay.confirmHead(resv));
       }
@@ -154,10 +153,6 @@
           status = $cell.attr('data-status');
           resId = $cell.attr('data-res');
           _this.resDate = resId.substr(0, 6);
-          Util.log('doCell', {
-            resId: resId,
-            status: status
-          });
           if (status !== 'free') {
             _this.res.onResId('get', _this.onResTable, resId);
             return _this.store.get('Res', resId);
@@ -182,7 +177,6 @@
       var doDays;
       doDays = (function(_this) {
         return function(data) {
-          console.log('Master.listenToDays()', data.key, data.val);
           return _this.onAlloc(data.key, data.val);
         };
       })(this);
@@ -194,7 +188,6 @@
       doDays = (function(_this) {
         return function(days) {
           var day, dayId, results;
-          console.log('Master.selectDays()', days);
           results = [];
           for (dayId in days) {
             if (!hasProp.call(days, dayId)) continue;
@@ -214,7 +207,6 @@
         return function(onAdd) {
           var dayId, rday, ref, results, resv, room, roomId;
           resv = onAdd.val;
-          Util.log('Master.listenToResv() onAdd', resv);
           ref = resv.rooms;
           results = [];
           for (roomId in ref) {
@@ -345,7 +337,7 @@
     Master.prototype.resvTable = function(today) {
       var charge, htm, r, ref, resId, tax, u;
       htm = "<div class=\"ResTbl\"><table><thead>";
-      htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
+      htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
       ref = this.res.resvs;
       for (resId in ref) {
@@ -357,7 +349,7 @@
         u = r.u;
         tax = Util.toFixed(u.total * this.Data.tax);
         charge = u.total + parseFloat(tax);
-        htm += "<tr><td>" + u.arrive + "</td><td>" + u.nights + "</td><td>" + u.roomId + "</td><td>" + u.last + "</td><td>" + u.guests + "</td><td>" + u.price + "</td><td>" + u.total + "</td><td>" + tax + "</td><td>" + charge + "</td></tr>";
+        htm += "<tr><td>" + u.arrive + "</td><td>" + u.nights + "</td><td>" + u.roomId + "</td><td>" + u.last + "</td><td>" + u.guests + "</td><td>" + u.status + "</td><td>" + u.price + "</td><td>" + u.total + "</td><td>" + tax + "</td><td>" + charge + "</td></tr>";
       }
       htm += "</tbody></table></div>";
       return htm;
@@ -495,8 +487,6 @@
           }
           event.preventDefault();
           if (Util.isStr(_this.uploadedText)) {
-            Util.log('Master.onPaste()');
-            Util.log(_this.uploadedText);
             _this.uploadedResvs = _this.uploadParse(_this.uploadedText);
             return $('#UploadText').text(_this.uploadedText);
           }
@@ -515,6 +505,9 @@
       for (j = 0, len = lines.length; j < len; j++) {
         line = lines[j];
         toks = line.split('\t');
+        if (toks[0] === 'Guest name') {
+          continue;
+        }
         book = {};
         resv = {};
         book.names = toks[0];
@@ -526,14 +519,13 @@
         book.total = toks[6];
         book.commis = toks[7];
         book.bookingId = toks[8];
-        Util.log('Book......');
-        Util.log(book);
         names = book.names.split(' ');
         resv.first = names[0];
         resv.last = names[1];
         resv.guests = this.toNumGuests(names);
         resv.arrive = this.toResvDate(book.arrive);
         resv.depart = this.toResvDate(book.depart);
+        resv.status = this.toStatus(book.status);
         resv.pets = 0;
         resv.spa = false;
         resv.nights = this.Data.nights(resv.arrive, resv.depart);
@@ -589,8 +581,6 @@
         u.v &= 0.00 <= u.total && u.total <= 8820.00;
         u.v &= 120.00 <= u.price && u.price <= 315.00;
         valid &= u.v;
-        Util.log('Resv......', u.v);
-        Util.log(u);
       }
       Util.log('Master.updateValid()', valid);
       return valid;
@@ -604,16 +594,10 @@
         u = uploadedResvs[resId];
         rooms = {};
         cust = this.res.createCust(u.first, u.last, "", "", "Booking");
-        days = this.res.createRoomDays(u.arrive, u.nights, 'chan', u.resId);
+        days = this.res.createRoomDays(u.arrive, u.nights, u.status, u.resId);
         rooms[u.roomId] = this.res.populateRoom({}, days, u.total, u.price, u.guests, 0);
-        resvs[resId] = this.res.createRoomResv('chan', 'vcard', u.total, cust, rooms);
+        resvs[resId] = this.res.createRoomResv(u.status, 'vcard', u.total, cust, rooms);
         resvs[resId].u = u;
-        Util.noop('None', resId);
-        Util.log('Resu', u);
-        Util.log('Cust', cust);
-        Util.log('Days', days);
-        Util.log('Room', rooms[u.roomId]);
-        Util.log('Resv', resvs[resId]);
       }
       return resvs;
     };
@@ -644,6 +628,17 @@
         return toks[0].charAt(1);
       } else {
         return toks[2].charAt(0);
+      }
+    };
+
+    Master.prototype.toStatus = function(bookingStatus) {
+      switch (bookingStatus) {
+        case 'OK':
+          return 'chan';
+        case 'Canceled':
+          return 'canc';
+        default:
+          return 'unkn';
       }
     };
 

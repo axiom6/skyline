@@ -18,8 +18,8 @@ class Res
     @populateMemory()      if @store.justMemory
 
   populateMemory:() ->
-    @onResv(  'add', (resv) => console.log( 'onResv', resv ) )
-    @onDays(  'put', (days) => console.log( 'onDays', days ) ) if @store.justMemory
+    @onResv(  'add', (resv) => Util.noop( 'onResv', resv ) )
+    @onDays(  'put', (days) => Util.noop( 'onDays', days ) ) if @store.justMemory
     @insertNewTables() # Populate Memory
 
   dateRange:( beg, end, onComplete=null ) ->

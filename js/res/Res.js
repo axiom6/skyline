@@ -42,13 +42,13 @@
     Res.prototype.populateMemory = function() {
       this.onResv('add', (function(_this) {
         return function(resv) {
-          return console.log('onResv', resv);
+          return Util.noop('onResv', resv);
         };
       })(this));
       if (this.store.justMemory) {
         this.onDays('put', (function(_this) {
           return function(days) {
-            return console.log('onDays', days);
+            return Util.noop('onDays', days);
           };
         })(this));
       }

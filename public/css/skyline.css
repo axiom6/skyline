@@ -284,6 +284,18 @@ img.center {
   text-align: right;
   width: 35px;
 }
+.room-canc {
+  background-color: red;
+  color: white;
+  text-align: right;
+  width: 35px;
+}
+.room-unkn {
+  background-color: purple;
+  color: white;
+  text-align: right;
+  width: 35px;
+}
 .room-price {
   background-color: lightgrey;
   color: black;
@@ -417,13 +429,13 @@ img.center {
   left: 3%;
   top: 3%;
   width: 94%;
-  height: 120px;
-  font-size: 10px;
+  height: 180px;
+  font-size: 16px;
 }
 .Master {
   position: relative;
   left: 3%;
-  top: 20%;
+  top: 30%;
   width: 94%;
   height: 675px;
   font-size: 10px;
