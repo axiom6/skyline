@@ -7,6 +7,7 @@ class Data
   @tax         = 0.1055 # Official Estes Park tax rate. Also in Booking.com
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+  @months3     = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
   @numDayMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
   @weekdays    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
   @days        = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
@@ -97,21 +98,27 @@ class Data
     num
 
   @weekday:( date ) ->
-    year       = parseInt( date.substr( 0,2 ) )
-    monthIdx   = parseInt( date.substr( 2,2 ) ) - 1
-    dayInt     = parseInt( date.substr( 4,2 ) )
-    weekdayIdx = new Date( 2000+year, monthIdx, dayInt ).getDay()
+    [yy,mi,dd] = @yymidd( date )
+    weekdayIdx = new Date( 2000+yy, mi, dd ).getDay()
     Data.weekdays[weekdayIdx]
 
   @isDate:( date ) ->
-    year     = parseInt( date.substr( 0,2 ) )
-    monthIdx = parseInt( date.substr( 2,2 ) ) - 1
-    dayInt   = parseInt( date.substr( 4,2 ) )
-    valid    = true
-    valid   &= year is Data.year
-    valid   &= 0 <= monthIdx and monthIdx <= 11
-    valid   &= 1 <= dayInt   and dayInt   <= 31
+    [yy,mi,dd] = @yymidd( date )
+    valid  = true
+    valid &= yy is Data.year
+    valid &= 0 <= mi and mi <= 11
+    valid &= 1 <= dd and dd <= 31
     valid
+
+  @yymidd:( date ) ->
+    yy = parseInt( date.substr( 0,2 ) )
+    mi = parseInt( date.substr( 2,2 ) ) - 1
+    dd = parseInt( date.substr( 4,2 ) )
+    [yy,mi,dd]
+
+  @toMMDD:( date ) ->
+    [yy,mi,dd] = @yymidd( date )
+    (mi+1).toString() + '/' + dd.toString()
 
   @isElem:( $elem ) ->
     not (  $elem? and $elem.length? and $elem.length is 0 )
@@ -122,6 +129,11 @@ class Data
 
   @toDateStr:( day, monthIdx=Data.monthIdx, year=Data.year ) ->
     year.toString() + Util.pad(monthIdx+1) + Util.pad(day)
+
+  @toMonth3DayYear:( date ) ->
+    [yy,mi,dd] = if Data.isDate(date) then @yymidd(date) else @yymidd(Data.today())
+    Util.log( 'Data.yymidd()', date, yy, mi, dd )
+    Data.months3[mi] + dd.toString() + ', ' + (2000+yy).toString()
 
   @bookingResvs = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
 Marjorie Keys 4 guests	02 June 2017	04 June 2017	#4 One Room Cabin	03 June 2017	Canceled	US$0		1159685697

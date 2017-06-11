@@ -424,10 +424,14 @@ img.center {
   height: 40px;
   border-radius: 12px;
 }
+.ResEnt {
+  position: static;
+  width: 94%;
+  height: 60px;
+  font-size: 16px;
+}
 .ResTbl {
-  position: relative;
-  left: 3%;
-  top: 3%;
+  position: static;
   width: 94%;
   height: 180px;
   font-size: 16px;
@@ -668,7 +672,7 @@ img.center {
   color: white;
   border-radius: 8px;
 }
-#Names {
+#NamesX {
   width: 975px;
   margin: auto;
   height: 100px;

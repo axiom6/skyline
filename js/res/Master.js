@@ -23,6 +23,7 @@
       this.selectToDays = bind(this.selectToDays, this);
       this.listenToDays = bind(this.listenToDays, this);
       this.onDateRange = bind(this.onDateRange, this);
+      this.readyCells = bind(this.readyCells, this);
       this.readyMaster = bind(this.readyMaster, this);
       this.onUploadBtn = bind(this.onUploadBtn, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
@@ -33,8 +34,11 @@
       this.rooms = this.res.rooms;
       this.uploadedText = "";
       this.uploadedResvs = {};
+      this.resvNew = {};
       this.res.master = this;
-      this.resDate = this.Data.today();
+      this.dateBeg = '';
+      this.dateEnd = '';
+      this.roomRes = '1';
       this.lastMaster = {
         left: 0,
         top: 0,
@@ -149,18 +153,27 @@
         };
       })(this));
       this.readyCells();
+      this.resvInputRespond();
     };
 
     Master.prototype.readyCells = function() {
       var doCell;
       doCell = (function(_this) {
         return function(event) {
-          var $cell, resId, status;
+          var $cell, date, resId, status;
           $cell = $(event.target);
           status = $cell.attr('data-status');
           resId = $cell.attr('data-res');
-          _this.resDate = resId.substr(0, 6);
-          $('#Arrive').val(_this.resDate);
+          date = $cell.attr('data-date');
+          _this.roomRes = $cell.attr('data-roomId');
+          Util.log('readyCells One', _this.dateBeg, date, _this.dateEnd);
+          _this.dateBeg = !Util.isStr(_this.dateBeg) ? date : void 0;
+          _this.dateEnd = !Util.isStr(_this.dateEnd) ? date : void 0;
+          _this.dateBeg = date.localeCompare(_this.dateBeg) < 0 ? date : _this.dateBeg;
+          _this.dateEnd = date.localeCompare(_this.dateEnd) > 0 ? date : _this.dateEnd;
+          Util.log('readyCells Two', _this.dateBeg, date, _this.dateEnd);
+          $('#Arrive').text(_this.Data.toMMDD(_this.dateBeg));
+          $('#StayTo').text(_this.Data.toMMDD(_this.dateEnd));
           if (status !== 'free') {
             _this.res.onResId('get', _this.onResTable, resId);
             return _this.store.get('Res', resId);
@@ -260,7 +273,7 @@
       var resId, status;
       status = this.res.getStatus(roomId, date);
       resId = this.res.resId(roomId, date);
-      return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-cell=\"y\"></td>";
+      return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
     };
 
     Master.prototype.allocMasterCell = function(roomId, date, status) {
@@ -345,9 +358,9 @@
     Master.prototype.resvInput = function() {
       var htm;
       htm = "<table><thead>";
-      htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
+      htm += "<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
-      htm += "<tr><td id=\"Arrive\"></td><td>" + (this.nights()) + "</td><td>" + (this.roomi()) + "</td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.states()) + "</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>";
+      htm += "<tr><td id=\"Arrive\"></td><td id=\"StayTo\"></td><td>" + (this.roomi()) + "</td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.states()) + "</td><td>" + (this.submit()) + "</td><td>Price</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>";
       htm += "</tbody></table>";
       return htm;
     };
@@ -373,7 +386,26 @@
     };
 
     Master.prototype.names = function() {
-      return 'Name';
+      return this.res.htmlInput('Names', 'Names');
+    };
+
+    Master.prototype.submit = function() {
+      return this.res.htmlButton('Submit', 'Submit', 'Submit');
+    };
+
+    Master.prototype.resvInputRespond = function() {
+      this.res.makeSelect('Nights', this.resvNew);
+      this.res.makeSelect('Rooms', this.resvNew);
+      this.res.makeSelect('Guests', this.resvNew);
+      this.res.makeSelect('Pets', this.resvNew);
+      this.res.makeSelect('States', this.resvNew);
+      this.res.makeInput('Names', this.resvNew);
+      return $('#Submit').click((function(_this) {
+        return function(event) {
+          Util.noop(event);
+          return Util.log(_this.resvNew);
+        };
+      })(this));
     };
 
     Master.prototype.resvTable = function(today) {

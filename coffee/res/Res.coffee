@@ -1,3 +1,6 @@
+
+$ = require( 'jquery' )
+
 class Res
 
   module.exports = Res
@@ -228,3 +231,26 @@ class Res
       selected = if elem is Util.toStr(choice) then "selected" else ""
       htm += """<option#{' '+selected}>#{elem}</option>"""
     htm += "</select>"
+
+  # UI Element that does that quite belong here
+  htmlInput:( htmlId, klass, value="", label="", type="text" ) ->
+    htm  = ""
+    htm += """<label for="#{htmlId}" class="#{klass+'Label'}">#{label}</label>"""  if Util.isStr(label)
+    htm += """<input id= "#{htmlId}" class="#{klass}" value="#{value}" type="#{type}">"""
+    htm
+
+  htmlButton:( htmlId, klass, title ) ->
+    """<button id="#{htmlId}" class="btn btn-primary #{klass}">#{title}</button>"""
+
+  # Sets htmlId property on obj
+  makeSelect:( htmlId, obj ) =>
+    onSelect = (event) -> obj[htmlId] = $(event.target).value
+    $('#'+htmlId).change( onSelect )
+    return
+
+  # Sets htmlId property on obj
+  makeInput:( htmlId, obj ) =>
+    onInput = (event) -> obj[htmlId] = $(event.target).value # $('#'+htmlId).val()
+    $('#'+htmlId).change( onInput )
+    return
+

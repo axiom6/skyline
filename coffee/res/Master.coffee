@@ -9,8 +9,11 @@ class Master
     @rooms         = @res.rooms
     @uploadedText  = ""
     @uploadedResvs = {}
+    @resvNew       = {}
     @res.master    = @
-    @resDate       = @Data.today()
+    @dateBeg       = ''
+    @dateEnd       = ''
+    @roomRes       = '1' # Need to consider roomId default
     @lastMaster    = { left:0, top:0, width:0, height:0 }
     @lastSeason    = { left:0, top:0, width:0, height:0 }
 
@@ -98,15 +101,24 @@ class Master
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
     @readyCells()
+    @resvInputRespond()
     return
 
-  readyCells:() ->
+  readyCells:() =>
     doCell = (event) =>
       $cell    = $(event.target)
-      status   = $cell.attr('data-status')
-      resId    = $cell.attr('data-res'   )
-      @resDate = resId.substr(0,6)
-      $('#Arrive').val(@resDate)
+      status   = $cell.attr('data-status' )
+      resId    = $cell.attr('data-res'    )
+      date     = $cell.attr('data-date'   )
+      @roomRes = $cell.attr('data-roomId' )
+      Util.log( 'readyCells One', @dateBeg, date, @dateEnd )
+      @dateBeg = if not Util.isStr(@dateBeg)   then date
+      @dateEnd = if not Util.isStr(@dateEnd)   then date
+      @dateBeg = if date.localeCompare(@dateBeg) < 0 then date else @dateBeg
+      @dateEnd = if date.localeCompare(@dateEnd) > 0 then date else @dateEnd
+      Util.log( 'readyCells Two', @dateBeg, date, @dateEnd )
+      $('#Arrive').text( @Data.toMMDD( @dateBeg ) )
+      $('#StayTo').text( @Data.toMMDD( @dateEnd ) )
       #Util.log( 'doCell', { resId:resId, status:status } )
       if status isnt 'free'
         @res.onResId( 'get', @onResTable, resId ) #
@@ -163,7 +175,7 @@ class Master
   createMasterCell:(         roomId, date ) ->
     status = @res.getStatus( roomId, date )
     resId  = @res.resId(     roomId, date )
-    """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-cell="y"></td>"""
+    """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
 
   allocMasterCell:( roomId, date, status ) ->
     @cellMasterStatus( @$cell('M',date,roomId), status )
@@ -218,9 +230,9 @@ class Master
   resvInput:() ->
     #esvs = @res.dayResvs( today )
     htm  = """<table><thead>"""
-    htm += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm += """<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm += """</thead><tbody>"""
-    htm += """<tr><td id="Arrive"></td><td>#{@nights()}</td><td>#{@roomi()}</td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@states()}</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>"""
+    htm += """<tr><td id="Arrive"></td><td id="StayTo"></td><td>#{@roomi()}</td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@states()}</td><td>#{@submit()}</td><td>Price</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>"""
     htm += """</tbody></table>"""
     htm
 
@@ -229,7 +241,19 @@ class Master
   guests:() -> @res.htmlSelect( 'Guests', @Data.persons, 2,      'Guests' )
   pets:  () -> @res.htmlSelect( 'Pets',   @Data.pets,    0,      'Pets'   )
   states:() -> @res.htmlSelect( 'States', @Data.states,  'chan', 'States' )
-  names: () -> 'Name'
+  names: () -> @res.htmlInput(  'Names',  'Names' )
+  submit:() -> @res.htmlButton( 'Submit', 'Submit', 'Submit' )
+
+  resvInputRespond:() ->
+    @res.makeSelect( 'Nights', @resvNew )
+    @res.makeSelect( 'Rooms',  @resvNew )
+    @res.makeSelect( 'Guests', @resvNew )
+    @res.makeSelect( 'Pets',   @resvNew )
+    @res.makeSelect( 'States', @resvNew )
+    @res.makeInput(  'Names',  @resvNew )
+    $('#Submit').click (event) =>
+      Util.noop( event )
+      Util.log( @resvNew )
 
   resvTable:( today ) ->
     #esvs = @res.dayResvs( today )
