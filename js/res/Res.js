@@ -13,8 +13,6 @@
 
     Res.Days = {};
 
-    Res.States = ["free", "mine", "depo", "book", "prep", "chan"];
-
     function Res(stream, store, Data, appName) {
       this.stream = stream;
       this.store = store;
@@ -26,7 +24,7 @@
       this.onResId = bind(this.onResId, this);
       this.rooms = Res.Rooms;
       this.roomKeys = Util.keys(this.rooms);
-      this.states = Res.States;
+      this.states = this.Data.States;
       this.book = null;
       this.master = null;
       this.days = {};
@@ -399,6 +397,28 @@
     Res.prototype.setDayRoom = function(dayRoom, status, resId) {
       dayRoom.status = status;
       return dayRoom.resId = resId;
+    };
+
+    Res.prototype.htmlSelect = function(htmlId, array, choice, klass, max) {
+      var elem, htm, j, len, selected, where;
+      if (max == null) {
+        max = void 0;
+      }
+      htm = "<select name=\"" + htmlId + "\" id=\"" + htmlId + "\" class=\"" + klass + "\">";
+      where = max != null ? function(elem) {
+        return elem <= max;
+      } : function() {
+        return true;
+      };
+      for (j = 0, len = array.length; j < len; j++) {
+        elem = array[j];
+        if (!(where(elem))) {
+          continue;
+        }
+        selected = elem === Util.toStr(choice) ? "selected" : "";
+        htm += "<option" + (' ' + selected) + ">" + elem + "</option>";
+      }
+      return htm += "</select>";
     };
 
     return Res;

@@ -63,11 +63,13 @@
       $('#Season').hide();
       $('#Dailys').hide();
       $('#Upload').hide();
+      $('#ResAdd').show();
       $('#ResTbl').show();
       $('#Master').show();
     };
 
     Master.prototype.onLookup = function(resv) {
+      $('#ResAdd').hide();
       $('#ResTbl').hide();
       $('#Master').hide();
       $('#Season').hide();
@@ -101,11 +103,13 @@
           return _this.onSeasonClick(event);
         };
       })(this));
+      $('#ResAdd').show();
       $('#ResTbl').show();
       $('#Season').show();
     };
 
     Master.prototype.onDailysBtn = function() {
+      $('#ResAdd').hide();
       $('#ResTbl').hide();
       $('#Master').hide();
       $('#Lookup').hide();
@@ -118,6 +122,7 @@
     };
 
     Master.prototype.onUploadBtn = function() {
+      $('#ResAdd').hide();
       $('#ResTbl').hide();
       $('#Master').hide();
       $('#Lookup').hide();
@@ -132,6 +137,8 @@
     };
 
     Master.prototype.readyMaster = function() {
+      $('#ResAdd').empty();
+      $('#ResAdd').append(this.resvInput());
       $('#ResTbl').empty();
       $('#ResTbl').append(this.resvTable(this.Data.today()));
       $('#Master').empty();
@@ -153,6 +160,7 @@
           status = $cell.attr('data-status');
           resId = $cell.attr('data-res');
           _this.resDate = resId.substr(0, 6);
+          $('#Arrive').val(_this.resDate);
           if (status !== 'free') {
             _this.res.onResId('get', _this.onResTable, resId);
             return _this.store.get('Res', resId);
@@ -334,9 +342,43 @@
       return htm;
     };
 
+    Master.prototype.resvInput = function() {
+      var htm;
+      htm = "<table><thead>";
+      htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
+      htm += "</thead><tbody>";
+      htm += "<tr><td id=\"Arrive\"></td><td>" + (this.nights()) + "</td><td>" + (this.roomi()) + "</td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.states()) + "</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>";
+      htm += "</tbody></table>";
+      return htm;
+    };
+
+    Master.prototype.nights = function() {
+      return this.res.htmlSelect('Nights', this.Data.nighti, "2", 'Nights');
+    };
+
+    Master.prototype.roomi = function() {
+      return this.res.htmlSelect('Rooms', this.res.roomKeys, "", 'Rooms');
+    };
+
+    Master.prototype.guests = function() {
+      return this.res.htmlSelect('Guests', this.Data.persons, 2, 'Guests');
+    };
+
+    Master.prototype.pets = function() {
+      return this.res.htmlSelect('Pets', this.Data.pets, 0, 'Pets');
+    };
+
+    Master.prototype.states = function() {
+      return this.res.htmlSelect('States', this.Data.states, 'chan', 'States');
+    };
+
+    Master.prototype.names = function() {
+      return 'Name';
+    };
+
     Master.prototype.resvTable = function(today) {
       var charge, htm, r, ref, resId, tax, u;
-      htm = "<div class=\"ResTbl\"><table><thead>";
+      htm = "<table><thead>";
       htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
       ref = this.res.resvs;
@@ -351,7 +393,7 @@
         charge = u.total + parseFloat(tax);
         htm += "<tr><td>" + u.arrive + "</td><td>" + u.nights + "</td><td>" + u.roomId + "</td><td>" + u.last + "</td><td>" + u.guests + "</td><td>" + u.status + "</td><td>" + u.price + "</td><td>" + u.total + "</td><td>" + tax + "</td><td>" + charge + "</td></tr>";
       }
-      htm += "</tbody></table></div>";
+      htm += "</tbody></table>";
       return htm;
     };
 

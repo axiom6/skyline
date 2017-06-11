@@ -30,11 +30,13 @@ class Master
     $('#Season').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
+    $('#ResAdd').show()
     $('#ResTbl').show()
     $('#Master').show()
     return
 
   onLookup:( resv ) =>
+    $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Master').hide()
     $('#Season').hide()
@@ -52,18 +54,19 @@ class Master
     $('#ResTbl').append( @resvTable( @resDate ) )
 
   onSeasonBtn:() =>
-
     $('#Master').hide()
     $('#Lookup').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
     $('#Season').append( @seasonHtml() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
+    $('#ResAdd').show()
     $('#ResTbl').show()
     $('#Season').show()
     return
 
   onDailysBtn:() =>
+    $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Master').hide()
     $('#Lookup').hide()
@@ -74,6 +77,7 @@ class Master
     return
 
   onUploadBtn:() =>
+    $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Master').hide()
     $('#Lookup').hide()
@@ -86,6 +90,8 @@ class Master
     return
 
   readyMaster:() =>
+    $('#ResAdd').empty()
+    $('#ResAdd').append( @resvInput() )
     $('#ResTbl').empty()
     $('#ResTbl').append( @resvTable( @Data.today() ) )
     $('#Master').empty()
@@ -100,6 +106,7 @@ class Master
       status   = $cell.attr('data-status')
       resId    = $cell.attr('data-res'   )
       @resDate = resId.substr(0,6)
+      $('#Arrive').val(@resDate)
       #Util.log( 'doCell', { resId:resId, status:status } )
       if status isnt 'free'
         @res.onResId( 'get', @onResTable, resId ) #
@@ -208,9 +215,25 @@ class Master
       htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @Data.year, month )}</div>"""
     htm
 
+  resvInput:() ->
+    #esvs = @res.dayResvs( today )
+    htm  = """<table><thead>"""
+    htm += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm += """</thead><tbody>"""
+    htm += """<tr><td id="Arrive"></td><td>#{@nights()}</td><td>#{@roomi()}</td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@states()}</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>"""
+    htm += """</tbody></table>"""
+    htm
+
+  nights:() -> @res.htmlSelect( 'Nights', @Data.nighti,  "2",    'Nights' )
+  roomi: () -> @res.htmlSelect( 'Rooms',  @res.roomKeys, "",     'Rooms'  )
+  guests:() -> @res.htmlSelect( 'Guests', @Data.persons, 2,      'Guests' )
+  pets:  () -> @res.htmlSelect( 'Pets',   @Data.pets,    0,      'Pets'   )
+  states:() -> @res.htmlSelect( 'States', @Data.states,  'chan', 'States' )
+  names: () -> 'Name'
+
   resvTable:( today ) ->
     #esvs = @res.dayResvs( today )
-    htm   = """<div class="ResTbl"><table><thead>"""
+    htm   = """<table><thead>"""
     htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm  += """</thead><tbody>"""
     for own resId, r of @res.resvs when r.u.arrive is today
@@ -218,7 +241,7 @@ class Master
       tax    = Util.toFixed( u.total * @Data.tax )
       charge = u.total + parseFloat( tax )
       htm += """<tr><td>#{u.arrive}</td><td>#{u.nights}</td><td>#{u.roomId}</td><td>#{u.last}</td><td>#{u.guests}</td><td>#{u.status}</td><td>#{u.price}</td><td>#{u.total}</td><td>#{tax}</td><td>#{charge}</td></tr>"""
-    htm += """</tbody></table></div>"""
+    htm += """</tbody></table>"""
     htm
 
   roomsHtml:( year, month ) ->

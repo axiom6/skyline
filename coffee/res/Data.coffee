@@ -3,6 +3,7 @@ class Data
 
   module.exports = Data
 
+  @states      = ["free","mine","depo","book","prep","chan"]
   @tax         = 0.1055 # Official Estes Park tax rate. Also in Booking.com
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
@@ -10,6 +11,7 @@ class Data
   @weekdays    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
   @days        = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
   @persons     = ["1","2","3","4","5","6","7","8","9","10","11","12"]
+  @nighti      = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14"]
   @pets        = ["0","1","2","3","4"]
   @petPrice    = 12
   @year        = 17

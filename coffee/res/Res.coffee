@@ -4,12 +4,12 @@ class Res
   Res.Rooms  = require( 'data/room.json' )
   Res.Resvs  = {} #require( 'data/res.json'  )
   Res.Days   = {} #require( 'data/days.json' )
-  Res.States = ["free","mine","depo","book","prep","chan"]
+
 
   constructor:( @stream, @store, @Data, @appName ) ->
     @rooms    = Res.Rooms
     @roomKeys = Util.keys( @rooms )
-    @states   = Res.States
+    @states   = @Data.States
     @book     = null
     @master   = null
     @days     = {}
@@ -219,3 +219,12 @@ class Res
   setDayRoom:( dayRoom, status, resId ) ->
     dayRoom.status = status
     dayRoom.resId  = resId
+
+  # UI Element that does that quite belong here
+  htmlSelect:( htmlId, array, choice, klass, max=undefined ) ->
+    htm   = """<select name="#{htmlId}" id="#{htmlId}" class="#{klass}">"""
+    where = if max? then (elem) -> elem <= max else () -> true
+    for elem in array when where(elem)
+      selected = if elem is Util.toStr(choice) then "selected" else ""
+      htm += """<option#{' '+selected}>#{elem}</option>"""
+    htm += "</select>"

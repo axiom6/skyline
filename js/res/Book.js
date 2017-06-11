@@ -70,8 +70,8 @@
 
     Book.prototype.initsHtml = function() {
       var htm;
-      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (this.htmlSelect("Months", this.Data.season, this.Data.month, 'months')) + "</label>";
-      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.htmlSelect("Days", this.Data.days, this.Data.begDay, 'days')) + "</label>";
+      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (this.res.htmlSelect("Months", this.Data.season, this.Data.month, 'months')) + "</label>";
+      htm += "<label for=\"Days\"   class=\"InitIp\">       " + (this.res.htmlSelect("Days", this.Data.days, this.Data.begDay, 'days')) + "</label>";
       htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + (2000 + this.Data.year) + "</label>";
       htm += "<span  id=\"Pop\"  class=\"Test\">Pop</span>";
       htm += "<span  id=\"Test\" class=\"Test\">Test</span>";
@@ -291,33 +291,11 @@
     };
 
     Book.prototype.g = function(roomId) {
-      return this.htmlSelect(roomId + 'G', this.Data.persons, 2, 'guests', this.rooms[roomId].max);
+      return this.res.htmlSelect(roomId + 'G', this.Data.persons, 2, 'guests', this.rooms[roomId].max);
     };
 
     Book.prototype.p = function(roomId) {
-      return this.htmlSelect(roomId + 'P', this.Data.pets, 0, 'pets', 3);
-    };
-
-    Book.prototype.htmlSelect = function(htmlId, array, choice, klass, max) {
-      var elem, htm, i, len, selected, where;
-      if (max == null) {
-        max = void 0;
-      }
-      htm = "<select name=\"" + htmlId + "\" id=\"" + htmlId + "\" class=\"" + klass + "\">";
-      where = max != null ? function(elem) {
-        return elem <= max;
-      } : function() {
-        return true;
-      };
-      for (i = 0, len = array.length; i < len; i++) {
-        elem = array[i];
-        if (!(where(elem))) {
-          continue;
-        }
-        selected = elem === Util.toStr(choice) ? "selected" : "";
-        htm += "<option" + (' ' + selected) + ">" + elem + "</option>";
-      }
-      return htm += "</select>";
+      return this.res.htmlSelect(roomId + 'P', this.Data.pets, 0, 'pets', 3);
     };
 
     Book.prototype.onGuests = function(event) {

@@ -53,8 +53,8 @@ class Book
     """
 
   initsHtml:() ->
-    htm  = """<label for="Months" class="InitIp">Start: #{ @htmlSelect( "Months", @Data.season, @Data.month,  'months' ) }</label>"""
-    htm += """<label for="Days"   class="InitIp">       #{ @htmlSelect( "Days",   @Data.days,   @Data.begDay, 'days'   ) }</label>"""
+    htm  = """<label for="Months" class="InitIp">Start: #{ @res.htmlSelect( "Months", @Data.season, @Data.month,  'months' ) }</label>"""
+    htm += """<label for="Days"   class="InitIp">       #{ @res.htmlSelect( "Days",   @Data.days,   @Data.begDay, 'days'   ) }</label>"""
     htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+@Data.year}</label>"""
     htm += """<span  id="Pop"  class="Test">Pop</span>"""
     htm += """<span  id="Test" class="Test">Test</span>"""
@@ -231,16 +231,9 @@ class Book
     $('#GoToPay').prop('disabled',false) if @totals > 0
     return
 
-  g:(roomId) -> @htmlSelect( roomId+'G', @Data.persons, 2, 'guests', @rooms[roomId].max )
-  p:(roomId) -> @htmlSelect( roomId+'P', @Data.pets,    0, 'pets',   3                  )
+  g:(roomId) -> @res.htmlSelect( roomId+'G', @Data.persons, 2, 'guests', @rooms[roomId].max )
+  p:(roomId) -> @res.htmlSelect( roomId+'P', @Data.pets,    0, 'pets',   3                  )
 
-  htmlSelect:( htmlId, array, choice, klass, max=undefined ) ->
-    htm   = """<select name="#{htmlId}" id="#{htmlId}" class="#{klass}">"""
-    where = if max? then (elem) -> elem <= max else () -> true
-    for elem in array when where(elem)
-      selected = if elem is Util.toStr(choice) then "selected" else ""
-      htm += """<option#{' '+selected}>#{elem}</option>"""
-    htm += "</select>"
 
   onGuests:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
