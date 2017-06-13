@@ -11,9 +11,9 @@ class Master
     @uploadedResvs = {}
     @resvNew       = {}
     @res.master    = @
-    @dateBeg       = ''
-    @dateEnd       = ''
-    @roomRes       = '1' # Need to consider roomId default
+    @dateBeg       = null
+    @dateEnd       = null
+    @roomId        = '1' # Need to consider roomId default
     @lastMaster    = { left:0, top:0, width:0, height:0 }
     @lastSeason    = { left:0, top:0, width:0, height:0 }
 
@@ -25,7 +25,7 @@ class Master
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
     $('#UploadBtn').click( @onUploadBtn )
-    @res.dateRange( @Data.beg, @Data.end, @readyMaster )
+    @res.dateRange( @Data.beg, @Data.end, 'full', @readyMaster )
     return
 
   onMasterBtn:() =>
@@ -54,7 +54,7 @@ class Master
 
   onResTable:() =>
     $('#ResTbl').empty()
-    $('#ResTbl').append( @resvTable( @resDate ) )
+    $('#ResTbl').append( @resvTable() )
 
   onSeasonBtn:() =>
     $('#Master').hide()
@@ -96,7 +96,7 @@ class Master
     $('#ResAdd').empty()
     $('#ResAdd').append( @resvInput() )
     $('#ResTbl').empty()
-    $('#ResTbl').append( @resvTable( @Data.today() ) )
+    $('#ResTbl').append( @resvTable() )
     $('#Master').empty()
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
@@ -108,27 +108,38 @@ class Master
     doCell = (event) =>
       $cell    = $(event.target)
       status   = $cell.attr('data-status' )
-      resId    = $cell.attr('data-res'    )
+      #resId   = $cell.attr('data-res'    )
       date     = $cell.attr('data-date'   )
-      @roomRes = $cell.attr('data-roomId' )
-      Util.log( 'readyCells One', @dateBeg, date, @dateEnd )
-      @dateBeg = if not Util.isStr(@dateBeg)   then date
-      @dateEnd = if not Util.isStr(@dateEnd)   then date
-      @dateBeg = if date.localeCompare(@dateBeg) < 0 then date else @dateBeg
-      @dateEnd = if date.localeCompare(@dateEnd) > 0 then date else @dateEnd
-      Util.log( 'readyCells Two', @dateBeg, date, @dateEnd )
-      $('#Arrive').text( @Data.toMMDD( @dateBeg ) )
-      $('#StayTo').text( @Data.toMMDD( @dateEnd ) )
-      #Util.log( 'doCell', { resId:resId, status:status } )
-      if status isnt 'free'
-        @res.onResId( 'get', @onResTable, resId ) #
-        @store.get(   'Res', resId )
-    $('[data-cell="y"]').click( doCell )
+      @roomId  = $cell.attr('data-roomId' )
+      @dateBeg = if event.button is 0 then date else @dateBeg # Left  button
+      @dateEnd = if event.button is 2 then date else @dateEnd # Right button
+      @popResvInput( @dateBeg, @dateEnd, @roomId )
+      #@res.resvRange( @dateBeg, @dateEnd, 'resv', @onResTable ) if @dateBeg? and @dateEnd?
+    $('[data-cell="y"]').click(       doCell )
+    $('[data-cell="y"]').contextmenu( doCell )
+    return
+    
+  popResvInput:( beg, end, roomId ) ->
+    $('#Arrive').text( @Data.toMMDD(beg)     ) if beg?
+    $('#StayTo').text( @Data.toMMDD(end)     ) if end?
+    $('#RoomId').text( @roomId               )
+    if beg? and end?
+      room   = @rooms[roomId]
+      nights = @Data.nights(beg,end)
+      price  = room.booking
+      total  = nights * price
+      tax    = parseFloat( Util.toFixed( total * @Data.tax ) )
+      charge = total + tax
+      $('#Nights').text( nights )
+      $('#Price' ).text( price  )
+      $('#Total' ).text( total  )
+      $('#Tax'   ).text( tax    )
+      $('#Charge').text( charge )
     return
 
   onDateRange:() =>
     @readyMaster()
-    for own dayId, dayRoom of @res.days
+    for own dayId, dayRoom of @res.days['full']
       @onAlloc( dayId, dayRoom )
     return
 
@@ -230,9 +241,9 @@ class Master
   resvInput:() ->
     #esvs = @res.dayResvs( today )
     htm  = """<table><thead>"""
-    htm += """<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm += """<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm += """</thead><tbody>"""
-    htm += """<tr><td id="Arrive"></td><td id="StayTo"></td><td>#{@roomi()}</td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@states()}</td><td>#{@submit()}</td><td>Price</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>"""
+    htm += """<tr><td id="Arrive"></td><td id="StayTo"></td><td id="RoomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@states()}</td><td>#{@submit()}</td><td id="Nights"></td><td id="Price"></td><td id="Total"></td><td id="Tax"></td><td id="Charge"></td></tr>"""
     htm += """</tbody></table>"""
     htm
 
@@ -255,12 +266,11 @@ class Master
       Util.noop( event )
       Util.log( @resvNew )
 
-  resvTable:( today ) ->
-    #esvs = @res.dayResvs( today )
+  resvTable:() ->
     htm   = """<table><thead>"""
     htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm  += """</thead><tbody>"""
-    for own resId, r of @res.resvs when r.u.arrive is today
+    for own resId, r of @res.resvs['resv']
       u      = r.u
       tax    = Util.toFixed( u.total * @Data.tax )
       charge = u.total + parseFloat( tax )
@@ -417,10 +427,10 @@ class Master
 
     return if Util.isObjEmpty(  @uploadedResvs )
     return if not @updateValid( @uploadedResvs )
-    @res.resvs = @updateResv(    @uploadedResvs )
-    @res.days  = @res.createDaysFromResvs( @res.resvs, @res.days ) # Not sure about this
-    @res.postResvChan( resv ) for own resId, resv of @res.resvs
-    #res.dateRange( @Data.beg, @Data.end, @readyMaster ) # Latter
+    @res.resvs['chan'] = @updateResv(    @uploadedResvs )
+    @res.days['chan']  = @res.createDaysFromResvs( @res.resvs['chan'], @res.days['full'] ) # Not sure about this
+    @res.postResvChan( resv ) for own resId, resv of @res.resvs['chan']
+    #res.dateRange( @Data.beg, @Data.end, 'full', @readyMaster ) # Latter
     @onDateRange()
     @uploadedResv = {}
 

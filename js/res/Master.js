@@ -36,9 +36,9 @@
       this.uploadedResvs = {};
       this.resvNew = {};
       this.res.master = this;
-      this.dateBeg = '';
-      this.dateEnd = '';
-      this.roomRes = '1';
+      this.dateBeg = null;
+      this.dateEnd = null;
+      this.roomId = '1';
       this.lastMaster = {
         left: 0,
         top: 0,
@@ -59,7 +59,7 @@
       $('#SeasonBtn').click(this.onSeasonBtn);
       $('#DailysBtn').click(this.onDailysBtn);
       $('#UploadBtn').click(this.onUploadBtn);
-      this.res.dateRange(this.Data.beg, this.Data.end, this.readyMaster);
+      this.res.dateRange(this.Data.beg, this.Data.end, 'full', this.readyMaster);
     };
 
     Master.prototype.onMasterBtn = function() {
@@ -91,7 +91,7 @@
 
     Master.prototype.onResTable = function() {
       $('#ResTbl').empty();
-      return $('#ResTbl').append(this.resvTable(this.resDate));
+      return $('#ResTbl').append(this.resvTable());
     };
 
     Master.prototype.onSeasonBtn = function() {
@@ -144,7 +144,7 @@
       $('#ResAdd').empty();
       $('#ResAdd').append(this.resvInput());
       $('#ResTbl').empty();
-      $('#ResTbl').append(this.resvTable(this.Data.today()));
+      $('#ResTbl').append(this.resvTable());
       $('#Master').empty();
       $('#Master').append(this.masterHtml());
       $('.MasterTitle').click((function(_this) {
@@ -160,33 +160,48 @@
       var doCell;
       doCell = (function(_this) {
         return function(event) {
-          var $cell, date, resId, status;
+          var $cell, date, status;
           $cell = $(event.target);
           status = $cell.attr('data-status');
-          resId = $cell.attr('data-res');
           date = $cell.attr('data-date');
-          _this.roomRes = $cell.attr('data-roomId');
-          Util.log('readyCells One', _this.dateBeg, date, _this.dateEnd);
-          _this.dateBeg = !Util.isStr(_this.dateBeg) ? date : void 0;
-          _this.dateEnd = !Util.isStr(_this.dateEnd) ? date : void 0;
-          _this.dateBeg = date.localeCompare(_this.dateBeg) < 0 ? date : _this.dateBeg;
-          _this.dateEnd = date.localeCompare(_this.dateEnd) > 0 ? date : _this.dateEnd;
-          Util.log('readyCells Two', _this.dateBeg, date, _this.dateEnd);
-          $('#Arrive').text(_this.Data.toMMDD(_this.dateBeg));
-          $('#StayTo').text(_this.Data.toMMDD(_this.dateEnd));
-          if (status !== 'free') {
-            _this.res.onResId('get', _this.onResTable, resId);
-            return _this.store.get('Res', resId);
-          }
+          _this.roomId = $cell.attr('data-roomId');
+          _this.dateBeg = event.button === 0 ? date : _this.dateBeg;
+          _this.dateEnd = event.button === 2 ? date : _this.dateEnd;
+          return _this.popResvInput(_this.dateBeg, _this.dateEnd, _this.roomId);
         };
       })(this);
       $('[data-cell="y"]').click(doCell);
+      $('[data-cell="y"]').contextmenu(doCell);
+    };
+
+    Master.prototype.popResvInput = function(beg, end, roomId) {
+      var charge, nights, price, room, tax, total;
+      if (beg != null) {
+        $('#Arrive').text(this.Data.toMMDD(beg));
+      }
+      if (end != null) {
+        $('#StayTo').text(this.Data.toMMDD(end));
+      }
+      $('#RoomId').text(this.roomId);
+      if ((beg != null) && (end != null)) {
+        room = this.rooms[roomId];
+        nights = this.Data.nights(beg, end);
+        price = room.booking;
+        total = nights * price;
+        tax = parseFloat(Util.toFixed(total * this.Data.tax));
+        charge = total + tax;
+        $('#Nights').text(nights);
+        $('#Price').text(price);
+        $('#Total').text(total);
+        $('#Tax').text(tax);
+        $('#Charge').text(charge);
+      }
     };
 
     Master.prototype.onDateRange = function() {
       var dayId, dayRoom, ref;
       this.readyMaster();
-      ref = this.res.days;
+      ref = this.res.days['full'];
       for (dayId in ref) {
         if (!hasProp.call(ref, dayId)) continue;
         dayRoom = ref[dayId];
@@ -358,9 +373,9 @@
     Master.prototype.resvInput = function() {
       var htm;
       htm = "<table><thead>";
-      htm += "<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
+      htm += "<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
-      htm += "<tr><td id=\"Arrive\"></td><td id=\"StayTo\"></td><td>" + (this.roomi()) + "</td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.states()) + "</td><td>" + (this.submit()) + "</td><td>Price</td><td>Price</td><td>Total</td><td>Tax</td><td>Charge</td></tr>";
+      htm += "<tr><td id=\"Arrive\"></td><td id=\"StayTo\"></td><td id=\"RoomId\"></td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.states()) + "</td><td>" + (this.submit()) + "</td><td id=\"Nights\"></td><td id=\"Price\"></td><td id=\"Total\"></td><td id=\"Tax\"></td><td id=\"Charge\"></td></tr>";
       htm += "</tbody></table>";
       return htm;
     };
@@ -408,18 +423,15 @@
       })(this));
     };
 
-    Master.prototype.resvTable = function(today) {
+    Master.prototype.resvTable = function() {
       var charge, htm, r, ref, resId, tax, u;
       htm = "<table><thead>";
       htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
-      ref = this.res.resvs;
+      ref = this.res.resvs['resv'];
       for (resId in ref) {
         if (!hasProp.call(ref, resId)) continue;
         r = ref[resId];
-        if (!(r.u.arrive === today)) {
-          continue;
-        }
         u = r.u;
         tax = Util.toFixed(u.total * this.Data.tax);
         charge = u.total + parseFloat(tax);
@@ -625,9 +637,9 @@
       if (!this.updateValid(this.uploadedResvs)) {
         return;
       }
-      this.res.resvs = this.updateResv(this.uploadedResvs);
-      this.res.days = this.res.createDaysFromResvs(this.res.resvs, this.res.days);
-      ref = this.res.resvs;
+      this.res.resvs['chan'] = this.updateResv(this.uploadedResvs);
+      this.res.days['chan'] = this.res.createDaysFromResvs(this.res.resvs['chan'], this.res.days['full']);
+      ref = this.res.resvs['chan'];
       for (resId in ref) {
         if (!hasProp.call(ref, resId)) continue;
         resv = ref[resId];

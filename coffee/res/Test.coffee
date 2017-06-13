@@ -11,7 +11,7 @@ class Test
   doTest:() ->
     for     own resId,  res  of Test.Data
       for   own roomId, room of res
-        for own dayId,  day  of res.days
+        for own dayId,  day  of res.days['full']
           $cell = $('#R'+roomId+dayId)
           @book.cellBook( $cell )
       cust = res.cust

@@ -1,0 +1,744 @@
+{
+  "Days" : {
+    "170611" : {
+      "5" : {
+        "key" : "170611/5",
+        "resId" : "1706115",
+        "status" : "book"
+      }
+    },
+    "170612" : {
+      "5" : {
+        "key" : "170612/5",
+        "resId" : "1706115",
+        "status" : "book"
+      }
+    },
+    "170613" : {
+      "5" : {
+        "key" : "170613/5",
+        "resId" : "1706115",
+        "status" : "book"
+      }
+    },
+    "170614" : {
+      "5" : {
+        "key" : "170614/5",
+        "resId" : "1706115",
+        "status" : "book"
+      }
+    },
+    "170702" : {
+      "4" : {
+        "key" : "170702/4",
+        "resId" : "1707024",
+        "status" : "book"
+      }
+    },
+    "170703" : {
+      "4" : {
+        "key" : "170703/4",
+        "resId" : "1707024",
+        "status" : "book"
+      }
+    },
+    "170704" : {
+      "4" : {
+        "key" : "170704/4",
+        "resId" : "1707024",
+        "status" : "book"
+      }
+    },
+    "170726" : {
+      "3" : {
+        "key" : "170726/3",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "5" : {
+        "key" : "170726/5",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "6" : {
+        "key" : "170726/6",
+        "resId" : "1707263",
+        "status" : "book"
+      }
+    },
+    "170727" : {
+      "3" : {
+        "key" : "170727/3",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "5" : {
+        "key" : "170727/5",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "6" : {
+        "key" : "170727/6",
+        "resId" : "1707263",
+        "status" : "book"
+      }
+    },
+    "170728" : {
+      "3" : {
+        "key" : "170728/3",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "5" : {
+        "key" : "170728/5",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "6" : {
+        "key" : "170728/6",
+        "resId" : "1707263",
+        "status" : "book"
+      }
+    },
+    "170729" : {
+      "3" : {
+        "key" : "170729/3",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "5" : {
+        "key" : "170729/5",
+        "resId" : "1707263",
+        "status" : "book"
+      },
+      "6" : {
+        "key" : "170729/6",
+        "resId" : "1707263",
+        "status" : "book"
+      }
+    },
+    "170811" : {
+      "3" : {
+        "key" : "170811/3",
+        "resId" : "1708113",
+        "status" : "depo"
+      }
+    },
+    "170812" : {
+      "3" : {
+        "key" : "170812/3",
+        "resId" : "1708113",
+        "status" : "depo"
+      }
+    },
+    "170813" : {
+      "3" : {
+        "key" : "170813/3",
+        "resId" : "1708113",
+        "status" : "depo"
+      }
+    },
+    "170814" : {
+      "3" : {
+        "key" : "170814/3",
+        "resId" : "1708113",
+        "status" : "depo"
+      }
+    },
+    "170901" : {
+      "6" : {
+        "key" : "170901/6",
+        "resId" : "1709016",
+        "status" : "depo"
+      }
+    },
+    "170902" : {
+      "6" : {
+        "key" : "170902/6",
+        "resId" : "1709016",
+        "status" : "depo"
+      }
+    },
+    "170903" : {
+      "6" : {
+        "key" : "170903/6",
+        "resId" : "1709016",
+        "status" : "depo"
+      }
+    },
+    "170907" : {
+      "6" : {
+        "key" : "170907/6",
+        "resId" : "1709076",
+        "status" : "depo"
+      }
+    },
+    "170908" : {
+      "6" : {
+        "key" : "170908/6",
+        "resId" : "1709076",
+        "status" : "depo"
+      }
+    },
+    "170909" : {
+      "6" : {
+        "key" : "170909/6",
+        "resId" : "1709076",
+        "status" : "depo"
+      }
+    }
+  },
+  "Res" : {
+    "1706115" : {
+      "arrive" : "170611",
+      "balance" : 0,
+      "booked" : "170525",
+      "cust" : {
+        "custId" : "5555555555",
+        "email" : "weber@email.com",
+        "first" : "X",
+        "last" : "Weber",
+        "phone" : "5555555555",
+        "source" : "site"
+      },
+      "key" : "1706115",
+      "method" : "card",
+      "paid" : 780,
+      "payments" : {
+        "17061151" : {
+          "amount" : 780,
+          "cc" : "",
+          "cvc" : "",
+          "date" : "170525",
+          "exp" : "",
+          "last4" : "242 ",
+          "method" : "Credit",
+          "purpose" : "PayInFull",
+          "with" : "Credit"
+        }
+      },
+      "resId" : "1706115",
+      "rooms" : {
+        "5" : {
+          "change" : 0,
+          "days" : {
+            "170611" : {
+              "resId" : "1706115",
+              "status" : "book"
+            },
+            "170612" : {
+              "resId" : "1706115",
+              "status" : "book"
+            },
+            "170613" : {
+              "resId" : "1706115",
+              "status" : "book"
+            },
+            "170614" : {
+              "resId" : "1706115",
+              "status" : "book"
+            }
+          },
+          "guests" : 2,
+          "name" : "#5 River Cabin With View",
+          "nights" : 4,
+          "pets" : 0,
+          "price" : 195,
+          "reason" : "No Changes",
+          "spa" : "N",
+          "total" : 780
+        }
+      },
+      "status" : "book",
+      "totals" : 780
+    },
+    "1707024" : {
+      "arrive" : "170702",
+      "balance" : 0,
+      "booked" : "170525",
+      "cust" : {
+        "custId" : "5555555556",
+        "email" : "kikani@email.com",
+        "first" : "X",
+        "last" : "Kikani",
+        "phone" : "5555555556",
+        "source" : "site"
+      },
+      "key" : "1707024",
+      "method" : "card",
+      "paid" : 375,
+      "payments" : {
+        "17070241" : {
+          "amount" : 375,
+          "cc" : "",
+          "cvc" : "",
+          "date" : "170525",
+          "exp" : "",
+          "last4" : "242 ",
+          "method" : "Credit",
+          "purpose" : "PayInFull",
+          "with" : "Credit"
+        }
+      },
+      "resId" : "1707024",
+      "rooms" : {
+        "4" : {
+          "change" : 0,
+          "days" : {
+            "170702" : {
+              "resId" : "1707024",
+              "status" : "book"
+            },
+            "170703" : {
+              "resId" : "1707024",
+              "status" : "book"
+            },
+            "170704" : {
+              "resId" : "1707024",
+              "status" : "book"
+            }
+          },
+          "guests" : 2,
+          "name" : "#4 Cozy 1-Room Cabin",
+          "nights" : 3,
+          "pets" : 0,
+          "price" : 125,
+          "reason" : "No Changes",
+          "spa" : "N",
+          "total" : 375
+        }
+      },
+      "status" : "book",
+      "totals" : 375
+    },
+    "1707263" : {
+      "arrive" : "170726",
+      "balance" : 0,
+      "booked" : "170525",
+      "cust" : {
+        "custId" : "5555555557",
+        "email" : "miller@gmail.com",
+        "first" : "Beth",
+        "last" : "Miller",
+        "phone" : "5555555557",
+        "source" : "site"
+      },
+      "key" : "1707263",
+      "method" : "card",
+      "paid" : 2820,
+      "payments" : {
+        "17072631" : {
+          "amount" : 2820,
+          "cc" : "",
+          "cvc" : "",
+          "date" : "170525",
+          "exp" : "",
+          "last4" : "242 ",
+          "method" : "Credit",
+          "purpose" : "PayInFull",
+          "with" : "Credit"
+        }
+      },
+      "resId" : "1707263",
+      "rooms" : {
+        "3" : {
+          "change" : 0,
+          "days" : {
+            "170726" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170727" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170728" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170729" : {
+              "resId" : "1707263",
+              "status" : "book"
+            }
+          },
+          "guests" : 2,
+          "name" : "#3 Southwest Spa",
+          "nights" : 4,
+          "pets" : 0,
+          "price" : 275,
+          "reason" : "No Changes",
+          "spa" : "Y",
+          "total" : 1100
+        },
+        "5" : {
+          "change" : 0,
+          "days" : {
+            "170726" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170727" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170728" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170729" : {
+              "resId" : "1707263",
+              "status" : "book"
+            }
+          },
+          "guests" : 2,
+          "name" : "#5 River Cabin With View",
+          "nights" : 4,
+          "pets" : 0,
+          "price" : 195,
+          "reason" : "No Changes",
+          "spa" : "N",
+          "total" : 780
+        },
+        "6" : {
+          "change" : 0,
+          "days" : {
+            "170726" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170727" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170728" : {
+              "resId" : "1707263",
+              "status" : "book"
+            },
+            "170729" : {
+              "resId" : "1707263",
+              "status" : "book"
+            }
+          },
+          "guests" : 2,
+          "name" : "#6 Large River Cabin",
+          "nights" : 4,
+          "pets" : 0,
+          "price" : 235,
+          "reason" : "No Changes",
+          "spa" : "N",
+          "total" : 940
+        }
+      },
+      "status" : "book",
+      "totals" : 2820
+    },
+    "1708113" : {
+      "arrive" : "170811",
+      "balance" : 550,
+      "booked" : "170525",
+      "cust" : {
+        "custId" : "5555555559",
+        "email" : "yelolans@email.com",
+        "first" : "X",
+        "last" : "Yelolans",
+        "phone" : "5555555559",
+        "source" : "site"
+      },
+      "key" : "1708113",
+      "method" : "card",
+      "paid" : 550,
+      "payments" : {
+        "17081131" : {
+          "amount" : 550,
+          "cc" : "",
+          "cvc" : "",
+          "date" : "170525",
+          "exp" : "",
+          "last4" : "242 ",
+          "method" : "Credit",
+          "purpose" : "Deposit",
+          "with" : "Credit"
+        }
+      },
+      "resId" : "1708113",
+      "rooms" : {
+        "3" : {
+          "change" : 0,
+          "days" : {
+            "170811" : {
+              "resId" : "1708113",
+              "status" : "depo"
+            },
+            "170812" : {
+              "resId" : "1708113",
+              "status" : "depo"
+            },
+            "170813" : {
+              "resId" : "1708113",
+              "status" : "depo"
+            },
+            "170814" : {
+              "resId" : "1708113",
+              "status" : "depo"
+            }
+          },
+          "guests" : 2,
+          "name" : "#3 Southwest Spa",
+          "nights" : 4,
+          "pets" : 0,
+          "price" : 275,
+          "reason" : "No Changes",
+          "spa" : "Y",
+          "total" : 1100
+        }
+      },
+      "status" : "depo",
+      "totals" : 1100
+    },
+    "1709016" : {
+      "arrive" : "170901",
+      "balance" : 352.5,
+      "booked" : "170525",
+      "cust" : {
+        "custId" : "7777777777",
+        "email" : "keller@email.com",
+        "first" : "X",
+        "last" : "keller",
+        "phone" : "7777777777",
+        "source" : "site"
+      },
+      "key" : "1709016",
+      "method" : "card",
+      "paid" : 352.5,
+      "payments" : {
+        "17090161" : {
+          "amount" : 352.5,
+          "cc" : "",
+          "cvc" : "",
+          "date" : "170525",
+          "exp" : "",
+          "last4" : "242 ",
+          "method" : "Credit",
+          "purpose" : "Deposit",
+          "with" : "Credit"
+        }
+      },
+      "resId" : "1709016",
+      "rooms" : {
+        "6" : {
+          "change" : 0,
+          "days" : {
+            "170901" : {
+              "resId" : "1709016",
+              "status" : "depo"
+            },
+            "170902" : {
+              "resId" : "1709016",
+              "status" : "depo"
+            },
+            "170903" : {
+              "resId" : "1709016",
+              "status" : "depo"
+            }
+          },
+          "guests" : 2,
+          "name" : "#6 Large River Cabin",
+          "nights" : 3,
+          "pets" : 0,
+          "price" : 235,
+          "reason" : "No Changes",
+          "spa" : "N",
+          "total" : 705
+        }
+      },
+      "status" : "depo",
+      "totals" : 705
+    },
+    "1709076" : {
+      "arrive" : "170907",
+      "balance" : 352.5,
+      "booked" : "170525",
+      "cust" : {
+        "custId" : "6666666666",
+        "email" : "aldrus@email.com",
+        "first" : "Karen",
+        "last" : "Aldrus",
+        "phone" : "6666666666",
+        "source" : "site"
+      },
+      "key" : "1709076",
+      "method" : "card",
+      "paid" : 352.5,
+      "payments" : {
+        "17090761" : {
+          "amount" : 352.5,
+          "cc" : "",
+          "cvc" : "",
+          "date" : "170525",
+          "exp" : "",
+          "last4" : "242 ",
+          "method" : "Credit",
+          "purpose" : "Deposit",
+          "with" : "Credit"
+        }
+      },
+      "resId" : "1709076",
+      "rooms" : {
+        "6" : {
+          "change" : 0,
+          "days" : {
+            "170907" : {
+              "resId" : "1709076",
+              "status" : "depo"
+            },
+            "170908" : {
+              "resId" : "1709076",
+              "status" : "depo"
+            },
+            "170909" : {
+              "resId" : "1709076",
+              "status" : "depo"
+            }
+          },
+          "guests" : 2,
+          "name" : "#6 Large River Cabin",
+          "nights" : 3,
+          "pets" : 0,
+          "price" : 235,
+          "reason" : "No Changes",
+          "spa" : "N",
+          "total" : 705
+        }
+      },
+      "status" : "depo",
+      "totals" : 705
+    }
+  },
+  "Room" : {
+    "1" : {
+      "1" : 125,
+      "2" : 125,
+      "3" : 135,
+      "4" : 145,
+      "max" : 4,
+      "name" : "#1 One Room Cabin",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    },
+    "2" : {
+      "1" : 165,
+      "2" : 165,
+      "3" : 175,
+      "4" : 185,
+      "max" : 4,
+      "name" : "#2 Mountain Spa",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 20
+    },
+    "3" : {
+      "1" : 275,
+      "2" : 275,
+      "3" : 275,
+      "4" : 275,
+      "5" : 285,
+      "6" : 295,
+      "7" : 305,
+      "8" : 315,
+      "9" : 325,
+      "max" : 9,
+      "name" : "#3 Southwest Spa",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 20
+    },
+    "4" : {
+      "1" : 125,
+      "2" : 125,
+      "3" : 135,
+      "4" : 145,
+      "max" : 4,
+      "name" : "#4 One Room Cabin",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    },
+    "5" : {
+      "1" : 195,
+      "2" : 195,
+      "3" : 195,
+      "4" : 195,
+      "5" : 205,
+      "6" : 215,
+      "max" : 6,
+      "name" : "#5 Cabin With View",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    },
+    "6" : {
+      "1" : 235,
+      "2" : 235,
+      "3" : 235,
+      "4" : 235,
+      "5" : 245,
+      "6" : 255,
+      "7" : 269,
+      "8" : 275,
+      "9" : 285,
+      "10" : 295,
+      "11" : 305,
+      "12" : 315,
+      "max" : 12,
+      "name" : "#6 River Cabin",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    },
+    "7" : {
+      "1" : 165,
+      "2" : 165,
+      "3" : 175,
+      "4" : 175,
+      "max" : 4,
+      "name" : "#7 Western Spa",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    },
+    "8" : {
+      "1" : 100,
+      "2" : 125,
+      "3" : 125,
+      "4" : 125,
+      "max" : 4,
+      "name" : "#8 Western Unit",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    },
+    "N" : {
+      "1" : 145,
+      "2" : 145,
+      "3" : 155,
+      "4" : 165,
+      "max" : 4,
+      "name" : "North Skyline",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    },
+    "S" : {
+      "1" : 135,
+      "2" : 135,
+      "3" : 145,
+      "4" : 155,
+      "max" : 4,
+      "name" : "South Skyline",
+      "pet" : 12,
+      "price" : 0,
+      "spa" : 0
+    }
+  }
+}

@@ -15,6 +15,8 @@
 
     Res.Days = {};
 
+    Res.Sets = ['full', 'book', 'resv', 'chan'];
+
     function Res(stream, store, Data, appName) {
       this.stream = stream;
       this.store = store;
@@ -34,7 +36,7 @@
       this.days = {};
       this.resvs = {};
       if (this.appName === 'Guest') {
-        this.dateRange(this.Data.beg, this.Data.end);
+        this.dateRange(this.Data.beg, this.Data.end, 'full');
       }
       if (this.store.justMemory) {
         this.populateMemory();
@@ -57,19 +59,50 @@
       return this.insertNewTables();
     };
 
-    Res.prototype.dateRange = function(beg, end, onComplete) {
+    Res.prototype.dateRange = function(beg, end, set, onComplete) {
       if (onComplete == null) {
         onComplete = null;
       }
       this.store.subscribe('Days', 'range', 'none', (function(_this) {
         return function(days) {
-          _this.days = days;
+          if (!Util.inArray(Res.Sets, set)) {
+            Util.error('Res.dateRange() unknown data set', set);
+          }
+          _this.days[set] = days;
           if (onComplete != null) {
             return onComplete();
           }
         };
       })(this));
       this.store.range('Days', beg, end);
+    };
+
+    Res.prototype.resvRange = function(beg, end, set, onComplete) {
+      var resvSelect;
+      if (onComplete == null) {
+        onComplete = null;
+      }
+      Util.log('Res.resvRange()', beg, end, set);
+      resvSelect = (function(_this) {
+        return function() {
+          Util.log('Days', _this.days[set]);
+          _this.store.subscribe('Res', 'select', 'none', function(resvs) {
+            var date, day, j, len, ref;
+            ref = _this.days[set];
+            for (day = j = 0, len = ref.length; j < len; day = ++j) {
+              date = ref[day];
+              _this.resvs[set][day.resId] = resvs[day.resId];
+              Util.log('Day', day);
+              Util.log('Res', resvs[day.resId]);
+            }
+            if (onComplete != null) {
+              return onComplete();
+            }
+          });
+          return _this.store.select('Res');
+        };
+      })(this);
+      return this.dateRange(beg, end, set, resvSelect);
     };
 
     Res.prototype.insertNewTables = function() {
@@ -80,7 +113,7 @@
 
     Res.prototype.getStatus = function(roomId, date) {
       var day, entry;
-      day = this.days != null ? this.days[date] : void 0;
+      day = this.days['full'] != null ? this.days['full'][date] : void 0;
       entry = (day != null) && (day[roomId] != null) ? day[roomId] : null;
       if (entry != null) {
         return entry.status;
@@ -91,7 +124,7 @@
 
     Res.prototype.resId = function(roomId, date) {
       var day, entry;
-      day = this.days != null ? this.days[date] : void 0;
+      day = this.days['full'] != null ? this.days['full'][date] : void 0;
       entry = (day != null) && (day[roomId] != null) ? day[roomId] : null;
       if (entry != null) {
         return entry.resId;
@@ -222,7 +255,7 @@
     Res.prototype.dayResvs = function(today) {
       var date, day, ref, resvs;
       resvs = {};
-      ref = this.days;
+      ref = this.days['full'];
       for (date in ref) {
         if (!hasProp.call(ref, date)) continue;
         day = ref[date];

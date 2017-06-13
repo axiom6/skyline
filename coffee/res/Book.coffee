@@ -282,7 +282,7 @@ class Book
   resetDateRange:() ->
     beg = @Data.toDateStr( @Data.begDay, @Data.monthIdx )
     end = @Data.advanceDate( beg, @Data.numDays-1 )
-    @res.dateRange( beg, end, @resetRooms )
+    @res.dateRange( beg, end, 'book', @resetRooms )
 
   resetRooms:() =>
     $('#Rooms').empty()

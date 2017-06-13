@@ -29,7 +29,7 @@
         for (roomId in res) {
           if (!hasProp.call(res, roomId)) continue;
           room = res[roomId];
-          ref1 = res.days;
+          ref1 = res.days['full'];
           for (dayId in ref1) {
             if (!hasProp.call(ref1, dayId)) continue;
             day = ref1[dayId];

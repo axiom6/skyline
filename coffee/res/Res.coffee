@@ -4,10 +4,10 @@ $ = require( 'jquery' )
 class Res
 
   module.exports = Res
-  Res.Rooms  = require( 'data/room.json' )
-  Res.Resvs  = {} #require( 'data/res.json'  )
-  Res.Days   = {} #require( 'data/days.json' )
-
+  Res.Rooms = require( 'data/room.json' )
+  Res.Resvs = {} #require( 'data/res.json'  )
+  Res.Days  = {} #require( 'data/days.json' )
+  Res.Sets  = ['full','book','resv','chan']  # Data set for @res.days and @res.resv
 
   constructor:( @stream, @store, @Data, @appName ) ->
     @rooms    = Res.Rooms
@@ -17,7 +17,7 @@ class Res
     @master   = null
     @days     = {}
     @resvs    = {}  # Only use occasionally
-    @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
+    @dateRange( @Data.beg, @Data.end, 'full' ) if @appName is 'Guest' # Get entire season for both Guest and Owner
     @populateMemory()      if @store.justMemory
 
   populateMemory:() ->
@@ -25,13 +25,27 @@ class Res
     @onDays(  'put', (days) => Util.noop( 'onDays', days ) ) if @store.justMemory
     @insertNewTables() # Populate Memory
 
-  dateRange:( beg, end, onComplete=null ) ->
+  dateRange:( beg, end, set, onComplete=null ) ->
     @store.subscribe( 'Days', 'range', 'none', (days) =>
-      @days = days
-      #console.log( 'Res.dateRange()', beg, end, @days )
+      Util.error( 'Res.dateRange() unknown data set', set ) if not Util.inArray( Res.Sets, set )
+      @days[set] = days
+      #console.log( 'Res.dateRange()', beg, end, daysProp, @days[daysProp] )
       onComplete() if onComplete? )
     @store.range( 'Days', beg, end )
     return
+
+  resvRange:( beg, end, set, onComplete=null ) ->
+    Util.log( 'Res.resvRange()', beg, end, set )
+    resvSelect = () =>
+      Util.log( 'Days', @days[set] )
+      @store.subscribe( 'Res', 'select', 'none', (resvs) =>
+        for date, day in @days[set]
+          @resvs[set][day.resId] = resvs[day.resId]
+          Util.log( 'Day', day )
+          Util.log( 'Res', resvs[day.resId] )
+        onComplete() if onComplete? )
+      @store.select( 'Res' )
+    @dateRange( beg, end, set, resvSelect )
 
   insertNewTables:() ->
     @insertRooms( Res.Rooms )
@@ -39,12 +53,12 @@ class Res
     @insertDays(  Res.Resvs )
 
   getStatus:( roomId, date ) ->
-    day   = if @days? then @days[date]
+    day   = if @days['full']? then @days['full'][date]
     entry = if  day?  and  day[roomId]? then day[roomId] else null
     if entry? then entry.status else 'free'
 
   resId:(    roomId, date ) ->
-    day   = if @days? then @days[date]
+    day   = if @days['full']? then @days['full'][date]
     entry = if day? and day[roomId]? then day[roomId] else null
     if entry? then entry.resId else 'none' # Need to determine if resId == 'none' if the way to go
 
@@ -108,7 +122,7 @@ class Res
 
   dayResvs:( today ) ->
     resvs = {}
-    for own date, day of @days when date is today
+    for own date, day of @days['full'] when date is today
       resvs[day.resId] = @resvs[day.resId]
     resvs
 

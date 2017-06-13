@@ -356,7 +356,7 @@
       var beg, end;
       beg = this.Data.toDateStr(this.Data.begDay, this.Data.monthIdx);
       end = this.Data.advanceDate(beg, this.Data.numDays - 1);
-      return this.res.dateRange(beg, end, this.resetRooms);
+      return this.res.dateRange(beg, end, 'book', this.resetRooms);
     };
 
     Book.prototype.resetRooms = function() {
