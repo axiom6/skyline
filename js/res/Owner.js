@@ -18,7 +18,7 @@
         Pay = require('js/res/Pay');
         Master = require('js/res/Master');
         stream = new Stream([]);
-        store = new Fire(stream, "skyline", Data.configSkyline);
+        store = new Memory(stream, "skytest");
         res = new Res(stream, store, Data, 'Owner');
         pay = new Pay(stream, store, Data, res);
         master = new Master(stream, store, Data, res, pay);

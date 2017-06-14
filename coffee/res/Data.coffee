@@ -3,7 +3,8 @@ class Data
 
   module.exports = Data
 
-  @states      = ["free","mine","depo","book","prep","chan"]
+  @statuses      = ["free","mine","depo","book","prep","chan"]
+  @sources     = ["skyline","booking","website"]
   @tax         = 0.1055 # Official Estes Park tax rate. Also in Booking.com
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
@@ -16,6 +17,7 @@ class Data
   @pets        = ["0","1","2","3","4"]
   @petPrice    = 12
   @year        = 17
+  @spaOptOut   = 20
   @monthIdx    = new Date().getMonth()
   @monthIdx    = if 4 <=  Data.monthIdx and Data.monthIdx <= 9 then Data.monthIdx else 4
   @month       = Data.months[Data.monthIdx]
@@ -50,6 +52,18 @@ class Data
   @stripeLivePub = "pk_live_Lb83wXgDVIuRoEpmK9ji2AU3"
   @stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs"
 
+  @resId:( date, roomId ) ->
+    date + roomId
+
+  @dayId:( date, roomId ) ->
+    date + roomId
+
+  @roomId:( anyId ) ->
+    anyId.substr( 6, 1 )
+
+  @toDate:( anyId ) ->
+    anyId.substr( 0, 6 )
+
   @genResId:( roomUIs ) ->
     resId = ""
     for own roomId, roomUI of roomUIs when not Util.isObjEmpty(roomUI.days)
@@ -76,6 +90,7 @@ class Data
     Data.toDateStr( date.getDate(), date.getMonth(), year )
 
   @advanceDate:( resDate, numDays ) ->
+    Util.trace( 'advanceDate', resDate ) if not Data.isDate(resDate)
     year     =           resDate.substr( 0,2 )
     monthIdx = parseInt( resDate.substr( 2,2 ) ) - 1
     day      = parseInt( resDate.substr( 4,2 ) ) + numDays

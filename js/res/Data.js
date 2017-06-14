@@ -8,7 +8,9 @@
 
     module.exports = Data;
 
-    Data.states = ["free", "mine", "depo", "book", "prep", "chan"];
+    Data.statuses = ["free", "mine", "depo", "book", "prep", "chan"];
+
+    Data.sources = ["skyline", "booking", "website"];
 
     Data.tax = 0.1055;
 
@@ -33,6 +35,8 @@
     Data.petPrice = 12;
 
     Data.year = 17;
+
+    Data.spaOptOut = 20;
 
     Data.monthIdx = new Date().getMonth();
 
@@ -89,6 +93,22 @@
 
     Data.stripeCurlKey = "sk_test_lUkwzunJkKfFmcEjHBtCfvhs";
 
+    Data.resId = function(date, roomId) {
+      return date + roomId;
+    };
+
+    Data.dayId = function(date, roomId) {
+      return date + roomId;
+    };
+
+    Data.roomId = function(anyId) {
+      return anyId.substr(6, 1);
+    };
+
+    Data.toDate = function(anyId) {
+      return anyId.substr(0, 6);
+    };
+
     Data.genResId = function(roomUIs) {
       var days, resId, roomId, roomUI;
       resId = "";
@@ -132,6 +152,9 @@
 
     Data.advanceDate = function(resDate, numDays) {
       var day, monthIdx, year;
+      if (!Data.isDate(resDate)) {
+        Util.trace('advanceDate', resDate);
+      }
       year = resDate.substr(0, 2);
       monthIdx = parseInt(resDate.substr(2, 2)) - 1;
       day = parseInt(resDate.substr(4, 2)) + numDays;

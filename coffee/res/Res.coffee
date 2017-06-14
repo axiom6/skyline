@@ -5,62 +5,37 @@ class Res
 
   module.exports = Res
   Res.Rooms = require( 'data/room.json' )
-  Res.Resvs = {} #require( 'data/res.json'  )
-  Res.Days  = {} #require( 'data/days.json' )
   Res.Sets  = ['full','book','resv','chan']  # Data set for @res.days and @res.resv
 
   constructor:( @stream, @store, @Data, @appName ) ->
     @rooms    = Res.Rooms
     @roomKeys = Util.keys( @rooms )
-    @states   = @Data.States
     @book     = null
     @master   = null
     @days     = {}
     @resvs    = {}  # Only use occasionally
-    @dateRange( @Data.beg, @Data.end, 'full' ) if @appName is 'Guest' # Get entire season for both Guest and Owner
-    @populateMemory()      if @store.justMemory
+    @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
+    #@populateMemory()      if @store.justMemory
 
+  # Needs work
   populateMemory:() ->
-    @onResv(  'add', (resv) => Util.noop( 'onResv', resv ) )
-    @onDays(  'put', (days) => Util.noop( 'onDays', days ) ) if @store.justMemory
-    @insertNewTables() # Populate Memory
+    @onRes(  'add', (resv) => Util.noop( 'onRes', resv ) )
+    @onDay(  'put', (days) => Util.noop( 'onDay', days ) ) if @store.justMemory
+    @makeTables() # Populate Memory
 
-  dateRange:( beg, end, set, onComplete=null ) ->
-    @store.subscribe( 'Days', 'range', 'none', (days) =>
-      Util.error( 'Res.dateRange() unknown data set', set ) if not Util.inArray( Res.Sets, set )
-      @days[set] = days
-      #console.log( 'Res.dateRange()', beg, end, daysProp, @days[daysProp] )
+  dateRange:( beg, end, onComplete=null ) ->
+    @store.subscribe( 'Day', 'range', 'none', (days) =>
+      @days = days
       onComplete() if onComplete? )
-    @store.range( 'Days', beg, end )
+    @store.range( 'Day', beg, end )
     return
 
-  resvRange:( beg, end, set, onComplete=null ) ->
-    Util.log( 'Res.resvRange()', beg, end, set )
-    resvSelect = () =>
-      Util.log( 'Days', @days[set] )
-      @store.subscribe( 'Res', 'select', 'none', (resvs) =>
-        for date, day in @days[set]
-          @resvs[set][day.resId] = resvs[day.resId]
-          Util.log( 'Day', day )
-          Util.log( 'Res', resvs[day.resId] )
-        onComplete() if onComplete? )
-      @store.select( 'Res' )
-    @dateRange( beg, end, set, resvSelect )
-
-  insertNewTables:() ->
-    @insertRooms( Res.Rooms )
-    @insertResvs( Res.Resvs )
-    @insertDays(  Res.Resvs )
-
-  getStatus:( roomId, date ) ->
-    day   = if @days['full']? then @days['full'][date]
-    entry = if  day?  and  day[roomId]? then day[roomId] else null
-    if entry? then entry.status else 'free'
-
-  resId:(    roomId, date ) ->
-    day   = if @days['full']? then @days['full'][date]
-    entry = if day? and day[roomId]? then day[roomId] else null
-    if entry? then entry.resId else 'none' # Need to determine if resId == 'none' if the way to go
+  resvRange:( beg, end ) ->
+    resvs  = {}
+    resIds = []
+    resIds.push( @resIds( beg, end, roomId ) ) for roomId in @roomKeys
+    resvs[resId] = @resv[resId]                for resId  in resIds
+    resvs
 
   # Note the expanded roomUI is for Book.coffee and should never be persisted
   roomUI:( rooms ) ->
@@ -79,89 +54,98 @@ class Res
    room.reason  = 'No Changes'
    room
 
-  optSpa:( roomId ) -> @rooms[roomId].spa is 'O'
-  hasSpa:( roomId ) -> @rooms[roomId].spa is 'O' or @rooms[roomId].spa is 'Y'
+  status:( date, roomId ) ->
+    dayId = @Data.dayId( date, roomId )
+    day   = @days[dayId]
+    if day? then day.status else 'free'
 
-  createRoomResv:( status, method, totals, cust, rooms ) ->
-    resv          = {}
-    resv.resId    = @Data.genResId( rooms )
-    resv.totals   = totals
-    resv.paid     = 0
-    resv.balance  = 0
-    resv.status   = status
-    resv.method   = method
-    resv.booked   = @Data.today()
-    resv.arrive   = resv.resId.substr(0,6)
-    resv.rooms    = {}
-    for own roomId, room of rooms when not Util.isObjEmpty(room.days)
-      delete room.$ # So not to persist jQuery
-      room.nights  = Util.keys(room.days).length
-      resv.rooms[roomId] = room
-      for own day, obj of room.days
-        day.status = status if day.status is 'mine'
-        resv.arrive = day   if day < resv.arrive
-    resv.payments = {}
-    resv.cust     = cust
-    #@subscribeToResId( resv.resId, 'add', (resv), Util.log( 'Resv', { resId:resv.resId, resv:resv )
+  dayIds:( beg, end, roomId ) ->
+    depart = Data.advanceDate( end, 1 )
+    nights = @Data.nights( beg, depart )
+    ids = []
+    for i in [0...nights]
+      ids.push( @Data.dayId( @Data.advanceDate( arrive, i ), roomId ) )
+    ids
+
+  resIds:( beg, end, roomId ) ->
+    depart = @Data.advanceDate( end, 1 )
+    nights = @Data.nights( beg, depart )
+    ids = []
+    for i in [0...nights]
+      dayId = @Data.dayId( @Data.advanceDate( arrive, i ), roomId )
+      ids.push( @days[dayId].resId ) if @days[dayId]? and not Util.inArray( ids, @days[dayId].resId )
+    ids
+
+  allocDays:( days ) ->
+    @days[dayId] = day for dayId, day of days
+    @book.  allocDays( days ) if @book?
+    @master.allocDays( days ) if @master?
+    @days
+
+  allocResvs:( resvs ) ->
+    @allocDays( resv.days ) for own resvId, resv of resvs
+    @days
+
+  resvDays:( resv ) ->
+    days = {} # resv days
+    for i in [0...resv.nights]
+      dayId = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
+      day = {}
+      @setDay(  day, resv.status, resv.resId )
+      days[dayId] = day
+    @allocDays( days )  if resv.source is 'Skyline'
+    days
+
+  calcPrice:( roomId, guests, pets  ) ->
+    @rooms[roomId][guests] + pets*@Data.petPrice
+
+  spaOptOut:( roomId, isSpaOptOut=true ) ->
+    if @rooms[roomId].spa is 'O' and isSpaOptOut then Data.spaOptOut else 0
+
+  genDates:( arrive, nights ) ->
+    dates = {}
+    for i in [0...nights]
+      date = @Data.advanceDate( arrive, i )
+      dates[date] = ""
+    dates
+
+  # .... Creation ........
+
+  createResvSkyline:( arrive, depart, roomId, last, status, guests, pets, spa=false, cust={}, payments={} ) ->
+    price  = @rooms[roomId][guests] + pets*@Data.petPrice
+    nights = @Data.nights( arrive, depart )
+    total  = price * nights
+    @createResv( arrive, depart, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments )
+
+  createResvBooking:( arrive, depart, roomId, last, status, guests, total ) ->
+    total  = if total is 0 then @rooms[roomId].booking * @Data.nights( arrive, depart ) else total
+    pets   = '?'
+    @createResv( arrive, depart, roomId, last, status, guests, pets, 'Booking', total )
+
+  createResv:( arrive, depart, roomId, last, status, guests, pets, source, total, spa=false, cust={}, payments={} ) ->
+    resv           = {}
+    resv.nights    = @Data.nights( arrive, depart )
+    resv.arrive    = arrive
+    resv.depart    = depart
+    resv.stayto    = @Data.advanceDate( arrive, resv.nights - 1 )
+    resv.roomId    = roomId
+    resv.last      = last
+    resv.status    = status
+    resv.guests    = guests
+    resv.pets      = pets
+    resv.source    = source
+    resv.resId     = @Data.resId( arrive, roomId )
+    resv.total     = total
+    resv.price     = total / resv.nights
+    resv.tax       = Util.toFixed( total * @Data.tax )
+    resv.spaOptOut = @spaOptOut( roomId, spa )
+    resv.charge    = Util.toFixed( total + parseFloat(resv.tax) - resv.spaOptOut )
+    resv.paid      = 0
+    resv.balance   = 0
+    resv.cust      = cust
+    resv.payments  = payments
+    resv.days      = @resvDays( resv )
     resv
-
-  allocRooms:( resv ) ->
-    for own  roomId, room of resv.rooms
-      for own dayId, day  of room.days
-        @setDayRoom( day, resv.status, resv.resId ) # setDayRoom also works for days in rooms
-      delete room.group
-      @allocRoom( roomId, room.days )
-
-  allocRoom:( roomId, days ) ->
-    @book.  onAlloc( roomId, days ) if @book?
-    @master.onAlloc( roomId, days ) if @master?
-
-  onResId:( op, doResv, resId ) => @store.on( 'Res',  op,  resId, (resv) => doResv(resv) )
-  onResv:(  op, doResv        ) => @store.on( 'Res',  op, 'none', (resv) => doResv(resv) )
-  onDays:(  op, doDay         ) => @store.on( 'Days', op, 'none', (day)  => doDay(day)   )
-
-  dayResvs:( today ) ->
-    resvs = {}
-    for own date, day of @days['full'] when date is today
-      resvs[day.resId] = @resvs[day.resId]
-    resvs
-
-  insertRooms:( rooms ) =>
-    @store.subscribe( 'Room', 'make', 'none', (make)  => @store.insert( 'Room', rooms ); Util.noop(make)  )
-    @store.make( 'Room' )
-    return
-
-  insertResvs:( resvs ) ->
-    @allocRooms( resv ) for own resId,  resv of resvs
-    @store.subscribe( 'Res', 'make', 'none', () => @store.insert( 'Res', resvs ) )
-    @store.make( 'Res' )
-    return
-
-  insertDays:( resvs ) ->
-    @days = @createDaysFromResvs( resvs, {} )
-    for own dayId, day of @days
-      @store.add( 'Days', dayId, day )
-    #console.log('Res.insertDays() days', @days  )
-    return
-
-  createDaysFromResvs:( resvs, days ) ->
-    for own resvId, resv of resvs
-      days = @createDaysFromResv( resv, days )
-    days
-
-  createDaysFromResv:( resv, days ) ->
-    for   own roomId, room of resv.rooms
-      for own  dayId, rday of room.days
-        dayRoom = @createDayRoom( days, dayId, roomId )
-        @setDayRoom( dayRoom, rday.status, rday.resId )
-    days
-
-  # Inexplicable this maybe randomly generating arrays on [roomId]
-  createDayRoom:( days, dayId, roomIdA ) ->
-    roomId = roomIdA.toString()
-    days[dayId]         = {} if not days[dayId]?
-    days[dayId][roomId] = {}
-    days[dayId][roomId]
 
   createCust:( first, last, phone, email, source ) ->
     cust = {}
@@ -186,6 +170,21 @@ class Res
     payment.cvc     = ''
     payment
 
+  # .... Persistence ........
+
+  onResId:( op, doResv, resId ) => @store.on( 'Res', op,  resId, (resv) => doResv(resv) )
+  onRes:(   op, doResv        ) => @store.on( 'Res', op, 'none', (resv) => doResv(resv) )
+  onDay:(   op, doDay         ) => @store.on( 'Day', op, 'none', (day)  => doDay(day)   )
+
+  insert:( table, rows, onComplete=null ) =>
+    @store.subscribe( table, 'insert', 'none', () => onComplete() if onComplete? )
+    @store.insert(    table,  rows )
+    return
+
+  make:( table, rows, onComplete=null ) ->
+    @store.subscribe( table, 'make', 'none', ()  => @insert( table, rows, onComplete() if onComplete? ) )
+    @store.make( 'Room' )
+
   setResvStatus:( resv, post, purpose ) ->
     if        post is 'post'
         resv.status = 'book' if purpose is 'PayInFull' or purpose is 'Complete'
@@ -197,49 +196,35 @@ class Res
       resv.status = 'free'
     resv.status
 
-  postResvChan:( resv ) ->
-    @allocRooms( resv )
+  postResv:( resv ) ->
+    @insert(    'Day', resv.days )
     @store.add( 'Res', resv.resId, resv )
 
-  postResv:( resv, post, amount, method, last4, purpose ) ->
+  postPayment:( resv, post, amount, method, last4, purpose ) ->
     status = @setResvStatus( resv, post, purpose )
     if status is 'book' or status is 'depo'
       payId = @Data.genPaymentId( resv.resId, resv.payments )
       resv.payments[payId] = @createPayment( amount, method, last4, purpose )
       resv.paid   += amount
       resv.balance = resv.totals - resv.paid
-      @allocRooms( resv )
-      @store.add( 'Res', resv.resId, resv )
-      @days = @mergePostDays( resv, @days )
-   # Util.log('Res.postResv()', resv )
-
-  mergePostDays:( resv, allDays) ->
-    newDays = @createDaysFromResv( resv, {} )
-    for own newDayId, newDay of newDays
-      for own roomId, room   of newDay
-        dayRoom = @createDayRoom( allDays, newDayId, roomId )
-        @setDayRoom( dayRoom, room.status, room.resId )
-        # We do not publish from Days with the newDayId+'/'+roomId grand child
-        # Instead @allocRoom( resv ) is driven by resv
-        @store.put( 'Days', newDayId+'/'+roomId, dayRoom )
-    allDays
-
-  createRoomDays:( arrive, nights, status, resId ) ->
-    days = {}
-    for i in [0...nights]
-      dayId = @Data.advanceDate( arrive, i )
-      days[dayId] = {}
-      @setDayRoom( days[dayId], status, resId )
-    days
+      @postResv( resv )
+    return
 
   # Used for Days / dayId / roomId and for Res / rooms[dayId] since both has status and resid properties
-  setDayRoom:( dayRoom, status, resId ) ->
+  setDay:( dayRoom, status, resId ) ->
     dayRoom.status = status
     dayRoom.resId  = resId
 
-  # UI Element that does that quite belong here
-  htmlSelect:( htmlId, array, choice, klass, max=undefined ) ->
-    htm   = """<select name="#{htmlId}" id="#{htmlId}" class="#{klass}">"""
+  # ......Utilities ......
+
+  optSpa:( roomId ) -> @rooms[roomId].spa is 'O'
+  hasSpa:( roomId ) -> @rooms[roomId].spa is 'O' or @rooms[roomId].spa is 'Y'
+
+  # ...... UI Elements that does not quite belong here .....
+
+  htmlSelect:( htmlId, array, choice, klass="", max=undefined ) ->
+    style = if Util.isStr(klass) then klass else htmlId
+    htm   = """<select name="#{htmlId}" id="#{htmlId}" class="#{style}">"""
     where = if max? then (elem) -> elem <= max else () -> true
     for elem in array when where(elem)
       selected = if elem is Util.toStr(choice) then "selected" else ""

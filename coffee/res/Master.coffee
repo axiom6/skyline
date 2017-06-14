@@ -25,7 +25,7 @@ class Master
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
     $('#UploadBtn').click( @onUploadBtn )
-    @res.dateRange( @Data.beg, @Data.end, 'full', @readyMaster )
+    @res.dateRange( @Data.beg, @Data.end, @readyMaster )
     return
 
   onMasterBtn:() =>
@@ -52,9 +52,9 @@ class Master
     $('#Lookup').show()
     return
 
-  onResTable:() =>
+  onResTable:( resvs ) =>
     $('#ResTbl').empty()
-    $('#ResTbl').append( @resvTable() )
+    $('#ResTbl').append( @resvTable(resvs) )
 
   onSeasonBtn:() =>
     $('#Master').hide()
@@ -114,7 +114,10 @@ class Master
       @dateBeg = if event.button is 0 then date else @dateBeg # Left  button
       @dateEnd = if event.button is 2 then date else @dateEnd # Right button
       @popResvInput( @dateBeg, @dateEnd, @roomId )
-      #@res.resvRange( @dateBeg, @dateEnd, 'resv', @onResTable ) if @dateBeg? and @dateEnd?
+      if @dateBeg? and @dateEnd?
+         resvs = @res.resvRange( @dateBeg, @dateEnd )
+         @onResvTable( resvs )
+
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
     return
@@ -137,25 +140,16 @@ class Master
       $('#Charge').text( charge )
     return
 
-  onDateRange:() =>
-    @readyMaster()
-    for own dayId, dayRoom of @res.days['full']
-      @onAlloc( dayId, dayRoom )
-    return
-
   listenToDays:() =>
     doDays = (data) =>
-      # dayId is onPut.key and dayRoom onPut.val
-      #console.log( 'Master.listenToDays()', data.key, data.val )
       @onAlloc( data.key, data.val )
-    @res.onDays( 'put',    doDays )
+    @res.onDay( 'put',    doDays )
     return
 
   selectToDays:() =>
     doDays = (days) =>
       #console.log( 'Master.selectDays()', days )
-      for own dayId, day of days
-        @onAlloc( dayId, day )
+      @allocDays( days )
     @res.onDays( 'select', doDays )
     @store.select( 'Days' )
     return
@@ -163,18 +157,19 @@ class Master
   listenToResv:() =>
     doAdd = (onAdd) =>
       resv = onAdd.val
-      #Util.log( 'Master.listenToResv() onAdd', resv )
-      for   own roomId, room of resv.rooms
-        for own  dayId, rday of room.days
-          @onAlloc( dayId, rday )
-    @res.onResv( 'add', doAdd )
+      @allocDays( resv,days )
+    @res.onRes( 'add', doAdd )
     return
 
-  onAlloc:(  dayId, dayRoom ) =>
-    for own roomId, room   of dayRoom
-      #console.log( 'Master.onAlloc', dayId, roomId, room )
-      @allocMasterCell( roomId, dayId, room.status )
-      @allocSeasonCell( roomId, dayId, room.status )
+  allocDays:(  days ) =>
+    @onAlloc(  dayId, day ) for own dayId, day of days
+    return
+
+  onAlloc:(  dayId, day ) =>
+    date   = @Data.toDate( dayId )
+    roomId = @Data.roomId( dayId )
+    @allocMasterCell( roomId, date, day.status )
+    @allocSeasonCell( roomId, date, day.status )
     return
 
   cellId:( pre,  date,  roomId ) ->
@@ -183,9 +178,9 @@ class Master
   $cell:( pre,  date,  roomId ) ->
     $( '#'+@cellId(pre,date,roomId) )
 
-  createMasterCell:(         roomId, date ) ->
-    status = @res.getStatus( roomId, date )
-    resId  = @res.resId(     roomId, date )
+  createMasterCell:( roomId, date ) ->
+    status = @res.status( date, roomId )
+    resId  = @Data.resId( date, roomId )
     """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
 
   allocMasterCell:( roomId, date, status ) ->
@@ -239,38 +234,37 @@ class Master
     htm
 
   resvInput:() ->
-    #esvs = @res.dayResvs( today )
     htm  = """<table><thead>"""
     htm += """<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm += """</thead><tbody>"""
-    htm += """<tr><td id="Arrive"></td><td id="StayTo"></td><td id="RoomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@states()}</td><td>#{@submit()}</td><td id="Nights"></td><td id="Price"></td><td id="Total"></td><td id="Tax"></td><td id="Charge"></td></tr>"""
+    htm += """<tr><td id="arrive"></td><td id="atayTo"></td><td id="roomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@status()}</td><td>#{@submit()}</td><td id="nights"></td><td id="price"></td><td id="iotal"></td><td id="tax"></td><td id="charge"></td></tr>"""
     htm += """</tbody></table>"""
     htm
 
-  nights:() -> @res.htmlSelect( 'Nights', @Data.nighti,  "2",    'Nights' )
-  roomi: () -> @res.htmlSelect( 'Rooms',  @res.roomKeys, "",     'Rooms'  )
-  guests:() -> @res.htmlSelect( 'Guests', @Data.persons, 2,      'Guests' )
-  pets:  () -> @res.htmlSelect( 'Pets',   @Data.pets,    0,      'Pets'   )
-  states:() -> @res.htmlSelect( 'States', @Data.states,  'chan', 'States' )
-  names: () -> @res.htmlInput(  'Names',  'Names' )
-  submit:() -> @res.htmlButton( 'Submit', 'Submit', 'Submit' )
+  #nights:() -> @res.htmlSelect( 'nights',   @Data.nighti,   '2' )
+  #roomi: () -> @res.htmlSelect( 'rooms',    @res.roomKeys,  '' )
+  guests:() -> @res.htmlSelect( 'guests',   @Data.persons,   2 )
+  pets:  () -> @res.htmlSelect( 'pets',     @Data.pets,      0   )
+  status:() -> @res.htmlSelect( 'status',   @Data.statuses, 'chan' )
+  names: () -> @res.htmlInput(  'Names',    'Names' )
+  submit:() -> @res.htmlButton( 'Submit',   'Submit', 'Submit' )
 
   resvInputRespond:() ->
-    @res.makeSelect( 'Nights', @resvNew )
-    @res.makeSelect( 'Rooms',  @resvNew )
-    @res.makeSelect( 'Guests', @resvNew )
-    @res.makeSelect( 'Pets',   @resvNew )
-    @res.makeSelect( 'States', @resvNew )
-    @res.makeInput(  'Names',  @resvNew )
+    #@res.makeSelect( 'Nights',   @resvNew )
+    #@res.makeSelect( 'Rooms',    @resvNew )
+    @res.makeSelect( 'guests',   @resvNew )
+    @res.makeSelect( 'pets',     @resvNew )
+    @res.makeSelect( 'status',   @resvNew )
+    @res.makeInput(  'names',    @resvNew )
     $('#Submit').click (event) =>
       Util.noop( event )
       Util.log( @resvNew )
 
-  resvTable:() ->
+  resvTable:( resvs ) ->
     htm   = """<table><thead>"""
     htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm  += """</thead><tbody>"""
-    for own resId, r of @res.resvs['resv']
+    for own resId, r of resvs
       u      = r.u
       tax    = Util.toFixed( u.total * @Data.tax )
       charge = u.total + parseFloat( tax )
@@ -387,36 +381,37 @@ class Master
     for line in lines
       toks = line.split('\t')
       continue if toks[0] is 'Guest name'
-      book           = {}
-      resv           = {}
-      book.names     = toks[0]
-      book.arrive    = toks[1]
-      book.depart    = toks[2]
-      book.room      = toks[3]
-      book.booked    = toks[4]
-      book.status    = toks[5]
-      book.total     = toks[6]
-      book.commis    = toks[7]
-      book.bookingId = toks[8]
-      #Util.log( 'Book......')
-      #Util.log(  book )
-      names          = book.names.split(' ')
-      #resv.booking  = book
-      resv.first     = names[0]
-      resv.last      = names[1]
-      resv.guests    = @toNumGuests( names )
-      resv.arrive    = @toResvDate( book.arrive )
-      resv.depart    = @toResvDate( book.depart )
-      resv.status    = @toStatus(   book.status )
-      resv.pets      = 0
-      resv.spa       = false
-      resv.nights    = @Data.nights( resv.arrive, resv.depart )
-      resv.roomId    = @toResvRoomId( book.room )
-      resv.total     = parseFloat( book.total.substr(3) )
-      resv.price     = if resv.total > 0 then resv.total  / resv.nights else @rooms[resv.roomId].booking
-      resv.resId     = resv.arrive + resv.roomId
+      book   = @bookFromToks( toks )
+      resv   = @resvFromBook( book )
       resvs[resv.resId ] = resv
     resvs
+
+  bookFromToks:( toks ) ->
+    book           = {}
+    book.names     = toks[0]
+    book.arrive    = toks[1]
+    book.depart    = toks[2]
+    book.room      = toks[3]
+    book.booked    = toks[4]
+    book.status    = toks[5]
+    book.total     = toks[6]
+    book.commis    = toks[7]
+    book.bookingId = toks[8]
+    #Util.log( 'Book......')
+    #Util.log(  book )
+    book
+
+  resvFromBook:( book ) ->
+    names  = book.names.split(' ')
+    arrive = @toResvDate( book.arrive )
+    depart = @toResvDate( book.depart )
+    roomId = @toResvRoomId( book.room )
+    #first = names[0]
+    last   = names[1]
+    status = @toStatus(   book.status )
+    guests = @toNumGuests( names )
+    total  = parseFloat( book.total.substr(3) )
+    @res.createResvBooking( arrive, depart, roomId, last, status, guests, total )
 
   onUpdateRes:() =>
 
@@ -427,23 +422,21 @@ class Master
 
     return if Util.isObjEmpty(  @uploadedResvs )
     return if not @updateValid( @uploadedResvs )
-    @res.resvs['chan'] = @updateResv(    @uploadedResvs )
-    @res.days['chan']  = @res.createDaysFromResvs( @res.resvs['chan'], @res.days['full'] ) # Not sure about this
-    @res.postResvChan( resv ) for own resId, resv of @res.resvs['chan']
-    #res.dateRange( @Data.beg, @Data.end, 'full', @readyMaster ) # Latter
-    @onDateRange()
+    #@updateVerbose(             @uploadedResvs )
+    @res.resvs = @updateResv(   @uploadedResvs )
+    @res.days  = @allocDays(    @uploadedResvs )
     @uploadedResv = {}
 
   updateValid:( uploadedResvs ) ->
     valid = true
     for own resId, u of uploadedResvs
       u.v  = true
-      u.v &= Util.isStr( u.first )
+      #.v &= Util.isStr( u.first )
       u.v &= Util.isStr( u.last  )
       u.v &= 1 <= u.guests and u.guests <= 12
       u.v &= @Data.isDate( u.arrive )
       u.v &= @Data.isDate( u.depart )
-      u.v &= 0 <= u.pets   and u.pets   <=  4
+      u.v &= if typeof(pets) is 'number' then 0 <= u.pets   and u.pets   <=  4 else true
       u.v &= 0 <= u.nights and u.nights <= 28
       u.v &= Util.inArray( @res.roomKeys, u.roomId )
       u.v &=   0.00 <= u.total and u.total <= 8820.00
@@ -452,24 +445,26 @@ class Master
       #Util.log( 'Resv......', u.v )
       #Util.log(  u )
     Util.log( 'Master.updateValid()', valid )
-    valid
+    true
+
+  updateVerbose:( uploadedResvs ) ->
+    for own resId, u of uploadedResvs
+      Util.log( 'last  ', u.last   ) if not   Util.isStr( u.last  )
+      Util.log( 'guests', u.guests ) if not ( 1 <= u.guests and u.guests <= 12 )
+      Util.log( 'arrive', u.arrive ) if not   @Data.isDate( u.arrive )
+      Util.log( 'depart', u.depart ) if not   @Data.isDate( u.depart )
+      #Util.log( 'pets  ', u.pets   ) if not if typeof(pets) is 'number' then 0 <= u.pets and u.pets <=  4 elae true
+      Util.log( 'nights', u.nights ) if not ( 0 <= u.nights and u.nights <= 28 )
+      Util.log( 'roomId', u.roomId ) if not   Util.inArray( @res.roomKeys, u.roomId )
+      Util.log( 'total ', u.total  ) if not (   0.00 <= u.total and u.total <= 8820.00 )
+      Util.log( 'price ', u.price  ) if not ( 120.00 <= u.price and u.price <=  315.00 )
+    return
 
   updateResv:( uploadedResvs ) ->
-    resvs = {}
-    for own resId, u of uploadedResvs
-      rooms = {}
-      cust            = @res.createCust( u.first, u.last, "", "", "Booking" )
-      days            = @res.createRoomDays( u.arrive, u.nights, u.status, u.resId )
-      rooms[u.roomId] = @res.populateRoom( {}, days,  u.total, u.price, u.guests, 0 )
-      resvs[resId]    = @res.createRoomResv( u.status, 'vcard', u.total, cust, rooms )
-      resvs[resId].u  = u
-      #Util.noop( 'None', resId )
-      #Util.log(  'Resu', u     )
-      #Util.log(  'Cust', cust  )
-      #Util.log(  'Days', days  )
-      #Util.log(  'Room', rooms[u.roomId] )
-      #Util.log(  'Resv', resvs[resId] )
-    resvs
+    for own  resId,   resv of uploadedResvs
+      @res.resvs[resId] = resv
+      @res.postResv(      resv )
+    @res.resvs
 
   toNumGuests:( names ) ->
     for i in [0...names.length] when names[i] is 'guest' or names[i] is 'guests'

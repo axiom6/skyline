@@ -53,8 +53,8 @@ class Book
     """
 
   initsHtml:() ->
-    htm  = """<label for="Months" class="InitIp">Start: #{ @res.htmlSelect( "Months", @Data.season, @Data.month,  'months' ) }</label>"""
-    htm += """<label for="Days"   class="InitIp">       #{ @res.htmlSelect( "Days",   @Data.days,   @Data.begDay, 'days'   ) }</label>"""
+    htm  = """<label for="Months" class="InitIp">Start: #{ @res.htmlSelect( "Months", @Data.season, @Data.month  ) }</label>"""
+    htm += """<label for="Days"   class="InitIp">       #{ @res.htmlSelect( "Days",   @Data.days,   @Data.begDay ) }</label>"""
     htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+@Data.year}</label>"""
     htm += """<span  id="Pop"  class="Test">Pop</span>"""
     htm += """<span  id="Test" class="Test">Test</span>"""
@@ -282,7 +282,7 @@ class Book
   resetDateRange:() ->
     beg = @Data.toDateStr( @Data.begDay, @Data.monthIdx )
     end = @Data.advanceDate( beg, @Data.numDays-1 )
-    @res.dateRange( beg, end, 'book', @resetRooms )
+    @res.dateRange( beg, end, @resetRooms )
 
   resetRooms:() =>
     $('#Rooms').empty()
@@ -387,13 +387,15 @@ class Book
       nday = @Data.advanceDate( nday, 1 )
     return
 
-  onAlloc:( roomId, days ) =>
+  allocDays:( days ) =>
     for own dayId, day of days
-      @allocCell( dayId, day.status, roomId )
+      date   = @Data.toDate( dayId )
+      roomId = @Data.roomId( dayId )
+      @allocCell( date, day.status, roomId )
     return
 
-  allocCell:( dayId, status, roomId ) ->
-    @cellStatus( @$cell(dayId,roomId), status )
+  allocCell:( date, status, roomId ) ->
+    @cellStatus( @$cell(date,roomId), status )
 
   cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
