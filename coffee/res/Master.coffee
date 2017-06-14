@@ -142,7 +142,12 @@ class Master
 
   listenToDays:() =>
     doDays = (data) =>
-      @onAlloc( data.key, data.val )
+      if data.key? and data.val?
+        @onAlloc( data.key, data.val )
+      else if data?
+        Util.error( 'Master.listenToDays missing key val', data )
+      else
+        Util.error( 'Master.listenToDays missing data' )
     @res.onDay( 'put',    doDays )
     return
 
@@ -157,7 +162,7 @@ class Master
   listenToResv:() =>
     doAdd = (onAdd) =>
       resv = onAdd.val
-      @allocDays( resv,days )
+      @allocDays( resv.days )
     @res.onRes( 'add', doAdd )
     return
 
@@ -179,8 +184,9 @@ class Master
     $( '#'+@cellId(pre,date,roomId) )
 
   createMasterCell:( roomId, date ) ->
-    status = @res.status( date, roomId )
-    resId  = @Data.resId( date, roomId )
+    day    = @res.day( date, roomId )
+    status = day.status
+    resId  = day.resId
     """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
 
   allocMasterCell:( roomId, date, status ) ->
@@ -420,11 +426,10 @@ class Master
       @uploadedResvs = @uploadParse(  @uploadedText )
       $('#UploadText').text( @uploadedText )
 
-    return if Util.isObjEmpty(  @uploadedResvs )
-    return if not @updateValid( @uploadedResvs )
-    #@updateVerbose(             @uploadedResvs )
-    @res.resvs = @updateResv(   @uploadedResvs )
-    @res.days  = @allocDays(    @uploadedResvs )
+    return if Util.isObjEmpty(    @uploadedResvs )
+    return if not @updateValid(   @uploadedResvs )
+    #@updateVerbose(              @uploadedResvs )
+    @res.updateResvs(             @uploadedResvs )
     @uploadedResv = {}
 
   updateValid:( uploadedResvs ) ->
@@ -460,11 +465,6 @@ class Master
       Util.log( 'price ', u.price  ) if not ( 120.00 <= u.price and u.price <=  315.00 )
     return
 
-  updateResv:( uploadedResvs ) ->
-    for own  resId,   resv of uploadedResvs
-      @res.resvs[resId] = resv
-      @res.postResv(      resv )
-    @res.resvs
 
   toNumGuests:( names ) ->
     for i in [0...names.length] when names[i] is 'guest' or names[i] is 'guests'

@@ -106,7 +106,11 @@
     };
 
     Data.toDate = function(anyId) {
-      return anyId.substr(0, 6);
+      if (anyId != null) {
+        return anyId.substr(0, 6);
+      } else {
+        return Util;
+      }
     };
 
     Data.genResId = function(roomUIs) {

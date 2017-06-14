@@ -15,6 +15,7 @@ class Res
     @days     = {}
     @resvs    = {}  # Only use occasionally
     @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
+    #@makeTables()
     #@populateMemory()      if @store.justMemory
 
   # Needs work
@@ -59,6 +60,11 @@ class Res
     day   = @days[dayId]
     if day? then day.status else 'free'
 
+  day:( date, roomId ) ->
+    dayId = @Data.dayId( date, roomId )
+    day   = @days[dayId]
+    if day? then day else @setDay( {}, 'free', 'none' )
+
   dayIds:( beg, end, roomId ) ->
     depart = Data.advanceDate( end, 1 )
     nights = @Data.nights( beg, depart )
@@ -77,24 +83,29 @@ class Res
     ids
 
   allocDays:( days ) ->
-    @days[dayId] = day for dayId, day of days
     @book.  allocDays( days ) if @book?
     @master.allocDays( days ) if @master?
-    @days
+    return
 
-  allocResvs:( resvs ) ->
-    @allocDays( resv.days ) for own resvId, resv of resvs
-    @days
+  updateResvs:( newResvs ) ->
+    for own  resId,   resv of newResvs
+      @resvs[resId] = resv
+      @postResv(      resv )
+    @resvs
 
-  resvDays:( resv ) ->
+  updateDaysFromResv:( resv ) ->
+    Util.log( 'Res', resv )
     days = {} # resv days
     for i in [0...resv.nights]
-      dayId = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
-      day = {}
-      @setDay(  day, resv.status, resv.resId )
-      days[dayId] = day
-    @allocDays( days )  if resv.source is 'Skyline'
-    days
+      dayId       = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
+      days[dayId] = @setDay( {}, resv.status, resv.resId )
+    @allocDays(     days )
+    #@insert( 'Day', days ) # (days) => Util.log('Day', days )
+    for dayId, day of days
+      Util.log( 'Day',   dayId, day )
+      @store.add( 'Day', dayId, day )
+      @days[dayId] = day
+    return
 
   calcPrice:( roomId, guests, pets  ) ->
     @rooms[roomId][guests] + pets*@Data.petPrice
@@ -144,7 +155,7 @@ class Res
     resv.balance   = 0
     resv.cust      = cust
     resv.payments  = payments
-    resv.days      = @resvDays( resv )
+    @updateDaysFromResv( resv )
     resv
 
   createCust:( first, last, phone, email, source ) ->
@@ -177,13 +188,18 @@ class Res
   onDay:(   op, doDay         ) => @store.on( 'Day', op, 'none', (day)  => doDay(day)   )
 
   insert:( table, rows, onComplete=null ) =>
-    @store.subscribe( table, 'insert', 'none', () => onComplete() if onComplete? )
+    @store.subscribe( table, 'insert', 'none', (rows) => onComplete(rows) if onComplete? )
     @store.insert(    table,  rows )
     return
 
   make:( table, rows, onComplete=null ) ->
     @store.subscribe( table, 'make', 'none', ()  => @insert( table, rows, onComplete() if onComplete? ) )
-    @store.make( 'Room' )
+    @store.make( table )
+
+  makeTables:() ->
+    @make( 'Room', Res.Rooms )
+    @store.make( 'Res' )
+    @store.make( 'Day' )
 
   setResvStatus:( resv, post, purpose ) ->
     if        post is 'post'
@@ -197,7 +213,6 @@ class Res
     resv.status
 
   postResv:( resv ) ->
-    @insert(    'Day', resv.days )
     @store.add( 'Res', resv.resId, resv )
 
   postPayment:( resv, post, amount, method, last4, purpose ) ->
@@ -211,9 +226,10 @@ class Res
     return
 
   # Used for Days / dayId / roomId and for Res / rooms[dayId] since both has status and resid properties
-  setDay:( dayRoom, status, resId ) ->
-    dayRoom.status = status
-    dayRoom.resId  = resId
+  setDay:( day, status, resId ) ->
+    day.status = status
+    day.resId  = resId
+    day
 
   # ......Utilities ......
 

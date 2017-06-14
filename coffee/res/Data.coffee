@@ -62,7 +62,10 @@ class Data
     anyId.substr( 6, 1 )
 
   @toDate:( anyId ) ->
-    anyId.substr( 0, 6 )
+    if anyId?
+      anyId.substr( 0, 6 )
+    else
+      Util
 
   @genResId:( roomUIs ) ->
     resId = ""

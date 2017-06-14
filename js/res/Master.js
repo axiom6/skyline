@@ -206,7 +206,13 @@
       var doDays;
       doDays = (function(_this) {
         return function(data) {
-          return _this.onAlloc(data.key, data.val);
+          if ((data.key != null) && (data.val != null)) {
+            return _this.onAlloc(data.key, data.val);
+          } else if (data != null) {
+            return Util.error('Master.listenToDays missing key val', data);
+          } else {
+            return Util.error('Master.listenToDays missing data');
+          }
         };
       })(this);
       this.res.onDay('put', doDays);
@@ -229,7 +235,7 @@
         return function(onAdd) {
           var resv;
           resv = onAdd.val;
-          return _this.allocDays(resv, days);
+          return _this.allocDays(resv.days);
         };
       })(this);
       this.res.onRes('add', doAdd);
@@ -261,9 +267,10 @@
     };
 
     Master.prototype.createMasterCell = function(roomId, date) {
-      var resId, status;
-      status = this.res.status(date, roomId);
-      resId = this.Data.resId(date, roomId);
+      var day, resId, status;
+      day = this.res.day(date, roomId);
+      status = day.status;
+      resId = day.resId;
       return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
     };
 
@@ -606,8 +613,7 @@
       if (!this.updateValid(this.uploadedResvs)) {
         return;
       }
-      this.res.resvs = this.updateResv(this.uploadedResvs);
-      this.res.days = this.allocDays(this.uploadedResvs);
+      this.res.updateResvs(this.uploadedResvs);
       return this.uploadedResv = {};
     };
 
@@ -663,17 +669,6 @@
           Util.log('price ', u.price);
         }
       }
-    };
-
-    Master.prototype.updateResv = function(uploadedResvs) {
-      var resId, resv;
-      for (resId in uploadedResvs) {
-        if (!hasProp.call(uploadedResvs, resId)) continue;
-        resv = uploadedResvs[resId];
-        this.res.resvs[resId] = resv;
-        this.res.postResv(resv);
-      }
-      return this.res.resvs;
     };
 
     Master.prototype.toNumGuests = function(names) {

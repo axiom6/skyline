@@ -114,6 +114,17 @@
       }
     };
 
+    Res.prototype.day = function(date, roomId) {
+      var day, dayId;
+      dayId = this.Data.dayId(date, roomId);
+      day = this.days[dayId];
+      if (day != null) {
+        return day;
+      } else {
+        return this.setDay({}, 'free', 'none');
+      }
+    };
+
     Res.prototype.dayIds = function(beg, end, roomId) {
       var depart, i, ids, j, nights, ref;
       depart = Data.advanceDate(end, 1);
@@ -140,43 +151,40 @@
     };
 
     Res.prototype.allocDays = function(days) {
-      var day, dayId;
-      for (dayId in days) {
-        day = days[dayId];
-        this.days[dayId] = day;
-      }
       if (this.book != null) {
         this.book.allocDays(days);
       }
       if (this.master != null) {
         this.master.allocDays(days);
       }
-      return this.days;
     };
 
-    Res.prototype.allocResvs = function(resvs) {
-      var resv, resvId;
-      for (resvId in resvs) {
-        if (!hasProp.call(resvs, resvId)) continue;
-        resv = resvs[resvId];
-        this.allocDays(resv.days);
+    Res.prototype.updateResvs = function(newResvs) {
+      var resId, resv;
+      for (resId in newResvs) {
+        if (!hasProp.call(newResvs, resId)) continue;
+        resv = newResvs[resId];
+        this.resvs[resId] = resv;
+        this.postResv(resv);
       }
-      return this.days;
+      return this.resvs;
     };
 
-    Res.prototype.resvDays = function(resv) {
+    Res.prototype.updateDaysFromResv = function(resv) {
       var day, dayId, days, i, j, ref;
+      Util.log('Res', resv);
       days = {};
       for (i = j = 0, ref = resv.nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         dayId = this.Data.dayId(this.Data.advanceDate(resv.arrive, i), resv.roomId);
-        day = {};
-        this.setDay(day, resv.status, resv.resId);
-        days[dayId] = day;
+        days[dayId] = this.setDay({}, resv.status, resv.resId);
       }
-      if (resv.source === 'Skyline') {
-        this.allocDays(days);
+      this.allocDays(days);
+      for (dayId in days) {
+        day = days[dayId];
+        Util.log('Day', dayId, day);
+        this.store.add('Day', dayId, day);
+        this.days[dayId] = day;
       }
-      return days;
     };
 
     Res.prototype.calcPrice = function(roomId, guests, pets) {
@@ -260,7 +268,7 @@
       resv.balance = 0;
       resv.cust = cust;
       resv.payments = payments;
-      resv.days = this.resvDays(resv);
+      this.updateDaysFromResv(resv);
       return resv;
     };
 
@@ -320,9 +328,9 @@
         onComplete = null;
       }
       this.store.subscribe(table, 'insert', 'none', (function(_this) {
-        return function() {
+        return function(rows) {
           if (onComplete != null) {
-            return onComplete();
+            return onComplete(rows);
           }
         };
       })(this));
@@ -338,7 +346,13 @@
           return _this.insert(table, rows, onComplete != null ? onComplete() : void 0);
         };
       })(this));
-      return this.store.make('Room');
+      return this.store.make(table);
+    };
+
+    Res.prototype.makeTables = function() {
+      this.make('Room', Res.Rooms);
+      this.store.make('Res');
+      return this.store.make('Day');
     };
 
     Res.prototype.setResvStatus = function(resv, post, purpose) {
@@ -360,7 +374,6 @@
     };
 
     Res.prototype.postResv = function(resv) {
-      this.insert('Day', resv.days);
       return this.store.add('Res', resv.resId, resv);
     };
 
@@ -376,9 +389,10 @@
       }
     };
 
-    Res.prototype.setDay = function(dayRoom, status, resId) {
-      dayRoom.status = status;
-      return dayRoom.resId = resId;
+    Res.prototype.setDay = function(day, status, resId) {
+      day.status = status;
+      day.resId = resId;
+      return day;
     };
 
     Res.prototype.optSpa = function(roomId) {
