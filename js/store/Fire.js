@@ -263,7 +263,7 @@
             key = snapshot.key;
             val = _this.toObjects(snapshot.val());
             if (onFunc != null) {
-              return onFunc(val);
+              return onFunc(key, val);
             } else {
               return _this.publish(table, onEvt, key, val);
             }

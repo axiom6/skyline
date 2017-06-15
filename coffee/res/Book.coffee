@@ -234,7 +234,6 @@ class Book
   g:(roomId) -> @res.htmlSelect( roomId+'G', @Data.persons, 2, 'guests', @rooms[roomId].max )
   p:(roomId) -> @res.htmlSelect( roomId+'P', @Data.pets,    0, 'pets',   3                  )
 
-
   onGuests:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
     @rooms[roomId].guests = event.target.value

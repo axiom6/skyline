@@ -156,7 +156,7 @@ class Fire extends Store
         key = snapshot.key
         val = @toObjects( snapshot.val() )
         if onFunc?
-           onFunc( val )  # { key:val }
+           onFunc( key, val )
         else
            @publish( table, onEvt, key, val ) # { key:val }
       else

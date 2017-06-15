@@ -1,18 +1,19 @@
 
-$ = require( 'jquery'  )
+$      = require( 'jquery'        )
+Upload = require( 'js/res/Upload' )
 
 class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @Data, @res, @pay ) ->
+  constructor:( @stream, @store, @Data, @res ) ->
     @rooms         = @res.rooms
-    @uploadedText  = ""
-    @uploadedResvs = {}
+    @upload        = new Upload( @stream, @store, @Data, @res )
     @resvNew       = {}
     @res.master    = @
     @dateBeg       = null
     @dateEnd       = null
+    @resMode       = 'Table' # or 'Input'
     @roomId        = '1' # Need to consider roomId default
     @lastMaster    = { left:0, top:0, width:0, height:0 }
     @lastSeason    = { left:0, top:0, width:0, height:0 }
@@ -22,6 +23,7 @@ class Master
     @listenToDays()
     #listenToResv()
     $('#MasterBtn').click( @onMasterBtn )
+    $('#MakResBtn').click( @onMakResBtn )
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
     $('#UploadBtn').click( @onUploadBtn )
@@ -30,27 +32,23 @@ class Master
     return
 
   onMasterBtn:() =>
-    $('#Lookup').hide()
+    @resMode = 'Table'
     $('#Season').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
-    $('#ResAdd').show()
+    $('#ResAdd').hide()
     $('#ResTbl').show()
     $('#Master').show()
     return
 
-  onLookup:( resv ) =>
-    $('#ResAdd').hide()
-    $('#ResTbl').hide()
-    $('#Master').hide()
+  onMakResBtn:() =>
+    @resMode = 'Input'
     $('#Season').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
-    $('#Lookup').empty()
-    #Util.log( 'Master.onLookup', resv )
-    $('#Lookup').append( @pay.confirmHead(  resv          ) ) if not Util.isObjEmpty(resv)
-    $('#Lookup').append( @pay.confirmTable( resv, 'Owner' ) ) if not Util.isObjEmpty(resv)
-    $('#Lookup').show()
+    $('#ResAdd').show()
+    $('#ResTbl').hide()
+    $('#Master').show()
     return
 
   onResvTable:( resvs ) =>
@@ -59,12 +57,11 @@ class Master
 
   onSeasonBtn:() =>
     $('#Master').hide()
-    $('#Lookup').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
     $('#Season').append( @seasonHtml() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @onSeasonClick(event) )
-    $('#ResAdd').show()
+    $('#ResAdd').hide()
     $('#ResTbl').show()
     $('#Season').show()
     return
@@ -73,7 +70,6 @@ class Master
     $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Master').hide()
-    $('#Lookup').hide()
     $('#Season').hide()
     $('#Upload').hide()
     $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
@@ -84,18 +80,18 @@ class Master
     $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Master').hide()
-    $('#Lookup').hide()
     $('#Season').hide()
     $('#Dailys').hide()
-    $('#Upload').append( @uploadHtml() ) if Util.isEmpty( $('#Upload').children() )
-    @bindUploadPaste()
-    $('#UpdateRes').click( @onUpdateRes )
+    $('#Upload').append( @upload.html() ) if Util.isEmpty( $('#Upload').children() )
+    @upload.bindUploadPaste()
+    $('#UpdateRes').click( @upload.onUpdateRes )
     $('#Upload').show()
     return
 
   readyMaster:() =>
     $('#ResAdd').empty()
     $('#ResAdd').append( @resvInput() )
+    $('#ResAdd').hide()
     $('#ResTbl').empty()
     $('#ResTbl').append( @resvTable( {} ) )
     $('#Master').empty()
@@ -115,10 +111,13 @@ class Master
       @roomId  = $cell.attr('data-roomId' )
       @dateBeg = if event.button is 0 then date else @dateBeg # Left  button
       @dateEnd = if event.button is 2 then date else @dateEnd # Right button
-      @popResvInput( @dateBeg, @dateEnd, @roomId )
-      if @dateBeg? and @dateEnd?
-         resvs = @res.resvRange( @dateBeg, @dateEnd )
-         @onResvTable( resvs )
+
+      if @resMode is 'Table' and @dateBeg?
+        end = if @dateEnd?  then @dateEnd else @Data.advanceDate( @dateBeg, 3 )
+        resvs = @res.resvRange(  @dateBeg, end )
+        @onResvTable( resvs )
+      else if @resMode is 'Input' and @dateBeg? and @dateEnd?
+        @popResvInput( @dateBeg, @dateEnd, @roomId )
 
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
@@ -144,14 +143,18 @@ class Master
     return
 
   listenToDays:() =>
-    doDays = (data) =>
-      if data.key? and data.val?
-        @onAlloc( data.key, data.val )
-      else if data?
-        Util.error( 'Master.listenToDays missing key val', data )
-      else
-        Util.error( 'Master.listenToDays missing data' )
-    @res.onDay( 'put',    doDays )
+    doDays = (dayId,day) =>
+      if dayId? and day? and not @res.days[dayId]
+        @res.days[dayId] = day
+        @onAlloc( dayId, day )
+    @res.onDay( 'put',  doDays )
+    return
+
+  listenToResv:() =>
+    doAdd = (resId,resv) =>
+      if resId? and resv? and not @res.resvs[resId]
+        @res.resvs[resId] = resv
+    @res.onRes( 'add', doAdd )
     return
 
   selectToDays:() =>
@@ -160,13 +163,6 @@ class Master
       @allocDays( days )
     @res.onDays( 'select', doDays )
     @store.select( 'Days' )
-    return
-
-  listenToResv:() =>
-    doAdd = (onAdd) =>
-      resv = onAdd.val
-      @allocDays( resv.days )
-    @res.onRes( 'add', doAdd )
     return
 
   allocDays:(  days ) =>
@@ -270,14 +266,21 @@ class Master
       Util.log( @resvNew )
 
   resvTable:( resvs ) ->
-    htm   = """<table><thead>"""
-    htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Booked</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm   = """<table class="RTTable"><thead>"""
+    htm  += """<tr><th>Arrive</th><th>Stay To</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Booked</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm  += """</thead><tbody>"""
     for own resId, r of resvs
-      Util.log( r )
+      #Util.log( r )
+      arrive = @Data.toMMDD(r.arrive)
+      stayto = @Data.toMMDD(r.stayto)
+      booked = @Data.toMMDD(r.booked)
       tax    = Util.toFixed( r.total * @Data.tax )
-      charge = r.total + parseFloat( tax )
-      htm += """<tr><td>#{r.arrive}</td><td>#{r.nights}</td><td>#{r.roomId}</td><td>#{r.last}</td><td>#{r.guests}</td><td>#{r.status}</td><td>#{r.booked}</td><td>#{r.price}</td><td>#{r.total}</td><td>#{tax}</td><td>#{charge}</td></tr>"""
+      charge = Util.toFixed( r.total + parseFloat(tax) )
+      htm += """<tr>"""
+      htm += """<td class="RTArrive">#{arrive}  </td><td class="RTStayto">#{stayto}</td><td class="RTNights">#{r.nights}</td>"""
+      htm += """<td class="RTRoomId">#{r.roomId}</td><td class="RTLast"  >#{r.last}</td><td class="RTGuests">#{r.guests}</td>"""
+      htm += """<td class="RTStatus">#{r.status}</td><td class="RTBooked">#{booked}</td><td class="RTPrice" >$#{r.price}</td>"""
+      htm += """<td class="RTTotal" >$#{r.total}</td><td class="RTTax"   >$#{tax}  </td><td class="RTCharge">$#{charge} </td></tr>"""
     htm += """</tbody></table>"""
     htm
 
@@ -360,139 +363,3 @@ class Master
     htm += """<h2 class="DailysH2">Arrivals</h2>"""
     htm += """<h2 class="DailysH2">Departures</h2>"""
     htm
-
-  uploadHtml:() ->
-    htm  = ""
-    htm += """<h1 class="UploadH1">Upload Booking.com</h1>"""
-    htm += """<button id="UpdateRes" class="btn btn-primary">Update Res</button>"""
-    htm += """<textarea id="UploadText" class="UploadText" rows="50" cols="100"></textarea>"""
-    htm
-
-  bindUploadPaste:() ->
-    onPaste = (event) =>
-      if window.clipboardData and window.clipboardData.getData # IE
-        @uploadedText = window.clipboardData.getData('Text')
-      else if event.clipboardData and event.clipboardData.getData
-        @uploadedText = event.clipboardData.getData('text/plain')
-      event.preventDefault()
-      if Util.isStr(    @uploadedText )
-         #Util.log('Master.onPaste()'  )
-         #Util.log(      @uploadedText )
-         @uploadedResvs = @uploadParse(  @uploadedText )
-         $('#UploadText').text( @uploadedText )
-    document.addEventListener( "paste", onPaste )
-    #ocument.getElementById("UploadText").addEventListener("paste", onPaste, false )
-
-  uploadParse:( text ) ->
-    resvs   = {}
-    return obj if not Util.isStr( text ) 
-    lines = text.split('\n')
-    for line in lines
-      toks = line.split('\t')
-      continue if toks[0] is 'Guest name'
-      book   = @bookFromToks( toks )
-      resv   = @resvFromBook( book )
-      resvs[resv.resId ] = resv
-    resvs
-
-  bookFromToks:( toks ) ->
-    book           = {}
-    book.names     = toks[0]
-    book.arrive    = toks[1]
-    book.depart    = toks[2]
-    book.room      = toks[3]
-    book.booked    = toks[4]
-    book.status    = toks[5]
-    book.total     = toks[6]
-    book.commis    = toks[7]
-    book.bookingId = toks[8]
-    #Util.log( 'Book......')
-    #Util.log(  book )
-    book
-
-  resvFromBook:( book ) ->
-    names  = book.names.split(' ')
-    arrive = @toResvDate( book.arrive )
-    depart = @toResvDate( book.depart )
-    booked = @toResvDate( book.booked )
-    roomId = @toResvRoomId( book.room )
-    #first = names[0]
-    last   = names[1]
-    status = @toStatus(   book.status )
-    guests = @toNumGuests( names )
-    total  = parseFloat( book.total.substr(3) )
-    @res.createResvBooking( arrive, depart, booked, roomId, last, status, guests, total )
-
-  onUpdateRes:() =>
-
-    if not Util.isStr( @uploadedText )
-      @uploadedText  = @Data.bookingResvs
-      @uploadedResvs = @uploadParse(  @uploadedText )
-      $('#UploadText').text( @uploadedText )
-
-    return if Util.isObjEmpty(    @uploadedResvs )
-    return if not @updateValid(   @uploadedResvs )
-    #@updateVerbose(              @uploadedResvs )
-    @res.updateResvs(             @uploadedResvs )
-    @uploadedResv = {}
-
-  updateValid:( uploadedResvs ) ->
-    valid = true
-    for own resId, u of uploadedResvs
-      u.v  = true
-      #.v &= Util.isStr( u.first )
-      u.v &= Util.isStr( u.last  )
-      u.v &= 1 <= u.guests and u.guests <= 12
-      u.v &= @Data.isDate( u.arrive )
-      u.v &= @Data.isDate( u.depart )
-      u.v &= if typeof(pets) is 'number' then 0 <= u.pets   and u.pets   <=  4 else true
-      u.v &= 0 <= u.nights and u.nights <= 28
-      u.v &= Util.inArray( @res.roomKeys, u.roomId )
-      u.v &=   0.00 <= u.total and u.total <= 8820.00
-      u.v &= 120.00 <= u.price and u.price <=  315.00
-      valid &= u.v
-      #Util.log( 'Resv......', u.v )
-      #Util.log(  u )
-    Util.log( 'Master.updateValid()', valid )
-    true
-
-  updateVerbose:( uploadedResvs ) ->
-    for own resId, u of uploadedResvs
-      Util.log( 'last  ', u.last   ) if not   Util.isStr( u.last  )
-      Util.log( 'guests', u.guests ) if not ( 1 <= u.guests and u.guests <= 12 )
-      Util.log( 'arrive', u.arrive ) if not   @Data.isDate( u.arrive )
-      Util.log( 'depart', u.depart ) if not   @Data.isDate( u.depart )
-      #Util.log( 'pets  ', u.pets   ) if not if typeof(pets) is 'number' then 0 <= u.pets and u.pets <=  4 elae true
-      Util.log( 'nights', u.nights ) if not ( 0 <= u.nights and u.nights <= 28 )
-      Util.log( 'roomId', u.roomId ) if not   Util.inArray( @res.roomKeys, u.roomId )
-      Util.log( 'total ', u.total  ) if not (   0.00 <= u.total and u.total <= 8820.00 )
-      Util.log( 'price ', u.price  ) if not ( 120.00 <= u.price and u.price <=  315.00 )
-    return
-
-
-  toNumGuests:( names ) ->
-    for i in [0...names.length] when names[i] is 'guest' or names[i] is 'guests'
-      return names[i-1]
-    return '0' # This will invalidate
-
-  toResvDate:( bookDate ) ->
-    toks  = bookDate.split(' ')
-    year  = @Data.year
-    month = @Data.months.indexOf(toks[1]) + 1
-    day   = toks[0]
-    year.toString() + Util.pad(month) + day
-
-  toResvRoomId:( bookRoom ) ->
-    toks  = bookRoom.split(' ')
-    if toks[0].charAt(0) is '#'
-       toks[0].charAt(1)
-    else
-       toks[2].charAt(0)
-
-  toStatus:( bookingStatus ) ->
-    switch   bookingStatus
-      when 'OK'       then 'chan'
-      when 'Canceled' then 'canc'
-      else                 'unkn'
-
-

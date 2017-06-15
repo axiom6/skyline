@@ -243,6 +243,51 @@ img.center {
 .depart-times {
   text-align: center;
 }
+.RTTable {
+  border-collapse: collapse;
+  margin: auto;
+}
+.RTTable th {
+  border: 1px solid grey;
+  padding: 3px;
+}
+.RTTable td {
+  border: 1px solid grey;
+  padding: 3px;
+}
+.RTArrive {
+  text-align: center;
+}
+.RTStayto {
+  text-align: center;
+}
+.RTNights {
+  text-align: center;
+}
+.RTRoomId {
+  text-align: center;
+}
+.RTGuests {
+  text-align: center;
+}
+.RTStatus {
+  text-align: center;
+}
+.RTBooked {
+  text-align: center;
+}
+.RTPrice {
+  text-align: right;
+}
+.RTTotal {
+  text-align: right;
+}
+.RTTax {
+  text-align: right;
+}
+.RTCharge {
+  text-align: right;
+}
 #Make {
   text-align: center;
   margin-top: 10px;
@@ -392,7 +437,7 @@ img.center {
   height: 40px;
   border-radius: 12px;
 }
-#SeasonBtn {
+#MakResBtn {
   position: absolute;
   left: 24%;
   top: 2%;
@@ -400,7 +445,7 @@ img.center {
   height: 40px;
   border-radius: 12px;
 }
-#DailysBtn {
+#SeasonBtn {
   position: absolute;
   left: 44%;
   top: 2%;
@@ -408,7 +453,7 @@ img.center {
   height: 40px;
   border-radius: 12px;
 }
-#UploadBtn {
+#DailysBtn {
   position: absolute;
   left: 64%;
   top: 2%;
@@ -416,7 +461,7 @@ img.center {
   height: 40px;
   border-radius: 12px;
 }
-#LookupBtn {
+#UploadBtn {
   position: absolute;
   left: 84%;
   top: 2%;

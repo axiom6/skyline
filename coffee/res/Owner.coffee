@@ -12,15 +12,13 @@ class Owner
       Memory   = require( 'js/store/Memory'  )
       Data     = require( 'js/res/Data'      )
       Res      = require( 'js/res/Res'       )
-      Pay      = require( 'js/res/Pay'       )
       Master   = require( 'js/res/Master'    )
 
       stream   = new Stream( [] )
       store    = new Fire(   stream, "skytest", Data.configSkytest )
       #tore    = new Memory( stream, "skytest" )
       res      = new Res(    stream, store, Data, 'Owner' )
-      pay      = new Pay(    stream, store, Data, res )  # Pay is used to lookup confirmations
-      master   = new Master( stream, store, Data, res, pay )
+      master   = new Master( stream, store, Data, res )
       master.ready()
 
 Owner.init()

@@ -85,7 +85,7 @@ class Res
     for i in [0...nights]
       dayId = @Data.dayId( @Data.advanceDate( arrive, i ), roomId )
       ids.push( @days[dayId].resId ) if @days[dayId]? and not Util.inArray( ids, @days[dayId].resId )
-    Util.log( 'Res.resIds()', { arrive:arrive, stayto:stayto, depart:depart, roomId:roomId, nights:nights, ids:ids } )
+    #Util.log( 'Res.resIds()', { arrive:arrive, stayto:stayto, depart:depart, roomId:roomId, nights:nights, ids:ids } )
     ids
 
   resvRange:( beg, end ) ->
@@ -107,15 +107,14 @@ class Res
     @resvs
 
   updateDaysFromResv:( resv ) ->
-    Util.log( 'Res', resv )
+    #Util.log( 'Res', resv )
     days = {} # resv days
     for i in [0...resv.nights]
       dayId       = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
       days[dayId] = @setDay( {}, resv.status, resv.resId )
     @allocDays(     days )
-    #@insert( 'Day', days ) # (days) => Util.log('Day', days )
     for dayId, day of days
-      Util.log( 'Day',   dayId, day )
+      #Util.log( 'Day',   dayId, day )
       @store.add( 'Day', dayId, day )
       @days[dayId] = day
     return
@@ -198,9 +197,9 @@ class Res
 
   # .... Persistence ........
 
-  onResId:( op, doResv, resId ) => @store.on( 'Res', op,  resId, (resv) => doResv(resv) )
-  onRes:(   op, doResv        ) => @store.on( 'Res', op, 'none', (resv) => doResv(resv) )
-  onDay:(   op, doDay         ) => @store.on( 'Day', op, 'none', (day)  => doDay(day)   )
+  onResId:( op, doResv, resId ) => @store.on( 'Res', op,  resId, (resId,resv) => doResv(resId,resv) )
+  onRes:(   op, doResv        ) => @store.on( 'Res', op, 'none', (resId,resv) => doResv(resId,resv) )
+  onDay:(   op, doDay         ) => @store.on( 'Day', op, 'none', (dayId,day)  => doDay( dayId,day ) )
 
   insert:( table, rows, onComplete=null ) =>
     @store.subscribe( table, 'insert', 'none', (rows) => onComplete(rows) if onComplete? )

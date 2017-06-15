@@ -162,14 +162,6 @@
           ids.push(this.days[dayId].resId);
         }
       }
-      Util.log('Res.resIds()', {
-        arrive: arrive,
-        stayto: stayto,
-        depart: depart,
-        roomId: roomId,
-        nights: nights,
-        ids: ids
-      });
       return ids;
     };
 
@@ -213,7 +205,6 @@
 
     Res.prototype.updateDaysFromResv = function(resv) {
       var day, dayId, days, i, j, ref;
-      Util.log('Res', resv);
       days = {};
       for (i = j = 0, ref = resv.nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         dayId = this.Data.dayId(this.Data.advanceDate(resv.arrive, i), resv.roomId);
@@ -222,7 +213,6 @@
       this.allocDays(days);
       for (dayId in days) {
         day = days[dayId];
-        Util.log('Day', dayId, day);
         this.store.add('Day', dayId, day);
         this.days[dayId] = day;
       }
@@ -344,24 +334,24 @@
 
     Res.prototype.onResId = function(op, doResv, resId) {
       return this.store.on('Res', op, resId, (function(_this) {
-        return function(resv) {
-          return doResv(resv);
+        return function(resId, resv) {
+          return doResv(resId, resv);
         };
       })(this));
     };
 
     Res.prototype.onRes = function(op, doResv) {
       return this.store.on('Res', op, 'none', (function(_this) {
-        return function(resv) {
-          return doResv(resv);
+        return function(resId, resv) {
+          return doResv(resId, resv);
         };
       })(this));
     };
 
     Res.prototype.onDay = function(op, doDay) {
       return this.store.on('Day', op, 'none', (function(_this) {
-        return function(day) {
-          return doDay(day);
+        return function(dayId, day) {
+          return doDay(dayId, day);
         };
       })(this));
     };
