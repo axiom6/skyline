@@ -13,7 +13,7 @@ class Res
     @book     = null
     @master   = null
     @days     = {}
-    @resvs    = {}  # Only use occasionally
+    @resvs    = {}
     @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
     #@makeTables()
     #@populateMemory()      if @store.justMemory
@@ -28,15 +28,20 @@ class Res
     @store.subscribe( 'Day', 'range', 'none', (days) =>
       @days = days
       onComplete() if onComplete? )
-    @store.range( 'Day', beg, end )
+    @store.range( 'Day', beg+'1', end+'S' )
     return
 
-  resvRange:( beg, end ) ->
-    resvs  = {}
-    resIds = []
-    resIds.push( @resIds( beg, end, roomId ) ) for roomId in @roomKeys
-    resvs[resId] = @resv[resId]                for resId  in resIds
-    resvs
+  selectAllDays:( onComplete=null ) ->
+    @store.subscribe( 'Day', 'select', 'none', (days) =>
+      @days = days
+      onComplete() if onComplete? )
+    @store.select( 'Day' )
+
+  selectAllResvs:( onComplete=null ) ->
+    @store.subscribe( 'Res', 'select', 'none', (resvs) =>
+      @resvs = resvs
+      onComplete() if onComplete? ) # resvs not passed to onComplete() - accesss @resvs later on
+    @store.select( 'Res' )
 
   # Note the expanded roomUI is for Book.coffee and should never be persisted
   roomUI:( rooms ) ->
@@ -65,22 +70,30 @@ class Res
     day   = @days[dayId]
     if day? then day else @setDay( {}, 'free', 'none' )
 
-  dayIds:( beg, end, roomId ) ->
-    depart = Data.advanceDate( end, 1 )
-    nights = @Data.nights( beg, depart )
+  dayIds:( arrive, stayto, roomId ) ->
+    depart = Data.advanceDate( stayto, 1 )
+    nights = @Data.nights( arrive, depart )
     ids = []
     for i in [0...nights]
       ids.push( @Data.dayId( @Data.advanceDate( arrive, i ), roomId ) )
     ids
 
-  resIds:( beg, end, roomId ) ->
-    depart = @Data.advanceDate( end, 1 )
-    nights = @Data.nights( beg, depart )
+  resIds:( arrive, stayto, roomId ) ->
+    depart = @Data.advanceDate( stayto, 1      )
+    nights = @Data.nights(      arrive, depart )
     ids = []
     for i in [0...nights]
       dayId = @Data.dayId( @Data.advanceDate( arrive, i ), roomId )
       ids.push( @days[dayId].resId ) if @days[dayId]? and not Util.inArray( ids, @days[dayId].resId )
+    Util.log( 'Res.resIds()', { arrive:arrive, stayto:stayto, depart:depart, roomId:roomId, nights:nights, ids:ids } )
     ids
+
+  resvRange:( beg, end ) ->
+    resvs  = {}
+    resIds = []
+    resIds.push( @resIds( beg, end, roomId ) ) for roomId in @roomKeys
+    resvs[resId] = @resvs[resId]               for resId  in resIds when @resvs[resId]?
+    resvs
 
   allocDays:( days ) ->
     @book.  allocDays( days ) if @book?
@@ -123,21 +136,23 @@ class Res
   # .... Creation ........
 
   createResvSkyline:( arrive, depart, roomId, last, status, guests, pets, spa=false, cust={}, payments={} ) ->
+    booked = @Data.today()
     price  = @rooms[roomId][guests] + pets*@Data.petPrice
     nights = @Data.nights( arrive, depart )
     total  = price * nights
-    @createResv( arrive, depart, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments )
+    @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments )
 
-  createResvBooking:( arrive, depart, roomId, last, status, guests, total ) ->
+  createResvBooking:( arrive, depart, booked, roomId, last, status, guests, total ) ->
     total  = if total is 0 then @rooms[roomId].booking * @Data.nights( arrive, depart ) else total
     pets   = '?'
-    @createResv( arrive, depart, roomId, last, status, guests, pets, 'Booking', total )
+    @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total )
 
-  createResv:( arrive, depart, roomId, last, status, guests, pets, source, total, spa=false, cust={}, payments={} ) ->
+  createResv:( arrive, depart, booked, roomId, last, status, guests, pets, source, total, spa=false, cust={}, payments={} ) ->
     resv           = {}
     resv.nights    = @Data.nights( arrive, depart )
     resv.arrive    = arrive
     resv.depart    = depart
+    resv.booked    = booked
     resv.stayto    = @Data.advanceDate( arrive, resv.nights - 1 )
     resv.roomId    = roomId
     resv.last      = last
@@ -190,6 +205,11 @@ class Res
   insert:( table, rows, onComplete=null ) =>
     @store.subscribe( table, 'insert', 'none', (rows) => onComplete(rows) if onComplete? )
     @store.insert(    table,  rows )
+    return
+
+  select:( table, rows, onComplete=null ) =>
+    @store.subscribe( table, 'select', 'none', (rows) => onComplete(rows) if onComplete? )
+    @store.select(    table )
     return
 
   make:( table, rows, onComplete=null ) ->

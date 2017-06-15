@@ -20,6 +20,7 @@
       this.appName = appName;
       this.makeInput = bind(this.makeInput, this);
       this.makeSelect = bind(this.makeSelect, this);
+      this.select = bind(this.select, this);
       this.insert = bind(this.insert, this);
       this.onDay = bind(this.onDay, this);
       this.onRes = bind(this.onRes, this);
@@ -63,23 +64,37 @@
           }
         };
       })(this));
-      this.store.range('Day', beg, end);
+      this.store.range('Day', beg + '1', end + 'S');
     };
 
-    Res.prototype.resvRange = function(beg, end) {
-      var j, k, len, len1, ref, resId, resIds, resvs, roomId;
-      resvs = {};
-      resIds = [];
-      ref = this.roomKeys;
-      for (j = 0, len = ref.length; j < len; j++) {
-        roomId = ref[j];
-        resIds.push(this.resIds(beg, end, roomId));
+    Res.prototype.selectAllDays = function(onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
       }
-      for (k = 0, len1 = resIds.length; k < len1; k++) {
-        resId = resIds[k];
-        resvs[resId] = this.resv[resId];
+      this.store.subscribe('Day', 'select', 'none', (function(_this) {
+        return function(days) {
+          _this.days = days;
+          if (onComplete != null) {
+            return onComplete();
+          }
+        };
+      })(this));
+      return this.store.select('Day');
+    };
+
+    Res.prototype.selectAllResvs = function(onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
       }
-      return resvs;
+      this.store.subscribe('Res', 'select', 'none', (function(_this) {
+        return function(resvs) {
+          _this.resvs = resvs;
+          if (onComplete != null) {
+            return onComplete();
+          }
+        };
+      })(this));
+      return this.store.select('Res');
     };
 
     Res.prototype.roomUI = function(rooms) {
@@ -125,10 +140,10 @@
       }
     };
 
-    Res.prototype.dayIds = function(beg, end, roomId) {
+    Res.prototype.dayIds = function(arrive, stayto, roomId) {
       var depart, i, ids, j, nights, ref;
-      depart = Data.advanceDate(end, 1);
-      nights = this.Data.nights(beg, depart);
+      depart = Data.advanceDate(stayto, 1);
+      nights = this.Data.nights(arrive, depart);
       ids = [];
       for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         ids.push(this.Data.dayId(this.Data.advanceDate(arrive, i), roomId));
@@ -136,10 +151,10 @@
       return ids;
     };
 
-    Res.prototype.resIds = function(beg, end, roomId) {
+    Res.prototype.resIds = function(arrive, stayto, roomId) {
       var dayId, depart, i, ids, j, nights, ref;
-      depart = this.Data.advanceDate(end, 1);
-      nights = this.Data.nights(beg, depart);
+      depart = this.Data.advanceDate(stayto, 1);
+      nights = this.Data.nights(arrive, depart);
       ids = [];
       for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         dayId = this.Data.dayId(this.Data.advanceDate(arrive, i), roomId);
@@ -147,7 +162,33 @@
           ids.push(this.days[dayId].resId);
         }
       }
+      Util.log('Res.resIds()', {
+        arrive: arrive,
+        stayto: stayto,
+        depart: depart,
+        roomId: roomId,
+        nights: nights,
+        ids: ids
+      });
       return ids;
+    };
+
+    Res.prototype.resvRange = function(beg, end) {
+      var j, k, len, len1, ref, resId, resIds, resvs, roomId;
+      resvs = {};
+      resIds = [];
+      ref = this.roomKeys;
+      for (j = 0, len = ref.length; j < len; j++) {
+        roomId = ref[j];
+        resIds.push(this.resIds(beg, end, roomId));
+      }
+      for (k = 0, len1 = resIds.length; k < len1; k++) {
+        resId = resIds[k];
+        if (this.resvs[resId] != null) {
+          resvs[resId] = this.resvs[resId];
+        }
+      }
+      return resvs;
     };
 
     Res.prototype.allocDays = function(days) {
@@ -213,7 +254,7 @@
     };
 
     Res.prototype.createResvSkyline = function(arrive, depart, roomId, last, status, guests, pets, spa, cust, payments) {
-      var nights, price, total;
+      var booked, nights, price, total;
       if (spa == null) {
         spa = false;
       }
@@ -223,20 +264,21 @@
       if (payments == null) {
         payments = {};
       }
+      booked = this.Data.today();
       price = this.rooms[roomId][guests] + pets * this.Data.petPrice;
       nights = this.Data.nights(arrive, depart);
       total = price * nights;
-      return this.createResv(arrive, depart, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
+      return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
     };
 
-    Res.prototype.createResvBooking = function(arrive, depart, roomId, last, status, guests, total) {
+    Res.prototype.createResvBooking = function(arrive, depart, booked, roomId, last, status, guests, total) {
       var pets;
       total = total === 0 ? this.rooms[roomId].booking * this.Data.nights(arrive, depart) : total;
       pets = '?';
-      return this.createResv(arrive, depart, roomId, last, status, guests, pets, 'Booking', total);
+      return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total);
     };
 
-    Res.prototype.createResv = function(arrive, depart, roomId, last, status, guests, pets, source, total, spa, cust, payments) {
+    Res.prototype.createResv = function(arrive, depart, booked, roomId, last, status, guests, pets, source, total, spa, cust, payments) {
       var resv;
       if (spa == null) {
         spa = false;
@@ -251,6 +293,7 @@
       resv.nights = this.Data.nights(arrive, depart);
       resv.arrive = arrive;
       resv.depart = depart;
+      resv.booked = booked;
       resv.stayto = this.Data.advanceDate(arrive, resv.nights - 1);
       resv.roomId = roomId;
       resv.last = last;
@@ -335,6 +378,20 @@
         };
       })(this));
       this.store.insert(table, rows);
+    };
+
+    Res.prototype.select = function(table, rows, onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
+      }
+      this.store.subscribe(table, 'select', 'none', (function(_this) {
+        return function(rows) {
+          if (onComplete != null) {
+            return onComplete(rows);
+          }
+        };
+      })(this));
+      this.store.select(table);
     };
 
     Res.prototype.make = function(table, rows, onComplete) {

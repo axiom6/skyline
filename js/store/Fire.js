@@ -130,10 +130,8 @@
       tableName = this.tableName(t);
       onComplete = (function(_this) {
         return function(snapshot) {
-          var val;
           if ((snapshot != null) && (snapshot.val() != null)) {
-            val = _this.toObjects(snapshot.val());
-            return _this.publish(tableName, 'select', 'none', val);
+            return _this.publish(tableName, 'select', 'none', snapshot.val());
           } else {
             return _this.publish(tableName, 'select', 'none', {});
           }

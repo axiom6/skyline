@@ -28,7 +28,7 @@
       this.onUploadBtn = bind(this.onUploadBtn, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
       this.onSeasonBtn = bind(this.onSeasonBtn, this);
-      this.onResTable = bind(this.onResTable, this);
+      this.onResvTable = bind(this.onResvTable, this);
       this.onLookup = bind(this.onLookup, this);
       this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
@@ -59,7 +59,7 @@
       $('#SeasonBtn').click(this.onSeasonBtn);
       $('#DailysBtn').click(this.onDailysBtn);
       $('#UploadBtn').click(this.onUploadBtn);
-      this.res.dateRange(this.Data.beg, this.Data.end, this.readyMaster);
+      this.res.selectAllDays(this.readyMaster);
     };
 
     Master.prototype.onMasterBtn = function() {
@@ -89,7 +89,7 @@
       $('#Lookup').show();
     };
 
-    Master.prototype.onResTable = function(resvs) {
+    Master.prototype.onResvTable = function(resvs) {
       $('#ResTbl').empty();
       return $('#ResTbl').append(this.resvTable(resvs));
     };
@@ -144,7 +144,7 @@
       $('#ResAdd').empty();
       $('#ResAdd').append(this.resvInput());
       $('#ResTbl').empty();
-      $('#ResTbl').append(this.resvTable());
+      $('#ResTbl').append(this.resvTable({}));
       $('#Master').empty();
       $('#Master').append(this.masterHtml());
       $('.MasterTitle').click((function(_this) {
@@ -152,7 +152,7 @@
           return _this.onMasterClick(event);
         };
       })(this));
-      this.readyCells();
+      this.res.selectAllResvs(this.readyCells);
       this.resvInputRespond();
     };
 
@@ -178,27 +178,28 @@
       $('[data-cell="y"]').contextmenu(doCell);
     };
 
-    Master.prototype.popResvInput = function(beg, end, roomId) {
-      var charge, nights, price, room, tax, total;
-      if (beg != null) {
-        $('#Arrive').text(this.Data.toMMDD(beg));
+    Master.prototype.popResvInput = function(arrive, stayto, roomId) {
+      var charge, depart, nights, price, room, tax, total;
+      if (arrive != null) {
+        $('#arrive').text(this.Data.toMMDD(arrive));
       }
-      if (end != null) {
-        $('#StayTo').text(this.Data.toMMDD(end));
+      if (stayto != null) {
+        $('#stayTo').text(this.Data.toMMDD(stayto));
       }
-      $('#RoomId').text(this.roomId);
-      if ((beg != null) && (end != null)) {
+      $('#roomId').text(this.roomId);
+      if ((arrive != null) && (stayto != null)) {
         room = this.rooms[roomId];
-        nights = this.Data.nights(beg, end);
+        depart = this.Data.advanceDate(stayto, 1);
+        nights = this.Data.nights(arrive, depart);
         price = room.booking;
         total = nights * price;
         tax = parseFloat(Util.toFixed(total * this.Data.tax));
-        charge = total + tax;
-        $('#Nights').text(nights);
-        $('#Price').text(price);
-        $('#Total').text(total);
-        $('#Tax').text(tax);
-        $('#Charge').text(charge);
+        charge = Util.toFixed(total + tax);
+        $('#nights').text(nights);
+        $('#price').text(price);
+        $('#total').text(total);
+        $('#tax').text(tax);
+        $('#charge').text(charge);
       }
     };
 
@@ -358,7 +359,7 @@
       htm = "<table><thead>";
       htm += "<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
-      htm += "<tr><td id=\"arrive\"></td><td id=\"atayTo\"></td><td id=\"roomId\"></td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.status()) + "</td><td>" + (this.submit()) + "</td><td id=\"nights\"></td><td id=\"price\"></td><td id=\"iotal\"></td><td id=\"tax\"></td><td id=\"charge\"></td></tr>";
+      htm += "<tr><td id=\"arrive\"></td><td id=\"stayTo\"></td><td id=\"roomId\"></td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.status()) + "</td><td>" + (this.submit()) + "</td><td id=\"nights\"></td><td id=\"price\"></td><td id=\"total\"></td><td id=\"tax\"></td><td id=\"charge\"></td></tr>";
       htm += "</tbody></table>";
       return htm;
     };
@@ -397,17 +398,17 @@
     };
 
     Master.prototype.resvTable = function(resvs) {
-      var charge, htm, r, resId, tax, u;
+      var charge, htm, r, resId, tax;
       htm = "<table><thead>";
-      htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
+      htm += "<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Booked</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
       for (resId in resvs) {
         if (!hasProp.call(resvs, resId)) continue;
         r = resvs[resId];
-        u = r.u;
-        tax = Util.toFixed(u.total * this.Data.tax);
-        charge = u.total + parseFloat(tax);
-        htm += "<tr><td>" + u.arrive + "</td><td>" + u.nights + "</td><td>" + u.roomId + "</td><td>" + u.last + "</td><td>" + u.guests + "</td><td>" + u.status + "</td><td>" + u.price + "</td><td>" + u.total + "</td><td>" + tax + "</td><td>" + charge + "</td></tr>";
+        Util.log(r);
+        tax = Util.toFixed(r.total * this.Data.tax);
+        charge = r.total + parseFloat(tax);
+        htm += "<tr><td>" + r.arrive + "</td><td>" + r.nights + "</td><td>" + r.roomId + "</td><td>" + r.last + "</td><td>" + r.guests + "</td><td>" + r.status + "</td><td>" + r.booked + "</td><td>" + r.price + "</td><td>" + r.total + "</td><td>" + tax + "</td><td>" + charge + "</td></tr>";
       }
       htm += "</tbody></table>";
       return htm;
@@ -589,16 +590,17 @@
     };
 
     Master.prototype.resvFromBook = function(book) {
-      var arrive, depart, guests, last, names, roomId, status, total;
+      var arrive, booked, depart, guests, last, names, roomId, status, total;
       names = book.names.split(' ');
       arrive = this.toResvDate(book.arrive);
       depart = this.toResvDate(book.depart);
+      booked = this.toResvDate(book.booked);
       roomId = this.toResvRoomId(book.room);
       last = names[1];
       status = this.toStatus(book.status);
       guests = this.toNumGuests(names);
       total = parseFloat(book.total.substr(3));
-      return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total);
+      return this.res.createResvBooking(arrive, depart, booked, roomId, last, status, guests, total);
     };
 
     Master.prototype.onUpdateRes = function() {

@@ -25,7 +25,8 @@ class Master
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
     $('#UploadBtn').click( @onUploadBtn )
-    @res.dateRange( @Data.beg, @Data.end, @readyMaster )
+    #res.dateRange( @Data.beg, @Data.end, @readyMaster ) # This works
+    @res.selectAllDays( @readyMaster )
     return
 
   onMasterBtn:() =>
@@ -52,7 +53,7 @@ class Master
     $('#Lookup').show()
     return
 
-  onResTable:( resvs ) =>
+  onResvTable:( resvs ) =>
     $('#ResTbl').empty()
     $('#ResTbl').append( @resvTable(resvs) )
 
@@ -96,14 +97,15 @@ class Master
     $('#ResAdd').empty()
     $('#ResAdd').append( @resvInput() )
     $('#ResTbl').empty()
-    $('#ResTbl').append( @resvTable() )
+    $('#ResTbl').append( @resvTable( {} ) )
     $('#Master').empty()
     $('#Master').append( @masterHtml() )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
-    @readyCells()
+    @res.selectAllResvs( @readyCells )
     @resvInputRespond()
     return
 
+  # Requires that @res.resvs to loaded
   readyCells:() =>
     doCell = (event) =>
       $cell    = $(event.target)
@@ -122,22 +124,23 @@ class Master
     $('[data-cell="y"]').contextmenu( doCell )
     return
     
-  popResvInput:( beg, end, roomId ) ->
-    $('#Arrive').text( @Data.toMMDD(beg)     ) if beg?
-    $('#StayTo').text( @Data.toMMDD(end)     ) if end?
-    $('#RoomId').text( @roomId               )
-    if beg? and end?
+  popResvInput:( arrive, stayto, roomId ) ->
+    $('#arrive').text( @Data.toMMDD(arrive)  ) if arrive?
+    $('#stayTo').text( @Data.toMMDD(stayto)  ) if stayto?
+    $('#roomId').text( @roomId               )
+    if arrive? and stayto?
       room   = @rooms[roomId]
-      nights = @Data.nights(beg,end)
+      depart = @Data.advanceDate(    stayto, 1 )
+      nights = @Data.nights( arrive, depart )
       price  = room.booking
       total  = nights * price
       tax    = parseFloat( Util.toFixed( total * @Data.tax ) )
-      charge = total + tax
-      $('#Nights').text( nights )
-      $('#Price' ).text( price  )
-      $('#Total' ).text( total  )
-      $('#Tax'   ).text( tax    )
-      $('#Charge').text( charge )
+      charge = Util.toFixed( total + tax )
+      $('#nights').text( nights )
+      $('#price' ).text( price  )
+      $('#total' ).text( total  )
+      $('#tax'   ).text( tax    )
+      $('#charge').text( charge )
     return
 
   listenToDays:() =>
@@ -243,7 +246,7 @@ class Master
     htm  = """<table><thead>"""
     htm += """<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm += """</thead><tbody>"""
-    htm += """<tr><td id="arrive"></td><td id="atayTo"></td><td id="roomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@status()}</td><td>#{@submit()}</td><td id="nights"></td><td id="price"></td><td id="iotal"></td><td id="tax"></td><td id="charge"></td></tr>"""
+    htm += """<tr><td id="arrive"></td><td id="stayTo"></td><td id="roomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@status()}</td><td>#{@submit()}</td><td id="nights"></td><td id="price"></td><td id="total"></td><td id="tax"></td><td id="charge"></td></tr>"""
     htm += """</tbody></table>"""
     htm
 
@@ -268,13 +271,13 @@ class Master
 
   resvTable:( resvs ) ->
     htm   = """<table><thead>"""
-    htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm  += """<tr><th>Arrive</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Booked</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm  += """</thead><tbody>"""
     for own resId, r of resvs
-      u      = r.u
-      tax    = Util.toFixed( u.total * @Data.tax )
-      charge = u.total + parseFloat( tax )
-      htm += """<tr><td>#{u.arrive}</td><td>#{u.nights}</td><td>#{u.roomId}</td><td>#{u.last}</td><td>#{u.guests}</td><td>#{u.status}</td><td>#{u.price}</td><td>#{u.total}</td><td>#{tax}</td><td>#{charge}</td></tr>"""
+      Util.log( r )
+      tax    = Util.toFixed( r.total * @Data.tax )
+      charge = r.total + parseFloat( tax )
+      htm += """<tr><td>#{r.arrive}</td><td>#{r.nights}</td><td>#{r.roomId}</td><td>#{r.last}</td><td>#{r.guests}</td><td>#{r.status}</td><td>#{r.booked}</td><td>#{r.price}</td><td>#{r.total}</td><td>#{tax}</td><td>#{charge}</td></tr>"""
     htm += """</tbody></table>"""
     htm
 
@@ -411,13 +414,14 @@ class Master
     names  = book.names.split(' ')
     arrive = @toResvDate( book.arrive )
     depart = @toResvDate( book.depart )
+    booked = @toResvDate( book.booked )
     roomId = @toResvRoomId( book.room )
     #first = names[0]
     last   = names[1]
     status = @toStatus(   book.status )
     guests = @toNumGuests( names )
     total  = parseFloat( book.total.substr(3) )
-    @res.createResvBooking( arrive, depart, roomId, last, status, guests, total )
+    @res.createResvBooking( arrive, depart, booked, roomId, last, status, guests, total )
 
   onUpdateRes:() =>
 

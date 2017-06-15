@@ -78,8 +78,8 @@ class Fire extends Store
     tableName = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
-        val = @toObjects( snapshot.val() )
-        @publish( tableName, 'select', 'none', val )
+        #val = @toObjects( snapshot.val() )
+        @publish( tableName, 'select', 'none', snapshot.val() )
       else
         @publish( tableName, 'select', 'none', {} ) # Publish empty results
     @fd.ref(tableName).once('value', onComplete )
@@ -165,7 +165,7 @@ class Fire extends Store
     @fd.ref(path).on( Fire.OnFire[onEvt], onComplete )
     return
 
-  # keyProp only needed if rows is away
+  # keyProp only needed if rows is array
   toObjects:( rows ) ->
     objects = {}
     if Util.isArray(rows)
