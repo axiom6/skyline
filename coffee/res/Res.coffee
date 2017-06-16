@@ -259,10 +259,11 @@ class Res
     htm += "</select>"
 
   # UI Element that does that quite belong here
-  htmlInput:( htmlId, klass, value="", label="", type="text" ) ->
-    htm  = ""
-    htm += """<label for="#{htmlId}" class="#{klass+'Label'}">#{label}</label>"""  if Util.isStr(label)
-    htm += """<input id= "#{htmlId}" class="#{klass}" value="#{value}" type="#{type}">"""
+  htmlInput:( htmlId, value="", klass="", label="", type="text" ) ->
+    style = if Util.isStr(klass) then klass else htmlId
+    htm   = ""
+    htm  += """<label for="#{htmlId}" class="#{style+'Label'}">#{label}</label>"""  if Util.isStr(label)
+    htm  += """<input id= "#{htmlId}" class="#{style}" value="#{value}" type="#{type}">"""
     htm
 
   htmlButton:( htmlId, klass, title ) ->
@@ -270,13 +271,17 @@ class Res
 
   # Sets htmlId property on obj
   makeSelect:( htmlId, obj ) =>
-    onSelect = (event) -> obj[htmlId] = $(event.target).value
+    onSelect = (event) =>
+      obj[htmlId] = event.target.value
+      Util.log( htmlId, obj[htmlId] )
     $('#'+htmlId).change( onSelect )
     return
 
   # Sets htmlId property on obj
   makeInput:( htmlId, obj ) =>
-    onInput = (event) -> obj[htmlId] = $(event.target).value # $('#'+htmlId).val()
+    onInput = (event) =>
+      obj[htmlId] = event.target.value # $('#'+htmlId).val()
+      Util.log( htmlId, obj[htmlId] )
     $('#'+htmlId).change( onInput )
     return
 

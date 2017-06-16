@@ -160,6 +160,10 @@ class Data
     Data.months3[mi] + dd.toString() + ', ' + (2000+yy).toString()
 
   @bookingResvs = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
+Sheri Carpenter 2 guests	16 June 2017	18 June 2017	#2 Mountain Spa	15 June 2017	OK	US$370	US$55.50	1492157385
+"""
+
+  @bookingResvs1 = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
 Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
 Scott Wilkins 4 guests	17 July 2017	21 July 2017	Upper Skyline South	15 June 2017	OK	US$620	US$93	1332065103
 steven wolery 1 guest	17 July 2017	19 July 2017	#7 Western Spa	14 June 2017	OK	US$350	US$52.50	1082997039
@@ -237,7 +241,7 @@ Todd Featherstun 1 guest	08 September 2017	10 September 2017	#1 One Room Cabin	0
 Margaret Dreiling 1 guest	08 September 2017	10 September 2017	Upper Skyline South	15 June 2017	OK	US$310	US$46.50	1977820063
 """
 
-  @oldBookingResvs = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
+  @oldBookingResvs2 = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
 Jacen Roper 4 guests	23 June 2017	26 June 2017	#4 One Room Cabin	31 May 2017	OK	US$435	US$65.25	1771276433
 Cherry Lofstrom 1 guest	23 June 2017	25 June 2017	#1 One Room Cabin	01 June 2017	OK	US$290	US$43.50	1065507845
 Encarnita Pascuzzi 4 guests	23 June 2017	26 June 2017	#8 Western Unit	01 June 2017	Canceled	US$0		1361910794

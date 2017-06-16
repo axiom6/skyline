@@ -16,6 +16,8 @@
       this.store = store;
       this.Data = Data;
       this.res = res;
+      this.onPets = bind(this.onPets, this);
+      this.onGuests = bind(this.onGuests, this);
       this.onSeasonClick = bind(this.onSeasonClick, this);
       this.onMasterClick = bind(this.onMasterClick, this);
       this.onAlloc = bind(this.onAlloc, this);
@@ -211,31 +213,6 @@
       return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
-    Master.prototype.popResvInput = function(arrive, stayto, roomId) {
-      var charge, depart, nights, price, room, tax, total;
-      if (arrive != null) {
-        $('#arrive').text(this.Data.toMMDD(arrive));
-      }
-      if (stayto != null) {
-        $('#stayTo').text(this.Data.toMMDD(stayto));
-      }
-      $('#roomId').text(this.roomId);
-      if ((arrive != null) && (stayto != null)) {
-        room = this.rooms[roomId];
-        depart = this.Data.advanceDate(stayto, 1);
-        nights = this.Data.nights(arrive, depart);
-        price = room.booking;
-        total = nights * price;
-        tax = parseFloat(Util.toFixed(total * this.Data.tax));
-        charge = Util.toFixed(total + tax);
-        $('#nights').text(nights);
-        $('#price').text(price);
-        $('#total').text(total);
-        $('#tax').text(tax);
-        $('#charge').text(charge);
-      }
-    };
-
     Master.prototype.listenToDays = function() {
       var doDays;
       doDays = (function(_this) {
@@ -389,40 +366,72 @@
       htm = "<table><thead>";
       htm += "<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>";
       htm += "</thead><tbody>";
-      htm += "<tr><td id=\"arrive\"></td><td id=\"stayTo\"></td><td id=\"roomId\"></td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.status()) + "</td><td>" + (this.submit()) + "</td><td id=\"nights\"></td><td id=\"price\"></td><td id=\"total\"></td><td id=\"tax\"></td><td id=\"charge\"></td></tr>";
+      htm += "<tr><td id=\"NRArrive\"></td><td id=\"NRStayTo\"></td><td id=\"NRoomId\"></td><td>" + (this.names()) + "</td><td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.status()) + "</td><td>" + (this.submit()) + "</td><td id=\"NRNights\"></td><td id=\"NRPrice\"></td><td id=\"NRTtotal\"></td><td id=\"NRTax\"></td><td id=\"NRCharge\"></td></tr>";
       htm += "</tbody></table>";
       return htm;
     };
 
     Master.prototype.guests = function() {
-      return this.res.htmlSelect('guests', this.Data.persons, 2);
+      return this.res.htmlSelect('NRGuests', this.Data.persons, 2);
     };
 
     Master.prototype.pets = function() {
-      return this.res.htmlSelect('pets', this.Data.pets, 0);
+      return this.res.htmlSelect('NRPets', this.Data.pets, 0);
     };
 
     Master.prototype.status = function() {
-      return this.res.htmlSelect('status', this.Data.statuses, 'chan');
+      return this.res.htmlSelect('NRStatus', this.Data.statuses, 'chan');
     };
 
     Master.prototype.names = function() {
-      return this.res.htmlInput('Names', 'Names');
+      return this.res.htmlInput('NRNames');
     };
 
     Master.prototype.submit = function() {
-      return this.res.htmlButton('Submit', 'Submit', 'Submit');
+      return this.res.htmlButton('NRSubmit', 'Submit', 'Submit');
+    };
+
+    Master.prototype.popResvInput = function(arrive, stayto, roomId) {
+      var charge, nights, price, tax, total;
+      this.resvNew.arrive = arrive;
+      this.resvNew.depart = this.Data.advanceDate(stayto, 1);
+      this.resvNew.roomId = roomId;
+      this.resvNew.last = $('#NRLast').value;
+      this.resvNew.status = $('#NRStatus').value;
+      this.resvNew.guests = $('#NRGuests').value;
+      this.resvNew.pets = $('#NRPets').value;
+      nights = this.Data.nights(this.resvNew.arrive, this.resvNew.depart);
+      price = this.res.calcPrice(this.resvNew.roomId, this.resvNew.guests, this.resvNew.pets);
+      total = nights * price;
+      tax = parseFloat(Util.toFixed(total * this.Data.tax));
+      charge = Util.toFixed(total + tax);
+      $('#NRArrive').text(this.Data.toMMDD(arrive));
+      $('#NRStayTo').text(this.Data.toMMDD(stayto));
+      $('#NRRoomId').text(this.roomId);
+      $('#NRNights').text(nights);
+      $('#NRPrice').text(price);
+      $('#NRTotal').text(total);
+      $('#NRTax').text(tax);
+      $('#NRCharge').text(charge);
+    };
+
+    Master.prototype.onGuests = function(event) {
+      return this.popResvInput(this.resvNew.arrive, this.resvNew.stayto, this.resvNew.roomId);
+    };
+
+    Master.prototype.onPets = function(event) {
+      return this.popResvInput(this.resvNew.arrive, this.resvNew.stayto, this.resvNew.roomId);
     };
 
     Master.prototype.resvInputRespond = function() {
-      this.res.makeSelect('guests', this.resvNew);
-      this.res.makeSelect('pets', this.resvNew);
-      this.res.makeSelect('status', this.resvNew);
-      this.res.makeInput('names', this.resvNew);
       return $('#Submit').click((function(_this) {
         return function(event) {
+          var r;
           Util.noop(event);
-          return Util.log(_this.resvNew);
+          Util.log(_this.resvNew);
+          r = _this.resvNew;
+          _this.resvs[resId] = _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+          return _this.res.postResv(_this.resvs[resId]);
         };
       })(this));
     };

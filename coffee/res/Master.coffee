@@ -152,24 +152,6 @@ class Master
   $cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
     
-  popResvInput:( arrive, stayto, roomId ) ->
-    $('#arrive').text( @Data.toMMDD(arrive)  ) if arrive?
-    $('#stayTo').text( @Data.toMMDD(stayto)  ) if stayto?
-    $('#roomId').text( @roomId               )
-    if arrive? and stayto?
-      room   = @rooms[roomId]
-      depart = @Data.advanceDate(    stayto, 1 )
-      nights = @Data.nights( arrive, depart )
-      price  = room.booking
-      total  = nights * price
-      tax    = parseFloat( Util.toFixed( total * @Data.tax ) )
-      charge = Util.toFixed( total + tax )
-      $('#nights').text( nights )
-      $('#price' ).text( price  )
-      $('#total' ).text( total  )
-      $('#tax'   ).text( tax    )
-      $('#charge').text( charge )
-    return
 
   listenToDays:() =>
     doDays = (dayId,day) =>
@@ -271,28 +253,56 @@ class Master
     htm  = """<table><thead>"""
     htm += """<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
     htm += """</thead><tbody>"""
-    htm += """<tr><td id="arrive"></td><td id="stayTo"></td><td id="roomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@status()}</td><td>#{@submit()}</td><td id="nights"></td><td id="price"></td><td id="total"></td><td id="tax"></td><td id="charge"></td></tr>"""
+    htm += """<tr><td id="NRArrive"></td><td id="NRStayTo"></td><td id="NRoomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@status()}</td><td>#{@submit()}</td><td id="NRNights"></td><td id="NRPrice"></td><td id="NRTtotal"></td><td id="NRTax"></td><td id="NRCharge"></td></tr>"""
     htm += """</tbody></table>"""
     htm
 
-  #nights:() -> @res.htmlSelect( 'nights',   @Data.nighti,   '2' )
-  #roomi: () -> @res.htmlSelect( 'rooms',    @res.roomKeys,  '' )
-  guests:() -> @res.htmlSelect( 'guests',   @Data.persons,   2 )
-  pets:  () -> @res.htmlSelect( 'pets',     @Data.pets,      0   )
-  status:() -> @res.htmlSelect( 'status',   @Data.statuses, 'chan' )
-  names: () -> @res.htmlInput(  'Names',    'Names' )
-  submit:() -> @res.htmlButton( 'Submit',   'Submit', 'Submit' )
+  guests:() -> @res.htmlSelect( 'NRGuests',   @Data.persons,   2 )
+  pets:  () -> @res.htmlSelect( 'NRPets',     @Data.pets,      0   )
+  status:() -> @res.htmlSelect( 'NRStatus',   @Data.statuses, 'chan' )
+  names: () -> @res.htmlInput(  'NRNames' )
+  submit:() -> @res.htmlButton( 'NRSubmit',   'Submit', 'Submit' )
+
+  #arrive, depart, roomId, last, status, guests, pets
+
+  popResvInput:( arrive, stayto, roomId ) ->
+    @resvNew.arrive = arrive
+    @resvNew.depart = @Data.advanceDate( stayto, 1 )
+    @resvNew.roomId = roomId
+    @resvNew.last   = $('#NRLast').value
+    @resvNew.status = $('#NRStatus').value
+    @resvNew.guests = $('#NRGuests').value
+    @resvNew.pets   = $('#NRPets').value
+    nights = @Data.nights( @resvNew.arrive, @resvNew.depart )
+    price  = @res.calcPrice( @resvNew.roomId, @resvNew.guests, @resvNew.pets  )
+    total  = nights * price
+    tax    = parseFloat( Util.toFixed( total * @Data.tax ) )
+    charge = Util.toFixed( total + tax )
+    $('#NRArrive').text( @Data.toMMDD(arrive)  )
+    $('#NRStayTo').text( @Data.toMMDD(stayto)  )
+    $('#NRRoomId').text( @roomId               )
+    $('#NRNights').text( nights )
+    $('#NRPrice' ).text( price  )
+    $('#NRTotal' ).text( total  )
+    $('#NRTax'   ).text( tax    )
+    $('#NRCharge').text( charge )
+    return
+
+  # @resvNew.guests = event.target.value
+  onGuests:( event ) =>
+    @popResvInput( @resvNew.arrive, @resvNew.stayto, @resvNew.roomId )
+
+  # @resvNew.pets = event.target.value
+  onPets:( event ) =>
+    @popResvInput( @resvNew.arrive, @resvNew.stayto, @resvNew.roomId )
 
   resvInputRespond:() ->
-    #@res.makeSelect( 'Nights',   @resvNew )
-    #@res.makeSelect( 'Rooms',    @resvNew )
-    @res.makeSelect( 'guests',   @resvNew )
-    @res.makeSelect( 'pets',     @resvNew )
-    @res.makeSelect( 'status',   @resvNew )
-    @res.makeInput(  'names',    @resvNew )
     $('#Submit').click (event) =>
       Util.noop( event )
       Util.log( @resvNew )
+      r = @resvNew
+      @resvs[resId] = @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )
+      @res.postResv( @resvs[resId] )
 
   resvTable:( resvs ) ->
     htm   = """<table class="RTTable"><thead>"""

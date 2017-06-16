@@ -461,10 +461,13 @@
       return htm += "</select>";
     };
 
-    Res.prototype.htmlInput = function(htmlId, klass, value, label, type) {
-      var htm;
+    Res.prototype.htmlInput = function(htmlId, value, klass, label, type) {
+      var htm, style;
       if (value == null) {
         value = "";
+      }
+      if (klass == null) {
+        klass = "";
       }
       if (label == null) {
         label = "";
@@ -472,11 +475,12 @@
       if (type == null) {
         type = "text";
       }
+      style = Util.isStr(klass) ? klass : htmlId;
       htm = "";
       if (Util.isStr(label)) {
-        htm += "<label for=\"" + htmlId + "\" class=\"" + (klass + 'Label') + "\">" + label + "</label>";
+        htm += "<label for=\"" + htmlId + "\" class=\"" + (style + 'Label') + "\">" + label + "</label>";
       }
-      htm += "<input id= \"" + htmlId + "\" class=\"" + klass + "\" value=\"" + value + "\" type=\"" + type + "\">";
+      htm += "<input id= \"" + htmlId + "\" class=\"" + style + "\" value=\"" + value + "\" type=\"" + type + "\">";
       return htm;
     };
 
@@ -486,17 +490,23 @@
 
     Res.prototype.makeSelect = function(htmlId, obj) {
       var onSelect;
-      onSelect = function(event) {
-        return obj[htmlId] = $(event.target).value;
-      };
+      onSelect = (function(_this) {
+        return function(event) {
+          obj[htmlId] = event.target.value;
+          return Util.log(htmlId, obj[htmlId]);
+        };
+      })(this);
       $('#' + htmlId).change(onSelect);
     };
 
     Res.prototype.makeInput = function(htmlId, obj) {
       var onInput;
-      onInput = function(event) {
-        return obj[htmlId] = $(event.target).value;
-      };
+      onInput = (function(_this) {
+        return function(event) {
+          obj[htmlId] = event.target.value;
+          return Util.log(htmlId, obj[htmlId]);
+        };
+      })(this);
       $('#' + htmlId).change(onInput);
     };
 
