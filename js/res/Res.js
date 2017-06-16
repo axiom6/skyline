@@ -151,33 +151,18 @@
       return ids;
     };
 
-    Res.prototype.resIds = function(arrive, stayto, roomId) {
-      var dayId, depart, i, ids, j, nights, ref;
-      depart = this.Data.advanceDate(stayto, 1);
-      nights = this.Data.nights(arrive, depart);
-      ids = [];
-      for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
-        dayId = this.Data.dayId(this.Data.advanceDate(arrive, i), roomId);
-        if ((this.days[dayId] != null) && !Util.inArray(ids, this.days[dayId].resId)) {
-          ids.push(this.days[dayId].resId);
-        }
-      }
-      return ids;
-    };
-
-    Res.prototype.resvRange = function(beg, end) {
-      var j, k, len, len1, ref, resId, resIds, resvs, roomId;
+    Res.prototype.resvRange = function(date) {
+      var dayId, j, len, ref, resId, resvs, roomId;
       resvs = {};
-      resIds = [];
       ref = this.roomKeys;
       for (j = 0, len = ref.length; j < len; j++) {
         roomId = ref[j];
-        resIds.push(this.resIds(beg, end, roomId));
-      }
-      for (k = 0, len1 = resIds.length; k < len1; k++) {
-        resId = resIds[k];
-        if (this.resvs[resId] != null) {
-          resvs[resId] = this.resvs[resId];
+        dayId = this.Data.dayId(date, roomId);
+        if (this.days[dayId] != null) {
+          resId = this.days[dayId].resId;
+          if (this.resvs[resId] != null) {
+            resvs[resId] = this.resvs[resId];
+          }
         }
       }
       return resvs;

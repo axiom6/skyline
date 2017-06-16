@@ -38,7 +38,7 @@
       this.dateBeg = null;
       this.dateEnd = null;
       this.resMode = 'Table';
-      this.roomId = '1';
+      this.roomId = null;
       this.lastMaster = {
         left: 0,
         top: 0,
@@ -152,24 +152,63 @@
       var doCell;
       doCell = (function(_this) {
         return function(event) {
-          var $cell, date, end, resvs, status;
+          var $cell, date, ref, resvs, status;
           $cell = $(event.target);
           status = $cell.attr('data-status');
           date = $cell.attr('data-date');
-          _this.roomId = $cell.attr('data-roomId');
-          _this.dateBeg = event.button === 0 ? date : _this.dateBeg;
-          _this.dateEnd = event.button === 2 ? date : _this.dateEnd;
-          if (_this.resMode === 'Table' && (_this.dateBeg != null)) {
-            end = _this.dateEnd != null ? _this.dateEnd : _this.Data.advanceDate(_this.dateBeg, 3);
-            resvs = _this.res.resvRange(_this.dateBeg, end);
+          _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'mine', 'free');
+          if (_this.resMode === 'Table') {
+            resvs = _this.res.resvRange(date);
             return _this.onResvTable(resvs);
-          } else if (_this.resMode === 'Input' && (_this.dateBeg != null) && (_this.dateEnd != null)) {
-            return _this.popResvInput(_this.dateBeg, _this.dateEnd, _this.roomId);
+          } else if (_this.resMode === 'Input') {
+            _this.roomId = $cell.attr('data-roomId');
+            ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1];
+            if (_this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'free', 'mine')) {
+              return _this.popResvInput(_this.dateBeg, _this.dateEnd, _this.roomId);
+            }
           }
         };
       })(this);
       $('[data-cell="y"]').click(doCell);
       $('[data-cell="y"]').contextmenu(doCell);
+    };
+
+    Master.prototype.mouseDates = function(date) {
+      if ((this.dateBeg != null) && this.dateBeg <= date) {
+        this.dateEnd = date;
+      } else {
+        this.dateBeg = date;
+        this.dateEnd = date;
+      }
+      return [this.dateBeg, this.dateEnd];
+    };
+
+    Master.prototype.fillInCells = function(begDate, endDate, roomId, freeStatus, fillStatus) {
+      var $cell, $cells, cstat, i, len, nxtDate;
+      if (!((begDate != null) && (endDate != null) && (roomId != null))) {
+        return;
+      }
+      $cells = [];
+      nxtDate = begDate;
+      while (nxtDate <= endDate) {
+        $cell = this.$cell('M', nxtDate, roomId);
+        cstat = $cell.attr('data-status');
+        if (cstat === freeStatus || cstat === fillStatus) {
+          $cells.push($cell);
+          nxtDate = this.Data.advanceDate(nxtDate, 1);
+        } else {
+          return false;
+        }
+      }
+      for (i = 0, len = $cells.length; i < len; i++) {
+        $cell = $cells[i];
+        this.$cellStatus($cell, fillStatus);
+      }
+      return true;
+    };
+
+    Master.prototype.$cellStatus = function($cell, status) {
+      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
     Master.prototype.popResvInput = function(arrive, stayto, roomId) {

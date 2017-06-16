@@ -14,7 +14,7 @@ class Master
     @dateBeg       = null
     @dateEnd       = null
     @resMode       = 'Table' # or 'Input'
-    @roomId        = '1' # Need to consider roomId default
+    @roomId        = null
     @lastMaster    = { left:0, top:0, width:0, height:0 }
     @lastSeason    = { left:0, top:0, width:0, height:0 }
 
@@ -104,24 +104,53 @@ class Master
   # Requires that @res.resvs to loaded
   readyCells:() =>
     doCell = (event) =>
+
       $cell    = $(event.target)
       status   = $cell.attr('data-status' )
       #resId   = $cell.attr('data-res'    )
       date     = $cell.attr('data-date'   )
-      @roomId  = $cell.attr('data-roomId' )
-      @dateBeg = if event.button is 0 then date else @dateBeg # Left  button
-      @dateEnd = if event.button is 2 then date else @dateEnd # Right button
 
-      if @resMode is 'Table' and @dateBeg?
-        end = if @dateEnd?  then @dateEnd else @Data.advanceDate( @dateBeg, 3 )
-        resvs = @res.resvRange(  @dateBeg, end )
+      @fillInCells( @dateBeg, @dateEnd, @roomId, 'mine', 'free' )
+      if      @resMode is 'Table'
+        resvs = @res.resvRange(  date )
         @onResvTable( resvs )
-      else if @resMode is 'Input' and @dateBeg? and @dateEnd?
-        @popResvInput( @dateBeg, @dateEnd, @roomId )
+      else if @resMode is 'Input'
+        @roomId  = $cell.attr('data-roomId' )
+        [@dateBeg,@dateEnd] = @mouseDates( date )
+        if @fillInCells( @dateBeg, @dateEnd, @roomId, 'free', 'mine' )
+          @popResvInput( @dateBeg, @dateEnd, @roomId )
 
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
     return
+
+  mouseDates:( date ) ->
+    if @dateBeg? and @dateBeg <= date
+       @dateEnd = date
+    else
+       @dateBeg = date
+       @dateEnd = date
+    [@dateBeg,@dateEnd]
+
+  # Only fill in freeStatus cells return success
+  fillInCells:(     begDate,     endDate,     roomId, freeStatus, fillStatus ) ->
+    return if not ( begDate? and endDate? and roomId? )
+    $cells  = []
+    nxtDate = begDate
+    while nxtDate <= endDate
+      $cell = @$cell( 'M', nxtDate, roomId )
+      cstat = $cell.attr('data-status' )
+      if cstat is freeStatus or cstat is fillStatus
+        $cells.push( $cell )
+        nxtDate = @Data.advanceDate( nxtDate, 1 )
+      else
+        return false
+    for $cell in $cells
+       @$cellStatus( $cell, fillStatus )
+    true
+
+  $cellStatus:( $cell, status ) ->
+    $cell.removeClass().addClass("room-"+status).attr('data-status',status)
     
   popResvInput:( arrive, stayto, roomId ) ->
     $('#arrive').text( @Data.toMMDD(arrive)  ) if arrive?

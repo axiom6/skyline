@@ -78,21 +78,13 @@ class Res
       ids.push( @Data.dayId( @Data.advanceDate( arrive, i ), roomId ) )
     ids
 
-  resIds:( arrive, stayto, roomId ) ->
-    depart = @Data.advanceDate( stayto, 1      )
-    nights = @Data.nights(      arrive, depart )
-    ids = []
-    for i in [0...nights]
-      dayId = @Data.dayId( @Data.advanceDate( arrive, i ), roomId )
-      ids.push( @days[dayId].resId ) if @days[dayId]? and not Util.inArray( ids, @days[dayId].resId )
-    #Util.log( 'Res.resIds()', { arrive:arrive, stayto:stayto, depart:depart, roomId:roomId, nights:nights, ids:ids } )
-    ids
-
-  resvRange:( beg, end ) ->
+  resvRange:( date ) ->
     resvs  = {}
-    resIds = []
-    resIds.push( @resIds( beg, end, roomId ) ) for roomId in @roomKeys
-    resvs[resId] = @resvs[resId]               for resId  in resIds when @resvs[resId]?
+    for roomId in @roomKeys
+      dayId = @Data.dayId( date, roomId )
+      if        @days[dayId]?
+        resId = @days[dayId].resId
+        resvs[resId] = @resvs[resId] if @resvs[resId]?
     resvs
 
   allocDays:( days ) ->
