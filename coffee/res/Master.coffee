@@ -1,6 +1,8 @@
 
 $      = require( 'jquery'        )
 Upload = require( 'js/res/Upload' )
+Query  = require( 'js/res/Query'  )
+Input  = require( 'js/res/Input'  )
 
 class Master
 
@@ -9,7 +11,8 @@ class Master
   constructor:( @stream, @store, @Data, @res ) ->
     @rooms         = @res.rooms
     @upload        = new Upload( @stream, @store, @Data, @res )
-    @resvNew       = {}
+    @query         = new Query(  @stream, @store, @Data, @res )
+    @input         = new Input(  @stream, @store, @Data, @res )
     @res.master    = @
     @dateBeg       = null
     @dateEnd       = null
@@ -89,36 +92,55 @@ class Master
     return
 
   readyMaster:() =>
+    $('#Master').empty()
+    $('#Master').append( @masterHtml() )
     $('#ResAdd').empty()
-    $('#ResAdd').append( @resvInput() )
+    $('#ResAdd').append( @input.html() )
     $('#ResAdd').hide()
     $('#ResTbl').empty()
     $('#ResTbl').append( @resvTable( {} ) )
-    $('#Master').empty()
-    $('#Master').append( @masterHtml() )
+    @showMonth( $('#'+@Data.month ) )
     $('.MasterTitle').click( (event) => @onMasterClick(event) )
     @res.selectAllResvs( @readyCells )
-    @resvInputRespond()
+    @input.action()
     return
 
   # Requires that @res.resvs to loaded
   readyCells:() =>
+
+    # Show Today's Reservations
+    resvs = @res.resvRange( @Data.today() )
+    @onResvTable( resvs )
+
     doCell = (event) =>
 
-      $cell    = $(event.target)
-      status   = $cell.attr('data-status' )
-      #resId   = $cell.attr('data-res'    )
-      date     = $cell.attr('data-date'   )
+      $cell   = $(event.target)
+      status  = $cell.attr('data-status' )
+      date    = $cell.attr('data-date'   )
+      @roomId = $cell.attr('data-roomId' )
+      ###
+      resId   = $cell.attr('data-res'    )
+      resv    = @res.getResv( date, @roomId )
+      title   = if resv? then resv.last + ' $' + resv.total else 'Free'
+      $cell.attr('title', title ) # if title isnt 'Free'
+      ###
 
-      @fillInCells( @dateBeg, @dateEnd, @roomId, 'mine', 'free' )
       if      @resMode is 'Table'
         resvs = @res.resvRange(  date )
         @onResvTable( resvs )
       else if @resMode is 'Input'
-        @roomId  = $cell.attr('data-roomId' )
+
         [@dateBeg,@dateEnd] = @mouseDates( date )
-        if @fillInCells( @dateBeg, @dateEnd, @roomId, 'free', 'mine' )
-          @popResvInput( @dateBeg, @dateEnd, @roomId )
+        if @fillInCells(     @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
+          @input.createResv( @dateBeg, @dateEnd, @roomId )
+        else
+          resv = @res.getResv( date, @roomId )
+          if resv?
+            resv.action = 'put'
+            @input.populateResv( resv )
+          else
+            Util.error( 'Master.doCell() resv undefined for', { data:date, roomId:roomId } )
+      return
 
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
@@ -140,7 +162,7 @@ class Master
     while nxtDate <= endDate
       $cell = @$cell( 'M', nxtDate, roomId )
       cstat = $cell.attr('data-status' )
-      if cstat is freeStatus or cstat is fillStatus
+      if cstat is freeStatus or cstat is fillStatus or cstat is 'Cancel'
         $cells.push( $cell )
         nxtDate = @Data.advanceDate( nxtDate, 1 )
       else
@@ -151,13 +173,13 @@ class Master
 
   $cellStatus:( $cell, status ) ->
     $cell.removeClass().addClass("room-"+status).attr('data-status',status)
-    
 
   listenToDays:() =>
     doDays = (dayId,day) =>
-      if dayId? and day? and not @res.days[dayId]
+      if dayId? and day?
         @res.days[dayId] = day
         @onAlloc( dayId, day )
+    @res.onDay( 'add',  doDays )
     @res.onDay( 'put',  doDays )
     return
 
@@ -166,6 +188,7 @@ class Master
       if resId? and resv? and not @res.resvs[resId]
         @res.resvs[resId] = resv
     @res.onRes( 'add', doAdd )
+    @res.onRes( 'put', doAdd )
     return
 
   selectToDays:() =>
@@ -218,16 +241,21 @@ class Master
   onMasterClick:( event ) =>
     $title  = $(event.target)
     $month  = $title.parent()
+    @showMonth( $month )
+    return
+
+  showMonth:( $month ) ->
     $master = $('#Master')
     if @lastMaster.height is 0
        $master.children().hide()
-       @lastMaster = { left:$month.css('left'), top:$month.css('top'), width:$month.css('width'), height:$month.css('height') }
-       $month.css( { left:0, top:0, width:'100%', height:'450px' } ).show()
+       @lastMaster = { left:$month.css('left'), top:$month.css('top'), width:'50%', height:'33%', fontSize:'10px'; }
+       $month.css(  { left:0, top:0, width:'100%', height:'290px', fontSize:'14px'; } ).show()
+       $master.css( { left:0, top:0, width:'100%', height:'290px' } )
     else
       $month.css( @lastMaster )
+      $master.css( { left:0, top:0, width:'100%', height:'675px' } )
       $master.children().show()
       @lastMaster.height = 0
-    return
 
   onSeasonClick:( event ) =>
     $title  = $(event.target)
@@ -248,61 +276,6 @@ class Master
     for month in @Data.season
       htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @Data.year, month )}</div>"""
     htm
-
-  resvInput:() ->
-    htm  = """<table><thead>"""
-    htm += """<tr><th>Arrive</th><th>Stay To</th><th>Room</th><th>Name</th><th>Guests</th><th>Pets</th><th>Status</th><th></th><th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
-    htm += """</thead><tbody>"""
-    htm += """<tr><td id="NRArrive"></td><td id="NRStayTo"></td><td id="NRoomId"></td><td>#{@names()}</td><td>#{@guests()}</td><td>#{@pets()}</td><td>#{@status()}</td><td>#{@submit()}</td><td id="NRNights"></td><td id="NRPrice"></td><td id="NRTtotal"></td><td id="NRTax"></td><td id="NRCharge"></td></tr>"""
-    htm += """</tbody></table>"""
-    htm
-
-  guests:() -> @res.htmlSelect( 'NRGuests',   @Data.persons,   2 )
-  pets:  () -> @res.htmlSelect( 'NRPets',     @Data.pets,      0   )
-  status:() -> @res.htmlSelect( 'NRStatus',   @Data.statuses, 'chan' )
-  names: () -> @res.htmlInput(  'NRNames' )
-  submit:() -> @res.htmlButton( 'NRSubmit',   'Submit', 'Submit' )
-
-  #arrive, depart, roomId, last, status, guests, pets
-
-  popResvInput:( arrive, stayto, roomId ) ->
-    @resvNew.arrive = arrive
-    @resvNew.depart = @Data.advanceDate( stayto, 1 )
-    @resvNew.roomId = roomId
-    @resvNew.last   = $('#NRLast').value
-    @resvNew.status = $('#NRStatus').value
-    @resvNew.guests = $('#NRGuests').value
-    @resvNew.pets   = $('#NRPets').value
-    nights = @Data.nights( @resvNew.arrive, @resvNew.depart )
-    price  = @res.calcPrice( @resvNew.roomId, @resvNew.guests, @resvNew.pets  )
-    total  = nights * price
-    tax    = parseFloat( Util.toFixed( total * @Data.tax ) )
-    charge = Util.toFixed( total + tax )
-    $('#NRArrive').text( @Data.toMMDD(arrive)  )
-    $('#NRStayTo').text( @Data.toMMDD(stayto)  )
-    $('#NRRoomId').text( @roomId               )
-    $('#NRNights').text( nights )
-    $('#NRPrice' ).text( price  )
-    $('#NRTotal' ).text( total  )
-    $('#NRTax'   ).text( tax    )
-    $('#NRCharge').text( charge )
-    return
-
-  # @resvNew.guests = event.target.value
-  onGuests:( event ) =>
-    @popResvInput( @resvNew.arrive, @resvNew.stayto, @resvNew.roomId )
-
-  # @resvNew.pets = event.target.value
-  onPets:( event ) =>
-    @popResvInput( @resvNew.arrive, @resvNew.stayto, @resvNew.roomId )
-
-  resvInputRespond:() ->
-    $('#Submit').click (event) =>
-      Util.noop( event )
-      Util.log( @resvNew )
-      r = @resvNew
-      @resvs[resId] = @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )
-      @res.postResv( @resvs[resId] )
 
   resvTable:( resvs ) ->
     htm   = """<table class="RTTable"><thead>"""
@@ -382,7 +355,7 @@ class Master
       date   = @Data.toDateStr( day, monthIdx )
       status = @res.getStatus( roomId, date )
       #Util.log('Master.roomDay()', date, roomId, status ) if date is '170524'
-      if status isnt 'free'
+      if status isnt 'Free'
         htm += """<span id="#{@roomDayId(monthIdx,day,roomId)}" class="own-#{status}">#{roomId} data-res="y"</span>"""
     htm += """</div>"""
     htm

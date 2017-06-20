@@ -27,6 +27,7 @@ class Res
   dateRange:( beg, end, onComplete=null ) ->
     @store.subscribe( 'Day', 'range', 'none', (days) =>
       @days = days
+      day.status = @Data.toStatus(day.status) for own dayId, day of @days
       onComplete() if onComplete? )
     @store.range( 'Day', beg+'1', end+'S' )
     return
@@ -34,12 +35,14 @@ class Res
   selectAllDays:( onComplete=null ) ->
     @store.subscribe( 'Day', 'select', 'none', (days) =>
       @days = days
+      day.status = @Data.toStatus(day.status) for own dayId, day of @days
       onComplete() if onComplete? )
     @store.select( 'Day' )
 
   selectAllResvs:( onComplete=null ) ->
     @store.subscribe( 'Res', 'select', 'none', (resvs) =>
       @resvs = resvs
+      resv.status = @Data.toStatus(resv.status) for own resId, resv of @resvs
       onComplete() if onComplete? ) # resvs not passed to onComplete() - accesss @resvs later on
     @store.select( 'Res' )
 
@@ -51,24 +54,28 @@ class Res
     return
 
   populateRoom:( room, days, total, price, guests, pets ) ->
-   room.days    = days
-   room.total   = total
-   room.price   = price
-   room.guests  = guests
-   room.pets    = pets
-   room.change  = 0         # Changes usually to spa opt out
-   room.reason  = 'No Changes'
-   room
+    room.days    = days
+    room.total   = total
+    room.price   = price
+    room.guests  = guests
+    room.pets    = pets
+    room.change  = 0         # Changes usually to spa opt out
+    room.reason  = 'No Changes'
+    room
 
   status:( date, roomId ) ->
     dayId = @Data.dayId( date, roomId )
     day   = @days[dayId]
-    if day? then day.status else 'free'
+    if day? then day.status else 'Free'
+
+  getResv:( date, roomId ) ->
+    day   = @day( date, roomId )
+    if day? then @resvs[day.resId] else null
 
   day:( date, roomId ) ->
     dayId = @Data.dayId( date, roomId )
     day   = @days[dayId]
-    if day? then day else @setDay( {}, 'free', 'none' )
+    if day? then day else @setDay( {}, 'Free', 'none' )
 
   dayIds:( arrive, stayto, roomId ) ->
     depart = Data.advanceDate( stayto, 1 )
@@ -111,7 +118,8 @@ class Res
       @days[dayId] = day
     return
 
-  calcPrice:( roomId, guests, pets  ) ->
+  calcPrice:( roomId, guests, pets ) ->
+    #Util.log( 'Res.calcPrice()', { roomId:roomId, guests:guests, pets:pets, guestprice:@rooms[roomId][guests], petfee:pets*@Data.petPrice  } )
     @rooms[roomId][guests] + pets*@Data.petPrice
 
   spaOptOut:( roomId, isSpaOptOut=true ) ->
@@ -189,9 +197,11 @@ class Res
 
   # .... Persistence ........
 
-  onResId:( op, doResv, resId ) => @store.on( 'Res', op,  resId, (resId,resv) => doResv(resId,resv) )
-  onRes:(   op, doResv        ) => @store.on( 'Res', op, 'none', (resId,resv) => doResv(resId,resv) )
-  onDay:(   op, doDay         ) => @store.on( 'Day', op, 'none', (dayId,day)  => doDay( dayId,day ) )
+  onRes:( op, doRes  ) => @store.on( 'Res', op, 'none', (resId,res) => doRes(resId,res) )
+  onDay:( op, doDay  ) => @store.on( 'Day', op, 'none', (dayId,day) => doDay(dayId,day) )
+
+  # We don't always know or want to listen to a single resId
+  #onResId:( op, doResv, resId ) => @store.on( 'Res', op,  resId, (resId,resv) => doResv(resId,resv) )
 
   insert:( table, rows, onComplete=null ) =>
     @store.subscribe( table, 'insert', 'none', (rows) => onComplete(rows) if onComplete? )
@@ -214,21 +224,30 @@ class Res
 
   setResvStatus:( resv, post, purpose ) ->
     if        post is 'post'
-        resv.status = 'book' if purpose is 'PayInFull' or purpose is 'Complete'
-        resv.status = 'depo' if purpose is 'Deposit'
+        resv.status = 'Skyline' if purpose is 'PayInFull' or purpose is 'Complete'
+        resv.status = 'Deposit' if purpose is 'Deposit'
     else if   post is 'deny'
-        resv.status = 'free'
-    if not Util.inArray(['book','depo','free'], resv.status )
+        resv.status = 'Free'
+    if not Util.inArray(@Data.statuses, resv.status )
       Util.error( 'Pay.setResStatus() unknown status ', resv.status )
-      resv.status = 'free'
+      resv.status = 'Free'
     resv.status
 
-  postResv:( resv ) ->
+  addResv:( resv ) ->
+    @resvs[resv.resId] = resv
     @store.add( 'Res', resv.resId, resv )
+
+  putResv:( resv ) ->
+    @resvs[resv.resId] = resv
+    @store.put( 'Res', resv.resId, resv )
+
+  canResv:( resv ) ->                     #Cancel
+    @resvs[resv.resId] = resv
+    @store.put( 'Res', resv.resId, resv ) # We do a put
 
   postPayment:( resv, post, amount, method, last4, purpose ) ->
     status = @setResvStatus( resv, post, purpose )
-    if status is 'book' or status is 'depo'
+    if status is 'Skyline' or status is 'Deposit'
       payId = @Data.genPaymentId( resv.resId, resv.payments )
       resv.payments[payId] = @createPayment( amount, method, last4, purpose )
       resv.paid   += amount

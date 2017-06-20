@@ -5,7 +5,7 @@ class Upload
 
   module.exports = Upload
 
-  constructor:( @stream, @store, @Data, @res, @pay ) ->
+  constructor:( @stream, @store, @Data, @res ) ->
     @uploadedText  = ""
     @uploadedResvs = {}
 
@@ -121,6 +121,6 @@ class Upload
 
   toStatus:( bookingStatus ) ->
     switch   bookingStatus
-      when 'OK'       then 'chan'
-      when 'Canceled' then 'canc'
-      else                 'unkn'
+      when 'OK'       then 'Booking'
+      when 'Canceled' then 'Cancel'
+      else                 'Unknown'

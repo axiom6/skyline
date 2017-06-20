@@ -154,11 +154,11 @@ class Fire extends Store
     onComplete = (snapshot) =>
       if snapshot?
         key = snapshot.key
-        val = @toObjects( snapshot.val() )
+        val = snapshot.val() # @toObjects( snapshot.val() )
         if onFunc?
            onFunc( key, val )
         else
-           @publish( table, onEvt, key, val ) # { key:val }
+           @publish( table, onEvt, key, val )
       else
         @onError( table, onEvt, id, {}, { error:'error' } )
     path  = if id is 'none' then table else table + '/' + id

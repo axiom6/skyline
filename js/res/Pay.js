@@ -46,7 +46,7 @@
     }
 
     Pay.prototype.initPayResv = function(totals, cust, rooms) {
-      this.resv = this.res.createRoomResv('mine', 'card', totals, cust, rooms);
+      this.resv = this.res.createRoomResv('Mine', 'card', totals, cust, rooms);
       this.amount = totals - this.resv.paid;
       $('#Pays').empty();
       $('#Pays').append(this.confirmHead(this.resv));

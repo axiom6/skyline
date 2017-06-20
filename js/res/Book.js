@@ -380,7 +380,7 @@
       var $cell, ref, roomId, status;
       $cell = $(event.target);
       ref = this.cellBook($cell), roomId = ref[0], status = ref[1];
-      if (status === 'mine') {
+      if (status === 'Mine') {
         return this.fillInRooms(roomId, $cell);
       }
     };
@@ -391,12 +391,12 @@
       date = this.dateCell($cell);
       roomId = this.roomIdCell($cell);
       resId = this.resId(date, roomId);
-      if (status === 'free') {
-        status = 'mine';
-        this.updateCellStatus($cell, 'mine', resId);
-      } else if (status === 'mine') {
-        status = 'free';
-        this.updateCellStatus($cell, 'free', resId);
+      if (status === 'Free') {
+        status = 'Mine';
+        this.updateCellStatus($cell, 'Mine', resId);
+      } else if (status === 'Mine') {
+        status = 'Free';
+        this.updateCellStatus($cell, 'Free', resId);
       }
       return [roomId, status];
     };
@@ -408,17 +408,17 @@
       roomId = this.roomIdCell($cell);
       room = this.rooms[roomId];
       resId = this.resId(date, roomId);
-      if (status === 'mine') {
+      if (status === 'Mine') {
         room.days[date] = {
           "status": status,
           "resId": resId
         };
-      } else if (status === 'free') {
+      } else if (status === 'Free') {
         delete room.days[date];
         weekday = this.Data.weekday(date);
         if (weekday === 'Fri' || weekday === 'Sat') {
           nday = this.Data.advanceDate(date, 1);
-          this.cellStatus(this.$cell(nday, roomId), 'free');
+          this.cellStatus(this.$cell(nday, roomId), 'Free');
           delete room.days[nday];
         }
       }
@@ -462,8 +462,8 @@
       resId = this.resId(bday, roomId);
       nday = this.Data.advanceDate(bday, 1);
       $cell = this.$cell(nday, roomId);
-      if ($cell.attr('data-status') === 'free') {
-        this.updateCellStatus($cell, 'mine', resId);
+      if ($cell.attr('data-status') === 'Free') {
+        this.updateCellStatus($cell, 'Mine', resId);
       }
     };
 
@@ -474,8 +474,8 @@
       nday = this.Data.advanceDate(bday, 1);
       while (nday < eday) {
         $cell = this.$cell(nday, roomId);
-        if (!this.Data.isElem($cell) || $cell.attr('data-status') !== 'free') {
-          $end.attr('data-status', 'mine');
+        if (!this.Data.isElem($cell) || $cell.attr('data-status') !== 'Free') {
+          $end.attr('data-status', 'Mine');
           this.cellBook($end);
           return false;
         }

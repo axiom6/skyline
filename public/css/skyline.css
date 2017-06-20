@@ -273,9 +273,6 @@ img.center {
 .RTStatus {
   text-align: center;
 }
-.RTBooked {
-  text-align: center;
-}
 .RTPrice {
   text-align: right;
 }
@@ -288,54 +285,102 @@ img.center {
 .RTCharge {
   text-align: right;
 }
+.RTSubmit {
+  margin-left: 10px;
+}
+#NRTable {
+  border-collapse: collapse;
+  margin: auto;
+}
+#NRTable th {
+  border: 1px solid grey;
+  padding: 3px;
+}
+#NRTable td {
+  border: 1px solid grey;
+  padding: 3px;
+}
+#NRArrive {
+  text-align: center;
+}
+#NRStayto {
+  text-align: center;
+}
+#NRNights {
+  text-align: center;
+}
+#NRRoomId {
+  text-align: center;
+}
+#NRGuests {
+  text-align: center;
+}
+#NRStatus {
+  text-align: left;
+}
+#NRPrice {
+  text-align: right;
+}
+#NRTotal {
+  text-align: right;
+}
+#NRTax {
+  text-align: right;
+}
+#NRCharge {
+  text-align: right;
+}
+.NRSubmit {
+  margin-left: 10px;
+}
 #Make {
   text-align: center;
   margin-top: 10px;
   font-weight: bold;
 }
-.room-free {
+.room-Free {
   background-color: lightgrey;
   color: black;
   text-align: right;
   width: 35px;
 }
-.room-mine {
+.room-Mine {
   background-color: green;
   color: white;
   text-align: right;
   width: 35px;
 }
-.room-depo {
+.room-Deposit {
   background-color: dimgray;
   color: white;
   text-align: right;
   width: 35px;
 }
-.room-book {
+.room-Skyline {
   background-color: black;
   color: white;
   text-align: right;
   width: 35px;
 }
-.room-prep {
+.room-Prepaid {
   background-color: lightblue;
   color: black;
   text-align: right;
   width: 35px;
 }
-.room-chan {
+.room-Booking {
   background-color: blue;
   color: white;
   text-align: right;
   width: 35px;
 }
-.room-canc {
-  background-color: red;
-  color: white;
+.room-Cancel {
+  background-color: silver;
+  color: black;
   text-align: right;
   width: 35px;
 }
-.room-unkn {
+.room-Unknown {
   background-color: purple;
   color: white;
   text-align: right;
@@ -401,26 +446,6 @@ img.center {
   font-size: 10px;
   text-align: left;
 }
-.own-free {
-  background-color: lightgrey;
-  color: black;
-  text-align: center;
-}
-.own-mine {
-  background-color: blue;
-  color: white;
-  text-align: center;
-}
-.own-depo {
-  background-color: dimgray;
-  color: white;
-  text-align: center;
-}
-.own-book {
-  background-color: black;
-  color: white;
-  text-align: center;
-}
 #Buttons {
   position: relative;
   left: 3%;
@@ -469,14 +494,16 @@ img.center {
   height: 40px;
   border-radius: 12px;
 }
-.ResEnt {
+.ResAdd {
   position: static;
+  margin-top: 3%;
   width: 94%;
-  height: 60px;
+  height: 80px;
   font-size: 16px;
 }
 .ResTbl {
   position: static;
+  margin-top: 3%;
   width: 94%;
   height: 250px;
   font-size: 16px;

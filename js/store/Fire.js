@@ -261,7 +261,7 @@
           var key, val;
           if (snapshot != null) {
             key = snapshot.key;
-            val = _this.toObjects(snapshot.val());
+            val = snapshot.val();
             if (onFunc != null) {
               return onFunc(key, val);
             } else {

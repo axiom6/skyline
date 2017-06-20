@@ -301,19 +301,19 @@ class Book
   onCellBook:( event ) =>
     $cell  = $(event.target)
     [roomId,status] = @cellBook( $cell )
-    @fillInRooms( roomId, $cell ) if status is 'mine'
+    @fillInRooms( roomId, $cell ) if status is 'Mine'
 
   cellBook:( $cell ) ->
     status = $cell.attr('data-status')
     date   = @dateCell(   $cell )
     roomId = @roomIdCell( $cell )
     resId  = @resId( date, roomId )
-    if      status is 'free'
-      status = 'mine'
-      @updateCellStatus( $cell, 'mine', resId )
-    else if status is 'mine'
-      status = 'free'
-      @updateCellStatus( $cell, 'free', resId )
+    if      status is 'Free'
+      status = 'Mine'
+      @updateCellStatus( $cell, 'Mine', resId )
+    else if status is 'Mine'
+      status = 'Free'
+      @updateCellStatus( $cell, 'Free', resId )
     [roomId,status]
 
   updateCellStatus:( $cell, status, resId ) ->
@@ -322,19 +322,19 @@ class Book
     roomId = @roomIdCell( $cell )
     room   = @rooms[roomId]
     resId  = @resId( date, roomId )
-    if status is 'mine'
+    if status is 'Mine'
       room.days[date]  = { "status":status, "resId":resId }
-    else if status is 'free'
+    else if status is 'Free'
       delete  room.days[date]
       weekday = @Data.weekday(date)
       if weekday is 'Fri' or weekday is 'Sat'
         nday = @Data.advanceDate( date, 1 )
-        @cellStatus( @$cell( nday, roomId ), 'free' )
+        @cellStatus( @$cell( nday, roomId ), 'Free' )
         delete room.days[nday]
     @updateTotal( roomId  )
     [roomId,status]
 
-  # Only status of 'mine' is supported
+  # Only status of 'Mine' is supported
   fillInRooms:( roomId, $end ) ->
     days    = @dayArray( roomId  )
     return if days is 'none'
@@ -357,8 +357,8 @@ class Book
     resId = @resId( bday, roomId )
     nday  = @Data.advanceDate( bday, 1 )
     $cell = @$cell(nday,roomId)
-    if $cell.attr('data-status') is 'free'
-      @updateCellStatus( $cell, 'mine', resId )
+    if $cell.attr('data-status') is 'Free'
+      @updateCellStatus( $cell, 'Mine', resId )
     return
 
   fillIsConsistent:( roomId, days, $end ) ->
@@ -367,9 +367,9 @@ class Book
     nday = @Data.advanceDate( bday, 1 )
     while nday < eday                      # Avoid any booked rooms
       $cell = @$cell(nday,roomId)
-      if not @Data.isElem($cell) or $cell.attr('data-status') isnt 'free'
+      if not @Data.isElem($cell) or $cell.attr('data-status') isnt 'Free'
         # Free up last clicked cell because an inconsistency was detected
-        $end.attr('data-status','mine')
+        $end.attr('data-status','Mine')
         @cellBook( $end )
         return false
       nday = @Data.advanceDate( nday, 1 )

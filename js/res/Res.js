@@ -24,7 +24,6 @@
       this.insert = bind(this.insert, this);
       this.onDay = bind(this.onDay, this);
       this.onRes = bind(this.onRes, this);
-      this.onResId = bind(this.onResId, this);
       this.rooms = Res.Rooms;
       this.roomKeys = Util.keys(this.rooms);
       this.book = null;
@@ -58,7 +57,14 @@
       }
       this.store.subscribe('Day', 'range', 'none', (function(_this) {
         return function(days) {
+          var day, dayId, ref;
           _this.days = days;
+          ref = _this.days;
+          for (dayId in ref) {
+            if (!hasProp.call(ref, dayId)) continue;
+            day = ref[dayId];
+            day.status = _this.Data.toStatus(day.status);
+          }
           if (onComplete != null) {
             return onComplete();
           }
@@ -73,7 +79,14 @@
       }
       this.store.subscribe('Day', 'select', 'none', (function(_this) {
         return function(days) {
+          var day, dayId, ref;
           _this.days = days;
+          ref = _this.days;
+          for (dayId in ref) {
+            if (!hasProp.call(ref, dayId)) continue;
+            day = ref[dayId];
+            day.status = _this.Data.toStatus(day.status);
+          }
           if (onComplete != null) {
             return onComplete();
           }
@@ -88,7 +101,14 @@
       }
       this.store.subscribe('Res', 'select', 'none', (function(_this) {
         return function(resvs) {
+          var ref, resId, resv;
           _this.resvs = resvs;
+          ref = _this.resvs;
+          for (resId in ref) {
+            if (!hasProp.call(ref, resId)) continue;
+            resv = ref[resId];
+            resv.status = _this.Data.toStatus(resv.status);
+          }
           if (onComplete != null) {
             return onComplete();
           }
@@ -125,7 +145,17 @@
       if (day != null) {
         return day.status;
       } else {
-        return 'free';
+        return 'Free';
+      }
+    };
+
+    Res.prototype.getResv = function(date, roomId) {
+      var day;
+      day = this.day(date, roomId);
+      if (day != null) {
+        return this.resvs[day.resId];
+      } else {
+        return null;
       }
     };
 
@@ -136,7 +166,7 @@
       if (day != null) {
         return day;
       } else {
-        return this.setDay({}, 'free', 'none');
+        return this.setDay({}, 'Free', 'none');
       }
     };
 
@@ -317,18 +347,10 @@
       return payment;
     };
 
-    Res.prototype.onResId = function(op, doResv, resId) {
-      return this.store.on('Res', op, resId, (function(_this) {
-        return function(resId, resv) {
-          return doResv(resId, resv);
-        };
-      })(this));
-    };
-
-    Res.prototype.onRes = function(op, doResv) {
+    Res.prototype.onRes = function(op, doRes) {
       return this.store.on('Res', op, 'none', (function(_this) {
-        return function(resId, resv) {
-          return doResv(resId, resv);
+        return function(resId, res) {
+          return doRes(resId, res);
         };
       })(this));
     };
@@ -390,29 +412,40 @@
     Res.prototype.setResvStatus = function(resv, post, purpose) {
       if (post === 'post') {
         if (purpose === 'PayInFull' || purpose === 'Complete') {
-          resv.status = 'book';
+          resv.status = 'Skyline';
         }
         if (purpose === 'Deposit') {
-          resv.status = 'depo';
+          resv.status = 'Deposit';
         }
       } else if (post === 'deny') {
-        resv.status = 'free';
+        resv.status = 'Free';
       }
-      if (!Util.inArray(['book', 'depo', 'free'], resv.status)) {
+      if (!Util.inArray(this.Data.statuses, resv.status)) {
         Util.error('Pay.setResStatus() unknown status ', resv.status);
-        resv.status = 'free';
+        resv.status = 'Free';
       }
       return resv.status;
     };
 
-    Res.prototype.postResv = function(resv) {
+    Res.prototype.addResv = function(resv) {
+      this.resvs[resv.resId] = resv;
       return this.store.add('Res', resv.resId, resv);
+    };
+
+    Res.prototype.putResv = function(resv) {
+      this.resvs[resv.resId] = resv;
+      return this.store.put('Res', resv.resId, resv);
+    };
+
+    Res.prototype.canResv = function(resv) {
+      this.resvs[resv.resId] = resv;
+      return this.store.put('Res', resv.resId, resv);
     };
 
     Res.prototype.postPayment = function(resv, post, amount, method, last4, purpose) {
       var payId, status;
       status = this.setResvStatus(resv, post, purpose);
-      if (status === 'book' || status === 'depo') {
+      if (status === 'Skyline' || status === 'Deposit') {
         payId = this.Data.genPaymentId(resv.resId, resv.payments);
         resv.payments[payId] = this.createPayment(amount, method, last4, purpose);
         resv.paid += amount;

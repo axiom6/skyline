@@ -9,12 +9,11 @@
   Upload = (function() {
     module.exports = Upload;
 
-    function Upload(stream, store, Data, res, pay) {
+    function Upload(stream, store, Data, res) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
       this.res = res;
-      this.pay = pay;
       this.onUpdateRes = bind(this.onUpdateRes, this);
       this.uploadedText = "";
       this.uploadedResvs = {};
@@ -167,11 +166,11 @@
     Upload.prototype.toStatus = function(bookingStatus) {
       switch (bookingStatus) {
         case 'OK':
-          return 'chan';
+          return 'Booking';
         case 'Canceled':
-          return 'canc';
+          return 'Cancel';
         default:
-          return 'unkn';
+          return 'Unknown';
       }
     };
 

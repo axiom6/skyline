@@ -3,8 +3,10 @@ class Data
 
   module.exports = Data
 
-  @statuses      = ["free","mine","depo","book","prep","chan"]
-  @sources     = ["skyline","booking","website"]
+  @legacy      = ["free","mine","depo",   "book",   "prep",   "chan",   "canc"  ]
+  @statuses    = ["Free","Mine","Deposit","Skyline","Prepaid","Booking","Cancel"]
+  @statusesSel = [              "Deposit","Skyline","Prepaid","Booking","Cancel"]
+  @sources     = ["Skyline","Booking","Website"]
   @tax         = 0.1055 # Official Estes Park tax rate. Also in Booking.com
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
@@ -40,6 +42,10 @@ class Data
     databaseURL:  "https://skyline-fed2b.firebaseio.com",
     storageBucket: "skyline-fed2b.appspot.com/",
     messagingSenderId: "279547846849" }
+
+  @toStatus:( status ) ->
+    index = Data.legacy.indexOf(status)
+    if index > 0 then Data.statuses[index] else status
 
   @config:( uri ) ->
     if uri is 'skyline' then @configSkyline else @configSkytest
@@ -159,8 +165,16 @@ class Data
     Util.log( 'Data.yymidd()', date, yy, mi, dd )
     Data.months3[mi] + dd.toString() + ', ' + (2000+yy).toString()
 
-  @bookingResvs = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
-Sheri Carpenter 2 guests	16 June 2017	18 June 2017	#2 Mountain Spa	15 June 2017	OK	US$370	US$55.50	1492157385
+
+  @bookingResvs = """Susan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	OK	US$780	US$117	2079181490
+"""
+
+  @bookingResvsA = """Sheri Carpenter 2 guests	16 June 2017	18 June 2017	#2 Mountain Spa	15 June 2017	OK	US$370	US$55.50	1492157385
+Susan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	OK	US$780	US$117	2079181490
+Jennifer Rutledge;Terry Rutledge 4 guests	20 June 2017	22 June 2017	#4 One Room Cabin	18 June 2017	OK	US$290	US$43.50	1777384627
+Changying Shen 4 guests	19 July 2017	21 July 2017	#8 Western Unit	17 June 2017	Canceled	US$0	US$0	1309599829
+Dennis Micheal Freiberg 2 guests	21 July 2017	23 July 2017	#8 Western Unit	17 June 2017	OK	US$240	US$36	1515589419
+James Woods 1 guest	30 June 2017	03 July 2017	#7 Western Spa	16 June 2017	OK	US$525	US$78.75	1090962106
 """
 
   @bookingResvs1 = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number

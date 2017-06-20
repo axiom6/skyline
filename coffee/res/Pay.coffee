@@ -20,7 +20,7 @@ class Pay
     #@res.onDays( doPut )
 
   initPayResv:( totals, cust, rooms ) =>
-    @resv      = @res.createRoomResv( 'mine', 'card', totals, cust, rooms )
+    @resv      = @res.createRoomResv( 'Mine', 'card', totals, cust, rooms )
     @amount    = totals - @resv.paid
     $('#Pays'        ).empty()
     $('#Pays'        ).append( @confirmHead(  @resv ) )
