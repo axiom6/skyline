@@ -52,6 +52,12 @@
     };
 
     Input.prototype.action = function() {
+      $('#NRNames').change((function(_this) {
+        return function(event) {
+          _this.resv.last = event.target.value;
+          Util.log('Last', _this.resv.last);
+        };
+      })(this));
       $('#NRGuests').change((function(_this) {
         return function(event) {
           _this.resv.guests = event.target.value;

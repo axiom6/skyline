@@ -29,6 +29,8 @@ class Data
   @beg         = '170515'  # Beg seasom on May 15, 2017
   @end         = '171009'  # Beg seasom on Oct  9, 2017
 
+  # npm -g install webpack@3.0.0 --save-dev
+
   @configSkytest = {
     apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
     authDomain: "skytest-25d1c.firebaseapp.com",
@@ -165,8 +167,21 @@ class Data
     Util.log( 'Data.yymidd()', date, yy, mi, dd )
     Data.months3[mi] + dd.toString() + ', ' + (2000+yy).toString()
 
+  @bookingResvs = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
+Laura Steiner 3 guests	25 July 2017	27 July 2017	#4 One Room Cabin	20 June 2017	OK	US$290	US$43.50	1504399864
+"""
 
-  @bookingResvs = """Susan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	OK	US$780	US$117	2079181490
+  @bookingResvsB = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
+Laura Steiner 3 guests	25 July 2017	27 July 2017	#4 One Room Cabin	20 June 2017	OK	US$290	US$43.50	1504399864
+Stephanie Sanchez 4 guests	21 June 2017	23 June 2017	Upper Skyline North	21 June 2017	OK	US$330	US$49.50	1074850281
+Gregory Shinn 3 guests	07 July 2017	12 July 2017	#2 Mountain Spa	21 June 2017	OK	US$925	US$138.75	1063805416
+Isabella Preiss 2 guests	07 July 2017	09 July 2017	#8 Western Unit	21 June 2017	OK	US$240	US$36	1063879525
+William Chitty 2 guests	07 July 2017	10 July 2017	Upper Skyline North	21 June 2017	OK	US$495	US$74.25	1337417993
+Shuyan Qiu 4 guests	12 July 2017	14 July 2017	#4 One Room Cabin	21 June 2017	OK	US$290	US$43.50	1987323639
+Cynthia south 2 guests	07 July 2017	09 July 2017	Upper Skyline South	20 June 2017	OK	US$310	US$46.50	1840978596
+melissa larson 3 guests	15 July 2017	17 July 2017	#2 Mountain Spa	20 June 2017	OK	US$370	US$55.50	1559251465
+Susan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	OK	US$780	US$117	2079181490
+James Woods 1 guest	30 June 2017	03 July 2017	#7 Western Spa	16 June 2017	OK	US$525	US$78.75	1090962106
 """
 
   @bookingResvsA = """Sheri Carpenter 2 guests	16 June 2017	18 June 2017	#2 Mountain Spa	15 June 2017	OK	US$370	US$55.50	1492157385

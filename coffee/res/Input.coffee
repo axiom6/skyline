@@ -44,6 +44,11 @@ class Input
     
   action:() ->
 
+    $('#NRNames').change (event) =>
+      @resv.last = event.target.value
+      Util.log('Last', @resv.last )
+      return
+
     $('#NRGuests').change (event) =>
       @resv.guests = event.target.value
       Util.log('Guests', @resv.guests )
@@ -87,7 +92,7 @@ class Input
     $('#NRArrive').text( @Data.toMMDD(resv.arrive)  )
     $('#NRStayTo').text( @Data.toMMDD(resv.stayto)  )
     $('#NRRoomId').text( room                       )
-    $('#NRNames').val(    resv.last   )
+    $('#NRNames' ).val(   resv.last   )
     $('#NRGuests').val(   resv.guests )
     $('#NRPets'  ).val(   resv.pets   )
     $('#NRStatus').val(   resv.status )

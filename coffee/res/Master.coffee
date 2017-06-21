@@ -52,6 +52,8 @@ class Master
     $('#ResAdd').show()
     $('#ResTbl').hide()
     $('#Master').show()
+    @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
+    [@dateBeg,@dateEnd] = [null,null]
     return
 
   onResvTable:( resvs ) =>

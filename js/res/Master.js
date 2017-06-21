@@ -79,6 +79,7 @@
     };
 
     Master.prototype.onMakResBtn = function() {
+      var ref;
       this.resMode = 'Input';
       $('#Season').hide();
       $('#Dailys').hide();
@@ -86,6 +87,8 @@
       $('#ResAdd').show();
       $('#ResTbl').hide();
       $('#Master').show();
+      this.fillInCells(this.dateBeg, this.dateEnd, this.roomId, 'Mine', 'Free');
+      ref = [null, null], this.dateBeg = ref[0], this.dateEnd = ref[1];
     };
 
     Master.prototype.onResvTable = function(resvs) {
