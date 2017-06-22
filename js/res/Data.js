@@ -119,6 +119,18 @@
       return anyId.substr(6, 1);
     };
 
+    Data.getRoomIdFromNum = function(num) {
+      var roomId;
+      roomId = num;
+      if (roomId === 9) {
+        roomId = 'N';
+      }
+      if (roomId === 10) {
+        roomId = 'S';
+      }
+      return roomId;
+    };
+
     Data.toDate = function(anyId) {
       if (anyId != null) {
         return anyId.substr(0, 6);

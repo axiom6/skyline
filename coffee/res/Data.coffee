@@ -69,6 +69,12 @@ class Data
   @roomId:( anyId ) ->
     anyId.substr( 6, 1 )
 
+  @getRoomIdFromNum:( num ) ->
+    roomId = num
+    roomId = 'N' if roomId is  9
+    roomId = 'S' if roomId is 10
+    roomId
+
   @toDate:( anyId ) ->
     if anyId?
       anyId.substr( 0, 6 )

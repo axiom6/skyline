@@ -143,7 +143,7 @@ class Res
 
   createResvBooking:( arrive, depart, booked, roomId, last, status, guests, total ) ->
     total  = if total is 0 then @rooms[roomId].booking * @Data.nights( arrive, depart ) else total
-    pets   = '?'
+    pets   = 0
     @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total )
 
   createResv:( arrive, depart, booked, roomId, last, status, guests, pets, source, total, spa=false, cust={}, payments={} ) ->

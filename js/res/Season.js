@@ -13,14 +13,9 @@
       this.store = store;
       this.Data = Data;
       this.res = res;
-      this.onClick = bind(this.onClick, this);
+      this.onMonthClick = bind(this.onMonthClick, this);
       this.rooms = this.res.rooms;
-      this.lastSeason = {
-        left: 0,
-        top: 0,
-        width: 0,
-        height: 0
-      };
+      this.showingMonth = 'Master';
     }
 
     Season.prototype.html = function() {
@@ -29,7 +24,7 @@
       ref = this.Data.season;
       for (i = 0, len = ref.length; i < len; i++) {
         month = ref[i];
-        htm += "<div id=\"" + month + "\" class=\"" + month + "C\">" + (this.monthTable(month)) + "</div>";
+        htm += "<div id=\"" + month + "C\" class=\"" + month + "C\">" + (this.monthTable(month)) + "</div>";
       }
       return htm;
     };
@@ -37,7 +32,7 @@
     Season.prototype.monthTable = function(month) {
       var begDay, col, day, endDay, htm, i, j, k, monthIdx, row, weekday;
       monthIdx = this.Data.months.indexOf(month);
-      begDay = new Date(2000 + this.res.year, monthIdx, 1).getDay() - 1;
+      begDay = new Date(2000 + this.Data.year, monthIdx, 1).getDay() - 1;
       endDay = this.Data.numDayMonth[monthIdx];
       htm = "<div class=\"SeasonTitle\">" + month + "</div>";
       htm += "<table class=\"MonthTable\"><thead><tr>";
@@ -50,40 +45,35 @@
         htm += "<tr>";
         for (col = k = 0; k < 7; col = ++k) {
           day = this.monthDay(begDay, endDay, row, col);
-          htm += day !== "" ? "<td>" + (this.roomDay(monthIdx, day)) + "</td>" : "<td></td>";
+          htm += "<td><div class=\"TDC\">" + (this.roomDayHtml(monthIdx, day)) + "</div></td>";
         }
         htm += "</tr>";
       }
       return htm += "</tbody></table>";
     };
 
-    Season.prototype.roomDay = function(monthIdx, day) {
-      var col, date, htm, i, roomId, status;
+    Season.prototype.roomDayHtml = function(monthIdx, day) {
+      var date, htm, i, last, resv, roomClass, roomId, roomNum;
       htm = "";
-      htm += "<div class=\"MonthDay\">" + day + "</div>";
-      htm += "<div class=\"MonthRoom\">";
-      for (col = i = 1; i <= 10; col = ++i) {
-        roomId = col;
-        if (roomId === 9) {
-          roomId = 'N';
-        }
-        if (roomId === 10) {
-          roomId = 'S';
-        }
-        date = this.Data.toDateStr(day, monthIdx);
-        status = this.res.getStatus(roomId, date);
-        if (status !== 'Free') {
-          htm += "<span id=\"" + (this.roomDayId(monthIdx, day, roomId)) + "\" class=\"own-" + status + "\">" + roomId + " data-res=\"y\"</span>";
-        }
+      if (day === 0) {
+        return htm;
       }
-      htm += "</div>";
+      htm += "<div class=\"DayC\">" + day + "</div>";
+      for (roomNum = i = 1; i <= 10; roomNum = ++i) {
+        roomId = this.Data.getRoomIdFromNum(roomNum);
+        roomClass = "RoomC" + roomId;
+        date = this.Data.toDateStr(day, monthIdx);
+        resv = this.res.getResv(date, roomId);
+        last = resv != null ? resv.last : "";
+        htm += "<div class=\"" + roomClass + "\">#" + roomId + " " + last + "</div>";
+      }
       return htm;
     };
 
     Season.prototype.monthDay = function(begDay, endDay, row, col) {
       var day;
       day = row * 7 + col - begDay;
-      day = 1 <= day && day <= endDay ? day : "";
+      day = 1 <= day && day <= endDay ? day : 0;
       return day;
     };
 
@@ -93,30 +83,46 @@
       return this.cellId('S', roomId, date);
     };
 
-    Season.prototype.onClick = function(event) {
-      var $month, $season, $title;
-      $title = $(event.target);
-      $month = $title.parent();
-      $season = $('#Season');
-      if (this.lastSeason.height === 0) {
-        $season.children().hide();
-        this.lastSeason = {
-          left: $month.css('left'),
-          top: $month.css('top'),
-          width: $month.css('width'),
-          height: $month.css('height')
-        };
-        $month.css({
+    Season.prototype.onMonthClick = function(event) {
+      this.showMonth($(event.target).text());
+    };
+
+    Season.prototype.showMonth = function(month) {
+      var $master;
+      $master = $('#Season');
+      if (month === this.showingMonth) {
+        this.removeAllMonthStyles();
+        $('.TDC').hide();
+        $master.children().show();
+        this.showingMonth = 'Master';
+      } else {
+        $master.children().hide();
+        $('.TDC').show();
+        this.$month(month).css({
           left: 0,
           top: 0,
           width: '100%',
-          height: '450px'
+          height: '740px',
+          fontSize: '14px',
+          border: 'none'
         }).show();
-      } else {
-        $month.css(this.lastSeason);
-        $season.children().show();
-        this.lastSeason.height = 0;
+        this.showingMonth = month;
       }
+    };
+
+    Season.prototype.removeAllMonthStyles = function() {
+      var i, len, month, ref, results;
+      ref = this.Data.season;
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        month = ref[i];
+        results.push(this.$month(month).removeAttr('style'));
+      }
+      return results;
+    };
+
+    Season.prototype.$month = function(month) {
+      return $('#' + month + 'C');
     };
 
     Season.prototype.cellId = function(pre, date, roomId) {

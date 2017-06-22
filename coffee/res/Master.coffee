@@ -66,9 +66,10 @@ class Master
     $('#Dailys').hide()
     $('#Upload').hide()
     $('#Season').append( @season.html() ) if Util.isEmpty( $('#Season').children() )
-    $('.SeasonTitle').click( (event) => @season.onClick(event) )
+    $('.SeasonTitle').click( (event) => @season.onMonthClick(event) )
+    @season.showMonth( @Data.month ) # Show the current month
     $('#ResAdd').hide()
-    $('#ResTbl').show()
+    $('#ResTbl').hide()
     $('#Season').show()
     return
 

@@ -67,7 +67,7 @@ class Store
     @tables[t]
 
   table:( t ) ->
-    if @tables[t]? then @tables[t] else @createTable( t )
+    if @tables[t]? then @tables[t] else @createTable(t)
 
   tableName:( t ) ->
      name  = Util.firstTok(t,'.') # Strips off  .json .js .csv file extensions

@@ -43,10 +43,8 @@ class Fire extends Store
   # Same as add
   put:( t, id,  object ) ->
     tableName = @tableName(t)
-    object[@keyProp] = id
     onComplete = (error) =>
       if not error?
-        object[@keyProp] = id
         @publish( tableName, 'put', id, object )
       else
         @onError( tableName, 'put', id, object, { error:error } )

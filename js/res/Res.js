@@ -279,7 +279,7 @@
     Res.prototype.createResvBooking = function(arrive, depart, booked, roomId, last, status, guests, total) {
       var pets;
       total = total === 0 ? this.rooms[roomId].booking * this.Data.nights(arrive, depart) : total;
-      pets = '?';
+      pets = 0;
       return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total);
     };
 

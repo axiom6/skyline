@@ -71,11 +71,9 @@
     Fire.prototype.put = function(t, id, object) {
       var onComplete, tableName;
       tableName = this.tableName(t);
-      object[this.keyProp] = id;
       onComplete = (function(_this) {
         return function(error) {
           if (error == null) {
-            object[_this.keyProp] = id;
             return _this.publish(tableName, 'put', id, object);
           } else {
             return _this.onError(tableName, 'put', id, object, {

@@ -96,11 +96,12 @@
       }
       $('.SeasonTitle').click((function(_this) {
         return function(event) {
-          return _this.season.onClick(event);
+          return _this.season.onMonthClick(event);
         };
       })(this));
+      this.season.showMonth(this.Data.month);
       $('#ResAdd').hide();
-      $('#ResTbl').show();
+      $('#ResTbl').hide();
       $('#Season').show();
     };
 
