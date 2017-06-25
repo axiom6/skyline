@@ -8,21 +8,14 @@ class Res
   Res.Sets  = ['full','book','resv','chan']  # Data set for @res.days and @res.resv
 
   constructor:( @stream, @store, @Data, @appName ) ->
-    @rooms    = Res.Rooms
-    @roomKeys = Util.keys( @rooms )
-    @book     = null
-    @master   = null
-    @days     = {}
-    @resvs    = {}
+    @rooms     = Res.Rooms
+    @roomKeys  = Util.keys( @rooms )
+    @book      = null
+    @master    = null
+    @days      = {}
+    @resvs     = {}
+    @sortProp  = 'booked'
     @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
-    #@makeTables()
-    #@populateMemory()      if @store.justMemory
-
-  # Needs work
-  populateMemory:() ->
-    @onRes(  'add', (resv) => Util.noop( 'onRes', resv ) )
-    @onDay(  'put', (days) => Util.noop( 'onDay', days ) ) if @store.justMemory
-    @makeTables() # Populate Memory
 
   dateRange:( beg, end, onComplete=null ) ->
     @store.subscribe( 'Day', 'range', 'none', (days) =>
@@ -85,14 +78,6 @@ class Res
       ids.push( @Data.dayId( @Data.advanceDate( arrive, i ), roomId ) )
     ids
 
-  resvRange:( date ) ->
-    resvs  = {}
-    for roomId in @roomKeys
-      dayId = @Data.dayId( date, roomId )
-      if        @days[dayId]?
-        resId = @days[dayId].resId
-        resvs[resId] = @resvs[resId] if @resvs[resId]?
-    resvs
 
   allocDays:( days ) ->
     @book.  allocDays( days ) if @book?
@@ -303,4 +288,42 @@ class Res
       Util.log( htmlId, obj[htmlId] )
     $('#'+htmlId).change( onInput )
     return
+    
+  # Query
+
+  resvArrayByDate:( date ) ->
+    array  = []
+    for roomId in @roomKeys
+      dayId = @Data.dayId( date, roomId )
+      if        @days[dayId]?
+        resId = @days[dayId].resId
+        array .push( @resvs[resId] ) if @resvs[resId]?
+    array
+
+  resvArrayByProp:( beg, end, prop ) ->
+    return [] if not ( beg? and end? )
+    array   = []
+    for roomId in @roomKeys
+      date = beg
+      while date <= end
+        dayId = @Data.dayId( date, roomId )
+        if        @days[dayId]?
+          resId = @days[dayId].resId
+          array .push( @resvs[resId] ) if @resvs[resId]?
+        date = @Data.advanceDate( date, 1 )
+    @sortArray( array, prop, 'string', 'Ascend' )
+
+  # Sort with array.val using the internal JavaScript array sort
+  sortArray:( array, prop, type, order ) ->
+    @sortProp = prop
+    if(      type is 'string' and order is 'Ascend' then array.sort( @stringDecend )
+    else if( type is 'string' and order is 'Decend' then array.sort( @stringAscend )
+    else if( type is 'number' and order is 'Ascend' then array.sort( @numberDecend )
+    else if( type is 'number' and order is 'Decend' then array.sort( @numberAscend )
+    array
+
+  stringAscend:( a, b ) ->  if a[@sortProp] is b[@sortProp] then 0 else if a[@sortProp]<b[@sortProp] then -1 else  1
+  stringDecend:( a, b ) ->  if a[@sortProp] is b[@sortProp] then 0 else if a[@sortProp]<b[@sortProp] then  1 else -1
+  numberAscend:( a, b ) ->     a[@sortProp] -  b[@sortProp]
+  numberDecend:( a, b ) ->     b[@sortProp] -  a[@sortProp]
 

@@ -16,8 +16,8 @@ class Master
     @input         = new Input(  @stream, @store, @Data, @res )
     @season        = new Season( @stream, @store, @Data, @res )
     @res.master    = @
-    @dateBeg       = null
-    @dateEnd       = null
+    @dateBeg       = @Data.today()
+    @dateEnd       = @Data.advanceDate( @dateBeg, 6 )
     @resMode       = 'Table' # or 'Input'
     @roomId        = null
     @showingMonth  = 'Master'
@@ -56,10 +56,6 @@ class Master
     @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
     [@dateBeg,@dateEnd] = [null,null]
     return
-
-  onResvTable:( resvs ) =>
-    $('#ResTbl').empty()
-    $('#ResTbl').append( @resvTable(resvs) )
 
   onSeasonBtn:() =>
     $('#Master').hide()
@@ -102,11 +98,15 @@ class Master
     $('#ResAdd').append( @input.html() )
     $('#ResAdd').hide()
     $('#ResTbl').empty()
-    $('#ResTbl').append( @resvTable( {} ) )
+    $('#ResTbl').append( @resvHead() )
     @showMonth( @Data.month ) # Show the current month
     $('.PrevMonth').click( (event) => @onMonthClick(event) )
     $('.ThisMonth').click( (event) => @onMonthClick(event) )
     $('.NextMonth').click( (event) => @onMonthClick(event) )
+    $('#RHBooked' ).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'booked'  ) ) )
+    $('#RHArrival').click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'arrival' ) ) )
+    $('#RHStayTo' ).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'stayto'  ) ) )
+    $('#RHName'   ).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'name'    ) ) )
     @res.selectAllResvs( @readyCells )
     @input.action()
     return
@@ -115,8 +115,7 @@ class Master
   readyCells:() =>
 
     # Show Today's Reservations
-    resvs = @res.resvRange( @Data.today() )
-    @onResvTable( resvs )
+    @resvBody( @res.resvArrayByDate( @Data.today() ) )
 
     doCell = (event) =>
 
@@ -132,8 +131,7 @@ class Master
       ###
 
       if      @resMode is 'Table'
-        resvs = @res.resvRange(  date )
-        @onResvTable( resvs )
+        @resvBody( @res.resvArrayByDate(date) )
       else if @resMode is 'Input'
 
         [@dateBeg,@dateEnd] = @mouseDates( date )
@@ -264,12 +262,16 @@ class Master
       htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @Data.year, month )}</div>"""
     htm
 
-  resvTable:( resvs ) ->
+  resvHead:() ->
     htm   = """<table class="RTTable"><thead>"""
-    htm  += """<tr><th>Arrive</th><th>Stay To</th><th>Nights</th><th>Room</th><th>Name</th><th>Guests</th><th>Status</th><th>Booked</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
-    htm  += """</thead><tbody>"""
-    for own resId, r of resvs
-      #Util.log( r )
+    htm  += """<tr><th id="RHArrive">Arrive</th><th id="RHStayTo">c</th><th>Nights</th><th>Room</th><th id="RHName">Name</th><th>Guests</th><th>Status</th><th id="RHBooked">Booked</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
+    htm  += """</thead><tbody id="RTBody"></tbody></table>"""
+    htm
+
+  resvBody:( resvs ) ->
+    $('#RTBody').empty()
+    htm = ""
+    for r in resvs
       arrive = @Data.toMMDD(r.arrive)
       stayto = @Data.toMMDD(r.stayto)
       booked = @Data.toMMDD(r.booked)
@@ -280,8 +282,7 @@ class Master
       htm += """<td class="RTRoomId">#{r.roomId}</td><td class="RTLast"  >#{r.last}</td><td class="RTGuests">#{r.guests}</td>"""
       htm += """<td class="RTStatus">#{r.status}</td><td class="RTBooked">#{booked}</td><td class="RTPrice" >$#{r.price}</td>"""
       htm += """<td class="RTTotal" >$#{r.total}</td><td class="RTTax"   >$#{tax}  </td><td class="RTCharge">$#{charge} </td></tr>"""
-    htm += """</tbody></table>"""
-    htm
+    $('#RTBody').append( htm )
 
   roomsHtml:( year, month ) ->
     monthIdx   = @Data.months.indexOf(month)
