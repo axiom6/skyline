@@ -30,7 +30,7 @@ class Upload
 
   uploadParse:( text ) ->
     resvs   = {}
-    return obj if not Util.isStr( text )
+    return resvs if not Util.isStr( text )
     lines = text.split('\n')
     for line in lines
       toks = line.split('\t')

@@ -51,7 +51,7 @@
       var book, j, len, line, lines, resv, resvs, toks;
       resvs = {};
       if (!Util.isStr(text)) {
-        return obj;
+        return resvs;
       }
       lines = text.split('\n');
       for (j = 0, len = lines.length; j < len; j++) {

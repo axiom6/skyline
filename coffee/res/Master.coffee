@@ -18,6 +18,9 @@ class Master
     @res.master    = @
     @dateBeg       = @Data.today()
     @dateEnd       = @Data.today() # @Data.advanceDate( @dateBeg, 6 )
+    @fillBeg       = null
+    @fillEnd       = null
+    @fillRoomId    = null
     @resMode       = 'Table' # or 'Input'
     @roomId        = null
     @showingMonth  = 'Master'
@@ -117,6 +120,12 @@ class Master
     $('#'+id).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, prop ) ) )
 
   # Requires that @res.resvs to loaded
+  ###
+  resId   = $cell.attr('data-res'    )
+  resv    = @res.getResv( date, @roomId )
+  title   = if resv? then resv.last + ' $' + resv.total else 'Free'
+  $cell.attr('title', title ) # if title isnt 'Free'
+  ###
   readyCells:() =>
 
     # Show Today's Reservations
@@ -128,34 +137,49 @@ class Master
       status  = $cell.attr('data-status' )
       date    = $cell.attr('data-date'   )
       @roomId = $cell.attr('data-roomId' )
-      ###
-      resId   = $cell.attr('data-res'    )
-      resv    = @res.getResv( date, @roomId )
-      title   = if resv? then resv.last + ' $' + resv.total else 'Free'
-      $cell.attr('title', title ) # if title isnt 'Free'
-      ###
+      @fillInCells( @fillBeg, @fillEnd, @fillRoomId, 'Mine', 'Free' )
 
       if      @resMode is 'Table'
-        @resvBody( @res.resvArrayByDate(date) )
+        [@dateBeg,@dateEnd] = @mouseDatesTable( date, event )
+        @doResv( @dateBeg, @dateEnd, 'arrive' )
       else if @resMode is 'Input'
-
-        [@dateBeg,@dateEnd] = @mouseDates( date )
+        [@dateBeg,@dateEnd] = @mouseDatesTable( date, event )
         if @fillInCells(     @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
           @input.createResv( @dateBeg, @dateEnd, @roomId )
+          [@fillBeg,@fillEnd,@fillRoomId] = [@dateBeg,@dateEnd,@roomId]
         else
-          resv = @res.getResv( date, @roomId )
-          if resv?
-            resv.action = 'put'
-            @input.populateResv( resv )
-          else
-            Util.error( 'Master.doCell() resv undefined for', { data:date, roomId:roomId } )
+          @doResvUpdate( date, @roomId )
       return
 
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
     return
 
-  mouseDates:( date ) ->
+  doResvUpdate:( date, roomId ) ->
+    resv = @res.getResv( date, roomId )
+    if resv?
+      resv.action = 'put'
+      @input.populateResv( resv )
+    #else
+    #  Util.error( 'Master.doCell() resv undefined for', { data:date, roomId:roomId } )
+    return
+
+  doResv:( beg, end, prop ) ->
+    resvs = {}
+    if end?
+      resvs = @res.resvArrayByProp( beg, end, prop )
+    else
+      resvs = @res.resvArrayByDate( beg )
+    @resvBody( resvs )
+
+  mouseDatesTable:( date, event ) ->
+    if event.buttons is 2
+      @dateEnd = date
+    else
+      @dateBeg = date
+    [@dateBeg,@dateEnd]
+
+  mouseDatesInput:( date) ->
     if @dateBeg? and @dateBeg <= date
        @dateEnd = date
     else

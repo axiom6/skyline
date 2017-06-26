@@ -84,9 +84,8 @@ class Res
     return
 
   updateResvs:( newResvs ) ->
-    for own  resId,   resv of newResvs
-      @resvs[resId] = resv
-      @postResv(      resv )
+    for own resId, resv of newResvs
+      @addResv( resv )
     @resvs
 
   updateDaysFromResv:( resv ) ->

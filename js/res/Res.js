@@ -180,8 +180,7 @@
       for (resId in newResvs) {
         if (!hasProp.call(newResvs, resId)) continue;
         resv = newResvs[resId];
-        this.resvs[resId] = resv;
-        this.postResv(resv);
+        this.addResv(resv);
       }
       return this.resvs;
     };
