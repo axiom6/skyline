@@ -770,7 +770,64 @@ Util = (function() {
     return parse;
   };
 
-  Util.quicksort = function(array) {
+  Util.quicksort = function(array, prop, order) {
+    var a, head, large, small;
+    if (array.length === 0) {
+      return [];
+    }
+    head = array.pop();
+    if (order === 'Ascend') {
+      small = (function() {
+        var j, len1, results;
+        results = [];
+        for (j = 0, len1 = array.length; j < len1; j++) {
+          a = array[j];
+          if (a[prop] <= head[prop]) {
+            results.push(a);
+          }
+        }
+        return results;
+      })();
+      large = (function() {
+        var j, len1, results;
+        results = [];
+        for (j = 0, len1 = array.length; j < len1; j++) {
+          a = array[j];
+          if (a[prop] > head[prop]) {
+            results.push(a);
+          }
+        }
+        return results;
+      })();
+      return (Util.quicksort(small, prop, order)).concat([head]).concat(Util.quicksort(large, prop, order));
+    } else {
+      small = (function() {
+        var j, len1, results;
+        results = [];
+        for (j = 0, len1 = array.length; j < len1; j++) {
+          a = array[j];
+          if (a[prop] >= head[prop]) {
+            results.push(a);
+          }
+        }
+        return results;
+      })();
+      large = (function() {
+        var j, len1, results;
+        results = [];
+        for (j = 0, len1 = array.length; j < len1; j++) {
+          a = array[j];
+          if (a[prop] < head[prop]) {
+            results.push(a);
+          }
+        }
+        return results;
+      })();
+      return (Util.quicksort(small, prop, order)).concat([head]).concat(Util.quicksort(large, prop, order));
+    }
+  };
+
+  Util.quicksortArray = function(array) {
     var a, head, large, small;
     if (array.length === 0) {
       return [];
@@ -799,6 +856,41 @@ Util = (function() {
       return results;
     })();
     return (Util.quicksort(small)).concat([head]).concat(Util.quicksort(large));
+  };
+
+  Util.sortArray = function(array, prop, type, order) {
+    var compare;
+    compare = function(a, b) {
+      if (a[prop] === b[prop]) {
+        return 0;
+      } else if (a[prop] < b[prop]) {
+        return -1;
+      } else {
+        return 1;
+      }
+    };
+    compare = function(a, b) {
+      if (type === 'string' && order === 'Decend') {
+        if (a[prop] === b[prop]) {
+          return 0;
+        } else if (a[prop] < b[prop]) {
+          return 1;
+        } else {
+          return -1;
+        }
+      }
+    };
+    compare = function(a, b) {
+      if (type === 'number' && order === 'Ascend') {
+        return a[prop] - b[prop];
+      }
+    };
+    compare = function(a, b) {
+      if (type === 'number' && order === 'Decend') {
+        return b[prop] - a[prop];
+      }
+    };
+    return array.sort(compare);
   };
 
   Util.pad = function(n) {

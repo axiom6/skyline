@@ -30,26 +30,11 @@
       this.master = null;
       this.days = {};
       this.resvs = {};
+      this.order = 'Decend';
       if (this.appName === 'Guest') {
         this.dateRange(this.Data.beg, this.Data.end);
       }
     }
-
-    Res.prototype.populateMemory = function() {
-      this.onRes('add', (function(_this) {
-        return function(resv) {
-          return Util.noop('onRes', resv);
-        };
-      })(this));
-      if (this.store.justMemory) {
-        this.onDay('put', (function(_this) {
-          return function(days) {
-            return Util.noop('onDay', days);
-          };
-        })(this));
-      }
-      return this.makeTables();
-    };
 
     Res.prototype.dateRange = function(beg, end, onComplete) {
       if (onComplete == null) {
@@ -179,23 +164,6 @@
         ids.push(this.Data.dayId(this.Data.advanceDate(arrive, i), roomId));
       }
       return ids;
-    };
-
-    Res.prototype.resvRange = function(date) {
-      var dayId, j, len, ref, resId, resvs, roomId;
-      resvs = {};
-      ref = this.roomKeys;
-      for (j = 0, len = ref.length; j < len; j++) {
-        roomId = ref[j];
-        dayId = this.Data.dayId(date, roomId);
-        if (this.days[dayId] != null) {
-          resId = this.days[dayId].resId;
-          if (this.resvs[resId] != null) {
-            resvs[resId] = this.resvs[resId];
-          }
-        }
-      }
-      return resvs;
     };
 
     Res.prototype.allocDays = function(days) {
@@ -541,6 +509,68 @@
         };
       })(this);
       $('#' + htmlId).change(onInput);
+    };
+
+    Res.prototype.resvArrayByDate = function(date) {
+      var array, dayId, j, len, ref, resId, roomId;
+      array = [];
+      ref = this.roomKeys;
+      for (j = 0, len = ref.length; j < len; j++) {
+        roomId = ref[j];
+        dayId = this.Data.dayId(date, roomId);
+        if (this.days[dayId] != null) {
+          resId = this.days[dayId].resId;
+          if (this.resvs[resId] != null) {
+            array.push(this.resvs[resId]);
+          }
+        }
+      }
+      return array;
+    };
+
+    Res.prototype.resvArrayByProp = function(beg, end, prop) {
+      var array, date, dayId, j, len, ref, resId, resv, resvs, roomId;
+      if (!((beg != null) && (end != null))) {
+        return [];
+      }
+      resvs = {};
+      array = [];
+      ref = this.roomKeys;
+      for (j = 0, len = ref.length; j < len; j++) {
+        roomId = ref[j];
+        date = beg;
+        while (date <= end) {
+          dayId = this.Data.dayId(date, roomId);
+          if (this.days[dayId] != null) {
+            resId = this.days[dayId].resId;
+            if (this.resvs[resId] != null) {
+              resvs[resId] = this.resvs[resId];
+            }
+          }
+          date = this.Data.advanceDate(date, 1);
+        }
+      }
+      for (resId in resvs) {
+        if (!hasProp.call(resvs, resId)) continue;
+        resv = resvs[resId];
+        array.push(resv);
+      }
+      this.order = this.order === 'Decend' ? 'Ascend' : 'Decend';
+      return Util.quicksort(array, prop, this.order);
+    };
+
+    Res.prototype.resvSortDebug = function(array, prop, order) {
+      var i, j, k, ref, ref1;
+      for (i = j = 0, ref = array.length; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
+        Util.log(array[i][prop]);
+      }
+      this.order = this.order === 'Decend' ? 'Ascend' : 'Decend';
+      array = Util.quicksort(array, prop, order);
+      Util.log('------ Res.sortArray() end');
+      for (i = k = 0, ref1 = array.length; 0 <= ref1 ? k < ref1 : k > ref1; i = 0 <= ref1 ? ++k : --k) {
+        Util.log(array[i][prop]);
+      }
+      return array;
     };
 
     return Res;

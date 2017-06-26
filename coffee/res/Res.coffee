@@ -14,7 +14,7 @@ class Res
     @master    = null
     @days      = {}
     @resvs     = {}
-    @sortProp  = 'booked'
+    @order     = 'Decend'
     @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
 
   dateRange:( beg, end, onComplete=null ) ->
@@ -77,7 +77,6 @@ class Res
     for i in [0...nights]
       ids.push( @Data.dayId( @Data.advanceDate( arrive, i ), roomId ) )
     ids
-
 
   allocDays:( days ) ->
     @book.  allocDays( days ) if @book?
@@ -301,29 +300,32 @@ class Res
     array
 
   resvArrayByProp:( beg, end, prop ) ->
-    return [] if not ( beg? and end? )
-    array   = []
+    return  [] if not ( beg? and end? )
+    resvs = {}
+    array = []
     for roomId in @roomKeys
       date = beg
       while date <= end
         dayId = @Data.dayId( date, roomId )
         if        @days[dayId]?
           resId = @days[dayId].resId
-          array .push( @resvs[resId] ) if @resvs[resId]?
+          resvs[resId] = @resvs[resId] if @resvs[resId]?
         date = @Data.advanceDate( date, 1 )
-    @sortArray( array, prop, 'string', 'Ascend' )
+    for own resId, resv of resvs
+      array.push(  resv )
+    @order = if @order is 'Decend' then 'Ascend' else 'Decend'
+    Util.quicksort( array, prop, @order )
 
-  # Sort with array.val using the internal JavaScript array sort
-  sortArray:( array, prop, type, order ) ->
-    @sortProp = prop
-    if(      type is 'string' and order is 'Ascend' then array.sort( @stringDecend )
-    else if( type is 'string' and order is 'Decend' then array.sort( @stringAscend )
-    else if( type is 'number' and order is 'Ascend' then array.sort( @numberDecend )
-    else if( type is 'number' and order is 'Decend' then array.sort( @numberAscend )
+  resvSortDebug:( array, prop, order) ->
+    #til.log( '------ Res.sortArray() xxx', { a:array[0][prop], b:array[3][prop], sort:@stringAscend( array[0], array[3] ) } )
+    Util.log( array[i][prop] ) for i in [0...array.length]
+    #array = @sortArray( array, prop, 'string', 'Ascend' )
+    @order = if @order is 'Decend' then 'Ascend' else 'Decend'
+    array = Util.quicksort( array, prop, order )
+    Util.log( '------ Res.sortArray() end' )
+    Util.log( array[i][prop] ) for i in [0...array.length]
     array
 
-  stringAscend:( a, b ) ->  if a[@sortProp] is b[@sortProp] then 0 else if a[@sortProp]<b[@sortProp] then -1 else  1
-  stringDecend:( a, b ) ->  if a[@sortProp] is b[@sortProp] then 0 else if a[@sortProp]<b[@sortProp] then  1 else -1
-  numberAscend:( a, b ) ->     a[@sortProp] -  b[@sortProp]
-  numberDecend:( a, b ) ->     b[@sortProp] -  a[@sortProp]
+
+
 

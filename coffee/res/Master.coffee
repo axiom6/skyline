@@ -17,7 +17,7 @@ class Master
     @season        = new Season( @stream, @store, @Data, @res )
     @res.master    = @
     @dateBeg       = @Data.today()
-    @dateEnd       = @Data.advanceDate( @dateBeg, 6 )
+    @dateEnd       = @Data.today() # @Data.advanceDate( @dateBeg, 6 )
     @resMode       = 'Table' # or 'Input'
     @roomId        = null
     @showingMonth  = 'Master'
@@ -103,13 +103,18 @@ class Master
     $('.PrevMonth').click( (event) => @onMonthClick(event) )
     $('.ThisMonth').click( (event) => @onMonthClick(event) )
     $('.NextMonth').click( (event) => @onMonthClick(event) )
-    $('#RHBooked' ).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'booked'  ) ) )
-    $('#RHArrival').click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'arrival' ) ) )
-    $('#RHStayTo' ).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'stayto'  ) ) )
-    $('#RHName'   ).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, 'name'    ) ) )
+    @resvSortClick( 'RHBooked', 'booked' )
+    @resvSortClick( 'RHRoom' ,  'roomId' )
+    @resvSortClick( 'RHArrive', 'arrive' )
+    @resvSortClick( 'RHStayTo', 'stayto' )
+    @resvSortClick( 'RHName',   'last'   )
+    @resvSortClick( 'RHStatus', 'status' )
     @res.selectAllResvs( @readyCells )
     @input.action()
     return
+
+  resvSortClick:( id, prop ) ->
+    $('#'+id).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, prop ) ) )
 
   # Requires that @res.resvs to loaded
   readyCells:() =>
@@ -263,9 +268,11 @@ class Master
     htm
 
   resvHead:() ->
-    htm   = """<table class="RTTable"><thead>"""
-    htm  += """<tr><th id="RHArrive">Arrive</th><th id="RHStayTo">c</th><th>Nights</th><th>Room</th><th id="RHName">Name</th><th>Guests</th><th>Status</th><th id="RHBooked">Booked</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th></tr>"""
-    htm  += """</thead><tbody id="RTBody"></tbody></table>"""
+    htm   = """<table class="RTTable"><thead><tr>"""
+    htm  += """<th id="RHArrive">Arrive</th><th id="RHStayTo">Stay To</th><th id="RHNights">Nights</th><th id="RHRoom"  >Room</th>"""
+    htm  += """<th id="RHName"  >Name</th>  <th id="RHGuests">Guests</th> <th id="RHStatus">Status</th><th id="RHBooked">Booked</th>"""
+    htm  += """<th id="RHPrice" >Price</th> <th id="RHPrice" >Total</th>  <th id="RHTax"   >Tax</th>   <th id="RHCharge">Charge</th>"""
+    htm  += """</tr></thead><tbody id="RTBody"></tbody></table>"""
     htm
 
   resvBody:( resvs ) ->

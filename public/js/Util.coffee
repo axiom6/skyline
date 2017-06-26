@@ -495,12 +495,33 @@ class Util
         parse.params[name] = value
     parse
 
-  @quicksort:( array ) ->
+  @quicksort:( array, prop, order ) ->
+    return [] if array.length == 0
+    head = array.pop()
+    if order is 'Ascend'
+      small = ( a for a in array when a[prop]  <= head[prop] )
+      large = ( a for a in array when a[prop]  >  head[prop]  )
+      (Util.quicksort(small,prop,order)).concat([head]).concat( Util.quicksort(large,prop,order) )
+    else
+      small = ( a for a in array when a[prop]  >= head[prop] )
+      large = ( a for a in array when a[prop]  <  head[prop]  )
+      (Util.quicksort(small,prop,order)).concat([head]).concat( Util.quicksort(large,prop,order) )
+
+  @quicksortArray:( array ) ->
     return [] if array.length == 0
     head = array.pop()
     small = ( a for a in array when a <= head )
     large = ( a for a in array when a >  head )
     (Util.quicksort(small)).concat([head]).concat( Util.quicksort(large) )
+
+  # Sort with array.val using the internal JavaScript array sort
+  # This did not work in the Skyline Master class
+  @sortArray:( array, prop, type, order ) ->
+    compare = (a,b) -> ( if a[prop] is b[prop] then 0 else if a[prop] < b[prop] then -1 else  1 )
+    compare = (a,b) -> ( if a[prop] is b[prop] then 0 else if a[prop] < b[prop] then  1 else -1 ) if type is 'string' and order is 'Decend'
+    compare = (a,b) -> (    a[prop] -  b[prop]                                                  ) if type is 'number' and order is 'Ascend'
+    compare = (a,b) -> (    b[prop] -  a[prop]                                                  ) if type is 'number' and order is 'Decend'
+    array.sort( compare )
 
   @pad:( n ) ->
     if n < 10 then '0'+n.toString() else n.toString()
