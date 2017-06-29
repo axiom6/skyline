@@ -34,8 +34,8 @@
       monthIdx = this.Data.months.indexOf(month);
       begDay = new Date(2000 + this.Data.year, monthIdx, 1).getDay() - 1;
       endDay = this.Data.numDayMonth[monthIdx];
-      htm = "<div class=\"SeasonTitle\">" + month + "</div>";
-      htm += "<table class=\"MonthTable\"><thead><tr>";
+      htm = "<div   class=\"SeasonTitle\">" + month + "</div>";
+      htm += "<table class=\"SeasonTable\"><thead><tr>";
       for (day = i = 0; i < 7; day = ++i) {
         weekday = this.Data.weekdays[day];
         htm += "<th>" + weekday + "</th>";

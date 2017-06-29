@@ -42,7 +42,7 @@
       this.season = new Season(this.stream, this.store, this.Data, this.res);
       this.res.master = this;
       this.dateBeg = this.Data.today();
-      this.dateEnd = this.Data.today();
+      this.dateEnd = null;
       this.fillBeg = null;
       this.fillEnd = null;
       this.fillRoomId = null;
@@ -58,7 +58,7 @@
       $('#SeasonBtn').click(this.onSeasonBtn);
       $('#DailysBtn').click(this.onDailysBtn);
       $('#UploadBtn').click(this.onUploadBtn);
-      this.res.selectAllDays(this.readyMaster);
+      this.res.selectAllDaysResvs(this.readyMaster);
     };
 
     Master.prototype.onMasterBtn = function() {
@@ -158,7 +158,7 @@
       this.resvSortClick('RHStayTo', 'stayto');
       this.resvSortClick('RHName', 'last');
       this.resvSortClick('RHStatus', 'status');
-      this.res.selectAllResvs(this.readyCells);
+      this.readyCells();
       this.input.action();
     };
 
@@ -265,13 +265,9 @@
       }
       for (i = 0, len = $cells.length; i < len; i++) {
         $cell = $cells[i];
-        this.$cellStatus($cell, fillStatus);
+        this.cellStatus($cell, fillStatus, fillStatus);
       }
       return true;
-    };
-
-    Master.prototype.$cellStatus = function($cell, status) {
-      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
     };
 
     Master.prototype.listenToDays = function() {
@@ -337,20 +333,14 @@
       return $('#' + this.cellId(pre, date, roomId));
     };
 
-    Master.prototype.createCell = function(roomId, date) {
-      var day, resId, status;
-      day = this.res.day(date, roomId);
-      status = day.status;
-      resId = day.resId;
-      return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
-    };
-
     Master.prototype.allocCell = function(roomId, date, status) {
-      this.cellStatus(this.$cell('M', date, roomId), status);
+      var color;
+      color = this.res.color(date, roomId);
+      this.cellStatus(this.$cell('M', date, roomId), status, color);
     };
 
-    Master.prototype.cellStatus = function($cell, status) {
-      $cell.removeClass().addClass("room-" + status).attr('data-status', status);
+    Master.prototype.cellStatus = function($cell, status, color) {
+      $cell.removeClass().addClass("room-" + color).attr('data-status', status);
     };
 
     Master.prototype.onMonthClick = function(event) {
@@ -416,7 +406,7 @@
     };
 
     Master.prototype.resvBody = function(resvs) {
-      var arrive, booked, charge, htm, i, len, r, stayto, tax;
+      var arrive, booked, charge, htm, i, len, r, stayto, tax, trClass;
       $('#RTBody').empty();
       htm = "";
       for (i = 0, len = resvs.length; i < len; i++) {
@@ -426,7 +416,8 @@
         booked = this.Data.toMMDD(r.booked);
         tax = Util.toFixed(r.total * this.Data.tax);
         charge = Util.toFixed(r.total + parseFloat(tax));
-        htm += "<tr>";
+        trClass = this.res.isNewResv(r) ? 'RTNewRow' : 'RTOldRow';
+        htm += "<tr class=\"" + trClass + "\">";
         htm += "<td class=\"RTArrive\">" + arrive + "  </td><td class=\"RTStayto\">" + stayto + "</td><td class=\"RTNights\">" + r.nights + "</td>";
         htm += "<td class=\"RTRoomId\">" + r.roomId + "</td><td class=\"RTLast\"  >" + r.last + "</td><td class=\"RTGuests\">" + r.guests + "</td>";
         htm += "<td class=\"RTStatus\">" + r.status + "</td><td class=\"RTBooked\">" + booked + "</td><td class=\"RTPrice\" >$" + r.price + "</td>";
@@ -462,12 +453,43 @@
         htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
         for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
           date = this.Data.toDateStr(day, monthIdx);
-          htm += this.createCell(roomId, date);
+          htm += this.createCell(date, roomId, monthIdx, day, endDay);
         }
         htm += "</tr>";
       }
       htm += "</tbody></table>";
       return htm;
+    };
+
+    Master.prototype.createCell = function(date, roomId, mi, dd, endDay) {
+      var color, day, htm, span;
+      day = this.res.day(date, roomId);
+      color = this.res.color(date, roomId);
+      htm = "";
+      span = 1;
+      if (span !== 0) {
+        htm += "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + color + "\" colspan=\"" + span + "\" data-status=\"" + day.status + "\" ";
+        htm += "data-res=\"" + day.resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
+      }
+      return htm;
+    };
+
+    Master.prototype.calcSpan = function(date, roomId, mi, dd, endDay) {
+      var da, ds, ma, ms, ref, ref1, resv, span, ya, ys;
+      span = 1;
+      resv = this.res.getResv(date, roomId);
+      if (resv != null) {
+        ref = this.Data.yymidd(resv.arrive), ya = ref[0], ma = ref[1], da = ref[2];
+        ref1 = this.Data.yymidd(resv.stayto), ys = ref1[0], ms = ref1[1], ds = ref1[2];
+        if (resv.arrive === date) {
+          span = Math.min(resv.nights, endDay - dd + 1);
+        } else if (ma !== ms && ms === mi) {
+          span = ds;
+        } else {
+          span = 0;
+        }
+      }
+      return span;
     };
 
     Master.prototype.dailysHtml = function() {

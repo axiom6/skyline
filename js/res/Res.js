@@ -24,6 +24,8 @@
       this.insert = bind(this.insert, this);
       this.onDay = bind(this.onDay, this);
       this.onRes = bind(this.onRes, this);
+      this.selectAllDaysResvs = bind(this.selectAllDaysResvs, this);
+      this.selectAllResvs = bind(this.selectAllResvs, this);
       this.rooms = Res.Rooms;
       this.roomKeys = Util.keys(this.rooms);
       this.book = null;
@@ -31,6 +33,8 @@
       this.days = {};
       this.resvs = {};
       this.order = 'Decend';
+      this.today = this.Data.today();
+      this.onCompleteResv = null;
       if (this.appName === 'Guest') {
         this.dateRange(this.Data.beg, this.Data.end);
       }
@@ -77,7 +81,7 @@
           }
         };
       })(this));
-      return this.store.select('Day');
+      this.store.select('Day');
     };
 
     Res.prototype.selectAllResvs = function(onComplete) {
@@ -99,7 +103,18 @@
           }
         };
       })(this));
-      return this.store.select('Res');
+      this.store.select('Res');
+    };
+
+    Res.prototype.selectAllDaysResvs = function(onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
+      }
+      this.selectAllDays((function(_this) {
+        return function() {
+          return _this.selectAllResvs(onComplete);
+        };
+      })(this));
     };
 
     Res.prototype.roomUI = function(rooms) {
@@ -123,6 +138,12 @@
       return room;
     };
 
+    Res.prototype.isNewResv = function(resv) {
+      var nights;
+      nights = this.Data.nights(resv.booked, this.today);
+      return nights < this.Data.newDays;
+    };
+
     Res.prototype.status = function(date, roomId) {
       var day, dayId;
       dayId = this.Data.dayId(date, roomId);
@@ -132,6 +153,26 @@
       } else {
         return 'Free';
       }
+    };
+
+    Res.prototype.color = function(date, roomId) {
+      var resv, status;
+      resv = this.getResv(date, roomId);
+      status = 'Free';
+      if (resv != null) {
+        status = resv.status;
+        if (this.isNewResv(resv)) {
+          if (status === 'Skyline' || status === 'book') {
+            status = 'SkylNew';
+          }
+          if (status === 'Booking' || status === 'chan') {
+            status = 'BookNew';
+          }
+        }
+      } else {
+        status = this.status(date, roomId);
+      }
+      return status;
     };
 
     Res.prototype.getResv = function(date, roomId) {

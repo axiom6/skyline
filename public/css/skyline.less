@@ -51,6 +51,8 @@ body { color:black; }  // background-color: #333;
 .Days         { }
 
 .RTTable      { border-collapse:collapse; margin:auto; }
+.RTNewRow     { background-color:#CCCCCC; }
+.RTOldRow     { background-color:#FFFFFF; }
 .RTTable th   { border:1px solid grey; padding:3px; }
 .RTTable td   { border:1px solid grey; padding:3px; }
 .RTArrive     { text-align:center; }
@@ -86,14 +88,16 @@ body { color:black; }  // background-color: #333;
 #Make    { text-align:center; margin-top:10px; font-weight:bold; }
 
 // Room status - Must Match Data.statuses
+.room-SkylNew { background-color:red;       color:white; text-align:right; width:35px; }
+.room-Skyline { background-color:#000000;   color:white; text-align:right; width:35px; }
+.room-Deposit { background-color:#555555;   color:white; text-align:right; width:35px; }
+.room-Cancel  { background-color:#999999;   color:black; text-align:right; width:35px; }
+.room-BookNew { background-color:purple;    color:white; text-align:right; width:35px; }
+.room-Booking { background-color:blue;      color:white; text-align:right; width:35px; }
+.room-Prepaid { background-color:lightblue; color:black; text-align:right; width:35px; }
 .room-Free    { background-color:lightgrey; color:black; text-align:right; width:35px; }
 .room-Mine    { background-color:green;     color:white; text-align:right; width:35px; }
-.room-Deposit { background-color:dimgray;   color:white; text-align:right; width:35px; }
-.room-Skyline { background-color:black;     color:white; text-align:right; width:35px; }
-.room-Prepaid { background-color:lightblue; color:black; text-align:right; width:35px; }
-.room-Booking { background-color:blue;      color:white; text-align:right; width:35px; }
-.room-Cancel  { background-color:silver;    color:black; text-align:right; width:35px; }
-.room-Unknown { background-color:purple;    color:white; text-align:right; width:35px; }
+.room-Unknown { background-color:yellow;    color:black; text-align:right; width:35px; }
 
 .room-price { background-color:lightgrey; color:black; text-align:right; width:35px; }
 .room-total { background-color:lightblue; color:black; text-align:right; width:35px; }
@@ -101,15 +105,16 @@ body { color:black; }  // background-color: #333;
 .depart     { background-color:lightgrey; color:black; width:242px; }
 .btn-book   { background-color:blue;      color:yellow; }
 
-.MonthTable thead tr th { width:14%; text-align:center; vertical-align:top; border: 1px solid black; }
-.MonthTable tbody tr td { width:14%; text-align:right;  vertical-align:top; border: 1px solid black; }
-
 .MasterTitle { position:relative; left:   0; top:  0; width:100%; height:26px; }
 .PrevMonth   { position:absolute; left:  2%; top: 2%; width: 20%; height:20px; font-size:18px; text-align:left;   }
 .ThisMonth   { position:absolute; left: 40%; top: 2%; width: 20%; height:20px; font-size:24px; text-align:center; }
 .NextMonth   { position:absolute; right: 2%; top: 2%; width: 20%; height:20px; font-size:18px; text-align:right;  }
 .SeasonTitle { text-align:center; font-size:18px; }
+
+.SeasonTable { width:100%; height:95%;  border-collapse:collapse; }
 .MonthTable  { width:100%; height:95%;  border-collapse:collapse; }
+.MonthTable thead tr th { width:14%; text-align:center; vertical-align:top; border: 1px solid black; }
+.MonthTable tbody tr td { width:14%; text-align:right;  vertical-align:top; border: 1px solid black; }
 
 .MonthDay   { font-size:13px; text-align:right; font-weight:bold; }
 .MonthRoom  { font-size:10px; text-align:left; }
@@ -139,7 +144,7 @@ body { color:black; }  // background-color: #333;
 .SeptemberC { position:absolute; left:33%; top:50%;   width: 33%; height:50%; border:2px solid black; }
 .OctoberC   { position:absolute; left:66%; top:50%;   width: 33%; height:50%; border:2px solid black; }
 
-.TDC        { position:relative; left:  0; top:  0;   width:100%; height:100%; }
+.TDC        { position:relative; left:  0; top:  0;   width:100%; height:100%; display:block;}
 .DayC       { position:absolute; left:  0; top:  0;   width:100%; height:20%; text-align:center; font-size:14px; }
 .RoomC1     { position:absolute; left:  0; top:20%;   width: 50%; height:16%; text-align:left;   font-size:10px; }
 .RoomC2     { position:absolute; left:50%; top:20%;   width: 50%; height:16%; text-align:left;   font-size:10px; }

@@ -17,7 +17,7 @@ class Master
     @season        = new Season( @stream, @store, @Data, @res )
     @res.master    = @
     @dateBeg       = @Data.today()
-    @dateEnd       = @Data.today() # @Data.advanceDate( @dateBeg, 6 )
+    @dateEnd       = null
     @fillBeg       = null
     @fillEnd       = null
     @fillRoomId    = null
@@ -35,7 +35,7 @@ class Master
     $('#DailysBtn').click( @onDailysBtn )
     $('#UploadBtn').click( @onUploadBtn )
     #res.dateRange( @Data.beg, @Data.end, @readyMaster ) # This works
-    @res.selectAllDays( @readyMaster )
+    @res.selectAllDaysResvs( @readyMaster )
     return
 
   onMasterBtn:() =>
@@ -112,7 +112,7 @@ class Master
     @resvSortClick( 'RHStayTo', 'stayto' )
     @resvSortClick( 'RHName',   'last'   )
     @resvSortClick( 'RHStatus', 'status' )
-    @res.selectAllResvs( @readyCells )
+    @readyCells()
     @input.action()
     return
 
@@ -177,14 +177,20 @@ class Master
       @dateEnd = date
     else
       @dateBeg = date
+    #beg = if @dateBeg? then @dateBeg else '??????'
+    #end = if @dateEnd? then @dateEnd else '??????'
+    #Util.log( 'Master.mouseDatesTable()', date, beg, end )
     [@dateBeg,@dateEnd]
 
-  mouseDatesInput:( date) ->
+  mouseDatesInput:( date ) ->
     if @dateBeg? and @dateBeg <= date
        @dateEnd = date
     else
        @dateBeg = date
        @dateEnd = date
+    #beg = if @dateBeg? then @dateBeg else '??????'
+    #end = if @dateEnd? then @dateEnd else '??????'
+    #Util.log( 'Master.mouseDatesInput()', date, beg, end )
     [@dateBeg,@dateEnd]
 
   # Only fill in freeStatus cells return success
@@ -201,11 +207,8 @@ class Master
       else
         return false
     for $cell in $cells
-       @$cellStatus( $cell, fillStatus )
+       @cellStatus( $cell, fillStatus, fillStatus ) # We can use fillStatus is 3rd argument for color here
     true
-
-  $cellStatus:( $cell, status ) ->
-    $cell.removeClass().addClass("room-"+status).attr('data-status',status)
 
   listenToDays:() =>
     doDays = (dayId,day) =>
@@ -249,18 +252,14 @@ class Master
   $cell:( pre,  date,  roomId ) ->
     $( '#'+@cellId(pre,date,roomId) )
 
-  createCell:( roomId, date ) ->
-    day    = @res.day( date, roomId )
-    status = day.status
-    resId  = day.resId
-    """<td id="#{@cellId('M',date,roomId)}" class="room-#{status}" data-status="#{status}" data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
 
   allocCell:( roomId, date, status ) ->
-    @cellStatus( @$cell('M',date,roomId), status )
+    color  = @res.color( date, roomId )
+    @cellStatus( @$cell('M',date,roomId), status, color )
     return
 
-  cellStatus:( $cell, status ) ->
-    $cell.removeClass().addClass("room-"+status).attr('data-status',status)
+  cellStatus:( $cell, status, color ) ->
+    $cell.removeClass().addClass("room-"+color).attr('data-status',status)
     return
 
   onMonthClick:( event ) =>
@@ -303,12 +302,13 @@ class Master
     $('#RTBody').empty()
     htm = ""
     for r in resvs
-      arrive = @Data.toMMDD(r.arrive)
-      stayto = @Data.toMMDD(r.stayto)
-      booked = @Data.toMMDD(r.booked)
-      tax    = Util.toFixed( r.total * @Data.tax )
-      charge = Util.toFixed( r.total + parseFloat(tax) )
-      htm += """<tr>"""
+      arrive  = @Data.toMMDD(r.arrive)
+      stayto  = @Data.toMMDD(r.stayto)
+      booked  = @Data.toMMDD(r.booked)
+      tax     = Util.toFixed( r.total * @Data.tax )
+      charge  = Util.toFixed( r.total + parseFloat(tax) )
+      trClass = if @res.isNewResv(r) then 'RTNewRow' else 'RTOldRow'
+      htm += """<tr class="#{trClass}">"""
       htm += """<td class="RTArrive">#{arrive}  </td><td class="RTStayto">#{stayto}</td><td class="RTNights">#{r.nights}</td>"""
       htm += """<td class="RTRoomId">#{r.roomId}</td><td class="RTLast"  >#{r.last}</td><td class="RTGuests">#{r.guests}</td>"""
       htm += """<td class="RTStatus">#{r.status}</td><td class="RTBooked">#{booked}</td><td class="RTPrice" >$#{r.price}</td>"""
@@ -336,10 +336,34 @@ class Master
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
         date = @Data.toDateStr( day, monthIdx )
-        htm += @createCell( roomId, date )
+        htm += @createCell(  date, roomId, monthIdx, day, endDay )
       htm += """</tr>"""
     htm += "</tbody></table>"
     htm
+
+  createCell:( date, roomId, mi, dd, endDay ) ->
+    day    = @res.day(     date, roomId )
+    color  = @res.color(   date, roomId )
+    htm    = ""
+    span   = 1 # @calcSpan( date, roomId, mi, dd, endDay )
+    if span isnt 0
+       htm += """<td id="#{@cellId('M',date,roomId)}" class="room-#{color}" colspan="#{span}" data-status="#{day.status}" """
+       htm += """data-res="#{day.resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
+    htm
+
+  calcSpan:( date, roomId, mi, dd, endDay ) ->
+    span   = 1
+    resv   = @res.getResv( date, roomId )
+    if resv?
+      [ya,ma,da] = @Data.yymidd( resv.arrive )
+      [ys,ms,ds] = @Data.yymidd( resv.stayto )
+      if resv.arrive is date
+        span = Math.min( resv.nights, endDay-dd+1 )
+      else if ma isnt ms and ms is mi
+        span = ds
+      else
+        span = 0
+    span
 
   dailysHtml:() ->
     htm  = ""

@@ -15,6 +15,8 @@ class Res
     @days      = {}
     @resvs     = {}
     @order     = 'Decend'
+    @today     = @Data.today()
+    @onCompleteResv = null
     @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
 
   dateRange:( beg, end, onComplete=null ) ->
@@ -31,13 +33,19 @@ class Res
       day.status = @Data.toStatus(day.status) for own dayId, day of @days
       onComplete() if onComplete? )
     @store.select( 'Day' )
+    return
 
-  selectAllResvs:( onComplete=null ) ->
+  selectAllResvs:( onComplete=null ) =>
     @store.subscribe( 'Res', 'select', 'none', (resvs) =>
       @resvs = resvs
       resv.status = @Data.toStatus(resv.status) for own resId, resv of @resvs
       onComplete() if onComplete? ) # resvs not passed to onComplete() - accesss @resvs later on
     @store.select( 'Res' )
+    return
+
+  selectAllDaysResvs:( onComplete=null ) =>
+    @selectAllDays(  () => @selectAllResvs(onComplete) )
+    return
 
   # Note the expanded roomUI is for Book.coffee and should never be persisted
   roomUI:( rooms ) ->
@@ -56,10 +64,27 @@ class Res
     room.reason  = 'No Changes'
     room
 
+  isNewResv:( resv ) ->
+    nights = @Data.nights( resv.booked, @today )
+    nights < @Data.newDays
+
   status:( date, roomId ) ->
     dayId = @Data.dayId( date, roomId )
     day   = @days[dayId]
     if day? then day.status else 'Free'
+
+  color:( date, roomId ) ->
+    resv   = @getResv( date, roomId )
+    status = 'Free'
+    if resv?
+       status = resv.status
+       if @isNewResv( resv )
+         status = 'SkylNew' if status is 'Skyline' or status is 'book'
+         status = 'BookNew' if status is 'Booking' or status is 'chan'
+    else
+       status = @status( date, roomId )
+    #Util.log( 'Res.color()', date, roomId, resv?, nights, status )
+    status
 
   getResv:( date, roomId ) ->
     day   = @day( date, roomId )
@@ -310,6 +335,7 @@ class Res
           resId = @days[dayId].resId
           resvs[resId] = @resvs[resId] if @resvs[resId]?
         date = @Data.advanceDate( date, 1 )
+        #Util.log( 'Res.resvArrayByProp', beg, date, end )
     for own resId, resv of resvs
       array.push(  resv )
     @order = if @order is 'Decend' then 'Ascend' else 'Decend'

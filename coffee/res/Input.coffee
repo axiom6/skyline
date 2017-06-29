@@ -46,24 +46,24 @@ class Input
 
     $('#NRNames').change (event) =>
       @resv.last = event.target.value
-      Util.log('Last', @resv.last )
+      #Util.log('Last', @resv.last )
       return
 
     $('#NRGuests').change (event) =>
       @resv.guests = event.target.value
-      Util.log('Guests', @resv.guests )
+      #Util.log('Guests', @resv.guests )
       @refreshResv( @resv )
       return
 
     $('#NRPets'  ).change (event) =>
       @resv.pets = event.target.value
-      Util.log('Pets', @resv.pets )
+      #Util.log('Pets', @resv.pets )
       @refreshResv( @resv )
       return
 
     $('#NRStatus').change (event) =>
       @resv.status = event.target.value
-      Util.log('Status', @resv.status )
+      #Util.log('Status', @resv.status )
       @refreshResv( @resv )
       return
 
@@ -115,7 +115,7 @@ class Input
 
     doRes = ( event ) =>
       Util.noop( event )
-      Util.log( @resv )
+      #Util.log( @resv )
       r = @resv
       @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )     
       

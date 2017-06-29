@@ -55,27 +55,23 @@
       $('#NRNames').change((function(_this) {
         return function(event) {
           _this.resv.last = event.target.value;
-          Util.log('Last', _this.resv.last);
         };
       })(this));
       $('#NRGuests').change((function(_this) {
         return function(event) {
           _this.resv.guests = event.target.value;
-          Util.log('Guests', _this.resv.guests);
           _this.refreshResv(_this.resv);
         };
       })(this));
       $('#NRPets').change((function(_this) {
         return function(event) {
           _this.resv.pets = event.target.value;
-          Util.log('Pets', _this.resv.pets);
           _this.refreshResv(_this.resv);
         };
       })(this));
       $('#NRStatus').change((function(_this) {
         return function(event) {
           _this.resv.status = event.target.value;
-          Util.log('Status', _this.resv.status);
           _this.refreshResv(_this.resv);
         };
       })(this));
@@ -150,7 +146,6 @@
         return function(event) {
           var r;
           Util.noop(event);
-          Util.log(_this.resv);
           r = _this.resv;
           return _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
         };

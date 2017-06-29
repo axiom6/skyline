@@ -21,8 +21,8 @@ class Season
     monthIdx = @Data.months.indexOf(month)
     begDay   = new Date( 2000+@Data.year, monthIdx, 1 ).getDay() - 1
     endDay   = @Data.numDayMonth[monthIdx]
-    htm  = """<div class="SeasonTitle">#{month}</div>"""
-    htm += """<table class="MonthTable"><thead><tr>"""
+    htm  = """<div   class="SeasonTitle">#{month}</div>"""
+    htm += """<table class="SeasonTable"><thead><tr>"""
     for day in [0...7]
       weekday = @Data.weekdays[day]
       htm += """<th>#{weekday}</th>"""
