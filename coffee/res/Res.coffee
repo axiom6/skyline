@@ -73,7 +73,7 @@ class Res
     day   = @days[dayId]
     if day? then day.status else 'Free'
 
-  color:( date, roomId ) ->
+  klass:( date, roomId ) ->
     resv   = @getResv( date, roomId )
     status = 'Free'
     if resv?
@@ -252,6 +252,10 @@ class Res
   canResv:( resv ) ->                     #Cancel
     @resvs[resv.resId] = resv
     @store.put( 'Res', resv.resId, resv ) # We do a put
+
+  delResv:( resv ) ->                     #Delete
+    delete @resvs[resv.resId]
+    @store.del( 'Res', resv.resId )
 
   postPayment:( resv, post, amount, method, last4, purpose ) ->
     status = @setResvStatus( resv, post, purpose )

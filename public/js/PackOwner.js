@@ -33372,28 +33372,21 @@
 	    };
 
 	    Master.prototype.mouseDatesTable = function(date, event) {
-	      var beg, end;
 	      if (event.buttons === 2) {
 	        this.dateEnd = date;
 	      } else {
 	        this.dateBeg = date;
 	      }
-	      beg = this.dateBeg != null ? this.dateBeg : '??????';
-	      end = this.dateEnd != null ? this.dateEnd : '??????';
 	      return [this.dateBeg, this.dateEnd];
 	    };
 
 	    Master.prototype.mouseDatesInput = function(date) {
-	      var beg, end;
 	      if ((this.dateBeg != null) && this.dateBeg <= date) {
 	        this.dateEnd = date;
 	      } else {
 	        this.dateBeg = date;
 	        this.dateEnd = date;
 	      }
-	      beg = this.dateBeg != null ? this.dateBeg : '??????';
-	      end = this.dateEnd != null ? this.dateEnd : '??????';
-	      Util.log('Master.mouseDatesInput()', date, beg, end);
 	      return [this.dateBeg, this.dateEnd];
 	    };
 
@@ -33482,15 +33475,6 @@
 
 	    Master.prototype.$cell = function(pre, date, roomId) {
 	      return $('#' + this.cellId(pre, date, roomId));
-	    };
-
-	    Master.prototype.createCell = function(roomId, date) {
-	      var color, day, resId, status;
-	      day = this.res.day(date, roomId);
-	      status = day.status;
-	      color = this.res.color(date, roomId);
-	      resId = day.resId;
-	      return "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + color + "\" data-status=\"" + status + "\" data-res=\"" + resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
 	    };
 
 	    Master.prototype.allocCell = function(roomId, date, status) {
@@ -33613,12 +33597,57 @@
 	        htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
 	        for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
 	          date = this.Data.toDateStr(day, monthIdx);
-	          htm += this.createCell(roomId, date);
+	          htm += this.createCell(date, roomId, monthIdx, day, endDay);
 	        }
 	        htm += "</tr>";
 	      }
 	      htm += "</tbody></table>";
 	      return htm;
+	    };
+
+	    Master.prototype.createCell = function(date, roomId, mi, dd, endDay) {
+	      var bord, color, day, htm;
+	      day = this.res.day(date, roomId);
+	      color = this.res.color(date, roomId);
+	      bord = this.border(date, roomId, 'blue');
+	      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + color + "\" style=\"" + bord + "\" data-status=\"" + day.status + "\" ";
+	      htm += "data-res=\"" + day.resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
+	      return htm;
+	    };
+
+	    Master.prototype.calcSpan = function(date, roomId, mi, dd, endDay) {
+	      var da, ds, ma, ms, ref, ref1, resv, span, ya, ys;
+	      span = 1;
+	      resv = this.res.getResv(date, roomId);
+	      if (resv != null) {
+	        ref = this.Data.yymidd(resv.arrive), ya = ref[0], ma = ref[1], da = ref[2];
+	        ref1 = this.Data.yymidd(resv.stayto), ys = ref1[0], ms = ref1[1], ds = ref1[2];
+	        if (resv.arrive === date) {
+	          span = Math.min(resv.nights, endDay - dd + 1);
+	        } else if (ma !== ms && ms === mi) {
+	          span = ds;
+	        } else {
+	          span = 0;
+	        }
+	      }
+	      return span;
+	    };
+
+	    Master.prototype.border = function(date, roomId, color) {
+	      var bord, resv;
+	      bord = "";
+	      resv = this.res.getResv(date, roomId);
+	      if (resv != null) {
+	        bord += "border-top:  2 solid black;    border-bottom:2 solid black;   ";
+	        if (date === resv.arrive) {
+	          bord += "border-left: 2 solid black;    border-right:2 solid " + color + "; ";
+	        } else if (date === resv.stayto) {
+	          bord += "border-right:2 solid black;    border-left:2  solid " + color + "; ";
+	        } else {
+	          bord += "border-right:2 solid " + color + "; border-left:2  solid " + color + "; ";
+	        }
+	      }
+	      return bord;
 	    };
 
 	    Master.prototype.dailysHtml = function() {

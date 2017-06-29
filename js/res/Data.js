@@ -10,7 +10,9 @@
 
     Data.legacy = ["free", "mine", "depo", "book", "prep", "chan", "canc"];
 
-    Data.statuses = ["Free", "Mine", "Deposit", "Skyline", "Prepaid", "Booking", "Cancel"];
+    Data.colors = ["lightgrey", "green", "#555555", "#000000", "lightblue", "blue", "#999999", "red", "purple", "yellow"];
+
+    Data.statuses = ["Free", "Mine", "Deposit", "Skyline", "Prepaid", "Booking", "Cancel", "SkylNew", "BookNew", "Unknown"];
 
     Data.statusesSel = ["Deposit", "Skyline", "Prepaid", "Booking", "Cancel"];
 
@@ -83,6 +85,16 @@
         return Data.statuses[index];
       } else {
         return status;
+      }
+    };
+
+    Data.toColor = function(status) {
+      var index;
+      index = Data.statuses.indexOf(status);
+      if (index > 0) {
+        return Data.colors[index];
+      } else {
+        return "yellow";
       }
     };
 

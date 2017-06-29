@@ -98,7 +98,7 @@
       var htm;
       htm = this.res.htmlButton('NRCreate', 'NRSubmit', 'Create');
       htm += this.res.htmlButton('NRChange', 'NRSubmit', 'Change');
-      htm += this.res.htmlButton('NRCancel', 'NRSubmit', 'Cancel');
+      htm += this.res.htmlButton('NRDelete', 'NRSubmit', 'Delete');
       return htm;
     };
 
@@ -132,29 +132,35 @@
       if (resv.action === 'add') {
         $('#NRCreate').show();
         $('#NRChange').hide();
-        $('#NRCancel').hide();
+        $('#NRDelete').hide();
       } else if (resv.action === 'put') {
         $('#NRCreate').hide();
         $('#NRChange').show();
-        $('#NRCancel').show();
+        $('#NRDelete').show();
       }
     };
 
     Input.prototype.resvSubmits = function() {
-      var doRes;
+      var doDel, doRes;
       doRes = (function(_this) {
-        return function(event) {
+        return function() {
           var r;
-          Util.noop(event);
           r = _this.resv;
           return _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
         };
       })(this);
+      doDel = (function(_this) {
+        return function() {
+          _this.resv.status = 'Free';
+          _this.res.updateDaysFromResv(_this.resv);
+          return _this.resv;
+        };
+      })(this);
       $('#NRCreate').click((function(_this) {
-        return function(event) {
+        return function() {
           var resv;
           if (Util.isStr(_this.resv.last)) {
-            resv = doRes(event);
+            resv = doRes();
             _this.res.addResv(resv);
           } else {
             alert('Incomplete Reservation');
@@ -162,16 +168,24 @@
         };
       })(this));
       $('#NRChange').click((function(_this) {
-        return function(event) {
+        return function() {
           var resv;
-          resv = doRes(event);
+          resv = doRes();
           _this.res.putResv(resv);
         };
       })(this));
-      return $('#NRCancel').click((function(_this) {
-        return function(event) {
+      $('#NRDelete').click((function(_this) {
+        return function() {
           var resv;
-          resv = doRes(event);
+          resv = doDel();
+          resv.status = 'Cancel';
+          _this.res.delResv(resv);
+        };
+      })(this));
+      return $('#NRCancel').click((function(_this) {
+        return function() {
+          var resv;
+          resv = doRes();
           resv.status = 'Cancel';
           _this.res.canResv(resv);
         };

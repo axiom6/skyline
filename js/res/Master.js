@@ -183,9 +183,8 @@
       this.resvBody(this.res.resvArrayByDate(this.Data.today()));
       doCell = (function(_this) {
         return function(event) {
-          var $cell, date, ref, ref1, ref2, status;
+          var $cell, date, ref, ref1, ref2;
           $cell = $(event.target);
-          status = $cell.attr('data-status');
           date = $cell.attr('data-date');
           _this.roomId = $cell.attr('data-roomId');
           _this.fillInCells(_this.fillBeg, _this.fillEnd, _this.fillRoomId, 'Mine', 'Free');
@@ -246,8 +245,8 @@
       return [this.dateBeg, this.dateEnd];
     };
 
-    Master.prototype.fillInCells = function(begDate, endDate, roomId, freeStatus, fillStatus) {
-      var $cell, $cells, cstat, i, len, nxtDate;
+    Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
+      var $cell, $cells, i, len, nxtDate, status;
       if (!((begDate != null) && (endDate != null) && (roomId != null))) {
         return;
       }
@@ -255,8 +254,8 @@
       nxtDate = begDate;
       while (nxtDate <= endDate) {
         $cell = this.$cell('M', nxtDate, roomId);
-        cstat = $cell.attr('data-status');
-        if (cstat === freeStatus || cstat === fillStatus || cstat === 'Cancel') {
+        status = this.res.status(nxtDate, roomId);
+        if (status === free || status === fill || status === 'Cancel') {
           $cells.push($cell);
           nxtDate = this.Data.advanceDate(nxtDate, 1);
         } else {
@@ -265,7 +264,7 @@
       }
       for (i = 0, len = $cells.length; i < len; i++) {
         $cell = $cells[i];
-        this.cellStatus($cell, fillStatus, fillStatus);
+        this.cellStatus($cell, fill, fill);
       }
       return true;
     };
@@ -285,7 +284,7 @@
     };
 
     Master.prototype.listenToResv = function() {
-      var doAdd;
+      var doAdd, doDel;
       doAdd = (function(_this) {
         return function(resId, resv) {
           if ((resId != null) && (resv != null) && !_this.res.resvs[resId]) {
@@ -293,8 +292,16 @@
           }
         };
       })(this);
+      doDel = (function(_this) {
+        return function(resId, resv) {
+          if ((resId != null) && (resv != null) && _this.res.resvs[resId]) {
+            return delete _this.res.resvs[resId];
+          }
+        };
+      })(this);
       this.res.onRes('add', doAdd);
       this.res.onRes('put', doAdd);
+      this.res.onRes('del', doDel);
     };
 
     Master.prototype.selectToDays = function() {
@@ -321,8 +328,8 @@
       var date, roomId;
       date = this.Data.toDate(dayId);
       roomId = this.Data.roomId(dayId);
-      this.allocCell(roomId, date, day.status);
-      this.season.allocCell(roomId, date, day.status);
+      this.allocCell(roomId, date);
+      this.season.allocCell(roomId, date);
     };
 
     Master.prototype.cellId = function(pre, date, roomId) {
@@ -333,14 +340,14 @@
       return $('#' + this.cellId(pre, date, roomId));
     };
 
-    Master.prototype.allocCell = function(roomId, date, status) {
-      var color;
-      color = this.res.color(date, roomId);
-      this.cellStatus(this.$cell('M', date, roomId), status, color);
+    Master.prototype.allocCell = function(roomId, date) {
+      var klass;
+      klass = this.res.klass(date, roomId);
+      this.cellStatus(this.$cell('M', date, roomId), klass);
     };
 
-    Master.prototype.cellStatus = function($cell, status, color) {
-      $cell.removeClass().addClass("room-" + color).attr('data-status', status);
+    Master.prototype.cellStatus = function($cell, klass) {
+      $cell.removeClass().addClass("room-" + klass);
     };
 
     Master.prototype.onMonthClick = function(event) {
@@ -353,20 +360,20 @@
       if (month === this.showingMonth) {
         this.removeAllMonthStyles();
         $master.css({
-          height: '700px'
+          height: '800px'
         });
         $master.children().show();
         this.showingMonth = 'Master';
       } else {
         $master.children().hide();
         $master.css({
-          height: '300px'
+          height: '330px'
         });
         $('#' + month).css({
           left: 0,
           top: 0,
           width: '100%',
-          height: '290px',
+          height: '330px',
           fontSize: '14px'
         }).show();
         this.showingMonth = month;
@@ -435,7 +442,7 @@
       endDay = this.Data.numDayMonth[monthIdx];
       weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
       htm = "<div class=\"MasterTitle\">" + prevMonth + "<span class=\"ThisMonth\">" + month + "</span>" + nextMonth + "</div>";
-      htm += "<table><thead>";
+      htm += "<table class=\"RTTable\"><thead>";
       htm += "<tr><th></th>";
       for (day = i = ref = begDay, ref1 = endDay; ref <= ref1 ? i <= ref1 : i >= ref1; day = ref <= ref1 ? ++i : --i) {
         weekday = this.Data.weekdays[(weekdayIdx + day - 1) % 7].charAt(0);
@@ -462,15 +469,13 @@
     };
 
     Master.prototype.createCell = function(date, roomId, mi, dd, endDay) {
-      var color, day, htm, span;
+      var bord, day, htm, klass;
+      Util.noop(mi, dd, endDay);
       day = this.res.day(date, roomId);
-      color = this.res.color(date, roomId);
-      htm = "";
-      span = 1;
-      if (span !== 0) {
-        htm += "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + color + "\" colspan=\"" + span + "\" data-status=\"" + day.status + "\" ";
-        htm += "data-res=\"" + day.resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
-      }
+      klass = this.res.klass(date, roomId);
+      bord = this.border(date, roomId, klass);
+      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + " data-status=\"" + day.status + "\" ";
+      htm += "data-res=\"" + day.resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
       return htm;
     };
 
@@ -490,6 +495,24 @@
         }
       }
       return span;
+    };
+
+    Master.prototype.border = function(date, roomId, klass) {
+      var bord, color, resv;
+      color = this.Data.toColor(klass);
+      bord = "";
+      resv = this.res.getResv(date, roomId);
+      if (resv != null) {
+        bord += "border-top:  2px solid black;    border-bottom:2px solid black;   ";
+        if (date === resv.arrive) {
+          bord += "border-left: 2px solid black;    border-right:2px solid " + color + "; ";
+        } else if (date === resv.stayto) {
+          bord += "border-right:2px solid black;    border-left:2px  solid " + color + "; ";
+        } else {
+          bord += "border-right:2px solid " + color + "; border-left:2px  solid " + color + "; ";
+        }
+      }
+      return bord;
     };
 
     Master.prototype.dailysHtml = function() {

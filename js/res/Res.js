@@ -155,7 +155,7 @@
       }
     };
 
-    Res.prototype.color = function(date, roomId) {
+    Res.prototype.klass = function(date, roomId) {
       var resv, status;
       resv = this.getResv(date, roomId);
       status = 'Free';
@@ -448,6 +448,11 @@
     Res.prototype.canResv = function(resv) {
       this.resvs[resv.resId] = resv;
       return this.store.put('Res', resv.resId, resv);
+    };
+
+    Res.prototype.delResv = function(resv) {
+      delete this.resvs[resv.resId];
+      return this.store.del('Res', resv.resId);
     };
 
     Res.prototype.postPayment = function(resv, post, amount, method, last4, purpose) {

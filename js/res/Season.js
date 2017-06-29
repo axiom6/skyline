@@ -133,12 +133,12 @@
       return $('#' + this.cellId(pre, date, roomId));
     };
 
-    Season.prototype.allocCell = function(roomId, date, status) {
-      this.cellStatus(this.$cell('S', date, roomId), status);
+    Season.prototype.allocCell = function(roomId, date) {
+      this.cellStatus(this.$cell('S', date, roomId));
     };
 
     Season.prototype.cellStatus = function($cell, status) {
-      $cell.removeClass().addClass("own-" + status).attr('data-status', status);
+      $cell.removeClass().addClass("own-" + status);
     };
 
     return Season;

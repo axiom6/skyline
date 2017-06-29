@@ -88,10 +88,10 @@ class Season
   $cell:( pre,  date,  roomId ) ->
     $( '#'+@cellId(pre,date,roomId) )
 
-  allocCell:( roomId, date, status ) ->
-    @cellStatus( @$cell('S',date,roomId), status )
+  allocCell:( roomId, date ) ->
+    @cellStatus( @$cell('S',date,roomId) )
     return
 
   cellStatus:( $cell, status ) ->
-    $cell.removeClass().addClass( "own-"+status).attr('data-status',status)
+    $cell.removeClass().addClass( "own-"+status)
     return

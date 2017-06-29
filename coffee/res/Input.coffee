@@ -76,7 +76,8 @@ class Input
   submit:() ->
     htm  = @res.htmlButton( 'NRCreate', 'NRSubmit', 'Create' )
     htm += @res.htmlButton( 'NRChange', 'NRSubmit', 'Change' )
-    htm += @res.htmlButton( 'NRCancel', 'NRSubmit', 'Cancel' )
+    htm += @res.htmlButton( 'NRDelete', 'NRSubmit', 'Delete' )
+    #tm += @res.htmlButton( 'NRCancel', 'NRSubmit', 'Cancel' )
     htm
 
   refreshResv:( resv ) ->
@@ -104,36 +105,45 @@ class Input
     if      resv.action is 'add'
       $('#NRCreate').show()
       $('#NRChange').hide()
-      $('#NRCancel').hide()
+      $('#NRDelete').hide()
     else if resv.action is 'put'
       $('#NRCreate').hide()
       $('#NRChange').show()
-      $('#NRCancel').show()
+      $('#NRDelete').show()
     return
 
   resvSubmits:() ->
 
-    doRes = ( event ) =>
-      Util.noop( event )
-      #Util.log( @resv )
+    doRes = () =>
       r = @resv
-      @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )     
+      @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )
+
+    doDel = () =>
+      @resv.status = 'Free'
+      @res.updateDaysFromResv( @resv )
+      @resv
       
-    $('#NRCreate').click (event) =>
+    $('#NRCreate').click () =>
       if Util.isStr( @resv.last )
-        resv = doRes( event )
+        resv = doRes()
         @res.addResv( resv )
       else
         alert( 'Incomplete Reservation' )
       return
 
-    $('#NRChange').click (event) =>
-      resv = doRes( event )
+    $('#NRChange').click () =>
+      resv = doRes()
       @res.putResv( resv )
       return
 
-    $('#NRCancel').click (event) =>
-      resv = doRes( event )
+    $('#NRDelete').click () =>
+      resv = doDel()
+      resv.status = 'Cancel'
+      @res.delResv( resv )
+      return
+
+    $('#NRCancel').click () =>
+      resv = doRes()
       resv.status = 'Cancel'
       @res.canResv( resv )
       return

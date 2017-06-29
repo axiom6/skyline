@@ -4,8 +4,9 @@ class Data
   module.exports = Data
 
   @legacy      = ["free","mine","depo",   "book",   "prep",   "chan",   "canc"  ]
-  @statuses    = ["Free","Mine","Deposit","Skyline","Prepaid","Booking","Cancel"]
-  @statusesSel = [              "Deposit","Skyline","Prepaid","Booking","Cancel"]
+  @colors      = ["lightgrey","green","#555555","#000000","lightblue","blue",   "#999999","red",    "purple", "yellow" ]
+  @statuses    = ["Free",     "Mine", "Deposit","Skyline","Prepaid",  "Booking","Cancel", "SkylNew","BookNew","Unknown"]
+  @statusesSel = [                    "Deposit","Skyline","Prepaid",  "Booking","Cancel"]
   @sources     = ["Skyline","Booking","Website"]
   @tax         = 0.1055 # Official Estes Park tax rate. Also in Booking.com
   @season      = ["May","June","July","August","September","October"]
@@ -49,6 +50,10 @@ class Data
   @toStatus:( status ) ->
     index = Data.legacy.indexOf(status)
     if index > 0 then Data.statuses[index] else status
+
+  @toColor:( status ) ->
+    index = Data.statuses.indexOf(status)
+    if index > 0 then Data.colors[index] else "yellow"
 
   @config:( uri ) ->
     if uri is 'skyline' then @configSkyline else @configSkytest

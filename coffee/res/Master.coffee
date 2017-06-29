@@ -134,7 +134,6 @@ class Master
     doCell = (event) =>
 
       $cell   = $(event.target)
-      status  = $cell.attr('data-status' )
       date    = $cell.attr('data-date'   )
       @roomId = $cell.attr('data-roomId' )
       @fillInCells( @fillBeg, @fillEnd, @fillRoomId, 'Mine', 'Free' )
@@ -194,20 +193,20 @@ class Master
     [@dateBeg,@dateEnd]
 
   # Only fill in freeStatus cells return success
-  fillInCells:(     begDate,     endDate,     roomId, freeStatus, fillStatus ) ->
+  fillInCells:(     begDate,     endDate,     roomId, free, fill ) ->
     return if not ( begDate? and endDate? and roomId? )
     $cells  = []
     nxtDate = begDate
     while nxtDate <= endDate
-      $cell = @$cell( 'M', nxtDate, roomId )
-      cstat = $cell.attr('data-status' )
-      if cstat is freeStatus or cstat is fillStatus or cstat is 'Cancel'
+      $cell = @$cell( 'M',  nxtDate, roomId )
+      status = @res.status( nxtDate, roomId )
+      if status is free or status is fill or status is 'Cancel'
         $cells.push( $cell )
         nxtDate = @Data.advanceDate( nxtDate, 1 )
       else
         return false
     for $cell in $cells
-       @cellStatus( $cell, fillStatus, fillStatus ) # We can use fillStatus is 3rd argument for color here
+       @cellStatus( $cell, fill, fill ) # We can use fillStatus is 3rd argument for color here
     true
 
   listenToDays:() =>
@@ -223,8 +222,12 @@ class Master
     doAdd = (resId,resv) =>
       if resId? and resv? and not @res.resvs[resId]
         @res.resvs[resId] = resv
+    doDel = (resId,resv) =>
+      if resId? and resv? and @res.resvs[resId]
+        delete @res.resvs[resId]
     @res.onRes( 'add', doAdd )
     @res.onRes( 'put', doAdd )
+    @res.onRes( 'del', doDel )
     return
 
   selectToDays:() =>
@@ -242,8 +245,8 @@ class Master
   onAlloc:(  dayId, day ) =>
     date   = @Data.toDate( dayId )
     roomId = @Data.roomId( dayId )
-    @allocCell(        roomId, date, day.status )
-    @season.allocCell( roomId, date, day.status )
+    @allocCell(        roomId, date )
+    @season.allocCell( roomId, date )
     return
 
   cellId:( pre,  date,  roomId ) ->
@@ -253,13 +256,13 @@ class Master
     $( '#'+@cellId(pre,date,roomId) )
 
 
-  allocCell:( roomId, date, status ) ->
-    color  = @res.color( date, roomId )
-    @cellStatus( @$cell('M',date,roomId), status, color )
+  allocCell:( roomId, date ) ->
+    klass  = @res.klass( date, roomId )
+    @cellStatus( @$cell('M',date,roomId), klass )
     return
 
-  cellStatus:( $cell, status, color ) ->
-    $cell.removeClass().addClass("room-"+color).attr('data-status',status)
+  cellStatus:( $cell, klass ) ->
+    $cell.removeClass().addClass("room-"+klass)
     return
 
   onMonthClick:( event ) =>
@@ -270,13 +273,13 @@ class Master
     $master = $('#Master')
     if month is @showingMonth    # Show all Months
       @removeAllMonthStyles()
-      $master.css(  { height:'700px' } )
+      $master.css(  { height:'800px' } )
       $master.children().show()
       @showingMonth = 'Master'
     else                          # Show selected month
       $master.children().hide()
-      $master.css( { height:'300px' } )
-      $('#'+month).css(  { left:0, top:0, width:'100%', height:'290px', fontSize:'14px' } ).show()
+      $master.css( { height:'330px' } )
+      $('#'+month).css(  { left:0, top:0, width:'100%', height:'330px', fontSize:'14px' } ).show()
       @showingMonth = month
     return
 
@@ -323,7 +326,7 @@ class Master
     endDay     = @Data.numDayMonth[monthIdx] # if month isnt 'October' then @Data.numDayMonth[monthIdx] else 15
     weekdayIdx = new Date( 2000+year, monthIdx, 1 ).getDay()
     htm  = """<div class="MasterTitle">#{prevMonth}<span class="ThisMonth">#{month}</span>#{nextMonth}</div>"""
-    htm += "<table><thead>"
+    htm += """<table class="RTTable"><thead>"""
     htm += """<tr><th></th>"""
     for day in [begDay..endDay]
       weekday = @Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
@@ -342,13 +345,12 @@ class Master
     htm
 
   createCell:( date, roomId, mi, dd, endDay ) ->
-    day    = @res.day(     date, roomId )
-    color  = @res.color(   date, roomId )
-    htm    = ""
-    span   = 1 # @calcSpan( date, roomId, mi, dd, endDay )
-    if span isnt 0
-       htm += """<td id="#{@cellId('M',date,roomId)}" class="room-#{color}" colspan="#{span}" data-status="#{day.status}" """
-       htm += """data-res="#{day.resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
+    Util.noop( mi, dd, endDay )
+    day    = @res.day(   date, roomId )
+    klass  = @res.klass( date, roomId )
+    bord   = @border(    date, roomId, klass )
+    htm  = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord} data-status="#{day.status}" """
+    htm += """data-res="#{day.resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
     htm
 
   calcSpan:( date, roomId, mi, dd, endDay ) ->
@@ -364,6 +366,20 @@ class Master
       else
         span = 0
     span
+
+  border:( date, roomId,   klass ) ->
+    color = @Data.toColor( klass )
+    bord = ""
+    resv = @res.getResv( date, roomId )
+    if resv?
+      bord +=   "border-top:  2px solid black;    border-bottom:2px solid black;   "
+      if date is resv.arrive
+        bord += "border-left: 2px solid black;    border-right:2px solid #{color}; "
+      else if date is resv.stayto
+        bord += "border-right:2px solid black;    border-left:2px  solid #{color}; "
+      else
+        bord += "border-right:2px solid #{color}; border-left:2px  solid #{color}; "
+    bord
 
   dailysHtml:() ->
     htm  = ""
