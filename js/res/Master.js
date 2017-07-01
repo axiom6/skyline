@@ -441,8 +441,8 @@
       begDay = 1;
       endDay = this.Data.numDayMonth[monthIdx];
       weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
-      htm = "<div class=\"MasterTitle\">" + prevMonth + "<span class=\"ThisMonth\">" + month + "</span>" + nextMonth + "</div>";
-      htm += "<table class=\"RTTable\"><thead>";
+      htm = "<div   class=\"MasterTitle\">" + prevMonth + "<span class=\"ThisMonth\">" + month + "</span>" + nextMonth + "</div>";
+      htm += "<table class=\"MonthTable\"><thead>";
       htm += "<tr><th></th>";
       for (day = i = ref = begDay, ref1 = endDay; ref <= ref1 ? i <= ref1 : i >= ref1; day = ref <= ref1 ? ++i : --i) {
         weekday = this.Data.weekdays[(weekdayIdx + day - 1) % 7].charAt(0);
@@ -460,7 +460,7 @@
         htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
         for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
           date = this.Data.toDateStr(day, monthIdx);
-          htm += this.createCell(date, roomId, monthIdx, day, endDay);
+          htm += this.createCell(date, roomId);
         }
         htm += "</tr>";
       }
@@ -468,14 +468,45 @@
       return htm;
     };
 
-    Master.prototype.createCell = function(date, roomId, mi, dd, endDay) {
-      var bord, day, htm, klass;
-      Util.noop(mi, dd, endDay);
-      day = this.res.day(date, roomId);
+    Master.prototype.createCell = function(date, roomId) {
+      var bord, dd, htm, klass, last, mi, ref, resId, resv, status, yy;
+      ref = this.Data.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
+      resv = this.res.getResv(date, roomId);
       klass = this.res.klass(date, roomId);
-      bord = this.border(date, roomId, klass);
-      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + " data-status=\"" + day.status + "\" ";
-      htm += "data-res=\"" + day.resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
+      bord = this.border(date, roomId, resv, klass);
+      status = resv != null ? resv.status : 'Free';
+      resId = resv != null ? resv.resId : 'none';
+      last = (resv != null) && (resv.arrive === date || dd === 1) ? "<div>" + resv.last + "</div>" : '';
+      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + " data-status=\"" + status + "\" ";
+      htm += "data-res=\"" + resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\">" + last + "</td>";
+      return htm;
+    };
+
+    Master.prototype.border = function(date, roomId, resv, klass) {
+      var bord, color;
+      color = this.Data.toColor(klass);
+      bord = "";
+      if (resv != null) {
+        bord = "background-color:" + color + "; border-top: 2px solid black;     border-bottom:2px solid black;   ";
+        if (date === resv.arrive) {
+          bord += "background-color:" + color + "; border-left: 2px solid black;    border-right:2px solid " + color + "; ";
+        } else if (date === resv.stayto) {
+          bord += "background-color:" + color + "; border-right:2px solid black;    border-left:2px  solid " + color + "; ";
+        } else {
+          bord += "background-color:" + color + "; border-right:2px solid " + color + "; border-left:2px  solid " + color + "; ";
+        }
+      } else {
+        bord = "border:1px solid black;";
+      }
+      return bord;
+    };
+
+    Master.prototype.dailysHtml = function() {
+      var htm;
+      htm = "";
+      htm += "<h1 class=\"DailysH1\">Daily Activities</h1>";
+      htm += "<h2 class=\"DailysH2\">Arrivals</h2>";
+      htm += "<h2 class=\"DailysH2\">Departures</h2>";
       return htm;
     };
 
@@ -495,33 +526,6 @@
         }
       }
       return span;
-    };
-
-    Master.prototype.border = function(date, roomId, klass) {
-      var bord, color, resv;
-      color = this.Data.toColor(klass);
-      bord = "";
-      resv = this.res.getResv(date, roomId);
-      if (resv != null) {
-        bord += "border-top:  2px solid black;    border-bottom:2px solid black;   ";
-        if (date === resv.arrive) {
-          bord += "border-left: 2px solid black;    border-right:2px solid " + color + "; ";
-        } else if (date === resv.stayto) {
-          bord += "border-right:2px solid black;    border-left:2px  solid " + color + "; ";
-        } else {
-          bord += "border-right:2px solid " + color + "; border-left:2px  solid " + color + "; ";
-        }
-      }
-      return bord;
-    };
-
-    Master.prototype.dailysHtml = function() {
-      var htm;
-      htm = "";
-      htm += "<h1 class=\"DailysH1\">Daily Activities</h1>";
-      htm += "<h2 class=\"DailysH2\">Arrivals</h2>";
-      htm += "<h2 class=\"DailysH2\">Departures</h2>";
-      return htm;
     };
 
     return Master;

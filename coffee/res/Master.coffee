@@ -325,8 +325,8 @@ class Master
     begDay     = 1                           # if month isnt 'May'     then 1 else 17
     endDay     = @Data.numDayMonth[monthIdx] # if month isnt 'October' then @Data.numDayMonth[monthIdx] else 15
     weekdayIdx = new Date( 2000+year, monthIdx, 1 ).getDay()
-    htm  = """<div class="MasterTitle">#{prevMonth}<span class="ThisMonth">#{month}</span>#{nextMonth}</div>"""
-    htm += """<table class="RTTable"><thead>"""
+    htm  = """<div   class="MasterTitle">#{prevMonth}<span class="ThisMonth">#{month}</span>#{nextMonth}</div>"""
+    htm += """<table class="MonthTable"><thead>"""
     htm += """<tr><th></th>"""
     for day in [begDay..endDay]
       weekday = @Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
@@ -339,20 +339,47 @@ class Master
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
         date = @Data.toDateStr( day, monthIdx )
-        htm += @createCell(  date, roomId, monthIdx, day, endDay )
+        htm += @createCell(  date, roomId )
       htm += """</tr>"""
     htm += "</tbody></table>"
     htm
 
-  createCell:( date, roomId, mi, dd, endDay ) ->
-    Util.noop( mi, dd, endDay )
-    day    = @res.day(   date, roomId )
-    klass  = @res.klass( date, roomId )
-    bord   = @border(    date, roomId, klass )
-    htm  = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord} data-status="#{day.status}" """
-    htm += """data-res="#{day.resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y"></td>"""
+  createCell:( date, roomId ) ->
+    [yy,mi,dd] = @Data.yymidd( date )
+    resv   = @res.getResv( date, roomId )
+    klass  = @res.klass(   date, roomId )
+    bord   = @border(      date, roomId, resv, klass )
+    status = if resv? then resv.status else 'Free'
+    resId  = if resv? then resv.resId  else 'none'
+    last   = if resv? and ( resv.arrive is date or dd is 1 ) then "<div>#{resv.last}</div>" else ''
+    htm    = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord} data-status="#{status}" """
+    htm   += """data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y">#{last}</td>"""
     htm
 
+
+  border:( date, roomId,   resv, klass ) ->
+    color = @Data.toColor( klass )
+    bord  = ""
+    if resv?
+      bord    = "background-color:#{color}; border-top: 2px solid black;     border-bottom:2px solid black;   "
+      if date is resv.arrive
+        bord += "background-color:#{color}; border-left: 2px solid black;    border-right:2px solid #{color}; "
+      else if date is resv.stayto
+        bord += "background-color:#{color}; border-right:2px solid black;    border-left:2px  solid #{color}; "
+      else
+        bord += "background-color:#{color}; border-right:2px solid #{color}; border-left:2px  solid #{color}; "
+    else
+      bord    = "border:1px solid black;"
+    bord
+
+  dailysHtml:() ->
+    htm  = ""
+    htm += """<h1 class="DailysH1">Daily Activities</h1>"""
+    htm += """<h2 class="DailysH2">Arrivals</h2>"""
+    htm += """<h2 class="DailysH2">Departures</h2>"""
+    htm
+
+  # Not Used
   calcSpan:( date, roomId, mi, dd, endDay ) ->
     span   = 1
     resv   = @res.getResv( date, roomId )
@@ -367,23 +394,3 @@ class Master
         span = 0
     span
 
-  border:( date, roomId,   klass ) ->
-    color = @Data.toColor( klass )
-    bord = ""
-    resv = @res.getResv( date, roomId )
-    if resv?
-      bord +=   "border-top:  2px solid black;    border-bottom:2px solid black;   "
-      if date is resv.arrive
-        bord += "border-left: 2px solid black;    border-right:2px solid #{color}; "
-      else if date is resv.stayto
-        bord += "border-right:2px solid black;    border-left:2px  solid #{color}; "
-      else
-        bord += "border-right:2px solid #{color}; border-left:2px  solid #{color}; "
-    bord
-
-  dailysHtml:() ->
-    htm  = ""
-    htm += """<h1 class="DailysH1">Daily Activities</h1>"""
-    htm += """<h2 class="DailysH2">Arrivals</h2>"""
-    htm += """<h2 class="DailysH2">Departures</h2>"""
-    htm

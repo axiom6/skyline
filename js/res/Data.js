@@ -8,11 +8,13 @@
 
     module.exports = Data;
 
-    Data.legacy = ["free", "mine", "depo", "book", "prep", "chan", "canc"];
+    Data.legacy = ["unkn", "canc", "free", "mine", "prep", "depo", "chan", "book", "cnew", "bnew"];
 
-    Data.colors = ["lightgrey", "green", "#555555", "#000000", "lightblue", "blue", "#999999", "red", "purple", "yellow"];
+    Data.statuses = ["Unknown", "Cancel", "Free", "Mine", "Prepaid", "Deposit", "Booking", "Skyline", "BookNew", "SkylNew"];
 
-    Data.statuses = ["Free", "Mine", "Deposit", "Skyline", "Prepaid", "Booking", "Cancel", "SkylNew", "BookNew", "Unknown"];
+    Data.colors = ["#E8E8E8", "#EEEEEE", "#D3D3D3", "#BBBBBB", "#AAAAAA", "#AAAAAA", "#888888", "#777777", "#444444", "#333333"];
+
+    Data.colors1 = ["yellow", "whitesmoke", "lightgrey", "green", "#555555", "#000000", "blue", "slategray", "purple", "black"];
 
     Data.statusesSel = ["Deposit", "Skyline", "Prepaid", "Booking", "Cancel"];
 

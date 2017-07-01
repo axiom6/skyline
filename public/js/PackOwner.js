@@ -32096,11 +32096,13 @@
 
 	    module.exports = Data;
 
-	    Data.legacy = ["free", "mine", "depo", "book", "prep", "chan", "canc"];
+	    Data.legacy = ["unkn", "canc", "free", "mine", "prep", "depo", "chan", "book", "cnew", "bnew"];
 
-	    Data.colors = ["lightgrey", "green", "#555555", "#000000", "lightblue", "blue", "#999999", "red", "purple", "yellow"];
+	    Data.statuses = ["Unknown", "Cancel", "Free", "Mine", "Prepaid", "Deposit", "Booking", "Skyline", "BookNew", "SkylNew"];
 
-	    Data.statuses = ["Free", "Mine", "Deposit", "Skyline", "Prepaid", "Booking", "Cancel", "SkylNew", "BookNew", "Unknown"];
+	    Data.colors = ["#E8E8E8", "#EEEEEE", "#D3D3D3", "#BBBBBB", "#AAAAAA", "#AAAAAA", "#888888", "#777777", "#444444", "#333333"];
+
+	    Data.colors1 = ["yellow", "whitesmoke", "lightgrey", "green", "#555555", "#000000", "blue", "slategray", "purple", "black"];
 
 	    Data.statusesSel = ["Deposit", "Skyline", "Prepaid", "Booking", "Cancel"];
 
@@ -33646,6 +33648,33 @@
 	      return htm;
 	    };
 
+	    Master.prototype.border = function(date, roomId, klass) {
+	      var bord, color, resv;
+	      color = this.Data.toColor(klass);
+	      bord = "";
+	      resv = this.res.getResv(date, roomId);
+	      if (resv != null) {
+	        bord += "background-color:" + color + "; border-top:  2px solid black;    border-bottom:2px solid black;   ";
+	        if (date === resv.arrive) {
+	          bord += "background-color:" + color + "; border-left: 2px solid black;    border-right:2px solid " + color + "; ";
+	        } else if (date === resv.stayto) {
+	          bord += "background-color:" + color + "; border-right:2px solid black;    border-left:2px  solid " + color + "; ";
+	        } else {
+	          bord += "background-color:" + color + "; border-right:2px solid " + color + "; border-left:2px  solid " + color + "; ";
+	        }
+	      }
+	      return bord;
+	    };
+
+	    Master.prototype.dailysHtml = function() {
+	      var htm;
+	      htm = "";
+	      htm += "<h1 class=\"DailysH1\">Daily Activities</h1>";
+	      htm += "<h2 class=\"DailysH2\">Arrivals</h2>";
+	      htm += "<h2 class=\"DailysH2\">Departures</h2>";
+	      return htm;
+	    };
+
 	    Master.prototype.calcSpan = function(date, roomId, mi, dd, endDay) {
 	      var da, ds, ma, ms, ref, ref1, resv, span, ya, ys;
 	      span = 1;
@@ -33662,33 +33691,6 @@
 	        }
 	      }
 	      return span;
-	    };
-
-	    Master.prototype.border = function(date, roomId, klass) {
-	      var bord, color, resv;
-	      color = this.Data.toColor(klass);
-	      bord = "";
-	      resv = this.res.getResv(date, roomId);
-	      if (resv != null) {
-	        bord += "border-top:  2px solid black;    border-bottom:2px solid black;   ";
-	        if (date === resv.arrive) {
-	          bord += "border-left: 2px solid black;    border-right:2px solid " + color + "; ";
-	        } else if (date === resv.stayto) {
-	          bord += "border-right:2px solid black;    border-left:2px  solid " + color + "; ";
-	        } else {
-	          bord += "border-right:2px solid " + color + "; border-left:2px  solid " + color + "; ";
-	        }
-	      }
-	      return bord;
-	    };
-
-	    Master.prototype.dailysHtml = function() {
-	      var htm;
-	      htm = "";
-	      htm += "<h1 class=\"DailysH1\">Daily Activities</h1>";
-	      htm += "<h2 class=\"DailysH2\">Arrivals</h2>";
-	      htm += "<h2 class=\"DailysH2\">Departures</h2>";
-	      return htm;
 	    };
 
 	    return Master;
