@@ -70,6 +70,7 @@
     };
 
     Master.prototype.onMakResBtn = function() {
+      var ref;
       this.resMode = 'Input';
       $('#Season').hide();
       $('#Dailys').hide();
@@ -78,6 +79,7 @@
       $('#ResTbl').hide();
       $('#Master').show();
       this.fillInCells(this.dateBeg, this.dateEnd, this.roomId, 'Mine', 'Free');
+      ref = [null, null, "Beg"], this.dateBeg = ref[0], this.dateEnd = ref[1], this.dateSel = ref[2];
     };
 
     Master.prototype.onSeasonBtn = function() {
@@ -206,6 +208,8 @@
 
     Master.prototype.doResv = function(beg, end, prop) {
       var resvs;
+      $('#QArrive').text(this.Data.toMMDD(beg));
+      $('#QStayTo').text(this.Data.toMMDD(end));
       resvs = {};
       if (end != null) {
         resvs = this.res.resvArrayByProp(beg, end, prop);
@@ -217,7 +221,10 @@
 
     Master.prototype.mouseDates = function(date) {
       this.res.order = 'Decend';
-      if (this.dateEnd < date) {
+      if ((this.dateBeg == null) && (this.dateEnd == null)) {
+        this.dateBeg = date;
+        this.dateEnd = date;
+      } else if (this.dateEnd < date) {
         this.dateEnd = date;
       } else if (this.dateBeg > date) {
         this.dateBeg = date;
@@ -230,7 +237,6 @@
           this.dateSel = 'Beg';
         }
       }
-      Util.log('Master.mouseDates()', this.dateBeg, date, this.dateEnd, this.dateSel);
       return [this.dateBeg, this.dateEnd, this.dateSel];
     };
 
@@ -393,7 +399,8 @@
 
     Master.prototype.resvHead = function() {
       var htm;
-      htm = "<table class=\"RTTable\"><thead><tr>";
+      htm = "<div id=\"QDates\"><span id=\"QArrive\"></span><span id=\"QStayTo\"></span></div>";
+      htm += "<table class=\"RTTable\"><thead><tr>";
       htm += "<th id=\"RHArrive\">Arrive</th><th id=\"RHStayTo\">Stay To</th><th id=\"RHNights\">Nights</th><th id=\"RHRoom\"  >Room</th>";
       htm += "<th id=\"RHName\"  >Name</th>  <th id=\"RHGuests\">Guests</th> <th id=\"RHStatus\">Status</th><th id=\"RHBooked\">Booked</th>";
       htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHPrice\" >Total</th>  <th id=\"RHTax\"   >Tax</th>   <th id=\"RHCharge\">Charge</th>";

@@ -54,7 +54,8 @@ class Master
     $('#ResAdd').show()
     $('#ResTbl').hide()
     $('#Master').show()
-    @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
+    @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' ) # Clear any previous fill
+    [@dateBeg,@dateEnd,@dateSel] = [null,null,"Beg"]
     return
 
   onSeasonBtn:() =>
@@ -151,6 +152,8 @@ class Master
     return
 
   doResv:( beg, end, prop ) ->
+    $('#QArrive').text( @Data.toMMDD(beg) )
+    $('#QStayTo').text( @Data.toMMDD(end) )
     resvs = {}
     if end?
       resvs = @res.resvArrayByProp( beg, end, prop )
@@ -160,7 +163,10 @@ class Master
 
   mouseDates:( date ) ->
     @res.order = 'Decend' # Will flip to 'Ascend'
-    if        @dateEnd  < date
+    if   not  @dateBeg? and not @dateEnd? # Init for Input
+              @dateBeg  = date
+              @dateEnd  = date
+    else if   @dateEnd  < date
               @dateEnd  = date
     else if   @dateBeg  > date
               @dateBeg  = date
@@ -171,7 +177,7 @@ class Master
       else if @dateSel is 'End'
               @dateEnd  = date
               @dateSel  = 'Beg'
-    Util.log( 'Master.mouseDates()', @dateBeg, date, @dateEnd, @dateSel )
+    #Util.log( 'Master.mouseDates()', @dateBeg, date, @dateEnd, @dateSel )
     [@dateBeg,@dateEnd,@dateSel]
 
   # Only fill in freeStatus cells return success
@@ -275,7 +281,8 @@ class Master
     htm
 
   resvHead:() ->
-    htm   = """<table class="RTTable"><thead><tr>"""
+    htm   = """<div id="QDates"><span id="QArrive"></span><span id="QStayTo"></span></div>"""
+    htm  += """<table class="RTTable"><thead><tr>"""
     htm  += """<th id="RHArrive">Arrive</th><th id="RHStayTo">Stay To</th><th id="RHNights">Nights</th><th id="RHRoom"  >Room</th>"""
     htm  += """<th id="RHName"  >Name</th>  <th id="RHGuests">Guests</th> <th id="RHStatus">Status</th><th id="RHBooked">Booked</th>"""
     htm  += """<th id="RHPrice" >Price</th> <th id="RHPrice" >Total</th>  <th id="RHTax"   >Tax</th>   <th id="RHCharge">Charge</th>"""
