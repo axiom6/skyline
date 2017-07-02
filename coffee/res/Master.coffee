@@ -17,12 +17,10 @@ class Master
     @season        = new Season( @stream, @store, @Data, @res )
     @res.master    = @
     @dateBeg       = @Data.today()
-    @dateEnd       = null
-    @fillBeg       = null
-    @fillEnd       = null
-    @fillRoomId    = null
-    @resMode       = 'Table' # or 'Input'
+    @dateEnd       = @Data.today()
+    @dateSel       = "End"
     @roomId        = null
+    @resMode       = 'Table' # or 'Input'
     @showingMonth  = 'Master'
 
   ready:() ->
@@ -57,7 +55,6 @@ class Master
     $('#ResTbl').hide()
     $('#Master').show()
     @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
-    [@dateBeg,@dateEnd] = [null,null]
     return
 
   onSeasonBtn:() =>
@@ -119,33 +116,23 @@ class Master
   resvSortClick:( id, prop ) ->
     $('#'+id).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, prop ) ) )
 
-  # Requires that @res.resvs to loaded
-  ###
-  resId   = $cell.attr('data-res'    )
-  resv    = @res.getResv( date, @roomId )
-  title   = if resv? then resv.last + ' $' + resv.total else 'Free'
-  $cell.attr('title', title ) # if title isnt 'Free'
-  ###
   readyCells:() =>
 
     # Show Today's Reservations
     @resvBody( @res.resvArrayByDate( @Data.today() ) )
 
     doCell = (event) =>
-
+      @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
       $cell   = $(event.target)
       date    = $cell.attr('data-date'   )
       @roomId = $cell.attr('data-roomId' )
-      @fillInCells( @fillBeg, @fillEnd, @fillRoomId, 'Mine', 'Free' )
-
+      return if not date?
+      [@dateBeg,@dateEnd,@dateSel] = @mouseDates( date )
       if      @resMode is 'Table'
-        [@dateBeg,@dateEnd] = @mouseDatesTable( date, event )
         @doResv( @dateBeg, @dateEnd, 'arrive' )
       else if @resMode is 'Input'
-        [@dateBeg,@dateEnd] = @mouseDatesTable( date, event )
         if @fillInCells(     @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
           @input.createResv( @dateBeg, @dateEnd, @roomId )
-          [@fillBeg,@fillEnd,@fillRoomId] = [@dateBeg,@dateEnd,@roomId]
         else
           @doResvUpdate( date, @roomId )
       return
@@ -171,26 +158,21 @@ class Master
       resvs = @res.resvArrayByDate( beg )
     @resvBody( resvs )
 
-  mouseDatesTable:( date, event ) ->
-    if event.buttons is 2
-      @dateEnd = date
-    else
-      @dateBeg = date
-    #beg = if @dateBeg? then @dateBeg else '??????'
-    #end = if @dateEnd? then @dateEnd else '??????'
-    #Util.log( 'Master.mouseDatesTable()', date, beg, end )
-    [@dateBeg,@dateEnd]
-
-  mouseDatesInput:( date ) ->
-    if @dateBeg? and @dateBeg <= date
-       @dateEnd = date
-    else
-       @dateBeg = date
-       @dateEnd = date
-    #beg = if @dateBeg? then @dateBeg else '??????'
-    #end = if @dateEnd? then @dateEnd else '??????'
-    #Util.log( 'Master.mouseDatesInput()', date, beg, end )
-    [@dateBeg,@dateEnd]
+  mouseDates:( date ) ->
+    @res.order = 'Decend' # Will flip to 'Ascend'
+    if        @dateEnd  < date
+              @dateEnd  = date
+    else if   @dateBeg  > date
+              @dateBeg  = date
+    else if   @dateBeg <= date and date <= @dateEnd
+      if      @dateSel is 'Beg'
+              @dateBeg  =  date
+              @dateSel  = 'End'
+      else if @dateSel is 'End'
+              @dateEnd  = date
+              @dateSel  = 'Beg'
+    Util.log( 'Master.mouseDates()', @dateBeg, date, @dateEnd, @dateSel )
+    [@dateBeg,@dateEnd,@dateSel]
 
   # Only fill in freeStatus cells return success
   fillInCells:(     begDate,     endDate,     roomId, free, fill ) ->
@@ -254,7 +236,6 @@ class Master
 
   $cell:( pre,  date,  roomId ) ->
     $( '#'+@cellId(pre,date,roomId) )
-
 
   allocCell:( roomId, date ) ->
     klass  = @res.klass( date, roomId )
@@ -352,7 +333,7 @@ class Master
     status = if resv? then resv.status else 'Free'
     resId  = if resv? then resv.resId  else 'none'
     last   = if resv? and ( resv.arrive is date or dd is 1 ) then "<div>#{resv.last}</div>" else ''
-    htm    = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord} data-status="#{status}" """
+    htm    = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord} """
     htm   += """data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y">#{last}</td>"""
     htm
 

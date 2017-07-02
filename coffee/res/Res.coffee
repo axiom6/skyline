@@ -339,7 +339,6 @@ class Res
           resId = @days[dayId].resId
           resvs[resId] = @resvs[resId] if @resvs[resId]?
         date = @Data.advanceDate( date, 1 )
-        #Util.log( 'Res.resvArrayByProp', beg, date, end )
     for own resId, resv of resvs
       array.push(  resv )
     @order = if @order is 'Decend' then 'Ascend' else 'Decend'

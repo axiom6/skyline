@@ -42,12 +42,10 @@
       this.season = new Season(this.stream, this.store, this.Data, this.res);
       this.res.master = this;
       this.dateBeg = this.Data.today();
-      this.dateEnd = null;
-      this.fillBeg = null;
-      this.fillEnd = null;
-      this.fillRoomId = null;
-      this.resMode = 'Table';
+      this.dateEnd = this.Data.today();
+      this.dateSel = "End";
       this.roomId = null;
+      this.resMode = 'Table';
       this.showingMonth = 'Master';
     }
 
@@ -72,7 +70,6 @@
     };
 
     Master.prototype.onMakResBtn = function() {
-      var ref;
       this.resMode = 'Input';
       $('#Season').hide();
       $('#Dailys').hide();
@@ -81,7 +78,6 @@
       $('#ResTbl').hide();
       $('#Master').show();
       this.fillInCells(this.dateBeg, this.dateEnd, this.roomId, 'Mine', 'Free');
-      ref = [null, null], this.dateBeg = ref[0], this.dateEnd = ref[1];
     };
 
     Master.prototype.onSeasonBtn = function() {
@@ -170,32 +166,25 @@
       })(this));
     };
 
-
-    /*
-    resId   = $cell.attr('data-res'    )
-    resv    = @res.getResv( date, @roomId )
-    title   = if resv? then resv.last + ' $' + resv.total else 'Free'
-    $cell.attr('title', title ) # if title isnt 'Free'
-     */
-
     Master.prototype.readyCells = function() {
       var doCell;
       this.resvBody(this.res.resvArrayByDate(this.Data.today()));
       doCell = (function(_this) {
         return function(event) {
-          var $cell, date, ref, ref1, ref2;
+          var $cell, date, ref;
+          _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Mine', 'Free');
           $cell = $(event.target);
           date = $cell.attr('data-date');
           _this.roomId = $cell.attr('data-roomId');
-          _this.fillInCells(_this.fillBeg, _this.fillEnd, _this.fillRoomId, 'Mine', 'Free');
+          if (date == null) {
+            return;
+          }
+          ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2];
           if (_this.resMode === 'Table') {
-            ref = _this.mouseDatesTable(date, event), _this.dateBeg = ref[0], _this.dateEnd = ref[1];
             _this.doResv(_this.dateBeg, _this.dateEnd, 'arrive');
           } else if (_this.resMode === 'Input') {
-            ref1 = _this.mouseDatesTable(date, event), _this.dateBeg = ref1[0], _this.dateEnd = ref1[1];
             if (_this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine')) {
               _this.input.createResv(_this.dateBeg, _this.dateEnd, _this.roomId);
-              ref2 = [_this.dateBeg, _this.dateEnd, _this.roomId], _this.fillBeg = ref2[0], _this.fillEnd = ref2[1], _this.fillRoomId = ref2[2];
             } else {
               _this.doResvUpdate(date, _this.roomId);
             }
@@ -226,23 +215,23 @@
       return this.resvBody(resvs);
     };
 
-    Master.prototype.mouseDatesTable = function(date, event) {
-      if (event.buttons === 2) {
+    Master.prototype.mouseDates = function(date) {
+      this.res.order = 'Decend';
+      if (this.dateEnd < date) {
         this.dateEnd = date;
-      } else {
+      } else if (this.dateBeg > date) {
         this.dateBeg = date;
+      } else if (this.dateBeg <= date && date <= this.dateEnd) {
+        if (this.dateSel === 'Beg') {
+          this.dateBeg = date;
+          this.dateSel = 'End';
+        } else if (this.dateSel === 'End') {
+          this.dateEnd = date;
+          this.dateSel = 'Beg';
+        }
       }
-      return [this.dateBeg, this.dateEnd];
-    };
-
-    Master.prototype.mouseDatesInput = function(date) {
-      if ((this.dateBeg != null) && this.dateBeg <= date) {
-        this.dateEnd = date;
-      } else {
-        this.dateBeg = date;
-        this.dateEnd = date;
-      }
-      return [this.dateBeg, this.dateEnd];
+      Util.log('Master.mouseDates()', this.dateBeg, date, this.dateEnd, this.dateSel);
+      return [this.dateBeg, this.dateEnd, this.dateSel];
     };
 
     Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
@@ -477,7 +466,7 @@
       status = resv != null ? resv.status : 'Free';
       resId = resv != null ? resv.resId : 'none';
       last = (resv != null) && (resv.arrive === date || dd === 1) ? "<div>" + resv.last + "</div>" : '';
-      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + " data-status=\"" + status + "\" ";
+      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + " ";
       htm += "data-res=\"" + resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\">" + last + "</td>";
       return htm;
     };

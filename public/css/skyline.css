@@ -486,6 +486,7 @@ img.center {
   max-width: 30px;
   width: 30px;
   overflow: visible;
+  padding-left: 3px;
 }
 .MonthDay {
   font-size: 13px;
