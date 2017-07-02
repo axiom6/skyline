@@ -5,7 +5,7 @@ class Data
 
   @legacy      = ["unkn",   "canc",      "free",     "mine",   "prep",   "depo",   "chan",   "book",     "cnew",   "bnew"   ]
   @statuses    = ["Unknown","Cancel",    "Free",     "Mine",   "Prepaid","Deposit","Booking","Skyline",  "BookNew","SkylNew"]
-  @colors      = ["#E8E8E8","#EEEEEE",   "#D3D3D3",  "#BBBBBB","#AAAAAA","#AAAAAA","#888888","#777777",  "#444444","#333333"]
+  @colors      = ["#E8E8E8","#EEEEEE",   "#D3D3D3",  "#BBBBBB","#AAAAAA","#AAAAAA","#888888","#444444",  "#333333","#222222"]
   @colors1     = ["yellow", "whitesmoke","lightgrey","green",  "#555555","#000000","blue",   "slategray","purple", "black"  ]
   @statusesSel = ["Deposit","Skyline","Prepaid",  "Booking","Cancel"]
   @sources     = ["Skyline","Booking","Website"]

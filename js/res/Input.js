@@ -15,6 +15,13 @@
       this.resv = {};
     }
 
+    Input.prototype.readyInput = function() {
+      $('#ResAdd').empty();
+      $('#ResAdd').append(this.html());
+      $('#ResAdd').hide();
+      return this.action();
+    };
+
     Input.prototype.createResv = function(arrive, stayto, roomId) {
       var resv;
       resv = {};
@@ -26,7 +33,17 @@
       resv.status = 'Skyline';
       resv.action = 'add';
       resv.guests = 4;
-      resv.pets = 0;
+      return resv.pets = 0;
+    };
+
+    Input.prototype.updateResv = function(date, roomId) {
+      var resv;
+      resv = this.res.getResv(date, roomId);
+      if (resv != null) {
+        resv.action = 'put';
+        this.populateResv(resv);
+      }
+      return;
       this.refreshResv(resv);
       this.resv = resv;
     };

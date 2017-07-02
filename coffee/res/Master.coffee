@@ -12,7 +12,7 @@ class Master
   constructor:( @stream, @store, @Data, @res ) ->
     @rooms         = @res.rooms
     @upload        = new Upload( @stream, @store, @Data, @res )
-    @query         = new Query(  @stream, @store, @Data, @res )
+    @query         = new Query(  @stream, @store, @Data, @res, @ )
     @input         = new Input(  @stream, @store, @Data, @res )
     @season        = new Season( @stream, @store, @Data, @res )
     @res.master    = @
@@ -95,32 +95,19 @@ class Master
   readyMaster:() =>
     $('#Master').empty()
     $('#Master').append( @html() )
-    $('#ResAdd').empty()
-    $('#ResAdd').append( @input.html() )
-    $('#ResAdd').hide()
-    $('#ResTbl').empty()
-    $('#ResTbl').append( @resvHead() )
     @showMonth( @Data.month ) # Show the current month
     $('.PrevMonth').click( (event) => @onMonthClick(event) )
     $('.ThisMonth').click( (event) => @onMonthClick(event) )
     $('.NextMonth').click( (event) => @onMonthClick(event) )
-    @resvSortClick( 'RHBooked', 'booked' )
-    @resvSortClick( 'RHRoom' ,  'roomId' )
-    @resvSortClick( 'RHArrive', 'arrive' )
-    @resvSortClick( 'RHStayTo', 'stayto' )
-    @resvSortClick( 'RHName',   'last'   )
-    @resvSortClick( 'RHStatus', 'status' )
+    @query.readyQuery()
+    @input.readyInput()
     @readyCells()
-    @input.action()
     return
-
-  resvSortClick:( id, prop ) ->
-    $('#'+id).click( () => @resvBody( @res.resvArrayByProp( @dateBeg, @dateEnd, prop ) ) )
 
   readyCells:() =>
 
     # Show Today's Reservations
-    @resvBody( @res.resvArrayByDate( @Data.today() ) )
+    @query.resvBody( @res.resvArrayByDate( @Data.today() ) )
 
     doCell = (event) =>
       @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
@@ -129,37 +116,18 @@ class Master
       @roomId = $cell.attr('data-roomId' )
       return if not date?
       [@dateBeg,@dateEnd,@dateSel] = @mouseDates( date )
-      if      @resMode is 'Table'
-        @doResv( @dateBeg, @dateEnd, 'arrive' )
+      if @resMode is 'Table'
+        @query.updateBody( @dateBeg, @dateEnd, 'arrive' )
       else if @resMode is 'Input'
         if @fillInCells(     @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
           @input.createResv( @dateBeg, @dateEnd, @roomId )
         else
-          @doResvUpdate( date, @roomId )
+          @input.updateResv( date, @roomId )
       return
 
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
     return
-
-  doResvUpdate:( date, roomId ) ->
-    resv = @res.getResv( date, roomId )
-    if resv?
-      resv.action = 'put'
-      @input.populateResv( resv )
-    #else
-    #  Util.error( 'Master.doCell() resv undefined for', { data:date, roomId:roomId } )
-    return
-
-  doResv:( beg, end, prop ) ->
-    $('#QArrive').text( @Data.toMMDD(beg) )
-    $('#QStayTo').text( @Data.toMMDD(end) )
-    resvs = {}
-    if end?
-      resvs = @res.resvArrayByProp( beg, end, prop )
-    else
-      resvs = @res.resvArrayByDate( beg )
-    @resvBody( resvs )
 
   mouseDates:( date ) ->
     @res.order = 'Decend' # Will flip to 'Ascend'
@@ -194,7 +162,7 @@ class Master
       else
         return false
     for $cell in $cells
-       @cellStatus( $cell, fill, fill ) # We can use fillStatus is 3rd argument for color here
+       @cellStatus( $cell, fill )
     true
 
   listenToDays:() =>
@@ -260,13 +228,13 @@ class Master
     $master = $('#Master')
     if month is @showingMonth    # Show all Months
       @removeAllMonthStyles()
-      $master.css(  { height:'800px' } )
+      $master.css(  { height:'860px' } )
       $master.children().show()
       @showingMonth = 'Master'
     else                          # Show selected month
       $master.children().hide()
-      $master.css( { height:'330px' } )
-      $('#'+month).css(  { left:0, top:0, width:'100%', height:'330px', fontSize:'14px' } ).show()
+      $master.css( { height:'475px' } )
+      $('#'+month).css(  { left:0, top:0, width:'100%', height:'475px', fontSize:'14px' } ).show()
       @showingMonth = month
     return
 
@@ -279,32 +247,6 @@ class Master
     for month in @Data.season
       htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @Data.year, month )}</div>"""
     htm
-
-  resvHead:() ->
-    htm   = """<div id="QDates"><span id="QArrive"></span><span id="QStayTo"></span></div>"""
-    htm  += """<table class="RTTable"><thead><tr>"""
-    htm  += """<th id="RHArrive">Arrive</th><th id="RHStayTo">Stay To</th><th id="RHNights">Nights</th><th id="RHRoom"  >Room</th>"""
-    htm  += """<th id="RHName"  >Name</th>  <th id="RHGuests">Guests</th> <th id="RHStatus">Status</th><th id="RHBooked">Booked</th>"""
-    htm  += """<th id="RHPrice" >Price</th> <th id="RHPrice" >Total</th>  <th id="RHTax"   >Tax</th>   <th id="RHCharge">Charge</th>"""
-    htm  += """</tr></thead><tbody id="RTBody"></tbody></table>"""
-    htm
-
-  resvBody:( resvs ) ->
-    $('#RTBody').empty()
-    htm = ""
-    for r in resvs
-      arrive  = @Data.toMMDD(r.arrive)
-      stayto  = @Data.toMMDD(r.stayto)
-      booked  = @Data.toMMDD(r.booked)
-      tax     = Util.toFixed( r.total * @Data.tax )
-      charge  = Util.toFixed( r.total + parseFloat(tax) )
-      trClass = if @res.isNewResv(r) then 'RTNewRow' else 'RTOldRow'
-      htm += """<tr class="#{trClass}">"""
-      htm += """<td class="RTArrive">#{arrive}  </td><td class="RTStayto">#{stayto}</td><td class="RTNights">#{r.nights}</td>"""
-      htm += """<td class="RTRoomId">#{r.roomId}</td><td class="RTLast"  >#{r.last}</td><td class="RTGuests">#{r.guests}</td>"""
-      htm += """<td class="RTStatus">#{r.status}</td><td class="RTBooked">#{booked}</td><td class="RTPrice" >$#{r.price}</td>"""
-      htm += """<td class="RTTotal" >$#{r.total}</td><td class="RTTax"   >$#{tax}  </td><td class="RTCharge">$#{charge} </td></tr>"""
-    $('#RTBody').append( htm )
 
   roomsHtml:( year, month ) ->
     monthIdx   = @Data.months.indexOf(month)
@@ -344,7 +286,6 @@ class Master
     htm   += """data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y">#{last}</td>"""
     htm
 
-
   border:( date, roomId,   resv, klass ) ->
     color = @Data.toColor( klass )
     bord  = ""
@@ -381,4 +322,3 @@ class Master
       else
         span = 0
     span
-

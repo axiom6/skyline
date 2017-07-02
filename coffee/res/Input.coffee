@@ -8,6 +8,12 @@ class Input
   constructor:( @stream, @store, @Data, @res ) ->
     @resv = {}
 
+  readyInput:() ->
+    $('#ResAdd').empty()
+    $('#ResAdd').append( @html() )
+    $('#ResAdd').hide()
+    @action()
+
   createResv:( arrive, stayto, roomId ) ->
     resv = {}
     resv.arrive = arrive
@@ -19,6 +25,15 @@ class Input
     resv.action = 'add'
     resv.guests = 4
     resv.pets   = 0
+
+  updateResv:( date, roomId ) ->
+    resv = @res.getResv( date, roomId )
+    if resv?
+      resv.action = 'put'
+      @populateResv( resv )
+    #else
+    #  Util.error( 'Master.doCell() resv undefined for', { data:date, roomId:roomId } )
+    return
 
     @refreshResv( resv )
     @resv = resv

@@ -37,7 +37,7 @@
       this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
       this.upload = new Upload(this.stream, this.store, this.Data, this.res);
-      this.query = new Query(this.stream, this.store, this.Data, this.res);
+      this.query = new Query(this.stream, this.store, this.Data, this.res, this);
       this.input = new Input(this.stream, this.store, this.Data, this.res);
       this.season = new Season(this.stream, this.store, this.Data, this.res);
       this.res.master = this;
@@ -129,11 +129,6 @@
     Master.prototype.readyMaster = function() {
       $('#Master').empty();
       $('#Master').append(this.html());
-      $('#ResAdd').empty();
-      $('#ResAdd').append(this.input.html());
-      $('#ResAdd').hide();
-      $('#ResTbl').empty();
-      $('#ResTbl').append(this.resvHead());
       this.showMonth(this.Data.month);
       $('.PrevMonth').click((function(_this) {
         return function(event) {
@@ -150,27 +145,14 @@
           return _this.onMonthClick(event);
         };
       })(this));
-      this.resvSortClick('RHBooked', 'booked');
-      this.resvSortClick('RHRoom', 'roomId');
-      this.resvSortClick('RHArrive', 'arrive');
-      this.resvSortClick('RHStayTo', 'stayto');
-      this.resvSortClick('RHName', 'last');
-      this.resvSortClick('RHStatus', 'status');
+      this.query.readyQuery();
+      this.input.readyInput();
       this.readyCells();
-      this.input.action();
-    };
-
-    Master.prototype.resvSortClick = function(id, prop) {
-      return $('#' + id).click((function(_this) {
-        return function() {
-          return _this.resvBody(_this.res.resvArrayByProp(_this.dateBeg, _this.dateEnd, prop));
-        };
-      })(this));
     };
 
     Master.prototype.readyCells = function() {
       var doCell;
-      this.resvBody(this.res.resvArrayByDate(this.Data.today()));
+      this.query.resvBody(this.res.resvArrayByDate(this.Data.today()));
       doCell = (function(_this) {
         return function(event) {
           var $cell, date, ref;
@@ -183,40 +165,18 @@
           }
           ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2];
           if (_this.resMode === 'Table') {
-            _this.doResv(_this.dateBeg, _this.dateEnd, 'arrive');
+            _this.query.updateBody(_this.dateBeg, _this.dateEnd, 'arrive');
           } else if (_this.resMode === 'Input') {
             if (_this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine')) {
               _this.input.createResv(_this.dateBeg, _this.dateEnd, _this.roomId);
             } else {
-              _this.doResvUpdate(date, _this.roomId);
+              _this.input.updateResv(date, _this.roomId);
             }
           }
         };
       })(this);
       $('[data-cell="y"]').click(doCell);
       $('[data-cell="y"]').contextmenu(doCell);
-    };
-
-    Master.prototype.doResvUpdate = function(date, roomId) {
-      var resv;
-      resv = this.res.getResv(date, roomId);
-      if (resv != null) {
-        resv.action = 'put';
-        this.input.populateResv(resv);
-      }
-    };
-
-    Master.prototype.doResv = function(beg, end, prop) {
-      var resvs;
-      $('#QArrive').text(this.Data.toMMDD(beg));
-      $('#QStayTo').text(this.Data.toMMDD(end));
-      resvs = {};
-      if (end != null) {
-        resvs = this.res.resvArrayByProp(beg, end, prop);
-      } else {
-        resvs = this.res.resvArrayByDate(beg);
-      }
-      return this.resvBody(resvs);
     };
 
     Master.prototype.mouseDates = function(date) {
@@ -259,7 +219,7 @@
       }
       for (i = 0, len = $cells.length; i < len; i++) {
         $cell = $cells[i];
-        this.cellStatus($cell, fill, fill);
+        this.cellStatus($cell, fill);
       }
       return true;
     };
@@ -355,20 +315,20 @@
       if (month === this.showingMonth) {
         this.removeAllMonthStyles();
         $master.css({
-          height: '800px'
+          height: '860px'
         });
         $master.children().show();
         this.showingMonth = 'Master';
       } else {
         $master.children().hide();
         $master.css({
-          height: '330px'
+          height: '475px'
         });
         $('#' + month).css({
           left: 0,
           top: 0,
           width: '100%',
-          height: '330px',
+          height: '475px',
           fontSize: '14px'
         }).show();
         this.showingMonth = month;
@@ -395,38 +355,6 @@
         htm += "<div id=\"" + month + "\" class=\"" + month + "\">" + (this.roomsHtml(this.Data.year, month)) + "</div>";
       }
       return htm;
-    };
-
-    Master.prototype.resvHead = function() {
-      var htm;
-      htm = "<div id=\"QDates\"><span id=\"QArrive\"></span><span id=\"QStayTo\"></span></div>";
-      htm += "<table class=\"RTTable\"><thead><tr>";
-      htm += "<th id=\"RHArrive\">Arrive</th><th id=\"RHStayTo\">Stay To</th><th id=\"RHNights\">Nights</th><th id=\"RHRoom\"  >Room</th>";
-      htm += "<th id=\"RHName\"  >Name</th>  <th id=\"RHGuests\">Guests</th> <th id=\"RHStatus\">Status</th><th id=\"RHBooked\">Booked</th>";
-      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHPrice\" >Total</th>  <th id=\"RHTax\"   >Tax</th>   <th id=\"RHCharge\">Charge</th>";
-      htm += "</tr></thead><tbody id=\"RTBody\"></tbody></table>";
-      return htm;
-    };
-
-    Master.prototype.resvBody = function(resvs) {
-      var arrive, booked, charge, htm, i, len, r, stayto, tax, trClass;
-      $('#RTBody').empty();
-      htm = "";
-      for (i = 0, len = resvs.length; i < len; i++) {
-        r = resvs[i];
-        arrive = this.Data.toMMDD(r.arrive);
-        stayto = this.Data.toMMDD(r.stayto);
-        booked = this.Data.toMMDD(r.booked);
-        tax = Util.toFixed(r.total * this.Data.tax);
-        charge = Util.toFixed(r.total + parseFloat(tax));
-        trClass = this.res.isNewResv(r) ? 'RTNewRow' : 'RTOldRow';
-        htm += "<tr class=\"" + trClass + "\">";
-        htm += "<td class=\"RTArrive\">" + arrive + "  </td><td class=\"RTStayto\">" + stayto + "</td><td class=\"RTNights\">" + r.nights + "</td>";
-        htm += "<td class=\"RTRoomId\">" + r.roomId + "</td><td class=\"RTLast\"  >" + r.last + "</td><td class=\"RTGuests\">" + r.guests + "</td>";
-        htm += "<td class=\"RTStatus\">" + r.status + "</td><td class=\"RTBooked\">" + booked + "</td><td class=\"RTPrice\" >$" + r.price + "</td>";
-        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCharge\">$" + charge + " </td></tr>";
-      }
-      return $('#RTBody').append(htm);
     };
 
     Master.prototype.roomsHtml = function(year, month) {
