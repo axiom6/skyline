@@ -7,12 +7,14 @@
   Input = (function() {
     module.exports = Input;
 
-    function Input(stream, store, Data, res) {
+    function Input(stream, store, Data, res, master) {
       this.stream = stream;
       this.store = store;
       this.Data = Data;
       this.res = res;
+      this.master = master;
       this.resv = {};
+      this.state = 'add';
     }
 
     Input.prototype.readyInput = function() {
@@ -23,34 +25,41 @@
     };
 
     Input.prototype.createResv = function(arrive, stayto, roomId) {
-      var resv;
-      resv = {};
-      resv.arrive = arrive;
-      resv.stayto = stayto;
-      resv.depart = this.Data.advanceDate(stayto, 1);
-      resv.roomId = roomId;
-      resv.last = "";
-      resv.status = 'Skyline';
-      resv.action = 'add';
-      resv.guests = 4;
-      return resv.pets = 0;
+      this.resv = {};
+      this.resv.arrive = arrive;
+      this.resv.stayto = stayto;
+      this.resv.depart = this.Data.advanceDate(stayto, 1);
+      this.resv.roomId = roomId;
+      this.resv.last = "";
+      this.resv.status = 'Skyline';
+      this.resv.guests = 4;
+      this.resv.pets = 0;
+      this.resv.booked = this.Data.today();
+      this.state = 'add';
+      this.refreshResv(this.resv);
     };
 
-    Input.prototype.updateResv = function(date, roomId) {
-      var resv;
-      resv = this.res.getResv(date, roomId);
-      if (resv != null) {
-        resv.action = 'put';
-        this.populateResv(resv);
+    Input.prototype.updateResv = function(arrive, stayto, roomId, resv) {
+      this.updateDates(arrive, stayto, roomId, resv);
+      this.resv = resv;
+      this.state = 'put';
+      this.refreshResv(this.resv);
+    };
+
+    Input.prototype.updateDates = function(arrive, stayto, roomId, resv) {
+      var beg, end;
+      if (this.state !== 'put' || !((arrive != null) && (stayto != null) && (roomId != null))) {
+        return;
       }
-      return;
-      this.refreshResv(resv);
-      this.resv = resv;
-    };
-
-    Input.prototype.populateResv = function(resv) {
-      this.refreshResv(resv);
-      this.resv = resv;
+      beg = Math.min(arrive, stayto).toString();
+      end = Math.max(arrive, stayto).toString();
+      if (beg != null) {
+        resv.arrive = beg;
+      }
+      if (end != null) {
+        resv.stayto = end;
+      }
+      Util.log('Input.updateDates', beg, end, roomId);
     };
 
     Input.prototype.html = function() {
@@ -60,7 +69,7 @@
       htm += "<th>Guests</th><th>Pets</th><th>Status</th>";
       htm += "<th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th><th>Action</th></tr>";
       htm += "</thead><tbody>";
-      htm += "<tr><td id=\"NRArrive\"></td><td id=\"NRStayTo\"></td><td id=\"NRRoomId\"></td><td>" + (this.names()) + "</td>";
+      htm += "<tr><td id=\"NRArrive\"></td><td id=\"NRStayTo\"></td><td>" + (this.rooms()) + "</td><td>" + (this.names()) + "</td>";
       htm += "<td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.status()) + "</td>";
       htm += "<td id=\"NRNights\"></td><td id=\"NRPrice\"></td><td id=\"NRTotal\"></td><td id=\"NRTax\"></td><td id=\"NRCharge\"></td>";
       htm += "<td id=\"NRSubmit\">" + (this.submit()) + "</td></tr>";
@@ -72,6 +81,12 @@
       $('#NRNames').change((function(_this) {
         return function(event) {
           _this.resv.last = event.target.value;
+        };
+      })(this));
+      $('#NRRooms').change((function(_this) {
+        return function(event) {
+          _this.resv.roomId = event.target.value;
+          _this.refreshResv(_this.resv);
         };
       })(this));
       $('#NRGuests').change((function(_this) {
@@ -93,6 +108,10 @@
         };
       })(this));
       return this.resvSubmits();
+    };
+
+    Input.prototype.rooms = function() {
+      return this.res.htmlSelect('NRRooms', this.res.roomKeys, this.resv.roomId);
     };
 
     Input.prototype.guests = function() {
@@ -120,24 +139,16 @@
     };
 
     Input.prototype.refreshResv = function(resv) {
-      var room;
       resv.nights = this.Data.nights(resv.arrive, resv.depart);
       resv.price = resv.status === 'Skyline' || resv.status === 'Deposit' ? this.res.calcPrice(resv.roomId, resv.guests, resv.pets) : resv.price;
       resv.deposit = resv.price * 0.5;
       resv.total = resv.nights * resv.price;
       resv.tax = parseFloat(Util.toFixed(resv.total * this.Data.tax));
       resv.charge = Util.toFixed(resv.total + resv.tax);
-      room = '#' + resv.roomId;
-      if (resv.roomId === 'N') {
-        room = 'North';
-      }
-      if (resv.roomId === 'S') {
-        room = 'South';
-      }
       $('#NRArrive').text(this.Data.toMMDD(resv.arrive));
       $('#NRStayTo').text(this.Data.toMMDD(resv.stayto));
-      $('#NRRoomId').text(room);
       $('#NRNames').val(resv.last);
+      $('#NRRooms').val(resv.roomId);
       $('#NRGuests').val(resv.guests);
       $('#NRPets').val(resv.pets);
       $('#NRStatus').val(resv.status);
@@ -146,11 +157,11 @@
       $('#NRTotal').text('$' + resv.total);
       $('#NRTax').text('$' + resv.tax);
       $('#NRCharge').text('$' + resv.charge);
-      if (resv.action === 'add') {
+      if (this.state === 'add') {
         $('#NRCreate').show();
         $('#NRChange').hide();
         $('#NRDelete').hide();
-      } else if (resv.action === 'put') {
+      } else if (this.state === 'put') {
         $('#NRCreate').hide();
         $('#NRChange').show();
         $('#NRDelete').show();
@@ -163,7 +174,14 @@
         return function() {
           var r;
           r = _this.resv;
-          return _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+          if (r.status === 'Skyline' || 'Deposit') {
+            _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+          } else if (r.status === 'Booking' || 'Prepaid') {
+            _this.res.createResvBooking(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
+          } else {
+            Util.error('Input.doRes() unknown status', r.status, r);
+          }
+          _this.master.resMode = 'Create';
         };
       })(this);
       doDel = (function(_this) {

@@ -13,7 +13,7 @@ class Master
     @rooms         = @res.rooms
     @upload        = new Upload( @stream, @store, @Data, @res )
     @query         = new Query(  @stream, @store, @Data, @res, @ )
-    @input         = new Input(  @stream, @store, @Data, @res )
+    @input         = new Input(  @stream, @store, @Data, @res, @ )
     @season        = new Season( @stream, @store, @Data, @res )
     @res.master    = @
     @dateBeg       = @Data.today()
@@ -113,16 +113,21 @@ class Master
       @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
       $cell   = $(event.target)
       date    = $cell.attr('data-date'   )
-      @roomId = $cell.attr('data-roomId' )
-      return if not date?
+      @roomId = $cell.attr('data-roomid' )   # Lower case data-roomid # #@res.attr( $cell, 'data-roomid' )
+      return if not date? or not @roomId
       [@dateBeg,@dateEnd,@dateSel] = @mouseDates( date )
       if @resMode is 'Table'
         @query.updateBody( @dateBeg, @dateEnd, 'arrive' )
       else if @resMode is 'Input'
-        if @fillInCells(     @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
-          @input.createResv( @dateBeg, @dateEnd, @roomId )
+        resv = @res.getResv( @dateBeg, @roomId )
+        name = if resv? then resv.last else 'none'
+        Util.log( 'Master.doCell', @dateBeg, @dateEnd, @roomId, name )
+        if not resv?
+          [beg,end] = @fillInCells( @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
+          if beg? and end?
+            @input.createResv( beg, end, @roomId )
         else
-          @input.updateResv( date, @roomId )
+          @input.updateResv( @dateBeg, @dateEnd, @roomId, resv )
       return
 
     $('[data-cell="y"]').click(       doCell )
@@ -149,27 +154,30 @@ class Master
     [@dateBeg,@dateEnd,@dateSel]
 
   # Only fill in freeStatus cells return success
-  fillInCells:(     begDate,     endDate,     roomId, free, fill ) ->
-    return if not ( begDate? and endDate? and roomId? )
-    $cells  = []
-    nxtDate = begDate
-    while nxtDate <= endDate
-      $cell = @$cell( 'M',  nxtDate, roomId )
-      status = @res.status( nxtDate, roomId )
+  # Also order dates if necessary
+  fillInCells:( begDate, endDate, roomId, free, fill ) ->
+    return [null,null] if not ( begDate? and endDate? and roomId? )
+    beg    = Math.min( begDate, endDate ).toString()
+    end    = Math.max( begDate, endDate ).toString()
+    $cells = []
+    next   = beg
+    while next <= end
+      $cell  = @$cell( 'M', next, roomId )
+      status = @res.status( next, roomId )
       if status is free or status is fill or status is 'Cancel'
         $cells.push( $cell )
-        nxtDate = @Data.advanceDate( nxtDate, 1 )
+        next = @Data.advanceDate( next, 1 )
       else
-        return false
+        return [null,null]
     for $cell in $cells
        @cellStatus( $cell, fill )
-    true
+    [beg,end]
 
   listenToDays:() =>
     doDays = (dayId,day) =>
       if dayId? and day?
         @res.days[dayId] = day
-        @onAlloc( dayId, day )
+        @onAlloc( dayId )
     @res.onDay( 'add',  doDays )
     @res.onDay( 'put',  doDays )
     return
@@ -195,10 +203,10 @@ class Master
     return
 
   allocDays:(  days ) =>
-    @onAlloc(  dayId, day ) for own dayId, day of days
+    @onAlloc(  dayId ) for own dayId, day of days
     return
 
-  onAlloc:(  dayId, day ) =>
+  onAlloc:(  dayId ) =>
     date   = @Data.toDate( dayId )
     roomId = @Data.roomId( dayId )
     @allocCell(        roomId, date )
@@ -217,7 +225,8 @@ class Master
     return
 
   cellStatus:( $cell, klass ) ->
-    $cell.removeClass().addClass("room-"+klass)
+    $cell.removeClass().addClass( "room-"+klass)
+    $cell.css( { background:@Data.toColor(klass) } )
     return
 
   onMonthClick:( event ) =>
@@ -279,11 +288,9 @@ class Master
     resv   = @res.getResv( date, roomId )
     klass  = @res.klass(   date, roomId )
     bord   = @border(      date, roomId, resv, klass )
-    status = if resv? then resv.status else 'Free'
-    resId  = if resv? then resv.resId  else 'none'
     last   = if resv? and ( resv.arrive is date or dd is 1 ) then "<div>#{resv.last}</div>" else ''
-    htm    = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord} """
-    htm   += """data-res="#{resId}" data-roomId="#{roomId}" data-date="#{date}" data-cell="y">#{last}</td>"""
+    htm    = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord}" """
+    htm   += """data-roomid="#{roomId}" data-date="#{date}" data-cell="y">#{last}</td>""" # Lower case roomid
     htm
 
   border:( date, roomId,   resv, klass ) ->

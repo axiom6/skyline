@@ -66,7 +66,7 @@ class Upload
     status = @toStatus(   book.status )
     guests = @toNumGuests( names )
     total  = parseFloat( book.total.substr(3) )
-    @res.createResvBooking( arrive, depart, booked, roomId, last, status, guests, total )
+    @res.createResvBooking( arrive, depart, roomId, last, status, guests, total, booked )
 
   onUpdateRes:() =>
 

@@ -93,7 +93,7 @@
       status = this.toStatus(book.status);
       guests = this.toNumGuests(names);
       total = parseFloat(book.total.substr(3));
-      return this.res.createResvBooking(arrive, depart, booked, roomId, last, status, guests, total);
+      return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
     };
 
     Upload.prototype.onUpdateRes = function() {

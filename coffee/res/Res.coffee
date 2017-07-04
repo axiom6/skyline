@@ -68,6 +68,15 @@ class Res
     nights = @Data.nights( resv.booked, @today )
     nights < @Data.newDays
 
+  # This is a hack for unreliable storage in jQuery.attr - found other formating error so not needed
+  attr:( $elem, name ) ->
+    value = $elem.attr( name.toLowerCase() )
+    Util.log( 'Res.attr one', name, value )
+    value = if Util.isStr(value) and value.charAt(0) is ' ' then value.substr(1)     else value
+    value = if Util.isStr(value) then Util.toCap(value) else value
+    Util.log( 'Res.attr two', name, value )
+    value
+
   status:( date, roomId ) ->
     dayId = @Data.dayId( date, roomId )
     day   = @days[dayId]
@@ -119,11 +128,15 @@ class Res
     for i in [0...resv.nights]
       dayId       = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
       days[dayId] = @setDay( {}, resv.status, resv.resId )
-    @allocDays(     days )
+    @allocDays( days )
     for dayId, day of days
       #Util.log( 'Day',   dayId, day )
-      @store.add( 'Day', dayId, day )
-      @days[dayId] = day
+      if resv.status is 'Free'
+        @store.del( 'Day', dayId )
+        delete @days[dayId]
+      else
+        @store.add( 'Day', dayId, day )
+        @days[dayId] = day
     return
 
   calcPrice:( roomId, guests, pets ) ->
@@ -149,7 +162,7 @@ class Res
     total  = price * nights
     @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments )
 
-  createResvBooking:( arrive, depart, booked, roomId, last, status, guests, total ) ->
+  createResvBooking:( arrive, depart, roomId, last, status, guests, total, booked ) ->
     total  = if total is 0 then @rooms[roomId].booking * @Data.nights( arrive, depart ) else total
     pets   = 0
     @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total )

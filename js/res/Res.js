@@ -144,6 +144,16 @@
       return nights < this.Data.newDays;
     };
 
+    Res.prototype.attr = function($elem, name) {
+      var value;
+      value = $elem.attr(name.toLowerCase());
+      Util.log('Res.attr one', name, value);
+      value = Util.isStr(value) && value.charAt(0) === ' ' ? value.substr(1) : value;
+      value = Util.isStr(value) ? Util.toCap(value) : value;
+      Util.log('Res.attr two', name, value);
+      return value;
+    };
+
     Res.prototype.status = function(date, roomId) {
       var day, dayId;
       dayId = this.Data.dayId(date, roomId);
@@ -236,8 +246,13 @@
       this.allocDays(days);
       for (dayId in days) {
         day = days[dayId];
-        this.store.add('Day', dayId, day);
-        this.days[dayId] = day;
+        if (resv.status === 'Free') {
+          this.store.del('Day', dayId);
+          delete this.days[dayId];
+        } else {
+          this.store.add('Day', dayId, day);
+          this.days[dayId] = day;
+        }
       }
     };
 
@@ -284,7 +299,7 @@
       return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
     };
 
-    Res.prototype.createResvBooking = function(arrive, depart, booked, roomId, last, status, guests, total) {
+    Res.prototype.createResvBooking = function(arrive, depart, roomId, last, status, guests, total, booked) {
       var pets;
       total = total === 0 ? this.rooms[roomId].booking * this.Data.nights(arrive, depart) : total;
       pets = 0;

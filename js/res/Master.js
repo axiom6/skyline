@@ -38,7 +38,7 @@
       this.rooms = this.res.rooms;
       this.upload = new Upload(this.stream, this.store, this.Data, this.res);
       this.query = new Query(this.stream, this.store, this.Data, this.res, this);
-      this.input = new Input(this.stream, this.store, this.Data, this.res);
+      this.input = new Input(this.stream, this.store, this.Data, this.res, this);
       this.season = new Season(this.stream, this.store, this.Data, this.res);
       this.res.master = this;
       this.dateBeg = this.Data.today();
@@ -155,22 +155,28 @@
       this.query.resvBody(this.res.resvArrayByDate(this.Data.today()));
       doCell = (function(_this) {
         return function(event) {
-          var $cell, date, ref;
+          var $cell, beg, date, end, name, ref, ref1, resv;
           _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Mine', 'Free');
           $cell = $(event.target);
           date = $cell.attr('data-date');
-          _this.roomId = $cell.attr('data-roomId');
-          if (date == null) {
+          _this.roomId = $cell.attr('data-roomid');
+          if ((date == null) || !_this.roomId) {
             return;
           }
           ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2];
           if (_this.resMode === 'Table') {
             _this.query.updateBody(_this.dateBeg, _this.dateEnd, 'arrive');
           } else if (_this.resMode === 'Input') {
-            if (_this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine')) {
-              _this.input.createResv(_this.dateBeg, _this.dateEnd, _this.roomId);
+            resv = _this.res.getResv(_this.dateBeg, _this.roomId);
+            name = resv != null ? resv.last : 'none';
+            Util.log('Master.doCell', _this.dateBeg, _this.dateEnd, _this.roomId, name);
+            if (resv == null) {
+              ref1 = _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine'), beg = ref1[0], end = ref1[1];
+              if ((beg != null) && (end != null)) {
+                _this.input.createResv(beg, end, _this.roomId);
+              }
             } else {
-              _this.input.updateResv(date, _this.roomId);
+              _this.input.updateResv(_this.dateBeg, _this.dateEnd, _this.roomId, resv);
             }
           }
         };
@@ -201,27 +207,29 @@
     };
 
     Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
-      var $cell, $cells, i, len, nxtDate, status;
+      var $cell, $cells, beg, end, i, len, next, status;
       if (!((begDate != null) && (endDate != null) && (roomId != null))) {
-        return;
+        return [null, null];
       }
+      beg = Math.min(begDate, endDate).toString();
+      end = Math.max(begDate, endDate).toString();
       $cells = [];
-      nxtDate = begDate;
-      while (nxtDate <= endDate) {
-        $cell = this.$cell('M', nxtDate, roomId);
-        status = this.res.status(nxtDate, roomId);
+      next = beg;
+      while (next <= end) {
+        $cell = this.$cell('M', next, roomId);
+        status = this.res.status(next, roomId);
         if (status === free || status === fill || status === 'Cancel') {
           $cells.push($cell);
-          nxtDate = this.Data.advanceDate(nxtDate, 1);
+          next = this.Data.advanceDate(next, 1);
         } else {
-          return false;
+          return [null, null];
         }
       }
       for (i = 0, len = $cells.length; i < len; i++) {
         $cell = $cells[i];
         this.cellStatus($cell, fill);
       }
-      return true;
+      return [beg, end];
     };
 
     Master.prototype.listenToDays = function() {
@@ -230,7 +238,7 @@
         return function(dayId, day) {
           if ((dayId != null) && (day != null)) {
             _this.res.days[dayId] = day;
-            return _this.onAlloc(dayId, day);
+            return _this.onAlloc(dayId);
           }
         };
       })(this);
@@ -275,11 +283,11 @@
       for (dayId in days) {
         if (!hasProp.call(days, dayId)) continue;
         day = days[dayId];
-        this.onAlloc(dayId, day);
+        this.onAlloc(dayId);
       }
     };
 
-    Master.prototype.onAlloc = function(dayId, day) {
+    Master.prototype.onAlloc = function(dayId) {
       var date, roomId;
       date = this.Data.toDate(dayId);
       roomId = this.Data.roomId(dayId);
@@ -303,6 +311,9 @@
 
     Master.prototype.cellStatus = function($cell, klass) {
       $cell.removeClass().addClass("room-" + klass);
+      $cell.css({
+        background: this.Data.toColor(klass)
+      });
     };
 
     Master.prototype.onMonthClick = function(event) {
@@ -393,16 +404,14 @@
     };
 
     Master.prototype.createCell = function(date, roomId) {
-      var bord, dd, htm, klass, last, mi, ref, resId, resv, status, yy;
+      var bord, dd, htm, klass, last, mi, ref, resv, yy;
       ref = this.Data.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
       resv = this.res.getResv(date, roomId);
       klass = this.res.klass(date, roomId);
       bord = this.border(date, roomId, resv, klass);
-      status = resv != null ? resv.status : 'Free';
-      resId = resv != null ? resv.resId : 'none';
       last = (resv != null) && (resv.arrive === date || dd === 1) ? "<div>" + resv.last + "</div>" : '';
-      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + " ";
-      htm += "data-res=\"" + resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\">" + last + "</td>";
+      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + "\" ";
+      htm += "data-roomid=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\">" + last + "</td>";
       return htm;
     };
 
