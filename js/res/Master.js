@@ -122,7 +122,12 @@
         $('#Upload').append(this.upload.html());
       }
       this.upload.bindUploadPaste();
-      $('#UpdateRes').click(this.upload.onUpdateRes);
+      $('#UploadRes').click(this.upload.onUploadRes);
+      $('#UploadCan').click(this.upload.onUploadCan);
+      $('#CreateRes').click(this.upload.onCreateRes);
+      $('#CreateDay').click(this.upload.onCreateDay);
+      $('#CreateCan').click(this.upload.onCreateCan);
+      $('#CustomFix').click(this.upload.onCustomFix);
       $('#Upload').show();
     };
 

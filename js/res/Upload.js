@@ -14,7 +14,12 @@
       this.store = store;
       this.Data = Data;
       this.res = res;
-      this.onUpdateRes = bind(this.onUpdateRes, this);
+      this.onCustomFix = bind(this.onCustomFix, this);
+      this.onCreateCan = bind(this.onCreateCan, this);
+      this.onCreateDay = bind(this.onCreateDay, this);
+      this.onCreateRes = bind(this.onCreateRes, this);
+      this.onUploadCan = bind(this.onUploadCan, this);
+      this.onUploadRes = bind(this.onUploadRes, this);
       this.uploadedText = "";
       this.uploadedResvs = {};
     }
@@ -22,8 +27,10 @@
     Upload.prototype.html = function() {
       var htm;
       htm = "";
-      htm += "<h1 class=\"UploadH1\">Upload Booking.com</h1>";
-      htm += "<button id=\"UpdateRes\" class=\"btn btn-primary\">Update Res</button>";
+      htm += "<h1  class=\"UploadH1\">Upload Booking.com</h1>";
+      htm += "<button id=\"UploadRes\" class=\"btn btn-primary\">Upload Res</button>";
+      htm += "<button id=\"UploadCan\" class=\"btn btn-primary\">Upload Can</button>";
+      htm += "<button id=\"CustomFix\" class=\"btn btn-primary\">Custom Fix</button>";
       htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
       return htm;
     };
@@ -96,7 +103,8 @@
       return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
     };
 
-    Upload.prototype.onUpdateRes = function() {
+    Upload.prototype.onUploadRes = function() {
+      Util.log('Upload.onUploadRes');
       if (!Util.isStr(this.uploadedText)) {
         this.uploadedText = this.Data.bookingResvs;
         this.uploadedResvs = this.uploadParse(this.uploadedText);
@@ -109,26 +117,94 @@
         return;
       }
       this.res.updateResvs(this.uploadedResvs);
-      return this.uploadedResv = {};
+      return this.uploadedResvs = {};
     };
 
+    Upload.prototype.onUploadCan = function() {
+      Util.log('Upload.onUploadCan');
+      if (!Util.isStr(this.uploadedText)) {
+        this.uploadedText = this.Data.canceled;
+        this.uploadedResvs = this.uploadParse(this.uploadedText);
+        $('#UploadText').text(this.uploadedText);
+      }
+      if (Util.isObjEmpty(this.uploadedResvs)) {
+        return;
+      }
+      if (!this.updateValid(this.uploadedResvs)) {
+        return;
+      }
+      this.res.updateCancels(this.uploadedResvs);
+      return this.uploadedResvs = {};
+    };
+
+    Upload.prototype.onCreateRes = function() {
+      var ref, resId, resv, resvs;
+      Util.log('Upload.onCreateRes');
+      ref = this.res.resvs;
+      for (resId in ref) {
+        if (!hasProp.call(ref, resId)) continue;
+        resv = ref[resId];
+        this.res.delResv(resv);
+      }
+      resvs = require('data/res.json');
+      for (resId in resvs) {
+        if (!hasProp.call(resvs, resId)) continue;
+        resv = resvs[resId];
+        this.res.addResv(resv);
+      }
+    };
+
+    Upload.prototype.onCreateDay = function() {
+      var day, dayId, ref, ref1, resId, resv;
+      Util.log('Upload.onCreateDay');
+      ref = this.res.days;
+      for (dayId in ref) {
+        if (!hasProp.call(ref, dayId)) continue;
+        day = ref[dayId];
+        this.res.delDay(day);
+      }
+      ref1 = this.res.resvs;
+      for (resId in ref1) {
+        if (!hasProp.call(ref1, resId)) continue;
+        resv = ref1[resId];
+        this.res.updateDaysFromResv(resv);
+      }
+    };
+
+    Upload.prototype.onCreateCan = function() {
+      var can, canId, cans;
+      Util.log('Upload.onCreateCan');
+      cans = require('data/can.json');
+      for (canId in cans) {
+        if (!hasProp.call(cans, canId)) continue;
+        can = cans[canId];
+        this.res.addCan(can);
+      }
+    };
+
+    Upload.prototype.onCustomFix = function() {};
+
     Upload.prototype.updateValid = function(uploadedResvs) {
-      var resId, u, valid;
+      var resId, u, v, valid;
       valid = true;
       for (resId in uploadedResvs) {
         if (!hasProp.call(uploadedResvs, resId)) continue;
         u = uploadedResvs[resId];
-        u.v = true;
-        u.v &= Util.isStr(u.last);
-        u.v &= 1 <= u.guests && u.guests <= 12;
-        u.v &= this.Data.isDate(u.arrive);
-        u.v &= this.Data.isDate(u.depart);
-        u.v &= typeof pets === 'number' ? 0 <= u.pets && u.pets <= 4 : true;
-        u.v &= 0 <= u.nights && u.nights <= 28;
-        u.v &= Util.inArray(this.res.roomKeys, u.roomId);
-        u.v &= 0.00 <= u.total && u.total <= 8820.00;
-        u.v &= 120.00 <= u.price && u.price <= 315.00;
-        valid &= u.v;
+        v = true;
+        v &= Util.isStr(u.last);
+        v &= 1 <= u.guests && u.guests <= 12;
+        v &= this.Data.isDate(u.arrive);
+        v &= this.Data.isDate(u.depart);
+        v &= typeof pets === 'number' ? 0 <= u.pets && u.pets <= 4 : true;
+        v &= 0 <= u.nights && u.nights <= 28;
+        v &= Util.inArray(this.res.roomKeys, u.roomId);
+        v &= 0.00 <= u.total && u.total <= 8820.00;
+        v &= 120.00 <= u.price && u.price <= 315.00;
+        valid &= v;
+        if (!v) {
+          Util.log('Resv Not Valid', resId, v);
+          Util.log(u);
+        }
       }
       Util.log('Master.updateValid()', valid);
       return true;

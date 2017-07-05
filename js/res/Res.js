@@ -32,6 +32,7 @@
       this.master = null;
       this.days = {};
       this.resvs = {};
+      this.cans = {};
       this.order = 'Decend';
       this.today = this.Data.today();
       this.onCompleteResv = null;
@@ -236,6 +237,16 @@
       return this.resvs;
     };
 
+    Res.prototype.updateCancels = function(newCancels) {
+      var can, resId;
+      for (resId in newCancels) {
+        if (!hasProp.call(newCancels, resId)) continue;
+        can = newCancels[resId];
+        this.addCan(can);
+      }
+      return this.resvs;
+    };
+
     Res.prototype.updateDaysFromResv = function(resv) {
       var day, dayId, days, i, j, ref;
       days = {};
@@ -246,15 +257,17 @@
       this.allocDays(days);
       for (dayId in days) {
         day = days[dayId];
-        if (resv.status === 'Free') {
-          this.store.del('Day', dayId);
-          delete this.days[dayId];
-        } else {
-          this.store.add('Day', dayId, day);
-          this.days[dayId] = day;
-        }
+        this.store.add('Day', dayId, day);
+        this.days[dayId] = day;
       }
     };
+
+
+    /*
+      if day.status isnt 'Free'
+      @store.del( 'Day', dayId )
+      delete @days[dayId]
+     */
 
     Res.prototype.calcPrice = function(roomId, guests, pets) {
       return this.rooms[roomId][guests] + pets * this.Data.petPrice;
@@ -452,22 +465,48 @@
 
     Res.prototype.addResv = function(resv) {
       this.resvs[resv.resId] = resv;
-      return this.store.add('Res', resv.resId, resv);
+      this.store.add('Res', resv.resId, resv);
     };
 
     Res.prototype.putResv = function(resv) {
       this.resvs[resv.resId] = resv;
-      return this.store.put('Res', resv.resId, resv);
-    };
-
-    Res.prototype.canResv = function(resv) {
-      this.resvs[resv.resId] = resv;
-      return this.store.put('Res', resv.resId, resv);
+      this.store.put('Res', resv.resId, resv);
     };
 
     Res.prototype.delResv = function(resv) {
       delete this.resvs[resv.resId];
-      return this.store.del('Res', resv.resId);
+      this.store.del('Res', resv.resId);
+    };
+
+    Res.prototype.addCan = function(can) {
+      can['cancel'] = this.today;
+      this.cans[can.resId] = can;
+      this.store.add('Can', can.resId, can);
+    };
+
+    Res.prototype.putCan = function(can) {
+      this.resvs[can.resId] = can;
+      this.store.put('Can', can.resId, can);
+    };
+
+    Res.prototype.delCan = function(can) {
+      delete this.cans[can.resId];
+      this.store.del('Can', can.resId);
+    };
+
+    Res.prototype.addDay = function(day) {
+      this.days[day.dayId] = day;
+      this.store.add('Day', day.dayId, day);
+    };
+
+    Res.prototype.putDay = function(day) {
+      this.days[day.dayId] = day;
+      this.store.put('Day', day.dayId, day);
+    };
+
+    Res.prototype.delDay = function(day) {
+      delete this.days[day.dayId];
+      this.store.del('Day', day.dayId);
     };
 
     Res.prototype.postPayment = function(resv, post, amount, method, last4, purpose) {

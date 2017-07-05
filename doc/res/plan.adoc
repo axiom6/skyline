@@ -4,6 +4,30 @@ include::../dir/inc/DefBook.adoc[]
 
 # [.black]#Plan#
 
+### [.black]#Important#
+
+* Res
+  ** Get JSON
+  ** Convert legacy status
+  ** Regenrate Days
+* Upload
+  ** Improve Text Transfer
+  ** Just filter out invalids
+  ** Can table
+  ** Date stamp cancellations
+* Input
+  ** Make Dates Easier
+  ** Collision Detection
+* Query
+  ** Make Dates Easier
+  ** Easy Printing
+* Season
+  ** Disable
+* Guest
+  ** Update to Owner
+  ** Deploy Info Site
+  ** Deploy Guest
+
 ### [.black]#Integrate#
 
 * Bookings

@@ -14,6 +14,7 @@ class Res
     @master    = null
     @days      = {}
     @resvs     = {}
+    @cans      = {}
     @order     = 'Decend'
     @today     = @Data.today()
     @onCompleteResv = null
@@ -122,22 +123,27 @@ class Res
       @addResv( resv )
     @resvs
 
+  updateCancels:( newCancels ) ->
+    for own resId, can of newCancels
+      @addCan( can )
+    @resvs
+
   updateDaysFromResv:( resv ) ->
-    #Util.log( 'Res', resv )
     days = {} # resv days
     for i in [0...resv.nights]
       dayId       = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
       days[dayId] = @setDay( {}, resv.status, resv.resId )
     @allocDays( days )
     for dayId, day of days
-      #Util.log( 'Day',   dayId, day )
-      if resv.status is 'Free'
-        @store.del( 'Day', dayId )
-        delete @days[dayId]
-      else
-        @store.add( 'Day', dayId, day )
-        @days[dayId] = day
+      @store.add( 'Day', dayId, day )
+      @days[dayId] = day
     return
+    
+  ###
+    if day.status isnt 'Free'
+    @store.del( 'Day', dayId )
+    delete @days[dayId]
+  ###
 
   calcPrice:( roomId, guests, pets ) ->
     #Util.log( 'Res.calcPrice()', { roomId:roomId, guests:guests, pets:pets, guestprice:@rooms[roomId][guests], petfee:pets*@Data.petPrice  } )
@@ -257,18 +263,48 @@ class Res
   addResv:( resv ) ->
     @resvs[resv.resId] = resv
     @store.add( 'Res', resv.resId, resv )
+    return
 
   putResv:( resv ) ->
     @resvs[resv.resId] = resv
     @store.put( 'Res', resv.resId, resv )
+    return
 
-  canResv:( resv ) ->                     #Cancel
-    @resvs[resv.resId] = resv
-    @store.put( 'Res', resv.resId, resv ) # We do a put
-
-  delResv:( resv ) ->                     #Delete
+  delResv:( resv ) ->                     
     delete @resvs[resv.resId]
     @store.del( 'Res', resv.resId )
+    return
+
+  addCan:( can ) ->
+    can['cancel'] = @today
+    @cans[can.resId] = can
+    @store.add( 'Can', can.resId, can )
+    return
+    
+  putCan:( can ) ->                     
+    @resvs[can.resId] = can
+    @store.put( 'Can', can.resId, can ) # We do a put
+    return
+
+  delCan:( can ) ->
+    delete @cans[can.resId]
+    @store.del( 'Can', can.resId )
+    return
+
+  addDay:( day ) ->
+    @days[day.dayId] = day
+    @store.add( 'Day', day.dayId, day )
+    return
+
+  putDay:( day ) ->
+    @days[day.dayId] = day
+    @store.put( 'Day', day.dayId, day )
+    return
+
+  delDay:( day ) ->
+    delete @days[day.dayId]
+    @store.del( 'Day', day.dayId )
+    return
 
   postPayment:( resv, post, amount, method, last4, purpose ) ->
     status = @setResvStatus( resv, post, purpose )

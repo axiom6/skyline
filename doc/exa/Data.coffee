@@ -173,6 +173,63 @@ class Data
     Util.log( 'Data.yymidd()', date, yy, mi, dd )
     Data.months3[mi] + dd.toString() + ', ' + (2000+yy).toString()
 
+  @bookingResvsL  = """
+Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number
+susan settle 2 guests	12 August 2017	16 August 2017	#4 One Room Cabin	03 July 2017	OK	US$580	US$87	1791937613
+Melissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619
+"""
+
+  @bookingResvsK = """
+Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number
+juan pablo bours 8 guests	10 July 2017	12 July 2017	#3 Southwest Spa	04 July 2017	OK	US$630	US$94.50	1490587666
+Nick Russo 2 guests	11 July 2017	13 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	1251292752
+louis maufrais 4 guests	13 July 2017	15 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	2051998205
+Tyron Becker 4 guests	16 July 2017	20 July 2017	Upper Skyline North	03 July 2017	OK	US$660	US$99	1477467166
+"""
+
+  @bookingResvsJ = """
+Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number
+susan settle 2 guests	12 August 2017	16 August 2017	#4 One Room Cabin	03 July 2017	OK	US$580	US$87	1791937613
+Melissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619
+DAN NICHOLS 2 guests	22 August 2017	27 August 2017	#8 Western Unit	02 July 2017	OK	US$600	US$90	2069315513
+Alberta Retana 2 guests	02 September 2017	04 September 2017	Upper Skyline South	02 July 2017	OK	US$310	US$46.50	1180598317
+robert stone 2 guests	22 July 2017	24 July 2017	#5 Cabin with a View	03 July 2017	OK	US$390	US$58.50	1933816072
+Roxane Romero 8 guests	14 July 2017	16 July 2017	#3 Southwest Spa	02 July 2017	OK	US$630	US$94.50	1297543429
+Josh Murphy 4 guests	10 July 2017	12 July 2017	#5 Cabin with a View	01 July 2017	OK	US$390	US$58.50	1251493462
+jay wills 4 guests	21 July 2017	23 July 2017	#2 Mountain Spa	01 July 2017	OK	US$370	US$55.50	1121958938
+"""
+
+  @CanceledA = """Pauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Canceled	US$0	US$0	1335821435
+Erma Henry 1 guest	31 July 2017	30 August 2017	#4 One Room Cabin	25 June 2017	Canceled	US$0	US$0	1225084642
+Melissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695
+Stephanie Buel 4 guests	31 July 2017	03 August 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1120884797
+vinay singh 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	07 June 2017	Canceled	US$0	US$0	1438534254
+susannah mitchell 1 guest	31 August 2017	03 September 2017	#1 One Room Cabin	04 June 2017	Canceled	US$0	US$0	1034276945
+Gregory Church 4 guests	30 July 2017	01 August 2017	#8 Western Unit	03 June 2017	Canceled	US$0	US$0	1357716307
+Johnathan Koeltzow 2 guests	11 August 2017	13 August 2017	#8 Western Unit	02 June 2017	Canceled	US$0	US$0	1756807815
+clarice fenton 4 guests	22 July 2017	26 July 2017	Upper Skyline South	23 June 2017	Canceled	US$0	US$0	1538156772
+Susan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	Canceled	US$0	US$0	2079181490
+Changying Shen 4 guests	19 July 2017	21 July 2017	#8 Western Unit	17 June 2017	Canceled	US$0	US$0	1309599829
+T Lobenstein 3 guests	22 July 2017	24 July 2017	Upper Skyline South	16 June 2017	Canceled	US$0	US$0	2007936653
+Han Jooyoun 4 guests	17 July 2017	19 July 2017	Upper Skyline South	12 June 2017	Canceled	US$0	US$0	1679229728
+Ritu Singh 4 guests	13 July 2017	17 July 2017	#8 Western Unit	08 June 2017	Canceled	US$0	US$0	1760649274
+Ryan Martin 4 guests	05 July 2017	08 July 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1490387834
+Lance richardson 2 guests 2 guest messages to answer	11 July 2017	13 July 2017	#8 Western Unit	05 June 2017	Canceled	US$0	US$0	1853235506
+Desiree Schwalm 12 guests 1 guest message to answer	01 July 2017	03 July 2017	#6 Large River Cabin	01 June 2017	Canceled	US$0	US$0	1724384266
+Jeremy Goldsmith 1 guest	01 July 2017	04 July 2017	#7 Western Spa	01 June 2017	Canceled	US$0	US$0	1849068878
+Karthikeyan Shanmugavadivel 4 guests	01 July 2017	03 July 2017	#8 Western Unit	01 June 2017	Canceled	US$0	US$0	1919159565
+Karen Palmer 4 guests	18 August 2017	21 August 2017	#8 Western Unit	16 June 2017	Cancelled	US$0	US$0	1747537592
+Pauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Cancelled	US$0	US$0	1335821435
+"""
+
+  @weirdA = """
+Elisabetta Casali 16 guests	09 August 2017	11 August 2017	#4 One Room Cabin, #6 Large River Cabin	30 June 2017	OK	US$890	US$133.50	1563316762
+Elisabetta Casali 16 guests	10 August 2017	12 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	Canceled	US$0	US$0	2042380958
+"""
+
+
+
+
   @bookingResvsI = """Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number
 Gregory Hebbler 2 guests	18 July 2017	25 July 2017	#5 Cabin with a View	28 June 2017	OK	US$1365	US$204.75	1643093209
 Shivrajsinh Rana 3 guests	30 June 2017	03 July 2017	#8 Western Unit	28 June 2017	OK	US$360	US$54	1643057108

@@ -11,8 +11,13 @@ class Upload
 
   html:() ->
     htm  = ""
-    htm += """<h1 class="UploadH1">Upload Booking.com</h1>"""
-    htm += """<button id="UpdateRes" class="btn btn-primary">Update Res</button>"""
+    htm += """<h1  class="UploadH1">Upload Booking.com</h1>"""
+    htm += """<button id="UploadRes" class="btn btn-primary">Upload Res</button>"""
+    htm += """<button id="UploadCan" class="btn btn-primary">Upload Can</button>"""
+    #tm += """<button id="CreateRes" class="btn btn-primary">Create Res</button>"""
+    #tm += """<button id="CreateCan" class="btn btn-primary">Create Can</button>"""
+    #tm += """<button id="CreateDay" class="btn btn-primary">Create Day</button>"""
+    htm += """<button id="CustomFix" class="btn btn-primary">Custom Fix</button>"""
     htm += """<textarea id="UploadText" class="UploadText" rows="50" cols="100"></textarea>"""
     htm
 
@@ -68,35 +73,74 @@ class Upload
     total  = parseFloat( book.total.substr(3) )
     @res.createResvBooking( arrive, depart, roomId, last, status, guests, total, booked )
 
-  onUpdateRes:() =>
-
+  onUploadRes:() =>
+    Util.log( 'Upload.onUploadRes')
     if not Util.isStr( @uploadedText )
       @uploadedText  = @Data.bookingResvs
       @uploadedResvs = @uploadParse(  @uploadedText )
       $('#UploadText').text( @uploadedText )
-
     return if Util.isObjEmpty(    @uploadedResvs )
     return if not @updateValid(   @uploadedResvs )
     @res.updateResvs(             @uploadedResvs )
-    @uploadedResv = {}
+    @uploadedResvs = {}
+
+  onUploadCan:() =>
+    Util.log( 'Upload.onUploadCan')
+    if not Util.isStr( @uploadedText )
+      @uploadedText  = @Data.canceled
+      @uploadedResvs = @uploadParse(  @uploadedText )
+      $('#UploadText').text( @uploadedText )
+    return if Util.isObjEmpty(    @uploadedResvs )
+    return if not @updateValid(   @uploadedResvs )
+    @res.updateCancels(           @uploadedResvs )
+    @uploadedResvs = {}
+
+  onCreateRes:() =>
+    Util.log( 'Upload.onCreateRes')
+    for own resId, resv of @res.resvs
+      @res.delResv( resv )
+    resvs = require( 'data/res.json' )
+    for own resId, resv of resvs
+      @res.addResv( resv )
+    return
+
+  onCreateDay:() =>
+    Util.log( 'Upload.onCreateDay')
+    for own dayId, day of @res.days
+      @res.delDay( day )
+    for own resId, resv of @res.resvs
+      @res.updateDaysFromResv( resv )
+    return
+
+  onCreateCan:() =>
+    Util.log( 'Upload.onCreateCan')
+    #@store.make( 'Can' ) # Unexplicably Deleted Tables 'Res' and 'Day'
+    cans  = require( 'data/can.json' )
+    for own canId, can of cans
+      @res.addCan( can )
+    return
+
+  onCustomFix:() =>
+    return
 
   updateValid:( uploadedResvs ) ->
     valid = true
     for own resId, u of uploadedResvs
-      u.v  = true
+      v  = true
       #.v &= Util.isStr( u.first )
-      u.v &= Util.isStr( u.last  )
-      u.v &= 1 <= u.guests and u.guests <= 12
-      u.v &= @Data.isDate( u.arrive )
-      u.v &= @Data.isDate( u.depart )
-      u.v &= if typeof(pets) is 'number' then 0 <= u.pets   and u.pets   <=  4 else true
-      u.v &= 0 <= u.nights and u.nights <= 28
-      u.v &= Util.inArray( @res.roomKeys, u.roomId )
-      u.v &=   0.00 <= u.total and u.total <= 8820.00
-      u.v &= 120.00 <= u.price and u.price <=  315.00
-      valid &= u.v
-      #Util.log( 'Resv......', u.v )
-      #Util.log(  u )
+      v &= Util.isStr( u.last  )
+      v &= 1 <= u.guests and u.guests <= 12
+      v &= @Data.isDate( u.arrive )
+      v &= @Data.isDate( u.depart )
+      v &= if typeof(pets) is 'number' then 0 <= u.pets   and u.pets   <=  4 else true
+      v &= 0 <= u.nights and u.nights <= 28
+      v &= Util.inArray( @res.roomKeys, u.roomId )
+      v &=   0.00 <= u.total and u.total <= 8820.00
+      v &= 120.00 <= u.price and u.price <=  315.00
+      valid &= v
+      if not v
+        Util.log( 'Resv Not Valid', resId, v )
+        Util.log(  u )
     Util.log( 'Master.updateValid()', valid )
     true
 

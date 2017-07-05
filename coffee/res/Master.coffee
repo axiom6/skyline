@@ -88,7 +88,12 @@ class Master
     $('#Dailys').hide()
     $('#Upload').append( @upload.html() ) if Util.isEmpty( $('#Upload').children() )
     @upload.bindUploadPaste()
-    $('#UpdateRes').click( @upload.onUpdateRes )
+    $('#UploadRes').click( @upload.onUploadRes )
+    $('#UploadCan').click( @upload.onUploadCan )
+    $('#CreateRes').click( @upload.onCreateRes )
+    $('#CreateDay').click( @upload.onCreateDay )
+    $('#CreateCan').click( @upload.onCreateCan )
+    $('#CustomFix').click( @upload.onCustomFix )
     $('#Upload').show()
     return
 

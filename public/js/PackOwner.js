@@ -32100,7 +32100,7 @@
 
 	    Data.statuses = ["Unknown", "Cancel", "Free", "Mine", "Prepaid", "Deposit", "Booking", "Skyline", "BookNew", "SkylNew"];
 
-	    Data.colors = ["#E8E8E8", "#EEEEEE", "#D3D3D3", "#BBBBBB", "#AAAAAA", "#AAAAAA", "#888888", "#777777", "#444444", "#333333"];
+	    Data.colors = ["#E8E8E8", "#EEEEEE", "#FFFFFF", "#BBBBBB", "#AAAAAA", "#AAAAAA", "#888888", "#444444", "#333333", "#222222"];
 
 	    Data.colors1 = ["yellow", "whitesmoke", "lightgrey", "green", "#555555", "#000000", "blue", "slategray", "purple", "black"];
 
@@ -32383,15 +32383,15 @@
 	      return Data.months3[mi] + dd.toString() + ', ' + (2000 + yy).toString();
 	    };
 
-	    Data.bookingResvs = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nAmber Ramos 2 guests 1 guest message to answer	28 July 2017	30 July 2017	#2 Mountain Spa	30 June 2017	OK	US$370	US$55.50	1335843833\nLynda Krupa 3 guests	31 July 2017	04 August 2017	Upper Skyline South	30 June 2017	OK	US$620	US$93	1652225524\nSara Zink 4 guests	04 August 2017	07 August 2017	Upper Skyline North	30 June 2017	OK	US$495	US$74.25	1054573838\nRyan Mitchell 4 guests	18 August 2017	20 August 2017	#2 Mountain Spa	30 June 2017	OK	US$370	US$55.50	1192666554\nGeorge Fleming 2 guests	07 September 2017	10 September 2017	Upper Skyline North	30 June 2017	OK	US$495	US$74.25	1186587856\nMichael Shriver 4 guests	26 July 2017	30 July 2017	Upper Skyline North	29 June 2017	OK	US$660	US$99	1054547744";
+	    Data.bookingResvs = "";
+
+	    Data.bookingResvsB = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\njuan  bours 8 guests	10 July 2017	12 July 2017	#3 Southwest Spa	04 July 2017	OK	US$630	US$94.50	1490587666\nTeasa Baca 1 guest	14 July 2017	16 July 2017	#1 One Room Cabin	04 July 2017	OK	US$290	US$43.50	1461229119\nNick Russo 2 guests	11 July 2017	13 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	1251292752\nlouis maufrais 4 guests	13 July 2017	15 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	2051998205\nTyron Becker 4 guests	16 July 2017	20 July 2017	Upper Skyline North	03 July 2017	OK	US$660	US$99	1477467166\nrobert stone 2 guests	22 July 2017	24 July 2017	#5 Cabin with a View	03 July 2017	OK	US$390	US$58.50	1933816072\nRoxane Romero 8 guests	14 July 2017	16 July 2017	#3 Southwest Spa	02 July 2017	OK	US$630	US$94.50	1297543429\nJosh Murphy 4 guests	10 July 2017	12 July 2017	#5 Cabin with a View	01 July 2017	OK	US$390	US$58.50	1251493462\njay wills 4 guests	21 July 2017	23 July 2017	#2 Mountain Spa	01 July 2017	OK	US$370	US$55.50	1121958938\nmary bieber 12 guests	03 August 2017	05 August 2017	#6 Large River Cabin	05 July 2017	OK	US$600	US$90	1461242157\nSandra Perea 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	04 July 2017	Canceled	US$0	US$0	2028271212\nJim Husbands 4 guests	02 September 2017	04 September 2017	Upper Skyline North	05 July 2017	OK	US$330	US$49.50	1461288419\nMelissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619\nAlberta Retana 2 guests	02 September 2017	04 September 2017	Upper Skyline South	02 July 2017	OK	US$310	US$46.50	1180598317\nGeorge Fleming 2 guests	07 September 2017	10 September 2017	Upper Skyline North	30 June 2017	OK	US$495	US$74.25	1186587856\nMargaret Dreiling 1 guest	08 September 2017	10 September 2017	Upper Skyline South	15 June 2017	OK	US$310	US$46.50	1977820063\nkarissa Wight 4 guests	07 September 2017	09 September 2017	#4 One Room Cabin	13 June 2017	OK	US$290	US$43.50	1779163724\nInez Cunningham 3 guests	07 September 2017	13 September 2017	#3 Southwest Spa	13 June 2017	OK	US$1,890	US$283.50	1831513503\nTony Hajek 2 guests	08 September 2017	10 September 2017	#8 Western Unit	12 June 2017	OK	US$240	US$36	1420506143\nTodd Featherstun 1 guest	08 September 2017	10 September 2017	#1 One Room Cabin	02 June 2017	OK	US$290	US$43.50	1489205592";
+
+	    Data.bookingResvsA = "Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number\nsusan settle 2 guests	12 August 2017	16 August 2017	#4 One Room Cabin	03 July 2017	OK	US$580	US$87	1791937613\nMelissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619";
+
+	    Data.Canceled = "Melissa Seacreas 3 guests 1 guest message to answer	01 September 2017	04 September 2017	#8 Western Unit	24 June 2017	Canceled	US$0	US$0	1555046433\nMelissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695\nPauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Canceled	US$0	US$0	1335821435\nErma Henry 1 guest	31 July 2017	30 August 2017	#4 One Room Cabin	25 June 2017	Canceled	US$0	US$0	1225084642\nMelissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695\nStephanie Buel 4 guests	31 July 2017	03 August 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1120884797\nvinay singh 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	07 June 2017	Canceled	US$0	US$0	1438534254\nsusannah mitchell 1 guest	31 August 2017	03 September 2017	#1 One Room Cabin	04 June 2017	Canceled	US$0	US$0	1034276945\nGregory Church 4 guests	30 July 2017	01 August 2017	#8 Western Unit	03 June 2017	Canceled	US$0	US$0	1357716307\nJohnathan Koeltzow 2 guests	11 August 2017	13 August 2017	#8 Western Unit	02 June 2017	Canceled	US$0	US$0	1756807815\nclarice fenton 4 guests	22 July 2017	26 July 2017	Upper Skyline South	23 June 2017	Canceled	US$0	US$0	1538156772\nSusan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	Canceled	US$0	US$0	2079181490\nChangying Shen 4 guests	19 July 2017	21 July 2017	#8 Western Unit	17 June 2017	Canceled	US$0	US$0	1309599829\nT Lobenstein 3 guests	22 July 2017	24 July 2017	Upper Skyline South	16 June 2017	Canceled	US$0	US$0	2007936653\nHan Jooyoun 4 guests	17 July 2017	19 July 2017	Upper Skyline South	12 June 2017	Canceled	US$0	US$0	1679229728\nRitu Singh 4 guests	13 July 2017	17 July 2017	#8 Western Unit	08 June 2017	Canceled	US$0	US$0	1760649274\nRyan Martin 4 guests	05 July 2017	08 July 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1490387834\nLance richardson 2 guests 2 guest messages to answer	11 July 2017	13 July 2017	#8 Western Unit	05 June 2017	Canceled	US$0	US$0	1853235506\nDesiree Schwalm 12 guests 1 guest message to answer	01 July 2017	03 July 2017	#6 Large River Cabin	01 June 2017	Canceled	US$0	US$0	1724384266\nJeremy Goldsmith 1 guest	01 July 2017	04 July 2017	#7 Western Spa	01 June 2017	Canceled	US$0	US$0	1849068878\nKarthikeyan Shanmugavadivel 4 guests	01 July 2017	03 July 2017	#8 Western Unit	01 June 2017	Canceled	US$0	US$0	1919159565\nKaren Palmer 4 guests	18 August 2017	21 August 2017	#8 Western Unit	16 June 2017	Cancelled	US$0	US$0	1747537592\nPauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Cancelled	US$0	US$0	1335821435";
 
 	    Data.weird = "Elisabetta Casali 16 guests	09 August 2017	11 August 2017	#4 One Room Cabin, #6 Large River Cabin	30 June 2017	OK	US$890	US$133.50	1563316762\nElisabetta Casali 16 guests	10 August 2017	12 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	Canceled	US$0	US$0	2042380958";
-
-	    Data.bookingResvsB = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nAmber Ramos 2 guests 1 guest message to answer	28 July 2017	30 July 2017	#2 Mountain Spa	30 June 2017	OK	US$370	US$55.50	1335843833\nLynda Krupa 3 guests	31 July 2017	04 August 2017	Upper Skyline South	30 June 2017	OK	US$620	US$93	1652225524\nSara Zink 4 guests	04 August 2017	07 August 2017	Upper Skyline North	30 June 2017	OK	US$495	US$74.25	1054573838\nElisabetta Casali 16 guests	09 August 2017	11 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	OK	US$890	US$133.50	1563316762\nElisabetta Casali 16 guests	10 August 2017	12 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	Canceled	US$0	US$0	2042380958\nRyan Mitchell 4 guests	18 August 2017	20 August 2017	#2 Mountain Spa	30 June 2017	OK	US$370	US$55.50	1192666554\nGeorge Fleming 2 guests	07 September 2017	10 September 2017	Upper Skyline North	30 June 2017	OK	US$495	US$74.25	1186587856\nMichael Shriver 4 guests	26 July 2017	30 July 2017	Upper Skyline North	29 June 2017	OK	US$660	US$99	1054547744\nMary Hagen 2 guests	04 August 2017	06 August 2017	#4 One Room Cabin	29 June 2017	OK	US$290	US$43.50	1340661006\nSteven Ravel 4 guests	28 July 2017	30 July 2017	Upper Skyline South	28 June 2017	OK	US$310	US$46.50	1217657012\nDonna Bardallis 3 guests	28 July 2017	30 July 2017	#8 Western Unit	26 June 2017	OK	US$240	US$36	1368306301\nStephanie Hedgecock 8 guests	04 August 2017	06 August 2017	#3 Southwest Spa	24 June 2017	OK	US$630	US$94.50	1772131650\nMelissa Seacreas 3 guests 1 guest message to answer	01 September 2017	04 September 2017	#8 Western Unit	24 June 2017	OK	US$360	US$54	1555046433\nLAYLA YEAGER 12 guests 2 guest messages to answer	01 August 2017	03 August 2017	#6 Large River Cabin	22 June 2017	OK	US$630	US$94.50	1270507767\nLaura Steiner 3 guests	25 July 2017	27 July 2017	#4 One Room Cabin	20 June 2017	OK	US$290	US$43.50	1504399864\nKaren Palmer 4 guests	18 August 2017	21 August 2017	#8 Western Unit	16 June 2017	OK	US$360	US$54	1747537592\nMargaret Dreiling 1 guest	08 September 2017	10 September 2017	Upper Skyline South	15 June 2017	OK	US$310	US$46.50	1977820063\nSarah Troia 12 guests	04 August 2017	06 August 2017	#6 Large River Cabin	14 June 2017	OK	US$630	US$94.50	1175185436\nMohamed Basiouny 4 guests	19 August 2017	21 August 2017	Upper Skyline South	13 June 2017	OK	US$310	US$46.50	2008176523\nkarissa Wight 4 guests	07 September 2017	09 September 2017	#4 One Room Cabin	13 June 2017	OK	US$290	US$43.50	1779163724\nInez Cunningham 3 guests	07 September 2017	13 September 2017	#3 Southwest Spa	13 June 2017	OK	US$1890	US$283.50	1831513503\nSHIU TAK LEUNG 2 guests	14 August 2017	17 August 2017	Upper Skyline South	12 June 2017	OK	US$465	US$69.75	1679266889\nTony Hajek 2 guests	08 September 2017	10 September 2017	#8 Western Unit	12 June 2017	OK	US$240	US$36	1420506143\nterrus huls 2 guests	24 July 2017	26 July 2017	Upper Skyline North	11 June 2017	OK	US$330	US$49.50	1747067222\nDebbie Young 4 guests	30 July 2017	05 August 2017	#8 Western Unit	08 June 2017	OK	US$720	US$108	1209962879\nARTURAS VINKEVICIUS 4 guests	01 August 2017	05 August 2017	#5 Cabin with a View	08 June 2017	OK	US$780	US$117	1335350823\nTerri Richardson 4 guests	26 July 2017	28 July 2017	Upper Skyline South	07 June 2017	OK	US$310	US$46.50	1435907150\nCarol Leech 4 guests	14 August 2017	16 August 2017	#8 Western Unit	07 June 2017	OK	US$260	US$39	1740250954\nVirginia Clark 4 guests 1 guest message to answer	10 August 2017	13 August 2017	#8 Western Unit	06 June 2017	OK	US$390	US$58.50	1853252311\nTodd Featherstun 1 guest	08 September 2017	10 September 2017	#1 One Room Cabin	02 June 2017	OK	US$290	US$43.50	1489205592";
-
-	    Data.Canceled = "Pauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Canceled	US$0	US$0	1335821435\nErma Henry 1 guest	31 July 2017	30 August 2017	#4 One Room Cabin	25 June 2017	Canceled	US$0	US$0	1225084642\nMelissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695\nStephanie Buel 4 guests	31 July 2017	03 August 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1120884797\nvinay singh 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	07 June 2017	Canceled	US$0	US$0	1438534254\nsusannah mitchell 1 guest	31 August 2017	03 September 2017	#1 One Room Cabin	04 June 2017	Canceled	US$0	US$0	1034276945\nGregory Church 4 guests	30 July 2017	01 August 2017	#8 Western Unit	03 June 2017	Canceled	US$0	US$0	1357716307\nJohnathan Koeltzow 2 guests	11 August 2017	13 August 2017	#8 Western Unit	02 June 2017	Canceled	US$0	US$0	1756807815\nclarice fenton 4 guests	22 July 2017	26 July 2017	Upper Skyline South	23 June 2017	Canceled	US$0	US$0	1538156772\nSusan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	Canceled	US$0	US$0	2079181490\nChangying Shen 4 guests	19 July 2017	21 July 2017	#8 Western Unit	17 June 2017	Canceled	US$0	US$0	1309599829\nT Lobenstein 3 guests	22 July 2017	24 July 2017	Upper Skyline South	16 June 2017	Canceled	US$0	US$0	2007936653\nHan Jooyoun 4 guests	17 July 2017	19 July 2017	Upper Skyline South	12 June 2017	Canceled	US$0	US$0	1679229728\nRitu Singh 4 guests	13 July 2017	17 July 2017	#8 Western Unit	08 June 2017	Canceled	US$0	US$0	1760649274\nRyan Martin 4 guests	05 July 2017	08 July 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1490387834\nLance richardson 2 guests 2 guest messages to answer	11 July 2017	13 July 2017	#8 Western Unit	05 June 2017	Canceled	US$0	US$0	1853235506\nDesiree Schwalm 12 guests 1 guest message to answer	01 July 2017	03 July 2017	#6 Large River Cabin	01 June 2017	Canceled	US$0	US$0	1724384266\nJeremy Goldsmith 1 guest	01 July 2017	04 July 2017	#7 Western Spa	01 June 2017	Canceled	US$0	US$0	1849068878\nKarthikeyan Shanmugavadivel 4 guests	01 July 2017	03 July 2017	#8 Western Unit	01 June 2017	Canceled	US$0	US$0	1919159565";
-
-	    Data.bookingResvsA = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nGregory Hebbler 2 guests	18 July 2017	25 July 2017	#5 Cabin with a View	28 June 2017	OK	US$1365	US$204.75	1643093209\nShivrajsinh Rana 3 guests	30 June 2017	03 July 2017	#8 Western Unit	28 June 2017	OK	US$360	US$54	1643057108\nThelma Carrera 3 guests	27 June 2017	29 June 2017	Upper Skyline South	27 June 2017	OK	US$310	US$46.50	1799824520\nJessica Henderson 4 guests	21 July 2017	24 July 2017	Upper Skyline North	27 June 2017	OK	US$495	US$74.25	1980882577";
 
 	    return Data;
 
@@ -32550,6 +32550,16 @@
 	      return nights < this.Data.newDays;
 	    };
 
+	    Res.prototype.attr = function($elem, name) {
+	      var value;
+	      value = $elem.attr(name.toLowerCase());
+	      Util.log('Res.attr one', name, value);
+	      value = Util.isStr(value) && value.charAt(0) === ' ' ? value.substr(1) : value;
+	      value = Util.isStr(value) ? Util.toCap(value) : value;
+	      Util.log('Res.attr two', name, value);
+	      return value;
+	    };
+
 	    Res.prototype.status = function(date, roomId) {
 	      var day, dayId;
 	      dayId = this.Data.dayId(date, roomId);
@@ -32642,8 +32652,13 @@
 	      this.allocDays(days);
 	      for (dayId in days) {
 	        day = days[dayId];
-	        this.store.add('Day', dayId, day);
-	        this.days[dayId] = day;
+	        if (resv.status === 'Free') {
+	          this.store.del('Day', dayId);
+	          delete this.days[dayId];
+	        } else {
+	          this.store.add('Day', dayId, day);
+	          this.days[dayId] = day;
+	        }
 	      }
 	    };
 
@@ -32690,7 +32705,7 @@
 	      return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
 	    };
 
-	    Res.prototype.createResvBooking = function(arrive, depart, booked, roomId, last, status, guests, total) {
+	    Res.prototype.createResvBooking = function(arrive, depart, roomId, last, status, guests, total, booked) {
 	      var pets;
 	      total = total === 0 ? this.rooms[roomId].booking * this.Data.nights(arrive, depart) : total;
 	      pets = 0;
@@ -33206,17 +33221,15 @@
 	      this.onMasterBtn = bind(this.onMasterBtn, this);
 	      this.rooms = this.res.rooms;
 	      this.upload = new Upload(this.stream, this.store, this.Data, this.res);
-	      this.query = new Query(this.stream, this.store, this.Data, this.res);
-	      this.input = new Input(this.stream, this.store, this.Data, this.res);
+	      this.query = new Query(this.stream, this.store, this.Data, this.res, this);
+	      this.input = new Input(this.stream, this.store, this.Data, this.res, this);
 	      this.season = new Season(this.stream, this.store, this.Data, this.res);
 	      this.res.master = this;
 	      this.dateBeg = this.Data.today();
-	      this.dateEnd = null;
-	      this.fillBeg = null;
-	      this.fillEnd = null;
-	      this.fillRoomId = null;
-	      this.resMode = 'Table';
+	      this.dateEnd = this.Data.today();
+	      this.dateSel = "End";
 	      this.roomId = null;
+	      this.resMode = 'Table';
 	      this.showingMonth = 'Master';
 	    }
 
@@ -33250,7 +33263,7 @@
 	      $('#ResTbl').hide();
 	      $('#Master').show();
 	      this.fillInCells(this.dateBeg, this.dateEnd, this.roomId, 'Mine', 'Free');
-	      ref = [null, null], this.dateBeg = ref[0], this.dateEnd = ref[1];
+	      ref = [null, null, "Beg"], this.dateBeg = ref[0], this.dateEnd = ref[1], this.dateSel = ref[2];
 	    };
 
 	    Master.prototype.onSeasonBtn = function() {
@@ -33300,11 +33313,6 @@
 	    Master.prototype.readyMaster = function() {
 	      $('#Master').empty();
 	      $('#Master').append(this.html());
-	      $('#ResAdd').empty();
-	      $('#ResAdd').append(this.input.html());
-	      $('#ResAdd').hide();
-	      $('#ResTbl').empty();
-	      $('#ResTbl').append(this.resvHead());
 	      this.showMonth(this.Data.month);
 	      $('.PrevMonth').click((function(_this) {
 	        return function(event) {
@@ -33321,52 +33329,38 @@
 	          return _this.onMonthClick(event);
 	        };
 	      })(this));
-	      this.resvSortClick('RHBooked', 'booked');
-	      this.resvSortClick('RHRoom', 'roomId');
-	      this.resvSortClick('RHArrive', 'arrive');
-	      this.resvSortClick('RHStayTo', 'stayto');
-	      this.resvSortClick('RHName', 'last');
-	      this.resvSortClick('RHStatus', 'status');
+	      this.query.readyQuery();
+	      this.input.readyInput();
 	      this.readyCells();
-	      this.input.action();
 	    };
-
-	    Master.prototype.resvSortClick = function(id, prop) {
-	      return $('#' + id).click((function(_this) {
-	        return function() {
-	          return _this.resvBody(_this.res.resvArrayByProp(_this.dateBeg, _this.dateEnd, prop));
-	        };
-	      })(this));
-	    };
-
-
-	    /*
-	    resId   = $cell.attr('data-res'    )
-	    resv    = @res.getResv( date, @roomId )
-	    title   = if resv? then resv.last + ' $' + resv.total else 'Free'
-	    $cell.attr('title', title ) # if title isnt 'Free'
-	     */
 
 	    Master.prototype.readyCells = function() {
 	      var doCell;
-	      this.resvBody(this.res.resvArrayByDate(this.Data.today()));
+	      this.query.resvBody(this.res.resvArrayByDate(this.Data.today()));
 	      doCell = (function(_this) {
 	        return function(event) {
-	          var $cell, date, ref, ref1, ref2;
+	          var $cell, beg, date, end, name, ref, ref1, resv;
+	          _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Mine', 'Free');
 	          $cell = $(event.target);
 	          date = $cell.attr('data-date');
-	          _this.roomId = $cell.attr('data-roomId');
-	          _this.fillInCells(_this.fillBeg, _this.fillEnd, _this.fillRoomId, 'Mine', 'Free');
+	          _this.roomId = $cell.attr('data-roomid');
+	          if ((date == null) || !_this.roomId) {
+	            return;
+	          }
+	          ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2];
 	          if (_this.resMode === 'Table') {
-	            ref = _this.mouseDatesTable(date, event), _this.dateBeg = ref[0], _this.dateEnd = ref[1];
-	            _this.doResv(_this.dateBeg, _this.dateEnd, 'arrive');
+	            _this.query.updateBody(_this.dateBeg, _this.dateEnd, 'arrive');
 	          } else if (_this.resMode === 'Input') {
-	            ref1 = _this.mouseDatesTable(date, event), _this.dateBeg = ref1[0], _this.dateEnd = ref1[1];
-	            if (_this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine')) {
-	              _this.input.createResv(_this.dateBeg, _this.dateEnd, _this.roomId);
-	              ref2 = [_this.dateBeg, _this.dateEnd, _this.roomId], _this.fillBeg = ref2[0], _this.fillEnd = ref2[1], _this.fillRoomId = ref2[2];
+	            resv = _this.res.getResv(_this.dateBeg, _this.roomId);
+	            name = resv != null ? resv.last : 'none';
+	            Util.log('Master.doCell', _this.dateBeg, _this.dateEnd, _this.roomId, name);
+	            if (resv == null) {
+	              ref1 = _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine'), beg = ref1[0], end = ref1[1];
+	              if ((beg != null) && (end != null)) {
+	                _this.input.createResv(beg, end, _this.roomId);
+	              }
 	            } else {
-	              _this.doResvUpdate(date, _this.roomId);
+	              _this.input.updateResv(_this.dateBeg, _this.dateEnd, _this.roomId, resv);
 	            }
 	          }
 	        };
@@ -33375,67 +33369,51 @@
 	      $('[data-cell="y"]').contextmenu(doCell);
 	    };
 
-	    Master.prototype.doResvUpdate = function(date, roomId) {
-	      var resv;
-	      resv = this.res.getResv(date, roomId);
-	      if (resv != null) {
-	        resv.action = 'put';
-	        this.input.populateResv(resv);
-	      }
-	    };
-
-	    Master.prototype.doResv = function(beg, end, prop) {
-	      var resvs;
-	      resvs = {};
-	      if (end != null) {
-	        resvs = this.res.resvArrayByProp(beg, end, prop);
-	      } else {
-	        resvs = this.res.resvArrayByDate(beg);
-	      }
-	      return this.resvBody(resvs);
-	    };
-
-	    Master.prototype.mouseDatesTable = function(date, event) {
-	      if (event.buttons === 2) {
-	        this.dateEnd = date;
-	      } else {
-	        this.dateBeg = date;
-	      }
-	      return [this.dateBeg, this.dateEnd];
-	    };
-
-	    Master.prototype.mouseDatesInput = function(date) {
-	      if ((this.dateBeg != null) && this.dateBeg <= date) {
-	        this.dateEnd = date;
-	      } else {
+	    Master.prototype.mouseDates = function(date) {
+	      this.res.order = 'Decend';
+	      if ((this.dateBeg == null) && (this.dateEnd == null)) {
 	        this.dateBeg = date;
 	        this.dateEnd = date;
+	      } else if (this.dateEnd < date) {
+	        this.dateEnd = date;
+	      } else if (this.dateBeg > date) {
+	        this.dateBeg = date;
+	      } else if (this.dateBeg <= date && date <= this.dateEnd) {
+	        if (this.dateSel === 'Beg') {
+	          this.dateBeg = date;
+	          this.dateSel = 'End';
+	        } else if (this.dateSel === 'End') {
+	          this.dateEnd = date;
+	          this.dateSel = 'Beg';
+	        }
 	      }
-	      return [this.dateBeg, this.dateEnd];
+	      return [this.dateBeg, this.dateEnd, this.dateSel];
 	    };
 
 	    Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
-	      var $cell, $cells, i, len, nxtDate, status;
+	      var $cell, $cells, beg, end, i, len, next, status;
 	      if (!((begDate != null) && (endDate != null) && (roomId != null))) {
-	        return;
+	        return [null, null];
 	      }
+	      beg = Math.min(begDate, endDate).toString();
+	      end = Math.max(begDate, endDate).toString();
 	      $cells = [];
-	      nxtDate = begDate;
-	      while (nxtDate <= endDate) {
-	        $cell = this.$cell('M', nxtDate, roomId);
-	        status = this.res.status(nxtDate, roomId);
+	      next = beg;
+	      while (next <= end) {
+	        $cell = this.$cell('M', next, roomId);
+	        status = this.res.status(next, roomId);
 	        if (status === free || status === fill || status === 'Cancel') {
 	          $cells.push($cell);
-	          nxtDate = this.Data.advanceDate(nxtDate, 1);
+	          next = this.Data.advanceDate(next, 1);
 	        } else {
-	          return false;
+	          return [null, null];
 	        }
 	      }
 	      for (i = 0, len = $cells.length; i < len; i++) {
 	        $cell = $cells[i];
-	        this.cellStatus($cell, fill, fill);
+	        this.cellStatus($cell, fill);
 	      }
-	      return true;
+	      return [beg, end];
 	    };
 
 	    Master.prototype.listenToDays = function() {
@@ -33444,7 +33422,7 @@
 	        return function(dayId, day) {
 	          if ((dayId != null) && (day != null)) {
 	            _this.res.days[dayId] = day;
-	            return _this.onAlloc(dayId, day);
+	            return _this.onAlloc(dayId);
 	          }
 	        };
 	      })(this);
@@ -33489,11 +33467,11 @@
 	      for (dayId in days) {
 	        if (!hasProp.call(days, dayId)) continue;
 	        day = days[dayId];
-	        this.onAlloc(dayId, day);
+	        this.onAlloc(dayId);
 	      }
 	    };
 
-	    Master.prototype.onAlloc = function(dayId, day) {
+	    Master.prototype.onAlloc = function(dayId) {
 	      var date, roomId;
 	      date = this.Data.toDate(dayId);
 	      roomId = this.Data.roomId(dayId);
@@ -33517,6 +33495,9 @@
 
 	    Master.prototype.cellStatus = function($cell, klass) {
 	      $cell.removeClass().addClass("room-" + klass);
+	      $cell.css({
+	        background: this.Data.toColor(klass)
+	      });
 	    };
 
 	    Master.prototype.onMonthClick = function(event) {
@@ -33529,20 +33510,20 @@
 	      if (month === this.showingMonth) {
 	        this.removeAllMonthStyles();
 	        $master.css({
-	          height: '800px'
+	          height: '860px'
 	        });
 	        $master.children().show();
 	        this.showingMonth = 'Master';
 	      } else {
 	        $master.children().hide();
 	        $master.css({
-	          height: '330px'
+	          height: '475px'
 	        });
 	        $('#' + month).css({
 	          left: 0,
 	          top: 0,
 	          width: '100%',
-	          height: '330px',
+	          height: '475px',
 	          fontSize: '14px'
 	        }).show();
 	        this.showingMonth = month;
@@ -33571,37 +33552,6 @@
 	      return htm;
 	    };
 
-	    Master.prototype.resvHead = function() {
-	      var htm;
-	      htm = "<table class=\"RTTable\"><thead><tr>";
-	      htm += "<th id=\"RHArrive\">Arrive</th><th id=\"RHStayTo\">Stay To</th><th id=\"RHNights\">Nights</th><th id=\"RHRoom\"  >Room</th>";
-	      htm += "<th id=\"RHName\"  >Name</th>  <th id=\"RHGuests\">Guests</th> <th id=\"RHStatus\">Status</th><th id=\"RHBooked\">Booked</th>";
-	      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHPrice\" >Total</th>  <th id=\"RHTax\"   >Tax</th>   <th id=\"RHCharge\">Charge</th>";
-	      htm += "</tr></thead><tbody id=\"RTBody\"></tbody></table>";
-	      return htm;
-	    };
-
-	    Master.prototype.resvBody = function(resvs) {
-	      var arrive, booked, charge, htm, i, len, r, stayto, tax, trClass;
-	      $('#RTBody').empty();
-	      htm = "";
-	      for (i = 0, len = resvs.length; i < len; i++) {
-	        r = resvs[i];
-	        arrive = this.Data.toMMDD(r.arrive);
-	        stayto = this.Data.toMMDD(r.stayto);
-	        booked = this.Data.toMMDD(r.booked);
-	        tax = Util.toFixed(r.total * this.Data.tax);
-	        charge = Util.toFixed(r.total + parseFloat(tax));
-	        trClass = this.res.isNewResv(r) ? 'RTNewRow' : 'RTOldRow';
-	        htm += "<tr class=\"" + trClass + "\">";
-	        htm += "<td class=\"RTArrive\">" + arrive + "  </td><td class=\"RTStayto\">" + stayto + "</td><td class=\"RTNights\">" + r.nights + "</td>";
-	        htm += "<td class=\"RTRoomId\">" + r.roomId + "</td><td class=\"RTLast\"  >" + r.last + "</td><td class=\"RTGuests\">" + r.guests + "</td>";
-	        htm += "<td class=\"RTStatus\">" + r.status + "</td><td class=\"RTBooked\">" + booked + "</td><td class=\"RTPrice\" >$" + r.price + "</td>";
-	        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCharge\">$" + charge + " </td></tr>";
-	      }
-	      return $('#RTBody').append(htm);
-	    };
-
 	    Master.prototype.roomsHtml = function(year, month) {
 	      var begDay, date, day, endDay, htm, i, j, k, monthIdx, nextMonth, prevMonth, ref, ref1, ref2, ref3, ref4, ref5, ref6, room, roomId, weekday, weekdayIdx;
 	      monthIdx = this.Data.months.indexOf(month);
@@ -33610,8 +33560,8 @@
 	      begDay = 1;
 	      endDay = this.Data.numDayMonth[monthIdx];
 	      weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
-	      htm = "<div class=\"MasterTitle\">" + prevMonth + "<span class=\"ThisMonth\">" + month + "</span>" + nextMonth + "</div>";
-	      htm += "<table class=\"RTTable\"><thead>";
+	      htm = "<div   class=\"MasterTitle\">" + prevMonth + "<span class=\"ThisMonth\">" + month + "</span>" + nextMonth + "</div>";
+	      htm += "<table class=\"MonthTable\"><thead>";
 	      htm += "<tr><th></th>";
 	      for (day = i = ref = begDay, ref1 = endDay; ref <= ref1 ? i <= ref1 : i >= ref1; day = ref <= ref1 ? ++i : --i) {
 	        weekday = this.Data.weekdays[(weekdayIdx + day - 1) % 7].charAt(0);
@@ -33629,7 +33579,7 @@
 	        htm += "<tr id=\"" + roomId + "\"><td>" + roomId + "</td>";
 	        for (day = k = ref5 = begDay, ref6 = endDay; ref5 <= ref6 ? k <= ref6 : k >= ref6; day = ref5 <= ref6 ? ++k : --k) {
 	          date = this.Data.toDateStr(day, monthIdx);
-	          htm += this.createCell(date, roomId, monthIdx, day, endDay);
+	          htm += this.createCell(date, roomId);
 	        }
 	        htm += "</tr>";
 	      }
@@ -33637,24 +33587,24 @@
 	      return htm;
 	    };
 
-	    Master.prototype.createCell = function(date, roomId, mi, dd, endDay) {
-	      var bord, day, htm, klass;
-	      Util.noop(mi, dd, endDay);
-	      day = this.res.day(date, roomId);
+	    Master.prototype.createCell = function(date, roomId) {
+	      var bord, dd, htm, klass, last, mi, ref, resv, yy;
+	      ref = this.Data.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
+	      resv = this.res.getResv(date, roomId);
 	      klass = this.res.klass(date, roomId);
-	      bord = this.border(date, roomId, klass);
-	      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + " data-status=\"" + day.status + "\" ";
-	      htm += "data-res=\"" + day.resId + "\" data-roomId=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\"></td>";
+	      bord = this.border(date, roomId, resv, klass);
+	      last = (resv != null) && (resv.arrive === date || dd === 1) ? "<div>" + resv.last + "</div>" : '';
+	      htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + "\" ";
+	      htm += "data-roomid=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\">" + last + "</td>";
 	      return htm;
 	    };
 
-	    Master.prototype.border = function(date, roomId, klass) {
-	      var bord, color, resv;
+	    Master.prototype.border = function(date, roomId, resv, klass) {
+	      var bord, color;
 	      color = this.Data.toColor(klass);
 	      bord = "";
-	      resv = this.res.getResv(date, roomId);
 	      if (resv != null) {
-	        bord += "background-color:" + color + "; border-top:  2px solid black;    border-bottom:2px solid black;   ";
+	        bord = "background-color:" + color + "; border-top: 2px solid black;     border-bottom:2px solid black;   ";
 	        if (date === resv.arrive) {
 	          bord += "background-color:" + color + "; border-left: 2px solid black;    border-right:2px solid " + color + "; ";
 	        } else if (date === resv.stayto) {
@@ -33662,6 +33612,8 @@
 	        } else {
 	          bord += "background-color:" + color + "; border-right:2px solid " + color + "; border-left:2px  solid " + color + "; ";
 	        }
+	      } else {
+	        bord = "border:1px solid black;";
 	      }
 	      return bord;
 	    };
@@ -33799,7 +33751,7 @@
 	      status = this.toStatus(book.status);
 	      guests = this.toNumGuests(names);
 	      total = parseFloat(book.total.substr(3));
-	      return this.res.createResvBooking(arrive, depart, booked, roomId, last, status, guests, total);
+	      return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
 	    };
 
 	    Upload.prototype.onUpdateRes = function() {
@@ -33900,12 +33852,80 @@
 	  Query = (function() {
 	    module.exports = Query;
 
-	    function Query(stream, store, Data, res) {
+	    function Query(stream, store, Data, res, master) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
 	      this.res = res;
+	      this.master = master;
 	    }
+
+	    Query.prototype.readyQuery = function() {
+	      $('#ResTbl').empty();
+	      $('#ResTbl').append(this.resvHead());
+	      this.resvSortClick('RHBooked', 'booked');
+	      this.resvSortClick('RHRoom', 'roomId');
+	      this.resvSortClick('RHArrive', 'arrive');
+	      this.resvSortClick('RHStayTo', 'stayto');
+	      this.resvSortClick('RHName', 'last');
+	      this.resvSortClick('RHStatus', 'status');
+	    };
+
+	    Query.prototype.updateBody = function(beg, end, prop) {
+	      var resvs;
+	      $('#QArrive').text(this.Data.toMMDD(beg));
+	      $('#QStayTo').text(this.Data.toMMDD(end));
+	      resvs = {};
+	      if (end != null) {
+	        resvs = this.res.resvArrayByProp(beg, end, prop);
+	      } else {
+	        resvs = this.res.resvArrayByDate(beg);
+	      }
+	      return this.resvBody(resvs);
+	    };
+
+	    Query.prototype.resvSortClick = function(id, prop) {
+	      return $('#' + id).click((function(_this) {
+	        return function() {
+	          return _this.resvBody(_this.res.resvArrayByProp(_this.master.dateBeg, _this.master.dateEnd, prop));
+	        };
+	      })(this));
+	    };
+
+	    Query.prototype.resvHead = function() {
+	      var htm;
+	      htm = "";
+	      htm += "<table class=\"RTTable\"><thead><tr>";
+	      htm += "<th id=\"RHArrive\">Arrive</th><th id=\"RHStayTo\">Stay To</th><th id=\"RHNights\">Nights</th><th id=\"RHRoom\"  >Room</th>";
+	      htm += "<th id=\"RHName\"  >Name</th>  <th id=\"RHGuests\">Guests</th> <th id=\"RHStatus\">Status</th><th id=\"RHBooked\">Booked</th>";
+	      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHTotal\" >Total</th>  <th id=\"RHTax\"   >Tax</th>   <th id=\"RHCharge\">Charge</th>";
+	      htm += "</tr><tr>";
+	      htm += "<th id=\"QArrive\"></th><th id=\"QStayTo\"></th><th></th><th></th>";
+	      htm += "<th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th>";
+	      htm += "</tr></thead><tbody id=\"RTBody\"></tbody></table>";
+	      return htm;
+	    };
+
+	    Query.prototype.resvBody = function(resvs) {
+	      var arrive, booked, charge, htm, i, len, r, stayto, tax, trClass;
+	      $('#RTBody').empty();
+	      htm = "";
+	      for (i = 0, len = resvs.length; i < len; i++) {
+	        r = resvs[i];
+	        arrive = this.Data.toMMDD(r.arrive);
+	        stayto = this.Data.toMMDD(r.stayto);
+	        booked = this.Data.toMMDD(r.booked);
+	        tax = Util.toFixed(r.total * this.Data.tax);
+	        charge = Util.toFixed(r.total + parseFloat(tax));
+	        trClass = this.res.isNewResv(r) ? 'RTNewRow' : 'RTOldRow';
+	        htm += "<tr class=\"" + trClass + "\">";
+	        htm += "<td class=\"RTArrive\">" + arrive + "  </td><td class=\"RTStayto\">" + stayto + "</td><td class=\"RTNights\">" + r.nights + "</td>";
+	        htm += "<td class=\"RTRoomId\">" + r.roomId + "</td><td class=\"RTLast\"  >" + r.last + "</td><td class=\"RTGuests\">" + r.guests + "</td>";
+	        htm += "<td class=\"RTStatus\">" + r.status + "</td><td class=\"RTBooked\">" + booked + "</td><td class=\"RTPrice\" >$" + r.price + "</td>";
+	        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCharge\">$" + charge + " </td></tr>";
+	      }
+	      return $('#RTBody').append(htm);
+	    };
 
 	    return Query;
 
@@ -33927,33 +33947,59 @@
 	  Input = (function() {
 	    module.exports = Input;
 
-	    function Input(stream, store, Data, res) {
+	    function Input(stream, store, Data, res, master) {
 	      this.stream = stream;
 	      this.store = store;
 	      this.Data = Data;
 	      this.res = res;
+	      this.master = master;
 	      this.resv = {};
+	      this.state = 'add';
 	    }
 
-	    Input.prototype.createResv = function(arrive, stayto, roomId) {
-	      var resv;
-	      resv = {};
-	      resv.arrive = arrive;
-	      resv.stayto = stayto;
-	      resv.depart = this.Data.advanceDate(stayto, 1);
-	      resv.roomId = roomId;
-	      resv.last = "";
-	      resv.status = 'Skyline';
-	      resv.action = 'add';
-	      resv.guests = 4;
-	      resv.pets = 0;
-	      this.refreshResv(resv);
-	      this.resv = resv;
+	    Input.prototype.readyInput = function() {
+	      $('#ResAdd').empty();
+	      $('#ResAdd').append(this.html());
+	      $('#ResAdd').hide();
+	      return this.action();
 	    };
 
-	    Input.prototype.populateResv = function(resv) {
-	      this.refreshResv(resv);
+	    Input.prototype.createResv = function(arrive, stayto, roomId) {
+	      this.resv = {};
+	      this.resv.arrive = arrive;
+	      this.resv.stayto = stayto;
+	      this.resv.depart = this.Data.advanceDate(stayto, 1);
+	      this.resv.roomId = roomId;
+	      this.resv.last = "";
+	      this.resv.status = 'Skyline';
+	      this.resv.guests = 4;
+	      this.resv.pets = 0;
+	      this.resv.booked = this.Data.today();
+	      this.state = 'add';
+	      this.refreshResv(this.resv);
+	    };
+
+	    Input.prototype.updateResv = function(arrive, stayto, roomId, resv) {
+	      this.updateDates(arrive, stayto, roomId, resv);
 	      this.resv = resv;
+	      this.state = 'put';
+	      this.refreshResv(this.resv);
+	    };
+
+	    Input.prototype.updateDates = function(arrive, stayto, roomId, resv) {
+	      var beg, end;
+	      if (this.state !== 'put' || !((arrive != null) && (stayto != null) && (roomId != null))) {
+	        return;
+	      }
+	      beg = Math.min(arrive, stayto).toString();
+	      end = Math.max(arrive, stayto).toString();
+	      if (beg != null) {
+	        resv.arrive = beg;
+	      }
+	      if (end != null) {
+	        resv.stayto = end;
+	      }
+	      Util.log('Input.updateDates', beg, end, roomId);
 	    };
 
 	    Input.prototype.html = function() {
@@ -33963,7 +34009,7 @@
 	      htm += "<th>Guests</th><th>Pets</th><th>Status</th>";
 	      htm += "<th>Nights</th><th>Price</th><th>Total</th><th>Tax</th><th>Charge</th><th>Action</th></tr>";
 	      htm += "</thead><tbody>";
-	      htm += "<tr><td id=\"NRArrive\"></td><td id=\"NRStayTo\"></td><td id=\"NRRoomId\"></td><td>" + (this.names()) + "</td>";
+	      htm += "<tr><td id=\"NRArrive\"></td><td id=\"NRStayTo\"></td><td>" + (this.rooms()) + "</td><td>" + (this.names()) + "</td>";
 	      htm += "<td>" + (this.guests()) + "</td><td>" + (this.pets()) + "</td><td>" + (this.status()) + "</td>";
 	      htm += "<td id=\"NRNights\"></td><td id=\"NRPrice\"></td><td id=\"NRTotal\"></td><td id=\"NRTax\"></td><td id=\"NRCharge\"></td>";
 	      htm += "<td id=\"NRSubmit\">" + (this.submit()) + "</td></tr>";
@@ -33975,6 +34021,12 @@
 	      $('#NRNames').change((function(_this) {
 	        return function(event) {
 	          _this.resv.last = event.target.value;
+	        };
+	      })(this));
+	      $('#NRRooms').change((function(_this) {
+	        return function(event) {
+	          _this.resv.roomId = event.target.value;
+	          _this.refreshResv(_this.resv);
 	        };
 	      })(this));
 	      $('#NRGuests').change((function(_this) {
@@ -33996,6 +34048,10 @@
 	        };
 	      })(this));
 	      return this.resvSubmits();
+	    };
+
+	    Input.prototype.rooms = function() {
+	      return this.res.htmlSelect('NRRooms', this.res.roomKeys, this.resv.roomId);
 	    };
 
 	    Input.prototype.guests = function() {
@@ -34023,24 +34079,16 @@
 	    };
 
 	    Input.prototype.refreshResv = function(resv) {
-	      var room;
 	      resv.nights = this.Data.nights(resv.arrive, resv.depart);
 	      resv.price = resv.status === 'Skyline' || resv.status === 'Deposit' ? this.res.calcPrice(resv.roomId, resv.guests, resv.pets) : resv.price;
 	      resv.deposit = resv.price * 0.5;
 	      resv.total = resv.nights * resv.price;
 	      resv.tax = parseFloat(Util.toFixed(resv.total * this.Data.tax));
 	      resv.charge = Util.toFixed(resv.total + resv.tax);
-	      room = '#' + resv.roomId;
-	      if (resv.roomId === 'N') {
-	        room = 'North';
-	      }
-	      if (resv.roomId === 'S') {
-	        room = 'South';
-	      }
 	      $('#NRArrive').text(this.Data.toMMDD(resv.arrive));
 	      $('#NRStayTo').text(this.Data.toMMDD(resv.stayto));
-	      $('#NRRoomId').text(room);
 	      $('#NRNames').val(resv.last);
+	      $('#NRRooms').val(resv.roomId);
 	      $('#NRGuests').val(resv.guests);
 	      $('#NRPets').val(resv.pets);
 	      $('#NRStatus').val(resv.status);
@@ -34049,11 +34097,11 @@
 	      $('#NRTotal').text('$' + resv.total);
 	      $('#NRTax').text('$' + resv.tax);
 	      $('#NRCharge').text('$' + resv.charge);
-	      if (resv.action === 'add') {
+	      if (this.state === 'add') {
 	        $('#NRCreate').show();
 	        $('#NRChange').hide();
 	        $('#NRDelete').hide();
-	      } else if (resv.action === 'put') {
+	      } else if (this.state === 'put') {
 	        $('#NRCreate').hide();
 	        $('#NRChange').show();
 	        $('#NRDelete').show();
@@ -34066,7 +34114,14 @@
 	        return function() {
 	          var r;
 	          r = _this.resv;
-	          return _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+	          if (r.status === 'Skyline' || 'Deposit') {
+	            _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+	          } else if (r.status === 'Booking' || 'Prepaid') {
+	            _this.res.createResvBooking(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
+	          } else {
+	            Util.error('Input.doRes() unknown status', r.status, r);
+	          }
+	          _this.master.resMode = 'Create';
 	        };
 	      })(this);
 	      doDel = (function(_this) {
