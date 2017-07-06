@@ -6,8 +6,9 @@ class Input
   module.exports = Input
 
   constructor:( @stream, @store, @Data, @res, @master ) ->
-    @resv  = {}
-    @state = 'add'
+    @resv       = {}
+    @state      = 'add'
+    @lastResId  = 'none'
 
   readyInput:() ->
     $('#ResAdd').empty()
@@ -30,21 +31,26 @@ class Input
     @refreshResv( @resv )
     return
 
-  updateResv:(    arrive, stayto, roomId, resv ) ->
-    @updateDates( arrive, stayto, roomId, resv )
-    @resv = resv
-    @state = 'put'
-    @refreshResv( @resv )
+  updateResv:(       arrive, stayto, roomId, resv ) ->
+    [arrive,stayto] = if resv.resId isnt @lastResId then [resv.arrive,resv.stayto] else [arrive,stayto]
+    if @updateDates( arrive, stayto, roomId, resv )
+      @resv = resv
+      @state = 'put'
+      @refreshResv( @resv )
+      @lastResId = @resv.resId
+    else
+      alert( "Reservation Dates Not Free: Arrive#{arrive} StayTo:#{stayto} RoomId:##{roomId} Name:#{resv.last}" )
     return
 
   updateDates:( arrive, stayto, roomId, resv ) ->
-    return if @state isnt 'put' or not ( arrive? and stayto? and roomId? )
+    return false if not ( arrive? and stayto? and roomId? )
     beg = Math.min( arrive, stayto ).toString()
     end = Math.max( arrive, stayto ).toString()
     resv.arrive = beg if beg?
     resv.stayto = end if end?
-    Util.log( 'Input.updateDates', beg, end, roomId )
-    return
+    free = @res.datesFree( arrive, stayto, roomId, resv )
+    #Util.log( 'Input.updateDates', beg, end, roomId, free )
+    free
     
   html:() ->
     htm  = """<table id="NRTable"><thead>"""
@@ -138,13 +144,13 @@ class Input
     doRes = () =>
       r = @resv
       if      r.status is 'Skyline' or 'Deposit'
-        @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )
+        r = @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )
       else if r.status is 'Booking' or 'Prepaid'
-        @res.createResvBooking( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked )
+        r = @res.createResvBooking( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked )
       else
-        Util.error( 'Input.doRes() unknown status', r.status, r )
-      @master.resMode = 'Create'
-      return
+        r = null
+        alert( "Unknown Reservation Status: #{r.status} Name:#{r.last}" )
+      r
 
     doDel = () =>
       @resv.status = 'Free'
@@ -154,14 +160,14 @@ class Input
     $('#NRCreate').click () =>
       if Util.isStr( @resv.last )
         resv = doRes()
-        @res.addResv( resv )
+        @res.addResv( resv ) if resv?
       else
         alert( 'Incomplete Reservation' )
       return
 
     $('#NRChange').click () =>
       resv = doRes()
-      @res.putResv( resv )
+      @res.putResv( resv ) if resv?
       return
 
     $('#NRDelete').click () =>
@@ -173,6 +179,6 @@ class Input
     $('#NRCancel').click () =>
       resv = doRes()
       resv.status = 'Cancel'
-      @res.canResv( resv )
+      @res.canResv( resv ) if resv?
       return
     

@@ -16,7 +16,7 @@ class Upload
     htm += """<button id="UploadCan" class="btn btn-primary">Upload Can</button>"""
     #tm += """<button id="CreateRes" class="btn btn-primary">Create Res</button>"""
     #tm += """<button id="CreateCan" class="btn btn-primary">Create Can</button>"""
-    #tm += """<button id="CreateDay" class="btn btn-primary">Create Day</button>"""
+    htm += """<button id="CreateDay" class="btn btn-primary">Create Day</button>"""
     htm += """<button id="CustomFix" class="btn btn-primary">Custom Fix</button>"""
     htm += """<textarea id="UploadText" class="UploadText" rows="50" cols="100"></textarea>"""
     htm

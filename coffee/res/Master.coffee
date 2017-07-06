@@ -16,8 +16,8 @@ class Master
     @input         = new Input(  @stream, @store, @Data, @res, @ )
     @season        = new Season( @stream, @store, @Data, @res )
     @res.master    = @
-    @dateBeg       = @Data.today()
-    @dateEnd       = @Data.today()
+    @dateBeg       = @res.today
+    @dateEnd       = @res.today
     @dateSel       = "End"
     @roomId        = null
     @resMode       = 'Table' # or 'Input'
@@ -33,7 +33,8 @@ class Master
     $('#DailysBtn').click( @onDailysBtn )
     $('#UploadBtn').click( @onUploadBtn )
     #res.dateRange( @Data.beg, @Data.end, @readyMaster ) # This works
-    @res.selectAllDaysResvs( @readyMaster )
+    #res.selectAllDaysResvs( @readyMaster )
+    @res.selectAllResvs(     @readyMaster, true )
     return
 
   onMasterBtn:() =>
@@ -55,7 +56,8 @@ class Master
     $('#ResTbl').hide()
     $('#Master').show()
     @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' ) # Clear any previous fill
-    [@dateBeg,@dateEnd,@dateSel] = [null,null,"Beg"]
+    @dateEnd = @dateEnd
+    #[@dateBeg,@dateEnd,@dateSel] = [null,null,"Beg"]
     return
 
   onSeasonBtn:() =>
@@ -117,20 +119,18 @@ class Master
     doCell = (event) =>
       @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
       $cell   = $(event.target)
+      $cell   = if $cell.is('div') then $cell.parent() else $cell
       date    = $cell.attr('data-date'   )
-      @roomId = $cell.attr('data-roomid' )   # Lower case data-roomid # #@res.attr( $cell, 'data-roomid' )
-      return if not date? or not @roomId
-      [@dateBeg,@dateEnd,@dateSel] = @mouseDates( date )
+      @roomId = $cell.attr('data-roomid' )
+      return if not date? or not @roomId?
+      [@dateBeg,@dateEnd,@dateSel] = @mouseDates(date)
+
       if @resMode is 'Table'
         @query.updateBody( @dateBeg, @dateEnd, 'arrive' )
       else if @resMode is 'Input'
-        resv = @res.getResv( @dateBeg, @roomId )
-        name = if resv? then resv.last else 'none'
-        Util.log( 'Master.doCell', @dateBeg, @dateEnd, @roomId, name )
+        resv = @res.getResv( date, @roomId )
         if not resv?
-          [beg,end] = @fillInCells( @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
-          if beg? and end?
-            @input.createResv( beg, end, @roomId )
+          @createResv(       @dateBeg, @dateEnd, @roomId )
         else
           @input.updateResv( @dateBeg, @dateEnd, @roomId, resv )
       return
@@ -139,12 +139,15 @@ class Master
     $('[data-cell="y"]').contextmenu( doCell )
     return
 
+  createResv:( dateBeg, dateEnd, roomId ) ->
+    [beg,end] = @fillInCells( dateBeg, dateEnd, roomId, 'Free', 'Mine' )
+    if beg? and end?
+      @input.createResv( beg, end, roomId )
+    return
+
   mouseDates:( date ) ->
     @res.order = 'Decend' # Will flip to 'Ascend'
-    if   not  @dateBeg? and not @dateEnd? # Init for Input
-              @dateBeg  = date
-              @dateEnd  = date
-    else if   @dateEnd  < date
+    if        @dateEnd  < date
               @dateEnd  = date
     else if   @dateBeg  > date
               @dateBeg  = date
@@ -214,8 +217,9 @@ class Master
   onAlloc:(  dayId ) =>
     date   = @Data.toDate( dayId )
     roomId = @Data.roomId( dayId )
+    #Util.log( 'Master.onAlloc', date, roomId )
     @allocCell(        roomId, date )
-    @season.allocCell( roomId, date )
+    @season.allocCell( roomId, date ) if @season?
     return
 
   cellId:( pre,  date,  roomId ) ->
@@ -287,6 +291,12 @@ class Master
       htm += """</tr>"""
     htm += "</tbody></table>"
     htm
+
+  allocResv:( resv ) ->
+    $cell = @$cell( 'M', resv.arrive, resv.roomId )
+    $div  = $cell.find('div')
+    $div.text( resv.last )
+    return
 
   createCell:( date, roomId ) ->
     [yy,mi,dd] = @Data.yymidd( date )

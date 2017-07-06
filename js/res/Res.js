@@ -69,14 +69,7 @@
       }
       this.store.subscribe('Day', 'select', 'none', (function(_this) {
         return function(days) {
-          var day, dayId, ref;
           _this.days = days;
-          ref = _this.days;
-          for (dayId in ref) {
-            if (!hasProp.call(ref, dayId)) continue;
-            day = ref[dayId];
-            day.status = _this.Data.toStatus(day.status);
-          }
           if (onComplete != null) {
             return onComplete();
           }
@@ -85,19 +78,24 @@
       this.store.select('Day');
     };
 
-    Res.prototype.selectAllResvs = function(onComplete) {
+    Res.prototype.selectAllResvs = function(onComplete, genDays) {
       if (onComplete == null) {
         onComplete = null;
+      }
+      if (genDays == null) {
+        genDays = false;
       }
       this.store.subscribe('Res', 'select', 'none', (function(_this) {
         return function(resvs) {
           var ref, resId, resv;
           _this.resvs = resvs;
-          ref = _this.resvs;
-          for (resId in ref) {
-            if (!hasProp.call(ref, resId)) continue;
-            resv = ref[resId];
-            resv.status = _this.Data.toStatus(resv.status);
+          if (genDays) {
+            ref = _this.resvs;
+            for (resId in ref) {
+              if (!hasProp.call(ref, resId)) continue;
+              resv = ref[resId];
+              _this.updateDaysFromResv(resv, false);
+            }
           }
           if (onComplete != null) {
             return onComplete();
@@ -209,7 +207,7 @@
 
     Res.prototype.dayIds = function(arrive, stayto, roomId) {
       var depart, i, ids, j, nights, ref;
-      depart = Data.advanceDate(stayto, 1);
+      depart = this.Data.advanceDate(stayto, 1);
       nights = this.Data.nights(arrive, depart);
       ids = [];
       for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
@@ -218,12 +216,45 @@
       return ids;
     };
 
+    Res.prototype.datesFree = function(arrive, stayto, roomId, resv) {
+      var dayId, dayIds, j, len;
+      dayIds = this.dayIds(arrive, stayto, roomId);
+      for (j = 0, len = dayIds.length; j < len; j++) {
+        dayId = dayIds[j];
+        if ((this.days[dayId] != null) && !(this.days[dayId].status === 'Free' || this.days[dayId].resId === resv.resId)) {
+          Util.log('Res.collision days', {
+            arrive: arrive,
+            stayto: stayto,
+            roomId: roomId,
+            dayId: dayId
+          });
+          Util.log('Res.collision resv', {
+            arrive: resv.arrive,
+            stayto: resv.stayto,
+            roomId: resv.roomId,
+            name: resv.last
+          });
+          return false;
+        }
+      }
+      return true;
+    };
+
     Res.prototype.allocDays = function(days) {
       if (this.book != null) {
         this.book.allocDays(days);
       }
       if (this.master != null) {
         this.master.allocDays(days);
+      }
+    };
+
+    Res.prototype.allocResv = function(resv) {
+      if (this.book != null) {
+        this.book.allocResv(resv);
+      }
+      if (this.master != null) {
+        this.master.allocResv(resv);
       }
     };
 
@@ -247,17 +278,23 @@
       return this.resvs;
     };
 
-    Res.prototype.updateDaysFromResv = function(resv) {
+    Res.prototype.updateDaysFromResv = function(resv, add) {
       var day, dayId, days, i, j, ref;
+      if (add == null) {
+        add = true;
+      }
       days = {};
       for (i = j = 0, ref = resv.nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         dayId = this.Data.dayId(this.Data.advanceDate(resv.arrive, i), resv.roomId);
         days[dayId] = this.setDay({}, resv.status, resv.resId);
       }
       this.allocDays(days);
+      this.allocResv(resv);
       for (dayId in days) {
         day = days[dayId];
-        this.store.add('Day', dayId, day);
+        if (add) {
+          this.store.add('Day', dayId, day);
+        }
         this.days[dayId] = day;
       }
     };
@@ -469,6 +506,9 @@
     };
 
     Res.prototype.putResv = function(resv) {
+      if (resv == null) {
+        Util.error('Res.putResv resv null');
+      }
       this.resvs[resv.resId] = resv;
       this.store.put('Res', resv.resId, resv);
     };

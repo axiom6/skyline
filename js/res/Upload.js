@@ -30,6 +30,7 @@
       htm += "<h1  class=\"UploadH1\">Upload Booking.com</h1>";
       htm += "<button id=\"UploadRes\" class=\"btn btn-primary\">Upload Res</button>";
       htm += "<button id=\"UploadCan\" class=\"btn btn-primary\">Upload Can</button>";
+      htm += "<button id=\"CreateDay\" class=\"btn btn-primary\">Create Day</button>";
       htm += "<button id=\"CustomFix\" class=\"btn btn-primary\">Custom Fix</button>";
       htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
       return htm;

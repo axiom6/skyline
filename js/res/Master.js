@@ -41,8 +41,8 @@
       this.input = new Input(this.stream, this.store, this.Data, this.res, this);
       this.season = new Season(this.stream, this.store, this.Data, this.res);
       this.res.master = this;
-      this.dateBeg = this.Data.today();
-      this.dateEnd = this.Data.today();
+      this.dateBeg = this.res.today;
+      this.dateEnd = this.res.today;
       this.dateSel = "End";
       this.roomId = null;
       this.resMode = 'Table';
@@ -56,7 +56,7 @@
       $('#SeasonBtn').click(this.onSeasonBtn);
       $('#DailysBtn').click(this.onDailysBtn);
       $('#UploadBtn').click(this.onUploadBtn);
-      this.res.selectAllDaysResvs(this.readyMaster);
+      this.res.selectAllResvs(this.readyMaster, true);
     };
 
     Master.prototype.onMasterBtn = function() {
@@ -70,7 +70,6 @@
     };
 
     Master.prototype.onMakResBtn = function() {
-      var ref;
       this.resMode = 'Input';
       $('#Season').hide();
       $('#Dailys').hide();
@@ -79,7 +78,7 @@
       $('#ResTbl').hide();
       $('#Master').show();
       this.fillInCells(this.dateBeg, this.dateEnd, this.roomId, 'Mine', 'Free');
-      ref = [null, null, "Beg"], this.dateBeg = ref[0], this.dateEnd = ref[1], this.dateSel = ref[2];
+      this.dateEnd = this.dateEnd;
     };
 
     Master.prototype.onSeasonBtn = function() {
@@ -160,26 +159,22 @@
       this.query.resvBody(this.res.resvArrayByDate(this.Data.today()));
       doCell = (function(_this) {
         return function(event) {
-          var $cell, beg, date, end, name, ref, ref1, resv;
+          var $cell, date, ref, resv;
           _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Mine', 'Free');
           $cell = $(event.target);
+          $cell = $cell.is('div') ? $cell.parent() : $cell;
           date = $cell.attr('data-date');
           _this.roomId = $cell.attr('data-roomid');
-          if ((date == null) || !_this.roomId) {
+          if ((date == null) || (_this.roomId == null)) {
             return;
           }
           ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2];
           if (_this.resMode === 'Table') {
             _this.query.updateBody(_this.dateBeg, _this.dateEnd, 'arrive');
           } else if (_this.resMode === 'Input') {
-            resv = _this.res.getResv(_this.dateBeg, _this.roomId);
-            name = resv != null ? resv.last : 'none';
-            Util.log('Master.doCell', _this.dateBeg, _this.dateEnd, _this.roomId, name);
+            resv = _this.res.getResv(date, _this.roomId);
             if (resv == null) {
-              ref1 = _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine'), beg = ref1[0], end = ref1[1];
-              if ((beg != null) && (end != null)) {
-                _this.input.createResv(beg, end, _this.roomId);
-              }
+              _this.createResv(_this.dateBeg, _this.dateEnd, _this.roomId);
             } else {
               _this.input.updateResv(_this.dateBeg, _this.dateEnd, _this.roomId, resv);
             }
@@ -190,12 +185,17 @@
       $('[data-cell="y"]').contextmenu(doCell);
     };
 
+    Master.prototype.createResv = function(dateBeg, dateEnd, roomId) {
+      var beg, end, ref;
+      ref = this.fillInCells(dateBeg, dateEnd, roomId, 'Free', 'Mine'), beg = ref[0], end = ref[1];
+      if ((beg != null) && (end != null)) {
+        this.input.createResv(beg, end, roomId);
+      }
+    };
+
     Master.prototype.mouseDates = function(date) {
       this.res.order = 'Decend';
-      if ((this.dateBeg == null) && (this.dateEnd == null)) {
-        this.dateBeg = date;
-        this.dateEnd = date;
-      } else if (this.dateEnd < date) {
+      if (this.dateEnd < date) {
         this.dateEnd = date;
       } else if (this.dateBeg > date) {
         this.dateBeg = date;
@@ -297,7 +297,9 @@
       date = this.Data.toDate(dayId);
       roomId = this.Data.roomId(dayId);
       this.allocCell(roomId, date);
-      this.season.allocCell(roomId, date);
+      if (this.season != null) {
+        this.season.allocCell(roomId, date);
+      }
     };
 
     Master.prototype.cellId = function(pre, date, roomId) {
@@ -406,6 +408,13 @@
       }
       htm += "</tbody></table>";
       return htm;
+    };
+
+    Master.prototype.allocResv = function(resv) {
+      var $cell, $div;
+      $cell = this.$cell('M', resv.arrive, resv.roomId);
+      $div = $cell.find('div');
+      $div.text(resv.last);
     };
 
     Master.prototype.createCell = function(date, roomId) {

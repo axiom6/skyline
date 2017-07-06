@@ -393,6 +393,12 @@ class Book
       @allocCell( date, day.status, roomId )
     return
 
+  allocResv:( resv ) ->
+    #$cell = @$cell( resv.arrive, resv.roomId )
+    #$div  = $cell.find('div')
+    #$div.text( resv.last )
+    return
+
   allocCell:( date, status, roomId ) ->
     @cellStatus( @$cell(date,roomId), status )
 

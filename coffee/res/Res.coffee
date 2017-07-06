@@ -31,15 +31,16 @@ class Res
   selectAllDays:( onComplete=null ) ->
     @store.subscribe( 'Day', 'select', 'none', (days) =>
       @days = days
-      day.status = @Data.toStatus(day.status) for own dayId, day of @days
+      #day.status = @Data.toStatus(day.status) for own dayId, day of @days
       onComplete() if onComplete? )
     @store.select( 'Day' )
     return
 
-  selectAllResvs:( onComplete=null ) =>
+  selectAllResvs:( onComplete=null, genDays=false ) =>
     @store.subscribe( 'Res', 'select', 'none', (resvs) =>
       @resvs = resvs
-      resv.status = @Data.toStatus(resv.status) for own resId, resv of @resvs
+      if genDays
+        @updateDaysFromResv( resv, false ) for own resId, resv of @resvs
       onComplete() if onComplete? ) # resvs not passed to onComplete() - accesss @resvs later on
     @store.select( 'Res' )
     return
@@ -98,6 +99,7 @@ class Res
 
   getResv:( date, roomId ) ->
     day   = @day( date, roomId )
+    #Util.log( 'Res.getResv', date, roomId, day ) if day?
     if day? then @resvs[day.resId] else null
 
   day:( date, roomId ) ->
@@ -106,16 +108,30 @@ class Res
     if day? then day else @setDay( {}, 'Free', 'none' )
 
   dayIds:( arrive, stayto, roomId ) ->
-    depart = Data.advanceDate( stayto, 1 )
+    depart = @Data.advanceDate( stayto, 1 )
     nights = @Data.nights( arrive, depart )
     ids = []
     for i in [0...nights]
       ids.push( @Data.dayId( @Data.advanceDate( arrive, i ), roomId ) )
     ids
 
+  datesFree:(         arrive, stayto, roomId, resv ) ->
+    dayIds = @dayIds( arrive, stayto, roomId )
+    for dayId in dayIds
+      if @days[dayId]? and not ( @days[dayId].status is 'Free' or @days[dayId].resId is resv.resId )
+        Util.log( 'Res.collision days', { arrive:arrive,      stayto:stayto,      roomId:roomId,      dayId:dayId    } )
+        Util.log( 'Res.collision resv', { arrive:resv.arrive, stayto:resv.stayto, roomId:resv.roomId, name:resv.last } )
+        return false
+    true
+
   allocDays:( days ) ->
     @book.  allocDays( days ) if @book?
     @master.allocDays( days ) if @master?
+    return
+
+  allocResv:( resv ) ->
+    @book.  allocResv( resv ) if @book?
+    @master.allocResv( resv ) if @master?
     return
 
   updateResvs:( newResvs ) ->
@@ -128,14 +144,16 @@ class Res
       @addCan( can )
     @resvs
 
-  updateDaysFromResv:( resv ) ->
+  updateDaysFromResv:( resv, add=true ) ->
     days = {} # resv days
     for i in [0...resv.nights]
       dayId       = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
       days[dayId] = @setDay( {}, resv.status, resv.resId )
+    #Util.log( 'Res.updateDaysFromResv', { last:resv.last, arrive:resv.arrive, stayto:resv.stayto, nights:resv.nights, days:days } )
     @allocDays( days )
+    @allocResv( resv )
     for dayId, day of days
-      @store.add( 'Day', dayId, day )
+      @store.add( 'Day', dayId, day ) if add
       @days[dayId] = day
     return
     
@@ -266,6 +284,7 @@ class Res
     return
 
   putResv:( resv ) ->
+    Util.error('Res.putResv resv null') if not resv?
     @resvs[resv.resId] = resv
     @store.put( 'Res', resv.resId, resv )
     return

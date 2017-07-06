@@ -6,14 +6,10 @@ include::../dir/inc/DefBook.adoc[]
 
 ### [.black]#Important#
 
-* Res
-  ** Get JSON
-  ** Convert legacy status
-  ** Regenrate Days
+
 * Upload
   ** Improve Text Transfer
   ** Just filter out invalids
-  ** Can table
   ** Date stamp cancellations
 * Input
   ** Make Dates Easier
@@ -61,6 +57,11 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets
 
 ## [.black]#Guest Site Completed#
+* Res
+  ** Get JSON
+  ** Convert legacy status
+  ** Regenrate Days
+  ** Can table
 * Stripe Reader
   ** Call for setup and Merchant Id
 * Fix weekend and fill in

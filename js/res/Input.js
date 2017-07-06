@@ -15,6 +15,7 @@
       this.master = master;
       this.resv = {};
       this.state = 'add';
+      this.lastResId = 'none';
     }
 
     Input.prototype.readyInput = function() {
@@ -40,16 +41,22 @@
     };
 
     Input.prototype.updateResv = function(arrive, stayto, roomId, resv) {
-      this.updateDates(arrive, stayto, roomId, resv);
-      this.resv = resv;
-      this.state = 'put';
-      this.refreshResv(this.resv);
+      var ref;
+      ref = resv.resId !== this.lastResId ? [resv.arrive, resv.stayto] : [arrive, stayto], arrive = ref[0], stayto = ref[1];
+      if (this.updateDates(arrive, stayto, roomId, resv)) {
+        this.resv = resv;
+        this.state = 'put';
+        this.refreshResv(this.resv);
+        this.lastResId = this.resv.resId;
+      } else {
+        alert("Reservation Dates Not Free: Arrive" + arrive + " StayTo:" + stayto + " RoomId:#" + roomId + " Name:" + resv.last);
+      }
     };
 
     Input.prototype.updateDates = function(arrive, stayto, roomId, resv) {
-      var beg, end;
-      if (this.state !== 'put' || !((arrive != null) && (stayto != null) && (roomId != null))) {
-        return;
+      var beg, end, free;
+      if (!((arrive != null) && (stayto != null) && (roomId != null))) {
+        return false;
       }
       beg = Math.min(arrive, stayto).toString();
       end = Math.max(arrive, stayto).toString();
@@ -59,7 +66,8 @@
       if (end != null) {
         resv.stayto = end;
       }
-      Util.log('Input.updateDates', beg, end, roomId);
+      free = this.res.datesFree(arrive, stayto, roomId, resv);
+      return free;
     };
 
     Input.prototype.html = function() {
@@ -175,13 +183,14 @@
           var r;
           r = _this.resv;
           if (r.status === 'Skyline' || 'Deposit') {
-            _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+            r = _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
           } else if (r.status === 'Booking' || 'Prepaid') {
-            _this.res.createResvBooking(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
+            r = _this.res.createResvBooking(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
           } else {
-            Util.error('Input.doRes() unknown status', r.status, r);
+            r = null;
+            alert("Unknown Reservation Status: " + r.status + " Name:" + r.last);
           }
-          _this.master.resMode = 'Create';
+          return r;
         };
       })(this);
       doDel = (function(_this) {
@@ -196,7 +205,9 @@
           var resv;
           if (Util.isStr(_this.resv.last)) {
             resv = doRes();
-            _this.res.addResv(resv);
+            if (resv != null) {
+              _this.res.addResv(resv);
+            }
           } else {
             alert('Incomplete Reservation');
           }
@@ -206,7 +217,9 @@
         return function() {
           var resv;
           resv = doRes();
-          _this.res.putResv(resv);
+          if (resv != null) {
+            _this.res.putResv(resv);
+          }
         };
       })(this));
       $('#NRDelete').click((function(_this) {
@@ -222,7 +235,9 @@
           var resv;
           resv = doRes();
           resv.status = 'Cancel';
-          _this.res.canResv(resv);
+          if (resv != null) {
+            _this.res.canResv(resv);
+          }
         };
       })(this));
     };

@@ -509,6 +509,8 @@
       }
     };
 
+    Book.prototype.allocResv = function(resv) {};
+
     Book.prototype.allocCell = function(date, status, roomId) {
       return this.cellStatus(this.$cell(date, roomId), status);
     };
