@@ -1,12 +1,14 @@
 
-$ = require('jquery')
+$    = require( 'jquery'      )
+Data = require( 'js/res/Data' )
+UI   = require( 'js/res/UI'   )
 
 class Test
 
   module.exports = Test
   Test.Data      = require( 'data/res.json' )
 
-  constructor:( @stream, @store, @Data, @res, @pay, @pict, @book ) ->
+  constructor:( @stream, @store, @res, @pay, @pict, @book ) ->
 
   doTest:() ->
     for     own resId,  res  of Test.Data

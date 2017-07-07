@@ -1,30 +1,30 @@
 
-$ = require( 'jquery' )
+$    = require( 'jquery'      )
+Data = require( 'js/res/Data' )
+UI   = require( 'js/res/UI'   )
 
 class Season
 
   module.exports = Season
 
-  constructor:( @stream, @store, @Data, @res ) ->
+  constructor:( @stream, @store, @res ) ->
     @rooms         = @res.rooms
     @showingMonth  = 'Master'
 
-  # Shanmugavadivel
-
   html:() ->
     htm = ""
-    for month in @Data.season
+    for month in Data.season
       htm += """<div id="#{month}C" class="#{month}C">#{@monthTable(month)}</div>"""
     htm
 
   monthTable:( month ) ->
-    monthIdx = @Data.months.indexOf(month)
-    begDay   = new Date( 2000+@Data.year, monthIdx, 1 ).getDay() - 1
-    endDay   = @Data.numDayMonth[monthIdx]
+    monthIdx = Data.months.indexOf(month)
+    begDay   = new Date( 2000+Data.year, monthIdx, 1 ).getDay() - 1
+    endDay   = Data.numDayMonth[monthIdx]
     htm  = """<div   class="SeasonTitle">#{month}</div>"""
     htm += """<table class="SeasonTable"><thead><tr>"""
     for day in [0...7]
-      weekday = @Data.weekdays[day]
+      weekday = Data.weekdays[day]
       htm += """<th>#{weekday}</th>"""
     htm += """</tr></thead><tbody>"""
     for row in [0...6]
@@ -40,9 +40,9 @@ class Season
     return htm if day is 0
     htm += """<div class="DayC">#{day}</div>"""
     for roomNum in [1..10]
-      roomId    = @Data.getRoomIdFromNum( roomNum )
+      roomId    = Data.getRoomIdFromNum( roomNum )
       roomClass = "RoomC" + roomId
-      date      = @Data.toDateStr( day, monthIdx )
+      date      = Data.toDateStr( day, monthIdx )
       resv      = @res.getResv(  date, roomId )
       last      = if resv? then resv.last else ""
       htm      += """<div class="#{roomClass}">##{roomId} #{last}</div>"""
@@ -54,7 +54,7 @@ class Season
     day
 
   roomDayId:(  monthIdx,  day, roomId ) ->
-    date = @Data.dateStr( day, monthIdx )
+    date = Data.dateStr( day, monthIdx )
     @cellId( 'S', roomId, date )
 
   onMonthClick:( event ) =>
@@ -77,7 +77,7 @@ class Season
 
   # Removes expanded style from month and goes back to the month's css selector
   removeAllMonthStyles:() ->
-    @$month(month).removeAttr('style') for month in @Data.season
+    @$month(month).removeAttr('style') for month in Data.season
 
   $month:( month ) ->
      $('#'+month+'C')

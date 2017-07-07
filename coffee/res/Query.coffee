@@ -1,11 +1,13 @@
 
-$ = require( 'jquery'  )
+$    = require( 'jquery'      )
+Data = require( 'js/res/Data' )
+UI   = require( 'js/res/UI'   )
 
 class Query
 
   module.exports =Query
 
-  constructor:( @stream, @store, @Data, @res, @master ) ->
+  constructor:( @stream, @store, @res, @master ) ->
 
 
   readyQuery:() ->
@@ -20,8 +22,8 @@ class Query
     return    
 
   updateBody:( beg, end, prop ) ->
-    $('#QArrive').text( @Data.toMMDD(beg) )
-    $('#QStayTo').text( @Data.toMMDD(end) )
+    $('#QArrive').text( Data.toMMDD(beg) )
+    $('#QStayTo').text( Data.toMMDD(end) )
     resvs = {}
     if end?
       resvs = @res.resvArrayByProp( beg, end, prop )
@@ -48,10 +50,10 @@ class Query
     $('#RTBody').empty()
     htm = ""
     for r in resvs
-      arrive  = @Data.toMMDD(r.arrive)
-      stayto  = @Data.toMMDD(r.stayto)
-      booked  = @Data.toMMDD(r.booked)
-      tax     = Util.toFixed( r.total * @Data.tax )
+      arrive  = Data.toMMDD(r.arrive)
+      stayto  = Data.toMMDD(r.stayto)
+      booked  = Data.toMMDD(r.booked)
+      tax     = Util.toFixed( r.total * Data.tax )
       charge  = Util.toFixed( r.total + parseFloat(tax) )
       trClass = if @res.isNewResv(r) then 'RTNewRow' else 'RTOldRow'
       htm += """<tr class="#{trClass}">"""

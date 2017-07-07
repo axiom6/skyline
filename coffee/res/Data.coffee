@@ -114,13 +114,26 @@ class Data
     Data.toDateStr( date.getDate(), date.getMonth(), year )
 
   @advanceDate:( date, numDays ) ->
-    Util.trace( 'advanceDate', date ) if not Data.isDate(date)
     [yy,mi,dd] = @yymidd( date )
     dd += numDays
     if dd >       Data.numDayMonth[mi]
        dd  = dd - Data.numDayMonth[mi]
        mi++
+    else if dd < 1
+      mi--
+      dd  = Data.numDayMonth[mi]
     Data.toDateStr( dd, mi, yy )
+
+  @advanceMMDD:( mmdd, numDays ) ->
+    [mi,dd] = @midd( mmdd )
+    dd += numDays
+    if dd >       Data.numDayMonth[mi]
+       dd  = dd - Data.numDayMonth[mi]
+       mi++
+    else if dd < 1
+       mi--
+       dd  = Data.numDayMonth[mi]
+    Util.pad(mi+1) + '/' + Util.pad(dd)
 
   # Only good for a 28 to 30 day interval
   @nights:( arrive, depart ) ->
@@ -153,6 +166,11 @@ class Data
     mi = parseInt( date.substr( 2,2 ) ) - 1
     dd = parseInt( date.substr( 4,2 ) )
     [yy,mi,dd]
+
+  @midd:( mmdd ) ->
+    mi = parseInt( mmdd.substr( 0,2 ) ) - 1
+    dd = parseInt( mmdd.substr( 3,2 ) )
+    [mi,dd]
 
   @toMMDD:( date ) ->
     [yy,mi,dd] = @yymidd( date )

@@ -1,5 +1,7 @@
 
-$ = require( 'jquery' )
+$    = require( 'jquery'      )
+Data = require( 'js/res/Data' )
+UI   = require( 'js/res/UI'   )
 
 class Res
 
@@ -7,7 +9,7 @@ class Res
   Res.Rooms = require( 'data/room.json' )
   Res.Sets  = ['full','book','resv','chan']  # Data set for @res.days and @res.resv
 
-  constructor:( @stream, @store, @Data, @appName ) ->
+  constructor:( @stream, @store, @appName ) ->
     @rooms     = Res.Rooms
     @roomKeys  = Util.keys( @rooms )
     @book      = null
@@ -16,14 +18,14 @@ class Res
     @resvs     = {}
     @cans      = {}
     @order     = 'Decend'
-    @today     = @Data.today()
+    @today     = Data.today()
     @onCompleteResv = null
-    @dateRange( @Data.beg, @Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
+    @dateRange( Data.beg, Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
 
   dateRange:( beg, end, onComplete=null ) ->
     @store.subscribe( 'Day', 'range', 'none', (days) =>
       @days = days
-      day.status = @Data.toStatus(day.status) for own dayId, day of @days
+      day.status = Data.toStatus(day.status) for own dayId, day of @days
       onComplete() if onComplete? )
     @store.range( 'Day', beg+'1', end+'S' )
     return
@@ -31,7 +33,7 @@ class Res
   selectAllDays:( onComplete=null ) ->
     @store.subscribe( 'Day', 'select', 'none', (days) =>
       @days = days
-      #day.status = @Data.toStatus(day.status) for own dayId, day of @days
+      #day.status = Data.toStatus(day.status) for own dayId, day of @days
       onComplete() if onComplete? )
     @store.select( 'Day' )
     return
@@ -67,20 +69,11 @@ class Res
     room
 
   isNewResv:( resv ) ->
-    nights = @Data.nights( resv.booked, @today )
-    nights < @Data.newDays
-
-  # This is a hack for unreliable storage in jQuery.attr - found other formating error so not needed
-  attr:( $elem, name ) ->
-    value = $elem.attr( name.toLowerCase() )
-    Util.log( 'Res.attr one', name, value )
-    value = if Util.isStr(value) and value.charAt(0) is ' ' then value.substr(1)     else value
-    value = if Util.isStr(value) then Util.toCap(value) else value
-    Util.log( 'Res.attr two', name, value )
-    value
+    nights = Data.nights( resv.booked, @today )
+    nights < Data.newDays
 
   status:( date, roomId ) ->
-    dayId = @Data.dayId( date, roomId )
+    dayId = Data.dayId( date, roomId )
     day   = @days[dayId]
     if day? then day.status else 'Free'
 
@@ -103,16 +96,16 @@ class Res
     if day? then @resvs[day.resId] else null
 
   day:( date, roomId ) ->
-    dayId = @Data.dayId( date, roomId )
+    dayId = Data.dayId( date, roomId )
     day   = @days[dayId]
     if day? then day else @setDay( {}, 'Free', 'none' )
 
   dayIds:( arrive, stayto, roomId ) ->
-    depart = @Data.advanceDate( stayto, 1 )
-    nights = @Data.nights( arrive, depart )
+    depart = Data.advanceDate( stayto, 1 )
+    nights = Data.nights( arrive, depart )
     ids = []
     for i in [0...nights]
-      ids.push( @Data.dayId( @Data.advanceDate( arrive, i ), roomId ) )
+      ids.push( Data.dayId( Data.advanceDate( arrive, i ), roomId ) )
     ids
 
   datesFree:(         arrive, stayto, roomId, resv ) ->
@@ -147,7 +140,7 @@ class Res
   updateDaysFromResv:( resv, add=true ) ->
     days = {} # resv days
     for i in [0...resv.nights]
-      dayId       = @Data.dayId( @Data.advanceDate( resv.arrive, i ), resv.roomId )
+      dayId       = Data.dayId( Data.advanceDate( resv.arrive, i ), resv.roomId )
       days[dayId] = @setDay( {}, resv.status, resv.resId )
     #Util.log( 'Res.updateDaysFromResv', { last:resv.last, arrive:resv.arrive, stayto:resv.stayto, nights:resv.nights, days:days } )
     @allocDays( days )
@@ -164,8 +157,8 @@ class Res
   ###
 
   calcPrice:( roomId, guests, pets ) ->
-    #Util.log( 'Res.calcPrice()', { roomId:roomId, guests:guests, pets:pets, guestprice:@rooms[roomId][guests], petfee:pets*@Data.petPrice  } )
-    @rooms[roomId][guests] + pets*@Data.petPrice
+    #Util.log( 'Res.calcPrice()', { roomId:roomId, guests:guests, pets:pets, guestprice:@rooms[roomId][guests], petfee:pets*Data.petPrice  } )
+    @rooms[roomId][guests] + pets*Data.petPrice
 
   spaOptOut:( roomId, isSpaOptOut=true ) ->
     if @rooms[roomId].spa is 'O' and isSpaOptOut then Data.spaOptOut else 0
@@ -173,41 +166,41 @@ class Res
   genDates:( arrive, nights ) ->
     dates = {}
     for i in [0...nights]
-      date = @Data.advanceDate( arrive, i )
+      date = Data.advanceDate( arrive, i )
       dates[date] = ""
     dates
 
   # .... Creation ........
 
   createResvSkyline:( arrive, depart, roomId, last, status, guests, pets, spa=false, cust={}, payments={} ) ->
-    booked = @Data.today()
-    price  = @rooms[roomId][guests] + pets*@Data.petPrice
-    nights = @Data.nights( arrive, depart )
+    booked = Data.today()
+    price  = @rooms[roomId][guests] + pets*Data.petPrice
+    nights = Data.nights( arrive, depart )
     total  = price * nights
     @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments )
 
   createResvBooking:( arrive, depart, roomId, last, status, guests, total, booked ) ->
-    total  = if total is 0 then @rooms[roomId].booking * @Data.nights( arrive, depart ) else total
+    total  = if total is 0 then @rooms[roomId].booking * Data.nights( arrive, depart ) else total
     pets   = 0
     @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total )
 
   createResv:( arrive, depart, booked, roomId, last, status, guests, pets, source, total, spa=false, cust={}, payments={} ) ->
     resv           = {}
-    resv.nights    = @Data.nights( arrive, depart )
+    resv.nights    = Data.nights( arrive, depart )
     resv.arrive    = arrive
     resv.depart    = depart
     resv.booked    = booked
-    resv.stayto    = @Data.advanceDate( arrive, resv.nights - 1 )
+    resv.stayto    = Data.advanceDate( arrive, resv.nights - 1 )
     resv.roomId    = roomId
     resv.last      = last
     resv.status    = status
     resv.guests    = guests
     resv.pets      = pets
     resv.source    = source
-    resv.resId     = @Data.resId( arrive, roomId )
+    resv.resId     = Data.resId( arrive, roomId )
     resv.total     = total
     resv.price     = total / resv.nights
-    resv.tax       = Util.toFixed( total * @Data.tax )
+    resv.tax       = Util.toFixed( total * Data.tax )
     resv.spaOptOut = @spaOptOut( roomId, spa )
     resv.charge    = Util.toFixed( total + parseFloat(resv.tax) - resv.spaOptOut )
     resv.paid      = 0
@@ -219,7 +212,7 @@ class Res
 
   createCust:( first, last, phone, email, source ) ->
     cust = {}
-    cust.custId = @Data.genCustId( phone )
+    cust.custId = Data.genCustId( phone )
     cust.first  = first
     cust.last   = last
     cust.phone  = phone
@@ -230,7 +223,7 @@ class Res
   createPayment:( amount, method, last4, purpose ) ->
     payment = {}
     payment.amount  = amount
-    payment.date    = @Data.today()
+    payment.date    = Data.today()
     payment.method  = method
     payment.with    = method
     payment.last4   = last4
@@ -273,7 +266,7 @@ class Res
         resv.status = 'Deposit' if purpose is 'Deposit'
     else if   post is 'deny'
         resv.status = 'Free'
-    if not Util.inArray(@Data.statuses, resv.status )
+    if not Util.inArray(Data.statuses, resv.status )
       Util.error( 'Pay.setResStatus() unknown status ', resv.status )
       resv.status = 'Free'
     resv.status
@@ -328,7 +321,7 @@ class Res
   postPayment:( resv, post, amount, method, last4, purpose ) ->
     status = @setResvStatus( resv, post, purpose )
     if status is 'Skyline' or status is 'Deposit'
-      payId = @Data.genPaymentId( resv.resId, resv.payments )
+      payId = Data.genPaymentId( resv.resId, resv.payments )
       resv.payments[payId] = @createPayment( amount, method, last4, purpose )
       resv.paid   += amount
       resv.balance = resv.totals - resv.paid
@@ -348,48 +341,12 @@ class Res
 
   # ...... UI Elements that does not quite belong here .....
 
-  htmlSelect:( htmlId, array, choice, klass="", max=undefined ) ->
-    style = if Util.isStr(klass) then klass else htmlId
-    htm   = """<select name="#{htmlId}" id="#{htmlId}" class="#{style}">"""
-    where = if max? then (elem) -> elem <= max else () -> true
-    for elem in array when where(elem)
-      selected = if elem is Util.toStr(choice) then "selected" else ""
-      htm += """<option#{' '+selected}>#{elem}</option>"""
-    htm += "</select>"
-
-  # UI Element that does that quite belong here
-  htmlInput:( htmlId, value="", klass="", label="", type="text" ) ->
-    style = if Util.isStr(klass) then klass else htmlId
-    htm   = ""
-    htm  += """<label for="#{htmlId}" class="#{style+'Label'}">#{label}</label>"""  if Util.isStr(label)
-    htm  += """<input id= "#{htmlId}" class="#{style}" value="#{value}" type="#{type}">"""
-    htm
-
-  htmlButton:( htmlId, klass, title ) ->
-    """<button id="#{htmlId}" class="btn btn-primary #{klass}">#{title}</button>"""
-
-  # Sets htmlId property on obj
-  makeSelect:( htmlId, obj ) =>
-    onSelect = (event) =>
-      obj[htmlId] = event.target.value
-      Util.log( htmlId, obj[htmlId] )
-    $('#'+htmlId).change( onSelect )
-    return
-
-  # Sets htmlId property on obj
-  makeInput:( htmlId, obj ) =>
-    onInput = (event) =>
-      obj[htmlId] = event.target.value # $('#'+htmlId).val()
-      Util.log( htmlId, obj[htmlId] )
-    $('#'+htmlId).change( onInput )
-    return
-    
   # Query
 
   resvArrayByDate:( date ) ->
     array  = []
     for roomId in @roomKeys
-      dayId = @Data.dayId( date, roomId )
+      dayId = Data.dayId( date, roomId )
       if        @days[dayId]?
         resId = @days[dayId].resId
         array .push( @resvs[resId] ) if @resvs[resId]?
@@ -402,11 +359,11 @@ class Res
     for roomId in @roomKeys
       date = beg
       while date <= end
-        dayId = @Data.dayId( date, roomId )
+        dayId = Data.dayId( date, roomId )
         if        @days[dayId]?
           resId = @days[dayId].resId
           resvs[resId] = @resvs[resId] if @resvs[resId]?
-        date = @Data.advanceDate( date, 1 )
+        date = Data.advanceDate( date, 1 )
     for own resId, resv of resvs
       array.push(  resv )
     @order = if @order is 'Decend' then 'Ascend' else 'Decend'

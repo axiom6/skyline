@@ -1,11 +1,13 @@
 
-$ = require( 'jquery' )
+$    = require( 'jquery' )
+Data = require( 'js/res/Data'   )
+UI   = require( 'js/res/UI'     )
 
 class Home
 
   module.exports = Home
 
-  constructor:( @stream, @store, @Data, @res, @pict ) ->
+  constructor:( @stream, @store, @res, @pict ) ->
 
   ready:( book ) ->
     @book = book

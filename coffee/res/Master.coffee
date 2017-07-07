@@ -1,5 +1,7 @@
 
 $      = require( 'jquery'        )
+Data   = require( 'js/res/Data'   )
+UI     = require( 'js/res/UI'     )
 Upload = require( 'js/res/Upload' )
 Query  = require( 'js/res/Query'  )
 Input  = require( 'js/res/Input'  )
@@ -9,12 +11,12 @@ class Master
 
   module.exports = Master
 
-  constructor:( @stream, @store, @Data, @res ) ->
+  constructor:( @stream, @store, @res ) ->
     @rooms         = @res.rooms
-    @upload        = new Upload( @stream, @store, @Data, @res )
-    @query         = new Query(  @stream, @store, @Data, @res, @ )
-    @input         = new Input(  @stream, @store, @Data, @res, @ )
-    @season        = new Season( @stream, @store, @Data, @res )
+    @upload        = new Upload( @stream, @store, @res    )
+    @query         = new Query(  @stream, @store, @res, @ )
+    @input         = new Input(  @stream, @store, @res, @ )
+    @season        = new Season( @stream, @store, @res    )
     @res.master    = @
     @dateBeg       = @res.today
     @dateEnd       = @res.today
@@ -32,7 +34,7 @@ class Master
     $('#SeasonBtn').click( @onSeasonBtn )
     $('#DailysBtn').click( @onDailysBtn )
     $('#UploadBtn').click( @onUploadBtn )
-    #res.dateRange( @Data.beg, @Data.end, @readyMaster ) # This works
+    #res.dateRange( Data.beg, Data.end, @readyMaster ) # This works
     #res.selectAllDaysResvs( @readyMaster )
     @res.selectAllResvs(     @readyMaster, true )
     return
@@ -66,7 +68,7 @@ class Master
     $('#Upload').hide()
     $('#Season').append( @season.html() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @season.onMonthClick(event) )
-    @season.showMonth( @Data.month ) # Show the current month
+    @season.showMonth( Data.month ) # Show the current month
     $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Season').show()
@@ -102,7 +104,7 @@ class Master
   readyMaster:() =>
     $('#Master').empty()
     $('#Master').append( @html() )
-    @showMonth( @Data.month ) # Show the current month
+    @showMonth( Data.month ) # Show the current month
     $('.PrevMonth').click( (event) => @onMonthClick(event) )
     $('.ThisMonth').click( (event) => @onMonthClick(event) )
     $('.NextMonth').click( (event) => @onMonthClick(event) )
@@ -113,8 +115,7 @@ class Master
 
   readyCells:() =>
 
-    # Show Today's Reservations
-    @query.resvBody( @res.resvArrayByDate( @Data.today() ) )
+    @query.resvBody( @res.resvArrayByDate( Data.today() ) ) # Show Today's Reservations
 
     doCell = (event) =>
       @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
@@ -130,19 +131,13 @@ class Master
       else if @resMode is 'Input'
         resv = @res.getResv( date, @roomId )
         if not resv?
-          @createResv(       @dateBeg, @dateEnd, @roomId )
+          @input.createResv( @dateBeg, @dateEnd, @roomId )
         else
           @input.updateResv( @dateBeg, @dateEnd, @roomId, resv )
       return
 
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
-    return
-
-  createResv:( dateBeg, dateEnd, roomId ) ->
-    [beg,end] = @fillInCells( dateBeg, dateEnd, roomId, 'Free', 'Mine' )
-    if beg? and end?
-      @input.createResv( beg, end, roomId )
     return
 
   mouseDates:( date ) ->
@@ -174,7 +169,7 @@ class Master
       status = @res.status( next, roomId )
       if status is free or status is fill or status is 'Cancel'
         $cells.push( $cell )
-        next = @Data.advanceDate( next, 1 )
+        next = Data.advanceDate( next, 1 )
       else
         return [null,null]
     for $cell in $cells
@@ -215,8 +210,8 @@ class Master
     return
 
   onAlloc:(  dayId ) =>
-    date   = @Data.toDate( dayId )
-    roomId = @Data.roomId( dayId )
+    date   = Data.toDate( dayId )
+    roomId = Data.roomId( dayId )
     #Util.log( 'Master.onAlloc', date, roomId )
     @allocCell(        roomId, date )
     @season.allocCell( roomId, date ) if @season?
@@ -233,9 +228,13 @@ class Master
     @cellStatus( @$cell('M',date,roomId), klass )
     return
 
+  fillCell:( roomId, date, klass ) ->
+    @cellStatus( @$cell('M',date,roomId), klass )
+    return
+
   cellStatus:( $cell, klass ) ->
     $cell.removeClass().addClass( "room-"+klass)
-    $cell.css( { background:@Data.toColor(klass) } )
+    $cell.css( { background:Data.toColor(klass) } )
     return
 
   onMonthClick:( event ) =>
@@ -258,26 +257,26 @@ class Master
 
   # Removes expanded style from month and goes back to the month's css selector
   removeAllMonthStyles:() ->
-    $('#'+month).removeAttr('style') for month in @Data.season
+    $('#'+month).removeAttr('style') for month in Data.season
 
   html:() ->
     htm = ""
-    for month in @Data.season
-      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( @Data.year, month )}</div>"""
+    for month in Data.season
+      htm += """<div id="#{month}" class="#{month}">#{@roomsHtml( Data.year, month )}</div>"""
     htm
 
   roomsHtml:( year, month ) ->
-    monthIdx   = @Data.months.indexOf(month)
-    prevMonth  = if monthIdx > 4 then """<span class="PrevMonth">#{@Data.months[monthIdx-1]}</span>""" else ""
-    nextMonth  = if monthIdx < 9 then """<span class="NextMonth">#{@Data.months[monthIdx+1]}</span>""" else ""
+    monthIdx   = Data.months.indexOf(month)
+    prevMonth  = if monthIdx > 4 then """<span class="PrevMonth">#{Data.months[monthIdx-1]}</span>""" else ""
+    nextMonth  = if monthIdx < 9 then """<span class="NextMonth">#{Data.months[monthIdx+1]}</span>""" else ""
     begDay     = 1                           # if month isnt 'May'     then 1 else 17
-    endDay     = @Data.numDayMonth[monthIdx] # if month isnt 'October' then @Data.numDayMonth[monthIdx] else 15
+    endDay     = Data.numDayMonth[monthIdx] # if month isnt 'October' then Data.numDayMonth[monthIdx] else 15
     weekdayIdx = new Date( 2000+year, monthIdx, 1 ).getDay()
     htm  = """<div   class="MasterTitle">#{prevMonth}<span class="ThisMonth">#{month}</span>#{nextMonth}</div>"""
     htm += """<table class="MonthTable"><thead>"""
     htm += """<tr><th></th>"""
     for day in [begDay..endDay]
-      weekday = @Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
+      weekday = Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
       htm += "<th>#{weekday}</th>"
     htm  += "</tr><tr><th></th>"
     for day in [begDay..endDay]
@@ -286,7 +285,7 @@ class Master
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
       for day in [begDay..endDay]
-        date = @Data.toDateStr( day, monthIdx )
+        date = Data.toDateStr( day, monthIdx )
         htm += @createCell(  date, roomId )
       htm += """</tr>"""
     htm += "</tbody></table>"
@@ -299,7 +298,7 @@ class Master
     return
 
   createCell:( date, roomId ) ->
-    [yy,mi,dd] = @Data.yymidd( date )
+    [yy,mi,dd] = Data.yymidd( date )
     resv   = @res.getResv( date, roomId )
     klass  = @res.klass(   date, roomId )
     bord   = @border(      date, roomId, resv, klass )
@@ -309,7 +308,7 @@ class Master
     htm
 
   border:( date, roomId,   resv, klass ) ->
-    color = @Data.toColor( klass )
+    color = Data.toColor( klass )
     bord  = ""
     if resv?
       bord    = "background-color:#{color}; border-top: 2px solid black;     border-bottom:2px solid black;   "
@@ -335,8 +334,8 @@ class Master
     span   = 1
     resv   = @res.getResv( date, roomId )
     if resv?
-      [ya,ma,da] = @Data.yymidd( resv.arrive )
-      [ys,ms,ds] = @Data.yymidd( resv.stayto )
+      [ya,ma,da] = Data.yymidd( resv.arrive )
+      [ys,ms,ds] = Data.yymidd( resv.stayto )
       if resv.arrive is date
         span = Math.min( resv.nights, endDay-dd+1 )
       else if ma isnt ms and ms is mi

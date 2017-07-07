@@ -18,8 +18,8 @@
         Master = require('js/res/Master');
         stream = new Stream([]);
         store = new Fire(stream, "skytest", Data.configSkytest);
-        res = new Res(stream, store, Data, 'Owner');
-        master = new Master(stream, store, Data, res);
+        res = new Res(stream, store, 'Owner');
+        master = new Master(stream, store, res);
         return master.ready();
       });
     };

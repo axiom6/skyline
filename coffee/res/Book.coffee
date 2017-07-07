@@ -1,11 +1,13 @@
 
-$ = require( 'jquery' )
+$    = require( 'jquery' )
+Data = require( 'js/res/Data'   )
+UI   = require( 'js/res/UI'     )
 
 class Book
 
   module.exports = Book
 
-  constructor:( @stream, @store, @Data, @res, @pay, @pict ) ->
+  constructor:( @stream, @store, @res, @pay, @pict ) ->
     @rooms    = @res.rooms
     @res.book = @
     @$cells   = []
@@ -19,7 +21,7 @@ class Book
     $('#Book'    ).append( @bookHtml()  )
     $('#Insts'   ).append( @instructHtml() )
     $('#Inits'   ).append( @initsHtml() )
-    $('#Rooms'   ).append( @roomsHtml(@Data.year,@Data.monthIdx,@Data.begDay,@Data.numDays) )
+    $('#Rooms'   ).append( @roomsHtml(Data.year,Data.monthIdx,Data.begDay,Data.numDays) )
     $('#Guest'   ).append( @guestHtml() )
     $('.guests'  ).change( @onGuests  )
     $('.pets'    ).change( @onPets    )
@@ -53,9 +55,9 @@ class Book
     """
 
   initsHtml:() ->
-    htm  = """<label for="Months" class="InitIp">Start: #{ @res.htmlSelect( "Months", @Data.season, @Data.month  ) }</label>"""
-    htm += """<label for="Days"   class="InitIp">       #{ @res.htmlSelect( "Days",   @Data.days,   @Data.begDay ) }</label>"""
-    htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+@Data.year}</label>"""
+    htm  = """<label for="Months" class="InitIp">Start: #{ UI.htmlSelect( "Months", Data.season, Data.month  ) }</label>"""
+    htm += """<label for="Days"   class="InitIp">       #{ UI.htmlSelect( "Days",   Data.days,   Data.begDay ) }</label>"""
+    htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+Data.year}</label>"""
     htm += """<span  id="Pop"  class="Test">Pop</span>"""
     htm += """<span  id="Test" class="Test">Test</span>"""
     htm
@@ -69,11 +71,11 @@ class Book
     htm   = "<table><thead>"
     htm  += """<tr><th></th><th></th><th></th><th></th><th></th>"""
     for day in [1..numDays]
-      weekday = @Data.weekdays[(weekdayIdx+begDay+day-2)%7]
+      weekday = Data.weekdays[(weekdayIdx+begDay+day-2)%7]
       htm += "<th>#{weekday}</th>"
     htm  += "<th>Room</th></tr><tr><th>Cottage</th><th>Guests</th><th>Pets</th><th>Spa</th><th>Price</th>"
     for day in [1..numDays]
-      htm += "<th>#{@Data.dayMonth(day)}</th>"
+      htm += "<th>#{Data.dayMonth(day)}</th>"
     htm += "<th>Total</th></tr></thead><tbody>"
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td class="td-left">#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td>#{@spa(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
@@ -163,7 +165,7 @@ class Book
     msg
 
   createCell:( roomId, roomRm, day ) ->
-    date   = @Data.toDateStr( @Data.dayMonth(day) )
+    date   = Data.toDateStr( Data.dayMonth(day) )
     status = @getStatus( roomId, date )
     """<td id="#{@cellId(date,roomId)}" class="room-#{status}" data-status="#{status}"></td>"""
 
@@ -194,8 +196,8 @@ class Book
     @$cells = []
     for roomId, room of @rooms
       room.$ = $('#'+roomId) # Keep jQuery out of room database table
-      for day in [1..@Data.numDays]
-        date  = @Data.toDateStr( @Data.dayMonth(day) )
+      for day in [1..Data.numDays]
+        date  = Data.toDateStr( Data.dayMonth(day) )
         $cell = @$cell(date,roomId)
         $cell.click( (event) => @onCellBook(event) )
         @$cells.push( $cell )
@@ -206,7 +208,7 @@ class Book
     room   = @rooms[roomId]
     guests = room.guests
     pets   = room.pets
-    price  = @rooms[roomId][guests]+pets*@Data.petPrice
+    price  = @rooms[roomId][guests]+pets*Data.petPrice
     room.price = price
     price
 
@@ -231,8 +233,8 @@ class Book
     $('#GoToPay').prop('disabled',false) if @totals > 0
     return
 
-  g:(roomId) -> @res.htmlSelect( roomId+'G', @Data.persons, 2, 'guests', @rooms[roomId].max )
-  p:(roomId) -> @res.htmlSelect( roomId+'P', @Data.pets,    0, 'pets',   3                  )
+  g:(roomId) -> @res.htmlSelect( roomId+'G', Data.persons, 2, 'guests', @rooms[roomId].max )
+  p:(roomId) -> @res.htmlSelect( roomId+'P', Data.pets,    0, 'pets',   3                  )
 
   onGuests:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
@@ -262,30 +264,30 @@ class Book
     return
 
   onMonth:( event ) =>
-    @Data.month     = event.target.value
-    @Data.monthIdx  = @Data.months.indexOf(@Data.month)
-    @Data.begDay    = if @Data.month is 'May' then @Data.begMay else 1
-    $('#Days').val(@Data.begDay.toString())
+    Data.month     = event.target.value
+    Data.monthIdx  = Data.months.indexOf(Data.month)
+    Data.begDay    = if Data.month is 'May' then Data.begMay else 1
+    $('#Days').val(Data.begDay.toString())
     @resetRooms() # or resetDateRange:()
     return
 
   onDay:( event ) =>
-    @Data.begDay = parseInt(event.target.value)
-    if @Data.month is 'October' and @Data.begDay > 1
-      @Data.begDay = 1
+    Data.begDay = parseInt(event.target.value)
+    if Data.month is 'October' and Data.begDay > 1
+      Data.begDay = 1
       alert( 'The Season Ends on October 15' )
     @resetRooms() # or resetDateRange:()
     return
 
   # Not needed because we have the whole date range for the season
   resetDateRange:() ->
-    beg = @Data.toDateStr( @Data.begDay, @Data.monthIdx )
-    end = @Data.advanceDate( beg, @Data.numDays-1 )
+    beg = Data.toDateStr( Data.begDay, Data.monthIdx )
+    end = Data.advanceDate( beg, Data.numDays-1 )
     @res.dateRange( beg, end, @resetRooms )
 
   resetRooms:() =>
     $('#Rooms').empty()
-    $('#Rooms').append( @roomsHtml( @Data.year, @Data.monthIdx, @Data.begDay, @Data.numDays ) )
+    $('#Rooms').append( @roomsHtml( Data.year, Data.monthIdx, Data.begDay, Data.numDays ) )
     @roomsJQuery()
 
   onPop:() =>
@@ -326,9 +328,9 @@ class Book
       room.days[date]  = { "status":status, "resId":resId }
     else if status is 'Free'
       delete  room.days[date]
-      weekday = @Data.weekday(date)
+      weekday = Data.weekday(date)
       if weekday is 'Fri' or weekday is 'Sat'
-        nday = @Data.advanceDate( date, 1 )
+        nday = Data.advanceDate( date, 1 )
         @cellStatus( @$cell( nday, roomId ), 'Free' )
         delete room.days[nday]
     @updateTotal( roomId  )
@@ -339,7 +341,7 @@ class Book
     days    = @dayArray( roomId  )
     return if days is 'none'
     bday    = days[0]
-    weekday = @Data.weekday(bday)
+    weekday = Data.weekday(bday)
     weekend = weekday is 'Fri' or weekday is 'Sat'
     if      days.length is 1 and  weekend
       @fillInNextDay( bday, roomId )
@@ -355,7 +357,7 @@ class Book
 
   fillInNextDay:(   bday, roomId ) ->
     resId = @resId( bday, roomId )
-    nday  = @Data.advanceDate( bday, 1 )
+    nday  = Data.advanceDate( bday, 1 )
     $cell = @$cell(nday,roomId)
     if $cell.attr('data-status') is 'Free'
       @updateCellStatus( $cell, 'Mine', resId )
@@ -364,32 +366,32 @@ class Book
   fillIsConsistent:( roomId, days, $end ) ->
     bday = days[0]
     eday = days[days.length-1]
-    nday = @Data.advanceDate( bday, 1 )
+    nday = Data.advanceDate( bday, 1 )
     while nday < eday                      # Avoid any booked rooms
       $cell = @$cell(nday,roomId)
-      if not @Data.isElem($cell) or $cell.attr('data-status') isnt 'Free'
+      if not Data.isElem($cell) or $cell.attr('data-status') isnt 'Free'
         # Free up last clicked cell because an inconsistency was detected
         $end.attr('data-status','Mine')
         @cellBook( $end )
         return false
-      nday = @Data.advanceDate( nday, 1 )
+      nday = Data.advanceDate( nday, 1 )
     true
 
   doFillInRooms:( days, roomId ) ->
     bday = days[0]
-    nday = @Data.advanceDate( bday, 1 )
+    nday = Data.advanceDate( bday, 1 )
     eday = days[days.length-1]
     while nday < eday
       #Util.log( 'Book.fillInRooms() Two', bday, nday, eday )
       $cell = @$cell(nday,roomId)
-      @cellBook( $cell ) if @Data.isElem( $cell )
-      nday = @Data.advanceDate( nday, 1 )
+      @cellBook( $cell ) if Data.isElem( $cell )
+      nday = Data.advanceDate( nday, 1 )
     return
 
   allocDays:( days ) =>
     for own dayId, day of days
-      date   = @Data.toDate( dayId )
-      roomId = @Data.roomId( dayId )
+      date   = Data.toDate( dayId )
+      roomId = Data.roomId( dayId )
       @allocCell( date, day.status, roomId )
     return
 

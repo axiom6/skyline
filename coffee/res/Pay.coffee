@@ -1,16 +1,18 @@
 
 $      = require('jquery')
 Credit = require( 'js/res/Credit' )
+Data   = require( 'js/res/Data'   )
+UI     = require( 'js/res/UI'     )
 
 class Pay
 
   module.exports = Pay
 
-  constructor:( @stream, @store, @Data, @res, @home=null ) ->
+  constructor:( @stream, @store, @res, @home=null ) ->
     @credit = new Credit()
     @uri    = "https://api.stripe.com/v1/"
     @subscribe()
-    $.ajaxSetup( { headers: { "Authorization": @Data.stripeCurlKey } } )
+    $.ajaxSetup( { headers: { "Authorization": Data.stripeCurlKey } } )
     @resv    = null
     @amount  = 0
     @purpose = 'PayInFull' # 'Deposit' 'PayBalance'
@@ -166,7 +168,7 @@ class Pay
       i      = 0
       while i < r.nights
         eday   = days[i]
-        if i is r.nights-1 or days[i+1] isnt @Data.advanceDate( eday, 1 )
+        if i is r.nights-1 or days[i+1] isnt Data.advanceDate( eday, 1 )
           arrive   = @confirmDate( bday, "", false )
           depart   = @confirmDate( eday, "", true  )
           if      stuff is 'html'
@@ -196,7 +198,7 @@ class Pay
 
   canMakeDeposit:( resv ) ->
     arrive  = parseInt( resv.arrive )
-    advance = parseInt( @Data.advanceDate( resv.booked, 7 ) )
+    advance = parseInt( Data.advanceDate( resv.booked, 7 ) )
     #Util.log('Pay.canMakeDeposit()', { booked:resv.booked, arrive:arrive, advance:advance, can:arrive >= advance } )
     arrive >= advance
 
@@ -204,7 +206,7 @@ class Pay
     dayO     = dayI + 1
     monthO   = monthI
     weekdayO = ( weekdayI + 1 ) % 7
-    if dayI >= @Data.numDayMonth[monthI]
+    if dayI >= Data.numDayMonth[monthI]
        dayO     = 1
        monthO   = monthI + 1
     [monthO, dayO, weekdayO]
@@ -215,7 +217,7 @@ class Pay
     day        = parseInt( dayStr.substr(4,2) )
     weekdayIdx = new Date( year, monthIdx, day ).getDay()
     [monthIdx,day,weekdayIdx] = @departDate( monthIdx,day,weekdayIdx ) if isDepart
-    """#{@Data.weekdays[weekdayIdx]} #{@Data.months[monthIdx]} #{day}, #{year}  #{msg}"""
+    """#{Data.weekdays[weekdayIdx]} #{Data.months[monthIdx]} #{day}, #{year}  #{msg}"""
 
   payHtml:() ->
     numPtn="\d{4} \d{4} \d{4} \d{4}"
@@ -387,7 +389,7 @@ class Pay
   ajaxRest:( table, op, input, onError ) ->
     url       = @uri + table
     settings  = { url:url, type:op }
-    settings.headers = { Authorization: 'Bearer '+ @Data.stripeTestKey }
+    settings.headers = { Authorization: 'Bearer '+ Data.stripeTestKey }
     settings.data = input
     settings.success = ( result,  status, jqXHR ) =>
       @stream.publish( table, result )

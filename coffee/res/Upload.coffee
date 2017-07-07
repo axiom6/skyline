@@ -1,11 +1,13 @@
 
-$ = require( 'jquery'  )
+$    = require( 'jquery'      )
+Data = require( 'js/res/Data' )
+UI   = require( 'js/res/UI'   )
 
 class Upload
 
   module.exports = Upload
 
-  constructor:( @stream, @store, @Data, @res ) ->
+  constructor:( @stream, @store, @res ) ->
     @uploadedText  = ""
     @uploadedResvs = {}
 
@@ -76,7 +78,7 @@ class Upload
   onUploadRes:() =>
     Util.log( 'Upload.onUploadRes')
     if not Util.isStr( @uploadedText )
-      @uploadedText  = @Data.bookingResvs
+      @uploadedText  = Data.bookingResvs
       @uploadedResvs = @uploadParse(  @uploadedText )
       $('#UploadText').text( @uploadedText )
     return if Util.isObjEmpty(    @uploadedResvs )
@@ -87,7 +89,7 @@ class Upload
   onUploadCan:() =>
     Util.log( 'Upload.onUploadCan')
     if not Util.isStr( @uploadedText )
-      @uploadedText  = @Data.canceled
+      @uploadedText  = Data.canceled
       @uploadedResvs = @uploadParse(  @uploadedText )
       $('#UploadText').text( @uploadedText )
     return if Util.isObjEmpty(    @uploadedResvs )
@@ -130,8 +132,8 @@ class Upload
       #.v &= Util.isStr( u.first )
       v &= Util.isStr( u.last  )
       v &= 1 <= u.guests and u.guests <= 12
-      v &= @Data.isDate( u.arrive )
-      v &= @Data.isDate( u.depart )
+      v &= Data.isDate( u.arrive )
+      v &= Data.isDate( u.depart )
       v &= if typeof(pets) is 'number' then 0 <= u.pets   and u.pets   <=  4 else true
       v &= 0 <= u.nights and u.nights <= 28
       v &= Util.inArray( @res.roomKeys, u.roomId )
@@ -151,8 +153,8 @@ class Upload
 
   toResvDate:( bookDate ) ->
     toks  = bookDate.split(' ')
-    year  = @Data.year
-    month = @Data.months.indexOf(toks[1]) + 1
+    year  = Data.year
+    month = Data.months.indexOf(toks[1]) + 1
     day   = toks[0]
     year.toString() + Util.pad(month) + day
 

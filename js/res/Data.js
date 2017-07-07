@@ -198,16 +198,30 @@
 
     Data.advanceDate = function(date, numDays) {
       var dd, mi, ref, yy;
-      if (!Data.isDate(date)) {
-        Util.trace('advanceDate', date);
-      }
       ref = this.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
       dd += numDays;
       if (dd > Data.numDayMonth[mi]) {
         dd = dd - Data.numDayMonth[mi];
         mi++;
+      } else if (dd < 1) {
+        mi--;
+        dd = Data.numDayMonth[mi];
       }
       return Data.toDateStr(dd, mi, yy);
+    };
+
+    Data.advanceMMDD = function(mmdd, numDays) {
+      var dd, mi, ref;
+      ref = this.midd(mmdd), mi = ref[0], dd = ref[1];
+      dd += numDays;
+      if (dd > Data.numDayMonth[mi]) {
+        dd = dd - Data.numDayMonth[mi];
+        mi++;
+      } else if (dd < 1) {
+        mi--;
+        dd = Data.numDayMonth[mi];
+      }
+      return Util.pad(mi + 1) + '/' + Util.pad(dd);
     };
 
     Data.nights = function(arrive, depart) {
@@ -248,6 +262,13 @@
       mi = parseInt(date.substr(2, 2)) - 1;
       dd = parseInt(date.substr(4, 2));
       return [yy, mi, dd];
+    };
+
+    Data.midd = function(mmdd) {
+      var dd, mi;
+      mi = parseInt(mmdd.substr(0, 2)) - 1;
+      dd = parseInt(mmdd.substr(3, 2));
+      return [mi, dd];
     };
 
     Data.toMMDD = function(date) {
