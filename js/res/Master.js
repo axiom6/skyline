@@ -34,9 +34,14 @@
       this.readyCells = bind(this.readyCells, this);
       this.readyMaster = bind(this.readyMaster, this);
       this.onUploadBtn = bind(this.onUploadBtn, this);
+      this.onDailysPrt = bind(this.onDailysPrt, this);
       this.onDailysBtn = bind(this.onDailysBtn, this);
+      this.onSeasonPrt = bind(this.onSeasonPrt, this);
       this.onSeasonBtn = bind(this.onSeasonBtn, this);
       this.onMakResBtn = bind(this.onMakResBtn, this);
+      this.onResTblPrt = bind(this.onResTblPrt, this);
+      this.onMasterPrt = bind(this.onMasterPrt, this);
+      this.doPrint = bind(this.doPrint, this);
       this.onMasterBtn = bind(this.onMasterBtn, this);
       this.rooms = this.res.rooms;
       this.upload = new Upload(this.stream, this.store, this.res);
@@ -49,20 +54,26 @@
       this.dateSel = "End";
       this.roomId = null;
       this.resMode = 'Table';
-      this.showingMonth = 'Master';
     }
 
     Master.prototype.ready = function() {
       this.listenToDays();
       $('#MasterBtn').click(this.onMasterBtn);
+      $('#MasterPrt').click(this.onMasterPrt);
+      $('#ResTblPrt').click(this.onResTblPrt);
       $('#MakResBtn').click(this.onMakResBtn);
       $('#SeasonBtn').click(this.onSeasonBtn);
+      $('#SeasonPrt').click(this.onSeasonPrt);
       $('#DailysBtn').click(this.onDailysBtn);
+      $('#DailysPrt').click(this.onDailysPrt);
       $('#UploadBtn').click(this.onUploadBtn);
       this.res.selectAllResvs(this.readyMaster, true);
     };
 
-    Master.prototype.onMasterBtn = function() {
+    Master.prototype.onMasterBtn = function(onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
+      }
       this.resMode = 'Table';
       $('#Season').hide();
       $('#Dailys').hide();
@@ -70,6 +81,42 @@
       $('#ResAdd').hide();
       $('#ResTbl').show();
       $('#Master').show();
+      if (onComplete != null) {
+        onComplete();
+      }
+    };
+
+    Master.prototype.doPrint = function() {
+      window.print();
+      $('#Buttons').show('fast');
+    };
+
+    Master.prototype.onMasterPrt = function() {
+      var onComplete;
+      onComplete = (function(_this) {
+        return function() {
+          return $('#Buttons, #ResTbl').hide('fast', _this.doPrint);
+        };
+      })(this);
+      this.onMasterBtn(onComplete);
+    };
+
+    Master.prototype.onResTblPrt = function() {
+      var onComplete;
+      this.query.updateBody(this.begQuery(), Data.toDateStr(Data.numDaysMonth()), 'arrive');
+      onComplete = (function(_this) {
+        return function() {
+          return $('#Buttons, #Master').hide('fast', _this.doPrint);
+        };
+      })(this);
+      this.onMasterBtn(onComplete);
+    };
+
+    Master.prototype.begQuery = function() {
+      var dd, dt, mi, ref, yy;
+      ref = Data.yymidd(this.res.today), yy = ref[0], mi = ref[1], dd = ref[2];
+      dt = mi === Data.monthIdx ? dd : 1;
+      return Data.toDateStr(dt);
     };
 
     Master.prototype.onMakResBtn = function() {
@@ -81,10 +128,13 @@
       $('#ResTbl').hide();
       $('#Master').show();
       this.fillInCells(this.dateBeg, this.dateEnd, this.roomId, 'Mine', 'Free');
-      this.dateEnd = this.dateEnd;
+      this.dateEnd = this.dateBeg;
     };
 
-    Master.prototype.onSeasonBtn = function() {
+    Master.prototype.onSeasonBtn = function(onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
+      }
       $('#Master').hide();
       $('#Dailys').hide();
       $('#Upload').hide();
@@ -96,13 +146,29 @@
           return _this.season.onMonthClick(event);
         };
       })(this));
-      this.season.showMonth(Data.month);
+      this.season.showMonth(Data.month());
       $('#ResAdd').hide();
       $('#ResTbl').hide();
       $('#Season').show();
+      if (onComplete != null) {
+        onComplete();
+      }
     };
 
-    Master.prototype.onDailysBtn = function() {
+    Master.prototype.onSeasonPrt = function() {
+      var onComplete;
+      onComplete = (function(_this) {
+        return function() {
+          return $('#Buttons').hide('fast', _this.doPrint);
+        };
+      })(this);
+      this.onSeasonBtn(onComplete);
+    };
+
+    Master.prototype.onDailysBtn = function(onComplete) {
+      if (onComplete == null) {
+        onComplete = null;
+      }
       $('#ResAdd').hide();
       $('#ResTbl').hide();
       $('#Master').hide();
@@ -112,6 +178,19 @@
         $('#Dailys').append(this.dailysHtml());
       }
       $('#Dailys').show();
+      if (onComplete != null) {
+        onComplete();
+      }
+    };
+
+    Master.prototype.onDailysPrt = function() {
+      var onComplete;
+      onComplete = (function(_this) {
+        return function() {
+          return $('#Buttons').hide('fast', _this.doPrint);
+        };
+      })(this);
+      this.onDailysBtn(onComplete);
     };
 
     Master.prototype.onUploadBtn = function() {
@@ -136,7 +215,7 @@
     Master.prototype.readyMaster = function() {
       $('#Master').empty();
       $('#Master').append(this.html());
-      this.showMonth(Data.month);
+      this.showMonth(Data.month(), false);
       $('.PrevMonth').click((function(_this) {
         return function(event) {
           return _this.onMonthClick(event);
@@ -159,7 +238,6 @@
 
     Master.prototype.readyCells = function() {
       var doCell;
-      this.query.resvBody(this.res.resvArrayByDate(Data.today()));
       doCell = (function(_this) {
         return function(event) {
           var $cell, date, ref, resv;
@@ -190,17 +268,20 @@
 
     Master.prototype.mouseDates = function(date) {
       this.res.order = 'Decend';
-      if (this.dateEnd < date) {
-        this.dateEnd = date;
-      } else if (this.dateBeg > date) {
-        this.dateBeg = date;
-      } else if (this.dateBeg <= date && date <= this.dateEnd) {
+      if (this.dateBeg <= date && date <= this.dateEnd) {
         if (this.dateSel === 'Beg') {
           this.dateBeg = date;
           this.dateSel = 'End';
         } else if (this.dateSel === 'End') {
           this.dateEnd = date;
           this.dateSel = 'Beg';
+        }
+      } else {
+        if (this.dateEnd < date) {
+          this.dateEnd = date;
+        }
+        if (this.dateBeg > date) {
+          this.dateBeg = date;
         }
       }
       return [this.dateBeg, this.dateEnd, this.dateSel];
@@ -326,17 +407,20 @@
       this.showMonth($(event.target).text());
     };
 
-    Master.prototype.showMonth = function(month) {
+    Master.prototype.showMonth = function(month, second) {
       var $master;
+      if (second == null) {
+        second = true;
+      }
       $master = $('#Master');
-      if (month === this.showingMonth) {
+      if (month === Data.month() && second) {
         this.removeAllMonthStyles();
         $master.css({
           height: '860px'
         });
         $master.children().show();
-        this.showingMonth = 'Master';
       } else {
+        Data.monthIdx = Data.months.indexOf(month);
         $master.children().hide();
         $master.css({
           height: '475px'
@@ -348,7 +432,6 @@
           height: '475px',
           fontSize: '14px'
         }).show();
-        this.showingMonth = month;
       }
     };
 

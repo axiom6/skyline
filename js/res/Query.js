@@ -27,6 +27,7 @@
       this.resvSortClick('RHStayTo', 'stayto');
       this.resvSortClick('RHName', 'last');
       this.resvSortClick('RHStatus', 'status');
+      this.updateBody(this.master.begQuery(), Data.toDateStr(Data.numDaysMonth()), 'arrive');
     };
 
     Query.prototype.updateBody = function(beg, end, prop) {

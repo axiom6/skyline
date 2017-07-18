@@ -32138,15 +32138,13 @@
 
 	    Data.monthIdx = 4 <= Data.monthIdx && Data.monthIdx <= 9 ? Data.monthIdx : 4;
 
-	    Data.month = Data.months[Data.monthIdx];
-
 	    Data.newDays = 3;
 
 	    Data.numDays = 15;
 
 	    Data.begMay = 15;
 
-	    Data.begDay = Data.month === 'May' ? Data.begMay : 1;
+	    Data.begDay = Data.monthIdx === 4 ? Data.begMay : 1;
 
 	    Data.beg = '170515';
 
@@ -32284,6 +32282,19 @@
 	      return Data.toDateStr(date.getDate(), date.getMonth(), year);
 	    };
 
+	    Data.month = function() {
+	      return Data.months[Data.monthIdx];
+	    };
+
+	    Data.numDaysMonth = function(month) {
+	      var mi;
+	      if (month == null) {
+	        month = Data.month();
+	      }
+	      mi = Data.months.indexOf(month);
+	      return Data.numDayMonth[mi];
+	    };
+
 	    Data.advanceDate = function(date, numDays) {
 	      var dd, mi, ref, yy;
 	      ref = this.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
@@ -32403,18 +32414,6 @@
 	      Util.log('Data.yymidd()', date, yy, mi, dd);
 	      return Data.months3[mi] + dd.toString() + ', ' + (2000 + yy).toString();
 	    };
-
-	    Data.bookingResvs = "";
-
-	    Data.canceled = "Erma Henry 2 guests	31 July 2017	30 August 2017	#4 One Room Cabin	25 June 2017	Canceled  US$0	US$0	1225084642\nKaren Palmer 4 guests	18 August 2017	21 August 2017	#8 Western Unit	16 June 2017	Cancelled	US$0	US$0	1747537592\nPauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Cancelled	US$0	US$0	1335821435\nSandra Perea 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	04 July 2017	Canceled	US$0	US$0	2028271212\nSarah Troia 12 guests	04 August 2017	06 August 2017	#6 Large River Cabin	14 June 2017	Canceled	US$0	US$0	1175185436\nElisabetta Casali 12 guests	10 August 2017	12 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	Canceled	US$0	US$0	2042380958";
-
-	    Data.bookingResvsB = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\njuan  bours 8 guests	10 July 2017	12 July 2017	#3 Southwest Spa	04 July 2017	OK	US$630	US$94.50	1490587666\nTeasa Baca 1 guest	14 July 2017	16 July 2017	#1 One Room Cabin	04 July 2017	OK	US$290	US$43.50	1461229119\nNick Russo 2 guests	11 July 2017	13 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	1251292752\nlouis maufrais 4 guests	13 July 2017	15 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	2051998205\nTyron Becker 4 guests	16 July 2017	20 July 2017	Upper Skyline North	03 July 2017	OK	US$660	US$99	1477467166\nrobert stone 2 guests	22 July 2017	24 July 2017	#5 Cabin with a View	03 July 2017	OK	US$390	US$58.50	1933816072\nRoxane Romero 8 guests	14 July 2017	16 July 2017	#3 Southwest Spa	02 July 2017	OK	US$630	US$94.50	1297543429\nJosh Murphy 4 guests	10 July 2017	12 July 2017	#5 Cabin with a View	01 July 2017	OK	US$390	US$58.50	1251493462\njay wills 4 guests	21 July 2017	23 July 2017	#2 Mountain Spa	01 July 2017	OK	US$370	US$55.50	1121958938\nmary bieber 12 guests	03 August 2017	05 August 2017	#6 Large River Cabin	05 July 2017	OK	US$600	US$90	1461242157\nSandra Perea 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	04 July 2017	Canceled	US$0	US$0	2028271212\nJim Husbands 4 guests	02 September 2017	04 September 2017	Upper Skyline North	05 July 2017	OK	US$330	US$49.50	1461288419\nMelissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619\nAlberta Retana 2 guests	02 September 2017	04 September 2017	Upper Skyline South	02 July 2017	OK	US$310	US$46.50	1180598317\nGeorge Fleming 2 guests	07 September 2017	10 September 2017	Upper Skyline North	30 June 2017	OK	US$495	US$74.25	1186587856\nMargaret Dreiling 1 guest	08 September 2017	10 September 2017	Upper Skyline South	15 June 2017	OK	US$310	US$46.50	1977820063\nkarissa Wight 4 guests	07 September 2017	09 September 2017	#4 One Room Cabin	13 June 2017	OK	US$290	US$43.50	1779163724\nInez Cunningham 3 guests	07 September 2017	13 September 2017	#3 Southwest Spa	13 June 2017	OK	US$1,890	US$283.50	1831513503\nTony Hajek 2 guests	08 September 2017	10 September 2017	#8 Western Unit	12 June 2017	OK	US$240	US$36	1420506143\nTodd Featherstun 1 guest	08 September 2017	10 September 2017	#1 One Room Cabin	02 June 2017	OK	US$290	US$43.50	1489205592";
-
-	    Data.bookingResvsA = "Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number\nsusan settle 2 guests	12 August 2017	16 August 2017	#4 One Room Cabin	03 July 2017	OK	US$580	US$87	1791937613\nMelissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619";
-
-	    Data.canceledA = "Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number\nMelissa Seacreas 3 guests 1 guest message to answer	01 September 2017	04 September 2017	#8 Western Unit	24 June 2017	Canceled	US$0	US$0	1555046433\nMelissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695\nPauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Canceled	US$0	US$0	1335821435\nMelissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695\nStephanie Buel 4 guests	31 July 2017	03 August 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1120884797\nvinay singh 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	07 June 2017	Canceled	US$0	US$0	1438534254\nsusannah mitchell 1 guest	31 August 2017	03 September 2017	#1 One Room Cabin	04 June 2017	Canceled	US$0	US$0	1034276945\nGregory Church 4 guests	30 July 2017	01 August 2017	#8 Western Unit	03 June 2017	Canceled	US$0	US$0	1357716307\nJohnathan Koeltzow 2 guests	11 August 2017	13 August 2017	#8 Western Unit	02 June 2017	Canceled	US$0	US$0	1756807815\nclarice fenton 4 guests	22 July 2017	26 July 2017	Upper Skyline South	23 June 2017	Canceled	US$0	US$0	1538156772\nSusan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	Canceled	US$0	US$0	2079181490\nChangying Shen 4 guests	19 July 2017	21 July 2017	#8 Western Unit	17 June 2017	Canceled	US$0	US$0	1309599829\nT Lobenstein 3 guests	22 July 2017	24 July 2017	Upper Skyline South	16 June 2017	Canceled	US$0	US$0	2007936653\nHan Jooyoun 4 guests	17 July 2017	19 July 2017	Upper Skyline South	12 June 2017	Canceled	US$0	US$0	1679229728\nRitu Singh 4 guests	13 July 2017	17 July 2017	#8 Western Unit	08 June 2017	Canceled	US$0	US$0	1760649274\nRyan Martin 4 guests	05 July 2017	08 July 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1490387834\nLance richardson 2 guests 2 guest messages to answer	11 July 2017	13 July 2017	#8 Western Unit	05 June 2017	Canceled	US$0	US$0	1853235506\nDesiree Schwalm 12 guests 1 guest message to answer	01 July 2017	03 July 2017	#6 Large River Cabin	01 June 2017	Canceled	US$0	US$0	1724384266\nJeremy Goldsmith 1 guest	01 July 2017	04 July 2017	#7 Western Spa	01 June 2017	Canceled	US$0	US$0	1849068878\nKarthikeyan Shanmugavadivel 4 guests	01 July 2017	03 July 2017	#8 Western Unit	01 June 2017	Canceled	US$0	US$0	1919159565";
-
-	    Data.weird = "Erma Henry 1 guest	31 July 2017	30 August 2017	#4 One Room Cabin	25 June 2017	Canceled	US$0	US$0	1225084642\nElisabetta Casali 16 guests	09 August 2017	11 August 2017	#4 One Room Cabin, #6 Large River Cabin	30 June 2017	OK	US$890	US$133.50	1563316762\nElisabetta Casali 16 guests	10 August 2017	12 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	Canceled	US$0	US$0	2042380958";
 
 	    return Data;
 
@@ -33364,11 +33363,11 @@
 
 	  Upload = __webpack_require__(359);
 
-	  Query = __webpack_require__(362);
+	  Query = __webpack_require__(363);
 
-	  Input = __webpack_require__(363);
+	  Input = __webpack_require__(364);
 
-	  Season = __webpack_require__(364);
+	  Season = __webpack_require__(365);
 
 	  Master = (function() {
 	    module.exports = Master;
@@ -33386,9 +33385,14 @@
 	      this.readyCells = bind(this.readyCells, this);
 	      this.readyMaster = bind(this.readyMaster, this);
 	      this.onUploadBtn = bind(this.onUploadBtn, this);
+	      this.onDailysPrt = bind(this.onDailysPrt, this);
 	      this.onDailysBtn = bind(this.onDailysBtn, this);
+	      this.onSeasonPrt = bind(this.onSeasonPrt, this);
 	      this.onSeasonBtn = bind(this.onSeasonBtn, this);
 	      this.onMakResBtn = bind(this.onMakResBtn, this);
+	      this.onResTblPrt = bind(this.onResTblPrt, this);
+	      this.onMasterPrt = bind(this.onMasterPrt, this);
+	      this.doPrint = bind(this.doPrint, this);
 	      this.onMasterBtn = bind(this.onMasterBtn, this);
 	      this.rooms = this.res.rooms;
 	      this.upload = new Upload(this.stream, this.store, this.res);
@@ -33401,20 +33405,26 @@
 	      this.dateSel = "End";
 	      this.roomId = null;
 	      this.resMode = 'Table';
-	      this.showingMonth = 'Master';
 	    }
 
 	    Master.prototype.ready = function() {
 	      this.listenToDays();
 	      $('#MasterBtn').click(this.onMasterBtn);
+	      $('#MasterPrt').click(this.onMasterPrt);
+	      $('#ResTblPrt').click(this.onResTblPrt);
 	      $('#MakResBtn').click(this.onMakResBtn);
 	      $('#SeasonBtn').click(this.onSeasonBtn);
+	      $('#SeasonPrt').click(this.onSeasonPrt);
 	      $('#DailysBtn').click(this.onDailysBtn);
+	      $('#DailysPrt').click(this.onDailysPrt);
 	      $('#UploadBtn').click(this.onUploadBtn);
 	      this.res.selectAllResvs(this.readyMaster, true);
 	    };
 
-	    Master.prototype.onMasterBtn = function() {
+	    Master.prototype.onMasterBtn = function(onComplete) {
+	      if (onComplete == null) {
+	        onComplete = null;
+	      }
 	      this.resMode = 'Table';
 	      $('#Season').hide();
 	      $('#Dailys').hide();
@@ -33422,6 +33432,42 @@
 	      $('#ResAdd').hide();
 	      $('#ResTbl').show();
 	      $('#Master').show();
+	      if (onComplete != null) {
+	        onComplete();
+	      }
+	    };
+
+	    Master.prototype.doPrint = function() {
+	      window.print();
+	      $('#Buttons').show('fast');
+	    };
+
+	    Master.prototype.onMasterPrt = function() {
+	      var onComplete;
+	      onComplete = (function(_this) {
+	        return function() {
+	          return $('#Buttons, #ResTbl').hide('fast', _this.doPrint);
+	        };
+	      })(this);
+	      this.onMasterBtn(onComplete);
+	    };
+
+	    Master.prototype.onResTblPrt = function() {
+	      var onComplete;
+	      this.query.updateBody(this.begQuery(), Data.toDateStr(Data.numDaysMonth()), 'arrive');
+	      onComplete = (function(_this) {
+	        return function() {
+	          return $('#Buttons, #Master').hide('fast', _this.doPrint);
+	        };
+	      })(this);
+	      this.onMasterBtn(onComplete);
+	    };
+
+	    Master.prototype.begQuery = function() {
+	      var dd, dt, mi, ref, yy;
+	      ref = Data.yymidd(this.res.today), yy = ref[0], mi = ref[1], dd = ref[2];
+	      dt = mi === Data.monthIdx ? dd : 1;
+	      return Data.toDateStr(dt);
 	    };
 
 	    Master.prototype.onMakResBtn = function() {
@@ -33433,10 +33479,13 @@
 	      $('#ResTbl').hide();
 	      $('#Master').show();
 	      this.fillInCells(this.dateBeg, this.dateEnd, this.roomId, 'Mine', 'Free');
-	      this.dateEnd = this.dateEnd;
+	      this.dateEnd = this.dateBeg;
 	    };
 
-	    Master.prototype.onSeasonBtn = function() {
+	    Master.prototype.onSeasonBtn = function(onComplete) {
+	      if (onComplete == null) {
+	        onComplete = null;
+	      }
 	      $('#Master').hide();
 	      $('#Dailys').hide();
 	      $('#Upload').hide();
@@ -33448,13 +33497,29 @@
 	          return _this.season.onMonthClick(event);
 	        };
 	      })(this));
-	      this.season.showMonth(Data.month);
+	      this.season.showMonth(Data.month());
 	      $('#ResAdd').hide();
 	      $('#ResTbl').hide();
 	      $('#Season').show();
+	      if (onComplete != null) {
+	        onComplete();
+	      }
 	    };
 
-	    Master.prototype.onDailysBtn = function() {
+	    Master.prototype.onSeasonPrt = function() {
+	      var onComplete;
+	      onComplete = (function(_this) {
+	        return function() {
+	          return $('#Buttons').hide('fast', _this.doPrint);
+	        };
+	      })(this);
+	      this.onSeasonBtn(onComplete);
+	    };
+
+	    Master.prototype.onDailysBtn = function(onComplete) {
+	      if (onComplete == null) {
+	        onComplete = null;
+	      }
 	      $('#ResAdd').hide();
 	      $('#ResTbl').hide();
 	      $('#Master').hide();
@@ -33464,6 +33529,19 @@
 	        $('#Dailys').append(this.dailysHtml());
 	      }
 	      $('#Dailys').show();
+	      if (onComplete != null) {
+	        onComplete();
+	      }
+	    };
+
+	    Master.prototype.onDailysPrt = function() {
+	      var onComplete;
+	      onComplete = (function(_this) {
+	        return function() {
+	          return $('#Buttons').hide('fast', _this.doPrint);
+	        };
+	      })(this);
+	      this.onDailysBtn(onComplete);
 	    };
 
 	    Master.prototype.onUploadBtn = function() {
@@ -33488,7 +33566,7 @@
 	    Master.prototype.readyMaster = function() {
 	      $('#Master').empty();
 	      $('#Master').append(this.html());
-	      this.showMonth(Data.month);
+	      this.showMonth(Data.month(), false);
 	      $('.PrevMonth').click((function(_this) {
 	        return function(event) {
 	          return _this.onMonthClick(event);
@@ -33511,7 +33589,6 @@
 
 	    Master.prototype.readyCells = function() {
 	      var doCell;
-	      this.query.resvBody(this.res.resvArrayByDate(Data.today()));
 	      doCell = (function(_this) {
 	        return function(event) {
 	          var $cell, date, ref, resv;
@@ -33542,17 +33619,20 @@
 
 	    Master.prototype.mouseDates = function(date) {
 	      this.res.order = 'Decend';
-	      if (this.dateEnd < date) {
-	        this.dateEnd = date;
-	      } else if (this.dateBeg > date) {
-	        this.dateBeg = date;
-	      } else if (this.dateBeg <= date && date <= this.dateEnd) {
+	      if (this.dateBeg <= date && date <= this.dateEnd) {
 	        if (this.dateSel === 'Beg') {
 	          this.dateBeg = date;
 	          this.dateSel = 'End';
 	        } else if (this.dateSel === 'End') {
 	          this.dateEnd = date;
 	          this.dateSel = 'Beg';
+	        }
+	      } else {
+	        if (this.dateEnd < date) {
+	          this.dateEnd = date;
+	        }
+	        if (this.dateBeg > date) {
+	          this.dateBeg = date;
 	        }
 	      }
 	      return [this.dateBeg, this.dateEnd, this.dateSel];
@@ -33678,17 +33758,20 @@
 	      this.showMonth($(event.target).text());
 	    };
 
-	    Master.prototype.showMonth = function(month) {
+	    Master.prototype.showMonth = function(month, second) {
 	      var $master;
+	      if (second == null) {
+	        second = true;
+	      }
 	      $master = $('#Master');
-	      if (month === this.showingMonth) {
+	      if (month === Data.month() && second) {
 	        this.removeAllMonthStyles();
 	        $master.css({
 	          height: '860px'
 	        });
 	        $master.children().show();
-	        this.showingMonth = 'Master';
 	      } else {
+	        Data.monthIdx = Data.months.indexOf(month);
 	        $master.children().hide();
 	        $master.css({
 	          height: '475px'
@@ -33700,7 +33783,6 @@
 	          height: '475px',
 	          fontSize: '14px'
 	        }).show();
-	        this.showingMonth = month;
 	      }
 	    };
 
@@ -33839,7 +33921,7 @@
 
 	// Generated by CoffeeScript 1.12.2
 	(function() {
-	  var $, Data, UI, Upload,
+	  var $, Bookings, Data, UI, Upload,
 	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
 	    hasProp = {}.hasOwnProperty;
 
@@ -33848,6 +33930,8 @@
 	  Data = __webpack_require__(354);
 
 	  UI = __webpack_require__(356);
+
+	  Bookings = __webpack_require__(360);
 
 	  Upload = (function() {
 	    module.exports = Upload;
@@ -33949,7 +34033,7 @@
 	    Upload.prototype.onUploadRes = function() {
 	      Util.log('Upload.onUploadRes');
 	      if (!Util.isStr(this.uploadedText)) {
-	        this.uploadedText = Data.bookingResvs;
+	        this.uploadedText = Bookings.bookingResvs;
 	        this.uploadedResvs = this.uploadParse(this.uploadedText);
 	        $('#UploadText').text(this.uploadedText);
 	      }
@@ -33989,7 +34073,7 @@
 	        resv = ref[resId];
 	        this.res.delResv(resv);
 	      }
-	      resvs = __webpack_require__(360);
+	      resvs = __webpack_require__(361);
 	      for (resId in resvs) {
 	        if (!hasProp.call(resvs, resId)) continue;
 	        resv = resvs[resId];
@@ -34017,7 +34101,7 @@
 	    Upload.prototype.onCreateCan = function() {
 	      var can, canId, cans;
 	      Util.log('Upload.onCreateCan');
-	      cans = __webpack_require__(361);
+	      cans = __webpack_require__(362);
 	      for (canId in cans) {
 	        if (!hasProp.call(cans, canId)) continue;
 	        can = cans[canId];
@@ -34102,6 +34186,48 @@
 
 /***/ },
 /* 360 */
+/***/ function(module, exports) {
+
+	// Generated by CoffeeScript 1.12.2
+	(function() {
+	  var Bookings;
+
+	  Bookings = (function() {
+	    function Bookings() {}
+
+	    module.exports = Bookings;
+
+	    Bookings.bookingResvs = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nDavid Oliver 4 guests	01 August 2017	03 August 2017	Upper Skyline North	11 July 2017	OK	US$330	US$49.50	1188635457";
+
+	    Bookings.bookingResvsE = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nDuelberg 1 guest	09 July 2017	16 July 2017	Upper Skyline South	09 June 2017	OK	US$1085	US$162.75	1152517257";
+
+	    Bookings.bookingMistake = "Raza Mir 1 guest	09 July 2017	12 July 2017	#1 One Room Cabin	09 July 2017	OK	US$435	US$65.25	1915289977\nDuelberg 1 guest	09 July 2017	16 July 2017	Upper Skyline South	09 June 2017	OK	US$1085	US$162.75	1152517257";
+
+	    Bookings.bookingResvsD = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nDezerae Poole 4 guests	13 July 2017	15 July 2017	#2 Mountain Spa	08 July 2017	OK	US$370	US$55.50	1472521885\nScott Frank 2 guests	17 July 2017	20 July 2017	#2 Mountain Spa	08 July 2017	OK	US$555	US$83.25	1404817650\njuan pablo bours 8 guests	10 July 2017	12 July 2017	#3 Southwest Spa	04 July 2017	OK	US$630	US$94.50	1490587666\nTeasa Baca 1 guest	14 July 2017	16 July 2017	#1 One Room Cabin	04 July 2017	OK	US$290	US$43.50	1461229119\nNick Russo 2 guests	11 July 2017	13 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	1251292752\nlouis maufrais 4 guests	13 July 2017	15 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	2051998205\nTyron Becker 4 guests	16 July 2017	20 July 2017	Upper Skyline North	03 July 2017	OK	US$660	US$99	1477467166\nrobert stone 2 guests	22 July 2017	24 July 2017	#5 Cabin with a View	03 July 2017	OK	US$390	US$58.50	1933816072\nRoxane Romero 8 guests	14 July 2017	16 July 2017	#3 Southwest Spa	02 July 2017	OK	US$630	US$94.50	1297543429\nJosh Murphy 4 guests	10 July 2017	12 July 2017	#5 Cabin with a View	01 July 2017	OK	US$390	US$58.50	1251493462\njay wills 4 guests	21 July 2017	23 July 2017	#2 Mountain Spa	01 July 2017	OK	US$370	US$55.50	1121958938\nAmber Ramos 2 guests 1 guest message to answer	28 July 2017	30 July 2017	#2 Mountain Spa	30 June 2017	OK	US$370	US$55.50	1335843833\nMichael Shriver 4 guests	26 July 2017	30 July 2017	Upper Skyline North	29 June 2017	OK	US$660	US$99	1054547744\nSteven Ravel 4 guests	28 July 2017	30 July 2017	Upper Skyline South	28 June 2017	OK	US$310	US$46.50	1217657012\nJessica Henderson 4 guests	21 July 2017	24 July 2017	Upper Skyline North	27 June 2017	OK	US$495	US$74.25	1980882577\nMelissa Constantine 3 guests	24 July 2017	27 July 2017	#2 Mountain Spa	27 June 2017	OK	US$555	US$83.25	1217690885\nDonna Bardallis 3 guests	28 July 2017	30 July 2017	#8 Western Unit	26 June 2017	OK	US$240	US$36	1368306301\nAdam Broten 4 guests	21 July 2017	25 July 2017	Upper Skyline South	25 June 2017	OK	US$620	US$93	1619898321\nShuyan Qiu 4 guests	12 July 2017	14 July 2017	#4 One Room Cabin	21 June 2017	OK	US$290	US$43.50	1987323639\nmelissa larson 3 guests	15 July 2017	17 July 2017	#2 Mountain Spa	20 June 2017	OK	US$370	US$55.50	1559251465\nLaura Steiner 3 guests	25 July 2017	27 July 2017	#4 One Room Cabin	20 June 2017	OK	US$290	US$43.50	1504399864\nDennis Micheal Freiberg 2 guests	21 July 2017	23 July 2017	#8 Western Unit	17 June 2017	OK	US$240	US$36	1515589419\nScott Wilkins 4 guests	17 July 2017	21 July 2017	Upper Skyline South	15 June 2017	OK	US$620	US$93	1332065103\nsteven wolery 1 guest	17 July 2017	19 July 2017	#7 Western Spa	14 June 2017	OK	US$350	US$52.50	1082997039\nJonathan Calvin 5 guests	10 July 2017	13 July 2017	#6 Large River Cabin	13 June 2017	OK	US$945	US$141.75	1233373950\nCarmel Contreras 4 guests	14 July 2017	16 July 2017	Upper Skyline North	12 June 2017	OK	US$330	US$49.50	1199985479\nterrus huls 2 guests	24 July 2017	26 July 2017	Upper Skyline North	11 June 2017	OK	US$330	US$49.50	1747067222\nThomas Hall 2 guests	15 July 2017	18 July 2017	#8 Western Unit	09 June 2017	OK	US$360	US$54	1285019793\nThomas Sturrock 12 guests 2 guest messages to answer	14 July 2017	16 July 2017	#6 Large River Cabin	08 June 2017	OK	US$630	US$94.50	1335353110\nAllison Mann 4 guests	23 July 2017	27 July 2017	#8 Western Unit	08 June 2017	OK	US$480	US$72	1529537163\nTiffany Keleher 8 guests	21 July 2017	23 July 2017	#3 Southwest Spa	07 June 2017	OK	US$630	US$94.50	1741695563\nTerri Richardson 4 guests	26 July 2017	28 July 2017	Upper Skyline South	07 June 2017	OK	US$310	US$46.50	1435907150\nDebra Hakar 2 guests	09 July 2017	11 July 2017	#8 Western Unit	05 June 2017	OK	US$260	US$39	1529718572\nNirmala Narasimhan 10 guests 1 guest message to answer	23 July 2017	26 July 2017	#6 Large River Cabin	05 June 2017	OK	US$945	US$141.75	1258789416\nTaylor Robertson 3 guests	14 July 2017	16 July 2017	#4 One Room Cabin	04 June 2017	OK	US$290	US$43.50	1034229994\nMichael Villanueva 12 guests	20 July 2017	22 July 2017	#6 Large River Cabin	03 June 2017	OK	US$630	US$94.50	1197903266\nEric Johnson 2 guests	10 July 2017	14 July 2017	Upper Skyline North	02 June 2017	OK	US$660	US$99	1159618525\nVanessa Garcia 4 guests	16 July 2017	19 July 2017	#4 One Room Cabin	02 June 2017	OK	US$435	US$65.25	2047390051\nJeffrey Sterup 2 guests	21 July 2017	23 July 2017	#4 One Room Cabin	01 June 2017	OK	US$290	US$43.50	1065585580";
+
+	    Bookings.bookingResvsC = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nMarty Glynn 3 guests	03 August 2017	05 August 2017	#2 Mountain Spa	07 July 2017	OK	US$370	US$55.50	1637994103\nward bates 2 guests	07 August 2017	09 August 2017	#8 Western Unit	07 July 2017	OK	US$240	US$36	1179580200\nWilliam Burns 2 guests	10 August 2017	14 August 2017	Upper Skyline South	07 July 2017	OK	US$620	US$93	1609534921\nRachel Bryant 4 guests	18 August 2017	20 August 2017	#8 Western Unit	06 July 2017	OK	US$240	US$36	1154121605\nmary bieber 12 guests	03 August 2017	05 August 2017	#6 Large River Cabin	05 July 2017	OK	US$600	US$90	1461242157";
+
+	    Bookings.canceled = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nLance richardson 2 guests 2 guest messages to answer	11 July 2017	13 July 2017	#8 Western Unit	05 June 2017	Canceled	US$0	US$0	1853235506\nHan Jooyoun 4 guests	17 July 2017	19 July 2017	Upper Skyline South	12 June 2017	Canceled	US$0	US$0	1679229728\nRitu Singh 4 guests	13 July 2017	17 July 2017	#8 Western Unit	08 June 2017	Canceled	US$0	US$0	1760649274\nGregory Hebbler 2 guests	18 July 2017	25 July 2017	#5 Cabin with a View	28 June 2017	Canceled	US$0	US$0	1643093209\nclarice fenton 4 guests	22 July 2017	26 July 2017	Upper Skyline South	23 June 2017	Canceled	US$0	US$0	1538156772\nT Lobenstein 3 guests	22 July 2017	24 July 2017	Upper Skyline South	16 June 2017	Canceled	US$0	US$0	2007936653\nChangying Shen 4 guests	19 July 2017	21 July 2017	#8 Western Unit	17 June 2017	Canceled	US$0	US$0	1309599829\nBradley Paul 4 guests	19 July 2017	21 July 2017	#8 Western Unit	06 July 2017	Canceled	US$0	US$0	1742527573\nIsaias Denton 8 guests	17 July 2017	21 July 2017	#3 Southwest Spa	07 July 2017	Canceled	US$0	US$0	1903636043\nSandra Perea 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	04 July 2017	Canceled	US$0	US$0	2028271212";
+
+	    Bookings.canceledA = "Erma Henry 2 guests	31 July 2017	30 August 2017	#4 One Room Cabin	25 June 2017	Canceled  US$0	US$0	1225084642\nKaren Palmer 4 guests	18 August 2017	21 August 2017	#8 Western Unit	16 June 2017	Cancelled	US$0	US$0	1747537592\nPauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Cancelled	US$0	US$0	1335821435\nSandra Perea 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	04 July 2017	Canceled	US$0	US$0	2028271212\nSarah Troia 12 guests	04 August 2017	06 August 2017	#6 Large River Cabin	14 June 2017	Canceled	US$0	US$0	1175185436\nElisabetta Casali 12 guests	10 August 2017	12 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	Canceled	US$0	US$0	2042380958";
+
+	    Bookings.bookingResvsB = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\njuan  bours 8 guests	10 July 2017	12 July 2017	#3 Southwest Spa	04 July 2017	OK	US$630	US$94.50	1490587666\nTeasa Baca 1 guest	14 July 2017	16 July 2017	#1 One Room Cabin	04 July 2017	OK	US$290	US$43.50	1461229119\nNick Russo 2 guests	11 July 2017	13 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	1251292752\nlouis maufrais 4 guests	13 July 2017	15 July 2017	#8 Western Unit	03 July 2017	OK	US$240	US$36	2051998205\nTyron Becker 4 guests	16 July 2017	20 July 2017	Upper Skyline North	03 July 2017	OK	US$660	US$99	1477467166\nrobert stone 2 guests	22 July 2017	24 July 2017	#5 Cabin with a View	03 July 2017	OK	US$390	US$58.50	1933816072\nRoxane Romero 8 guests	14 July 2017	16 July 2017	#3 Southwest Spa	02 July 2017	OK	US$630	US$94.50	1297543429\nJosh Murphy 4 guests	10 July 2017	12 July 2017	#5 Cabin with a View	01 July 2017	OK	US$390	US$58.50	1251493462\njay wills 4 guests	21 July 2017	23 July 2017	#2 Mountain Spa	01 July 2017	OK	US$370	US$55.50	1121958938\nmary bieber 12 guests	03 August 2017	05 August 2017	#6 Large River Cabin	05 July 2017	OK	US$600	US$90	1461242157\nSandra Perea 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	04 July 2017	Canceled	US$0	US$0	2028271212\nJim Husbands 4 guests	02 September 2017	04 September 2017	Upper Skyline North	05 July 2017	OK	US$330	US$49.50	1461288419\nMelissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619\nAlberta Retana 2 guests	02 September 2017	04 September 2017	Upper Skyline South	02 July 2017	OK	US$310	US$46.50	1180598317\nGeorge Fleming 2 guests	07 September 2017	10 September 2017	Upper Skyline North	30 June 2017	OK	US$495	US$74.25	1186587856\nMargaret Dreiling 1 guest	08 September 2017	10 September 2017	Upper Skyline South	15 June 2017	OK	US$310	US$46.50	1977820063\nkarissa Wight 4 guests	07 September 2017	09 September 2017	#4 One Room Cabin	13 June 2017	OK	US$290	US$43.50	1779163724\nInez Cunningham 3 guests	07 September 2017	13 September 2017	#3 Southwest Spa	13 June 2017	OK	US$1,890	US$283.50	1831513503\nTony Hajek 2 guests	08 September 2017	10 September 2017	#8 Western Unit	12 June 2017	OK	US$240	US$36	1420506143\nTodd Featherstun 1 guest	08 September 2017	10 September 2017	#1 One Room Cabin	02 June 2017	OK	US$290	US$43.50	1489205592";
+
+	    Bookings.bookingResvsA = "Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number\nsusan settle 2 guests	12 August 2017	16 August 2017	#4 One Room Cabin	03 July 2017	OK	US$580	US$87	1791937613\nMelissa Seacreas 4 guests	01 September 2017	04 September 2017	#8 Western Unit	03 July 2017	OK	US$360	US$54	1180590619";
+
+	    Bookings.canceledA = "Guest name	Arrival	Departure	Room name	Booked on	Status	Total price	Commission	Reference number\nMelissa Seacreas 3 guests 1 guest message to answer	01 September 2017	04 September 2017	#8 Western Unit	24 June 2017	Canceled	US$0	US$0	1555046433\nMelissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695\nPauline McClendon 5 guests	25 August 2017	27 August 2017	#6 Large River Cabin	29 June 2017	Canceled	US$0	US$0	1335821435\nMelissa Seacreas 3 guests	01 September 2017	04 September 2017	#8 Western Unit	23 June 2017	Canceled	US$0	US$0	1822387695\nStephanie Buel 4 guests	31 July 2017	03 August 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1120884797\nvinay singh 4 guests	01 August 2017	03 August 2017	#4 One Room Cabin	07 June 2017	Canceled	US$0	US$0	1438534254\nsusannah mitchell 1 guest	31 August 2017	03 September 2017	#1 One Room Cabin	04 June 2017	Canceled	US$0	US$0	1034276945\nGregory Church 4 guests	30 July 2017	01 August 2017	#8 Western Unit	03 June 2017	Canceled	US$0	US$0	1357716307\nJohnathan Koeltzow 2 guests	11 August 2017	13 August 2017	#8 Western Unit	02 June 2017	Canceled	US$0	US$0	1756807815\nclarice fenton 4 guests	22 July 2017	26 July 2017	Upper Skyline South	23 June 2017	Canceled	US$0	US$0	1538156772\nSusan Arnold 4 guests	07 July 2017	11 July 2017	#5 Cabin with a View	19 June 2017	Canceled	US$0	US$0	2079181490\nChangying Shen 4 guests	19 July 2017	21 July 2017	#8 Western Unit	17 June 2017	Canceled	US$0	US$0	1309599829\nT Lobenstein 3 guests	22 July 2017	24 July 2017	Upper Skyline South	16 June 2017	Canceled	US$0	US$0	2007936653\nHan Jooyoun 4 guests	17 July 2017	19 July 2017	Upper Skyline South	12 June 2017	Canceled	US$0	US$0	1679229728\nRitu Singh 4 guests	13 July 2017	17 July 2017	#8 Western Unit	08 June 2017	Canceled	US$0	US$0	1760649274\nRyan Martin 4 guests	05 July 2017	08 July 2017	#8 Western Unit	07 June 2017	Canceled	US$0	US$0	1490387834\nLance richardson 2 guests 2 guest messages to answer	11 July 2017	13 July 2017	#8 Western Unit	05 June 2017	Canceled	US$0	US$0	1853235506\nDesiree Schwalm 12 guests 1 guest message to answer	01 July 2017	03 July 2017	#6 Large River Cabin	01 June 2017	Canceled	US$0	US$0	1724384266\nJeremy Goldsmith 1 guest	01 July 2017	04 July 2017	#7 Western Spa	01 June 2017	Canceled	US$0	US$0	1849068878\nKarthikeyan Shanmugavadivel 4 guests	01 July 2017	03 July 2017	#8 Western Unit	01 June 2017	Canceled	US$0	US$0	1919159565";
+
+	    Bookings.weird = "Erma Henry 1 guest	31 July 2017	30 August 2017	#4 One Room Cabin	25 June 2017	Canceled	US$0	US$0	1225084642\nElisabetta Casali 16 guests	09 August 2017	11 August 2017	#4 One Room Cabin, #6 Large River Cabin	30 June 2017	OK	US$890	US$133.50	1563316762\nElisabetta Casali 16 guests	10 August 2017	12 August 2017	#6 Large River Cabin, #4 One Room Cabin	30 June 2017	Canceled	US$0	US$0	2042380958";
+
+	    return Bookings;
+
+	  })();
+
+	}).call(this);
+
+
+/***/ },
+/* 361 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -37070,7 +37196,7 @@
 	};
 
 /***/ },
-/* 361 */
+/* 362 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -37236,7 +37362,7 @@
 	};
 
 /***/ },
-/* 362 */
+/* 363 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -37268,6 +37394,7 @@
 	      this.resvSortClick('RHStayTo', 'stayto');
 	      this.resvSortClick('RHName', 'last');
 	      this.resvSortClick('RHStatus', 'status');
+	      this.updateBody(this.master.begQuery(), Data.toDateStr(Data.numDaysMonth()), 'arrive');
 	    };
 
 	    Query.prototype.updateBody = function(beg, end, prop) {
@@ -37334,7 +37461,7 @@
 
 
 /***/ },
-/* 363 */
+/* 364 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -37617,7 +37744,7 @@
 
 
 /***/ },
-/* 364 */
+/* 365 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2

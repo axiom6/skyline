@@ -23,23 +23,26 @@ class Master
     @dateSel       = "End"
     @roomId        = null
     @resMode       = 'Table' # or 'Input'
-    @showingMonth  = 'Master'
 
   ready:() ->
     #@selectToDays() if @store.justMemory
     @listenToDays()
     #listenToResv()
     $('#MasterBtn').click( @onMasterBtn )
+    $('#MasterPrt').click( @onMasterPrt )
+    $('#ResTblPrt').click( @onResTblPrt )
     $('#MakResBtn').click( @onMakResBtn )
     $('#SeasonBtn').click( @onSeasonBtn )
+    $('#SeasonPrt').click( @onSeasonPrt )
     $('#DailysBtn').click( @onDailysBtn )
+    $('#DailysPrt').click( @onDailysPrt )
     $('#UploadBtn').click( @onUploadBtn )
     #res.dateRange( Data.beg, Data.end, @readyMaster ) # This works
     #res.selectAllDaysResvs( @readyMaster )
     @res.selectAllResvs(     @readyMaster, true )
     return
 
-  onMasterBtn:() =>
+  onMasterBtn:( onComplete=null ) =>
     @resMode = 'Table'
     $('#Season').hide()
     $('#Dailys').hide()
@@ -47,7 +50,32 @@ class Master
     $('#ResAdd').hide()
     $('#ResTbl').show()
     $('#Master').show()
+    onComplete() if onComplete?
     return
+
+  doPrint:() =>
+    window.print()
+    $('#Buttons').show('fast')
+    return
+
+  onMasterPrt:() =>
+    onComplete = () =>
+      $('#Buttons, #ResTbl').hide( 'fast', @doPrint )
+    @onMasterBtn( onComplete )
+
+    return
+
+  onResTblPrt:() =>
+    @query.updateBody( @begQuery(), Data.toDateStr( Data.numDaysMonth() ), 'arrive' )
+    onComplete = () =>
+      $('#Buttons, #Master').hide( 'fast', @doPrint )
+    @onMasterBtn( onComplete )
+    return
+
+  begQuery:() ->
+    [yy,mi,dd] = Data.yymidd( @res.today )
+    dt = if mi is Data.monthIdx then dd else 1
+    Data.toDateStr( dt )
 
   onMakResBtn:() =>
     @resMode = 'Input'
@@ -58,23 +86,29 @@ class Master
     $('#ResTbl').hide()
     $('#Master').show()
     @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' ) # Clear any previous fill
-    @dateEnd = @dateEnd
-    #[@dateBeg,@dateEnd,@dateSel] = [null,null,"Beg"]
+    @dateEnd = @dateBeg
     return
 
-  onSeasonBtn:() =>
+  onSeasonBtn:( onComplete=null ) =>
     $('#Master').hide()
     $('#Dailys').hide()
     $('#Upload').hide()
     $('#Season').append( @season.html() ) if Util.isEmpty( $('#Season').children() )
     $('.SeasonTitle').click( (event) => @season.onMonthClick(event) )
-    @season.showMonth( Data.month ) # Show the current month
+    @season.showMonth( Data.month() ) # Show the current month
     $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Season').show()
+    onComplete() if onComplete?
     return
 
-  onDailysBtn:() =>
+  onSeasonPrt:() =>
+    onComplete = () =>
+      $('#Buttons').hide( 'fast', @doPrint )
+    @onSeasonBtn( onComplete )
+    return
+
+  onDailysBtn:( onComplete=null ) =>
     $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Master').hide()
@@ -82,6 +116,13 @@ class Master
     $('#Upload').hide()
     $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
     $('#Dailys').show()
+    onComplete() if onComplete?
+    return
+
+  onDailysPrt:() =>
+    onComplete = () =>
+      $('#Buttons').hide( 'fast', @doPrint )
+    @onDailysBtn( onComplete )
     return
 
   onUploadBtn:() =>
@@ -104,7 +145,7 @@ class Master
   readyMaster:() =>
     $('#Master').empty()
     $('#Master').append( @html() )
-    @showMonth( Data.month ) # Show the current month
+    @showMonth( Data.month(), false ) # Show the current month
     $('.PrevMonth').click( (event) => @onMonthClick(event) )
     $('.ThisMonth').click( (event) => @onMonthClick(event) )
     $('.NextMonth').click( (event) => @onMonthClick(event) )
@@ -114,8 +155,6 @@ class Master
     return
 
   readyCells:() =>
-
-    @query.resvBody( @res.resvArrayByDate( Data.today() ) ) # Show Today's Reservations
 
     doCell = (event) =>
       @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
@@ -142,17 +181,16 @@ class Master
 
   mouseDates:( date ) ->
     @res.order = 'Decend' # Will flip to 'Ascend'
-    if        @dateEnd  < date
-              @dateEnd  = date
-    else if   @dateBeg  > date
-              @dateBeg  = date
-    else if   @dateBeg <= date and date <= @dateEnd
+    if        @dateBeg <= date and date <= @dateEnd
       if      @dateSel is 'Beg'
               @dateBeg  =  date
               @dateSel  = 'End'
       else if @dateSel is 'End'
               @dateEnd  = date
               @dateSel  = 'Beg'
+    else # Not needed but good for expression
+      @dateEnd  = date if @dateEnd < date
+      @dateBeg  = date if @dateBeg > date
     #Util.log( 'Master.mouseDates()', @dateBeg, date, @dateEnd, @dateSel )
     [@dateBeg,@dateEnd,@dateSel]
 
@@ -241,18 +279,17 @@ class Master
     @showMonth( $(event.target).text() )
     return
 
-  showMonth:( month ) ->
+  showMonth:( month, second=true ) ->
     $master = $('#Master')
-    if month is @showingMonth    # Show all Months
+    if month is Data.month() and second  # Show all Months
       @removeAllMonthStyles()
       $master.css(  { height:'860px' } )
       $master.children().show()
-      @showingMonth = 'Master'
     else                          # Show selected month
+      Data.monthIdx = Data.months.indexOf(month)
       $master.children().hide()
       $master.css( { height:'475px' } )
       $('#'+month).css(  { left:0, top:0, width:'100%', height:'475px', fontSize:'14px' } ).show()
-      @showingMonth = month
     return
 
   # Removes expanded style from month and goes back to the month's css selector

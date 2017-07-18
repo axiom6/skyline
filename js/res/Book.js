@@ -73,7 +73,7 @@
 
     Book.prototype.initsHtml = function() {
       var htm;
-      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (UI.htmlSelect("Months", Data.season, Data.month)) + "</label>";
+      htm = "<label for=\"Months\" class=\"InitIp\">Start: " + (UI.htmlSelect("Months", Data.season, Data.month())) + "</label>";
       htm += "<label for=\"Days\"   class=\"InitIp\">       " + (UI.htmlSelect("Days", Data.days, Data.begDay)) + "</label>";
       htm += "<label class=\"InitIp\">&nbsp;&nbsp;" + (2000 + Data.year) + "</label>";
       htm += "<span  id=\"Pop\"  class=\"Test\">Pop</span>";
@@ -339,16 +339,15 @@
     };
 
     Book.prototype.onMonth = function(event) {
-      Data.month = event.target.value;
-      Data.monthIdx = Data.months.indexOf(Data.month);
-      Data.begDay = Data.month === 'May' ? Data.begMay : 1;
+      Data.monthIdx = Data.months.indexOf(event.target.value);
+      Data.begDay = Data.month() === 'May' ? Data.begMay : 1;
       $('#Days').val(Data.begDay.toString());
       this.resetRooms();
     };
 
     Book.prototype.onDay = function(event) {
       Data.begDay = parseInt(event.target.value);
-      if (Data.month === 'October' && Data.begDay > 1) {
+      if (Data.month() === 'October' && Data.begDay > 1) {
         Data.begDay = 1;
         alert('The Season Ends on October 15');
       }

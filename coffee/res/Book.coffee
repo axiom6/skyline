@@ -55,8 +55,8 @@ class Book
     """
 
   initsHtml:() ->
-    htm  = """<label for="Months" class="InitIp">Start: #{ UI.htmlSelect( "Months", Data.season, Data.month  ) }</label>"""
-    htm += """<label for="Days"   class="InitIp">       #{ UI.htmlSelect( "Days",   Data.days,   Data.begDay ) }</label>"""
+    htm  = """<label for="Months" class="InitIp">Start: #{ UI.htmlSelect( "Months", Data.season, Data.month() ) }</label>"""
+    htm += """<label for="Days"   class="InitIp">       #{ UI.htmlSelect( "Days",   Data.days,   Data.begDay  ) }</label>"""
     htm += """<label class="InitIp">&nbsp;&nbsp;#{2000+Data.year}</label>"""
     htm += """<span  id="Pop"  class="Test">Pop</span>"""
     htm += """<span  id="Test" class="Test">Test</span>"""
@@ -264,16 +264,15 @@ class Book
     return
 
   onMonth:( event ) =>
-    Data.month     = event.target.value
-    Data.monthIdx  = Data.months.indexOf(Data.month)
-    Data.begDay    = if Data.month is 'May' then Data.begMay else 1
+    Data.monthIdx  = Data.months.indexOf(event.target.value)
+    Data.begDay    = if Data.month() is 'May' then Data.begMay else 1
     $('#Days').val(Data.begDay.toString())
     @resetRooms() # or resetDateRange:()
     return
 
   onDay:( event ) =>
     Data.begDay = parseInt(event.target.value)
-    if Data.month is 'October' and Data.begDay > 1
+    if Data.month() is 'October' and Data.begDay > 1
       Data.begDay = 1
       alert( 'The Season Ends on October 15' )
     @resetRooms() # or resetDateRange:()

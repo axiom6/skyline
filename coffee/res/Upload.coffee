@@ -1,7 +1,8 @@
 
-$    = require( 'jquery'      )
-Data = require( 'js/res/Data' )
-UI   = require( 'js/res/UI'   )
+$        = require( 'jquery'          )
+Data     = require( 'js/res/Data'     )
+UI       = require( 'js/res/UI'       )
+Bookings = require( 'js/res/Bookings' )
 
 class Upload
 
@@ -78,7 +79,7 @@ class Upload
   onUploadRes:() =>
     Util.log( 'Upload.onUploadRes')
     if not Util.isStr( @uploadedText )
-      @uploadedText  = Data.bookingResvs
+      @uploadedText  = Bookings.bookingResvs
       @uploadedResvs = @uploadParse(  @uploadedText )
       $('#UploadText').text( @uploadedText )
     return if Util.isObjEmpty(    @uploadedResvs )

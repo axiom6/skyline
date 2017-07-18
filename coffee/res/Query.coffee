@@ -19,6 +19,7 @@ class Query
     @resvSortClick( 'RHStayTo', 'stayto' )
     @resvSortClick( 'RHName',   'last'   )
     @resvSortClick( 'RHStatus', 'status' )
+    @updateBody( @master.begQuery(), Data.toDateStr( Data.numDaysMonth() ), 'arrive' )
     return    
 
   updateBody:( beg, end, prop ) ->
