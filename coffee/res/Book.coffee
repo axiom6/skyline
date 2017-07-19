@@ -175,7 +175,6 @@ class Book
     style  = """background:#{Data.toColor(status)};"""
     """<td id="#{@cellId(date,roomId)}" class="room-#{status}" style="#{style}"></td>"""
 
-
   cellId:( date,  roomId ) ->
      'R' + date + roomId
 

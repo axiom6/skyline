@@ -71,7 +71,7 @@ class Upload
     roomId = @toResvRoomId( book.room )
     #first = names[0]
     last   = names[1]
-    status = @toStatus(   book.status )
+    status = @toStatusBook( book.status )
     guests = @toNumGuests( names )
     total  = parseFloat( book.total.substr(3) )
     @res.createResvBooking( arrive, depart, roomId, last, status, guests, total, booked )
@@ -109,10 +109,11 @@ class Upload
 
   onCreateDay:() =>
     Util.log( 'Upload.onCreateDay')
-    for own dayId, day of @res.days
-      @res.delDay( day )
-    for own resId, resv of @res.resvs
-      @res.updateDaysFromResv( resv )
+    @res.dropMakeTable('Day')
+    #for own dayId, day of @res.days
+    #  @res.delDay( day )
+    #for own resId, resv of @res.resvs
+    #  @res.updateDaysFromResv( resv )
     return
 
   onCreateCan:() =>
@@ -124,7 +125,58 @@ class Upload
     return
 
   onCustomFix:() =>
+    resvs = @fixParse()
+    #for resId,  resv of resvs
+    #  @res.addResv( resv )
     return
+
+  fixParse:() ->
+    resvs   = {}
+    for text in [Bookings.june,Bookings.july,Bookings.aug,Bookings.sept,Bookings.july19]
+      lines = text.split('\n')
+      for line in lines
+        toks = line.split(' ')
+        book   = @fixToks( toks )
+        resv   = @fixResv( book )
+        resvs[resv.resId ] = resv
+    resvs
+
+  fixToks:( toks ) ->
+    book           = {}
+    book.arrive    = toks[0]
+    book.stayto    = toks[1]
+    book.nights    = toks[2]
+    book.room      = toks[3]
+    book.last      = toks[4]
+    book.guests    = toks[5]
+    book.status    = toks[6]
+    book.booked    = toks[7]
+    #Util.log( 'Book......')
+    #Util.log(  book )
+    book
+
+  fixResv:( book ) ->
+    arrive = @toFixDate(  book.arrive )
+    stayto = @toFixDate(  book.stayto )
+    depart = Data.advanceDate( stayto, 1 )
+    nights = Data.nights( arrive, depart )
+    roomId = book.room
+    last   = book.last
+    status = @toStatusFix( book.status )
+    guests = book.guests
+    booked = @toFixDate(  book.booked )
+    total  = @res.total( status, nights, roomId, guests )
+    @res.createResv( arrive, depart, booked, roomId, last, status, guests, 0, status, total )
+
+  toFixDate:( mmdd ) ->
+    [mi,dd] = if mmdd.length <= 2 then [6,parseInt(mmdd)] else Data.midd(mmdd)
+    Data.toDateStr( dd, mi )
+
+  toStatusFix:( s ) ->
+    r = s
+    if s.length is 1
+      r = if  s is 'B' then 'Booking' else 'Skyline'
+    r
 
   updateValid:( uploadedResvs ) ->
     valid = true
@@ -166,7 +218,7 @@ class Upload
     else
        toks[2].charAt(0)
 
-  toStatus:( bookingStatus ) ->
+  toStatusBook:( bookingStatus ) ->
     switch   bookingStatus
       when 'OK'       then 'Booking'
       when 'Canceled' then 'Cancel'

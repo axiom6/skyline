@@ -103,7 +103,7 @@
       booked = this.toResvDate(book.booked);
       roomId = this.toResvRoomId(book.room);
       last = names[1];
-      status = this.toStatus(book.status);
+      status = this.toStatusBook(book.status);
       guests = this.toNumGuests(names);
       total = parseFloat(book.total.substr(3));
       return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
@@ -161,20 +161,8 @@
     };
 
     Upload.prototype.onCreateDay = function() {
-      var day, dayId, ref, ref1, resId, resv;
       Util.log('Upload.onCreateDay');
-      ref = this.res.days;
-      for (dayId in ref) {
-        if (!hasProp.call(ref, dayId)) continue;
-        day = ref[dayId];
-        this.res.delDay(day);
-      }
-      ref1 = this.res.resvs;
-      for (resId in ref1) {
-        if (!hasProp.call(ref1, resId)) continue;
-        resv = ref1[resId];
-        this.res.updateDaysFromResv(resv);
-      }
+      this.res.dropMakeTable('Day');
     };
 
     Upload.prototype.onCreateCan = function() {
@@ -188,7 +176,72 @@
       }
     };
 
-    Upload.prototype.onCustomFix = function() {};
+    Upload.prototype.onCustomFix = function() {
+      var resvs;
+      resvs = this.fixParse();
+    };
+
+    Upload.prototype.fixParse = function() {
+      var book, j, k, len, len1, line, lines, ref, resv, resvs, text, toks;
+      resvs = {};
+      ref = [Bookings.june, Bookings.july, Bookings.aug, Bookings.sept, Bookings.july19];
+      for (j = 0, len = ref.length; j < len; j++) {
+        text = ref[j];
+        lines = text.split('\n');
+        for (k = 0, len1 = lines.length; k < len1; k++) {
+          line = lines[k];
+          toks = line.split(' ');
+          book = this.fixToks(toks);
+          resv = this.fixResv(book);
+          resvs[resv.resId] = resv;
+        }
+      }
+      return resvs;
+    };
+
+    Upload.prototype.fixToks = function(toks) {
+      var book;
+      book = {};
+      book.arrive = toks[0];
+      book.stayto = toks[1];
+      book.nights = toks[2];
+      book.room = toks[3];
+      book.last = toks[4];
+      book.guests = toks[5];
+      book.status = toks[6];
+      book.booked = toks[7];
+      return book;
+    };
+
+    Upload.prototype.fixResv = function(book) {
+      var arrive, booked, depart, guests, last, nights, roomId, status, stayto, total;
+      arrive = this.toFixDate(book.arrive);
+      stayto = this.toFixDate(book.stayto);
+      depart = Data.advanceDate(stayto, 1);
+      nights = Data.nights(arrive, depart);
+      roomId = book.room;
+      last = book.last;
+      status = this.toStatusFix(book.status);
+      guests = book.guests;
+      booked = this.toFixDate(book.booked);
+      total = this.res.total(status, nights, roomId, guests);
+      return this.res.createResv(arrive, depart, booked, roomId, last, status, guests, 0, status, total);
+    };
+
+    Upload.prototype.toFixDate = function(mmdd) {
+      var dd, mi, ref;
+      ref = mmdd.length <= 2 ? [6, parseInt(mmdd)] : Data.midd(mmdd), mi = ref[0], dd = ref[1];
+      return Data.toDateStr(dd, mi);
+    };
+
+    Upload.prototype.toStatusFix = function(s) {
+      var r;
+      r = s;
+      if (s.length === 1) {
+        r = s === 'B' ? 'Booking' : 'Skyline';
+      }
+      return r;
+    };
 
     Upload.prototype.updateValid = function(uploadedResvs) {
       var resId, u, v, valid;
@@ -245,7 +298,7 @@
       }
     };
 
-    Upload.prototype.toStatus = function(bookingStatus) {
+    Upload.prototype.toStatusBook = function(bookingStatus) {
       switch (bookingStatus) {
         case 'OK':
           return 'Booking';

@@ -306,6 +306,20 @@
       return dates;
     };
 
+    Res.prototype.total = function(status, nights, roomId, guests, pets) {
+      var tot;
+      if (pets == null) {
+        pets = 0;
+      }
+      tot = 0;
+      if (status === 'Skyline') {
+        tot = nights * (this.rooms[roomId][guests] + pets * Data.petPrice);
+      } else {
+        tot = nights * this.rooms[roomId].booking;
+      }
+      return tot;
+    };
+
     Res.prototype.createResvSkyline = function(arrive, depart, roomId, last, status, guests, pets, spa, cust, payments) {
       var booked, nights, price, total;
       if (spa == null) {
@@ -448,13 +462,22 @@
           return _this.insert(table, rows, Util.isFunc(onComplete) ? onComplete() : void 0);
         };
       })(this));
-      return this.store.make(table);
+      this.store.make(table);
     };
 
     Res.prototype.makeTables = function() {
       this.make('Room', Res.Rooms);
       this.store.make('Res');
-      return this.store.make('Day');
+      this.store.make('Day');
+    };
+
+    Res.prototype.dropMakeTable = function(table) {
+      this.store.subscribe(table, 'drop', 'none', (function(_this) {
+        return function() {
+          return _this.store.make(table);
+        };
+      })(this));
+      this.store.drop(table);
     };
 
     Res.prototype.setResvStatus = function(resv, post, purpose) {
@@ -510,8 +533,13 @@
     };
 
     Res.prototype.addDay = function(day) {
-      this.days[day.dayId] = day;
-      this.store.add('Day', day.dayId, day);
+      if (day.status !== 'Unknown') {
+        this.days[day.dayId] = day;
+        this.store.add('Day', day.dayId, day);
+      } else {
+        Util.error('Unknown day', day);
+        Util.error('Checkon res', this.resvs[day.resId]);
+      }
     };
 
     Res.prototype.putDay = function(day) {

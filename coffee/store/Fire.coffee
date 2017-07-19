@@ -20,130 +20,132 @@ class Fire extends Store
     Store.Firebase
 
   add:( t, id, object  ) ->
-    tableName = @tableName(t)
+    table = @tableName(t)
     object[@keyProp] = id
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'add', id, object )
+        @publish( table, 'add', id, object )
       else
-        @onError( tableName, 'add', id, object, { error:error } )
-    @fd.ref(tableName+'/'+id).set( object, onComplete )
+        @onError( table, 'add', id, object, { error:error } )
+    @fd.ref(table+'/'+id).set( object, onComplete )
     return
 
   get:( t, id ) ->
-    tableName = @tableName(t)
+    table = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
-        @publish( tableName, 'get', id, snapshot.val() )
+        @publish( table, 'get', id, snapshot.val() )
       else
-        @onError( tableName, 'get', id, { msg:'Fire get error' } )
-    @fd.ref(tableName+'/'+id).once('value', onComplete )
+        @onError( table, 'get', id, { msg:'Fire get error' } )
+    @fd.ref(table+'/'+id).once('value', onComplete )
     return
 
   # Same as add
   put:( t, id,  object ) ->
-    tableName = @tableName(t)
+    table = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'put', id, object )
+        @publish( table, 'put', id, object )
       else
-        @onError( tableName, 'put', id, object, { error:error } )
-    @fd.ref(tableName+'/'+id).set( object, onComplete )
+        @onError( table, 'put', id, object, { error:error } )
+    @fd.ref(table+'/'+id).set( object, onComplete )
     return
 
   del:( t, id ) ->
-    tableName = @tableName(t)
+    table = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'del', id, {} )
+        @publish( table, 'del', id, {} )
       else
-        @onError( tableName, 'del', id, {}, { error:error } )
-    @fd.ref(tableName+'/'+id).remove( onComplete )
+        @onError( table, 'del', id, {}, { error:error } )
+    @fd.ref(table+'/'+id).remove( onComplete )
     return
 
   insert:( t, objects ) ->
-    tableName  = @tableName(t)
+    table  = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'insert', 'none', objects )
+        @publish( table, 'insert', 'none', objects )
       else
-        @onError( tableName, 'insert', 'none', { error:error } )
-    @fd.ref(tableName).set( objects, onComplete )
+        @onError( table, 'insert', 'none', { error:error } )
+    @fd.ref(table).set( objects, onComplete )
     return
 
   select:( t, where=Store.where ) ->
     Util.noop( where )
-    tableName = @tableName(t)
+    table = @tableName(t)
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         #val = @toObjects( snapshot.val() )
-        @publish( tableName, 'select', 'none', snapshot.val() )
+        @publish( table, 'select', 'none', snapshot.val() )
       else
-        @publish( tableName, 'select', 'none', {} ) # Publish empty results
-    @fd.ref(tableName).once('value', onComplete )
+        @publish( table, 'select', 'none', {} ) # Publish empty results
+    @fd.ref(table).once('value', onComplete )
     return
 
   range:( t, beg, end ) ->
-    tableName = @tableName(t)
+    table = @tableName(t)
     #Util.log( 'Fire.range  beg', t, beg, end )
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         val = @toObjects( snapshot.val() )
-        @publish( tableName, 'range', 'none', val )
+        @publish( table, 'range', 'none', val )
       else
-        @publish( tableName, 'range', 'none', {}  )  # Publish empty results
-    @fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete )
+        @publish( table, 'range', 'none', {}  )  # Publish empty results
+    @fd.ref(table).orderByKey().startAt(beg).endAt(end).once('value', onComplete )
     return
 
   update:( t, objects ) ->
-    tableName  = @tableName(t)
+    table  = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'update', 'none', objects )
+        @publish( table, 'update', 'none', objects )
       else
-        @onError( tableName, 'update', 'none', { error:error } )
-    @fd.ref(tableName).update( objects, onComplete )
+        @onError( table, 'update', 'none', { error:error } )
+    @fd.ref(table).update( objects, onComplete )
     return
 
   remove:( t, keys ) ->
-    tableName = @tableName(t)
-    ref       = @fd.ref(t)
+    table = @tableName(t)
+    ref       = @fd.ref(table)
     ref.child(key).remove() for key in keys
-    @publish( tableName, 'remove', 'none', keys )
+    @publish( table, 'remove', 'none', keys )
     return
 
   make:( t ) ->
-    tableName = @tableName(t)
+    table = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'make', 'none', {}, {} )
+        @publish( table, 'make', 'none', {}, {} )
       else
-        @onError( tableName, 'make', 'none', {}, { error:error } )
-    @fd.ref().set( tableName, onComplete )
+        @onError(  table, 'make', 'none', {}, { error:error } )
+    @fd.ref().set( table, onComplete )
     return
 
   show:( t, where=Store.where ) ->
-    tableName  = if t? then @tableName(t) else @dbName
+    table  = if t? then @tableName(t) else @dbName
     onComplete = (snapshot) =>
       if snapshot? and snapshot.val()?
         keys = Util.toKeys( snapshot.val(), where, @keyProp )
-        @publish( tableName, 'show', 'none', keys, { where:where.toString() } )
+        @publish( table, 'show', 'none', keys, { where:where.toString() } )
       else
-        @onError( tableName, 'show', 'none', {},   { where:where.toString() } )
+        @onError( table, 'show', 'none', {},   { where:where.toString() } )
     if t?
-      @fd.ref(tableName).once('value', onComplete )
+      @fd.ref(table).once('value', onComplete )
     else
-      @fd.ref(         ).once('value', onComplete )
+      @fd.ref(     ).once('value', onComplete )
     return
 
+  # ref.remove( onComplete ) is Dangerous and has removed all tables in Firebase
   drop:( t ) ->
-    tableName = @tableName(t)
+    table = @tableName(t)
     onComplete = (error) =>
       if not error?
-        @publish( tableName, 'drop', 'none', "OK" )
+        @publish( table, 'drop', 'none', {} )
       else
-        @onError( tableName, 'drop', 'none', {}, { error:error } )
-    @fd.ref(tableName).remove( onComplete )
+        @onError( table, 'drop', 'none', {}, { error:error } )
+    ref = @fd.ref(table)
+    ref.remove( onComplete )
     return
 
   # Have too clarify id with snapshot.key

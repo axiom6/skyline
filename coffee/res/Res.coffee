@@ -165,6 +165,14 @@ class Res
 
   # .... Creation ........
 
+  total:( status, nights, roomId, guests, pets=0 ) ->
+    tot = 0
+    if status is 'Skyline'
+      tot = nights * ( @rooms[roomId][guests] + pets * Data.petPrice )
+    else
+      tot = nights *   @rooms[roomId].booking
+    tot
+
   createResvSkyline:( arrive, depart, roomId, last, status, guests, pets, spa=false, cust={}, payments={} ) ->
     booked = Data.today()
     price  = @rooms[roomId][guests] + pets*Data.petPrice
@@ -247,11 +255,18 @@ class Res
   make:( table, rows, onComplete=null ) ->
     @store.subscribe( table, 'make', 'none', ()  => @insert( table, rows, onComplete() if Util.isFunc(onComplete) ) )
     @store.make( table )
+    return
 
   makeTables:() ->
     @make( 'Room', Res.Rooms )
     @store.make( 'Res' )
     @store.make( 'Day' )
+    return
+
+  dropMakeTable:( table ) ->
+    @store.subscribe( table, 'drop', 'none', () => @store.make(table) )
+    @store.drop( table )
+    return
 
   setResvStatus:( resv, post, purpose ) ->
     if        post is 'post'
@@ -297,8 +312,12 @@ class Res
     return
 
   addDay:( day ) ->
-    @days[day.dayId] = day
-    @store.add( 'Day', day.dayId, day )
+    if day.status isnt 'Unknown'
+      @days[day.dayId] = day
+      @store.add( 'Day', day.dayId, day )
+    else
+      Util.error( 'Unknown day', day )
+      Util.error( 'Checkon res', @resvs[day.resId] )
     return
 
   putDay:( day ) ->

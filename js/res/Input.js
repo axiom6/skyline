@@ -227,6 +227,7 @@
             r = null;
             alert("Unknown Reservation Status: " + r.status + " Name:" + r.last);
           }
+          _this.master.setLast(r.arrive, r.roomId, r.last);
           return r;
         };
       })(this);

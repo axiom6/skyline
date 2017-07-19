@@ -32650,11 +32650,11 @@
 	        $mmdd.text(mmdd1);
 	        if (htmlId === 'NRArrive') {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd1, 'Mine');
+	            onMMDD(htmlId, mmdd1, 'Mine');
 	          }
 	        } else {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd0, 'Free');
+	            onMMDD(htmlId, mmdd0, 'Free');
 	          }
 	        }
 	      };
@@ -32666,11 +32666,11 @@
 	        $mmdd.text(mmdd1);
 	        if (htmlId === 'NRStayTo') {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd1, 'Mine');
+	            onMMDD(htmlId, mmdd1, 'Mine');
 	          }
 	        } else {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd0, 'Free');
+	            onMMDD(htmlId, mmdd0, 'Free');
 	          }
 	        }
 	      };
@@ -34998,6 +34998,7 @@
 	      this.onCellBook = bind(this.onCellBook, this);
 	      this.onTest = bind(this.onTest, this);
 	      this.onPop = bind(this.onPop, this);
+	      this.resetRooms2 = bind(this.resetRooms2, this);
 	      this.resetRooms = bind(this.resetRooms, this);
 	      this.onDay = bind(this.onDay, this);
 	      this.onMonth = bind(this.onMonth, this);
@@ -35179,13 +35180,6 @@
 	      var status, style;
 	      status = this.res.status(date, roomId);
 	      style = "background:" + (Data.toColor(status)) + ";";
-	      Util.log('Book.createCell', {
-	        date: date,
-	        roomId: roomId,
-	        status: status,
-	        color: Data.toColor(status),
-	        style: style
-	      });
 	      return "<td id=\"" + (this.cellId(date, roomId)) + "\" class=\"room-" + status + "\" style=\"" + style + "\"></td>";
 	    };
 
@@ -35206,7 +35200,7 @@
 	    };
 
 	    Book.prototype.roomsJQuery = function() {
-	      var $cell, date, day, i, j, len, ref, ref1, ref2, room, roomId;
+	      var $cell, date, day, i, j, len, ref, ref1, ref2, room, roomId, status;
 	      ref = this.$cells;
 	      for (i = 0, len = ref.length; i < len; i++) {
 	        $cell = ref[i];
@@ -35227,6 +35221,7 @@
 	          })(this));
 	          this.$cells.push($cell);
 	          this.updateTotal(roomId);
+	          status = this.res.status(date, roomId);
 	          this.cellStatus($cell, status);
 	        }
 	      }
@@ -35338,7 +35333,9 @@
 	      return this.res.dateRange(beg, end, this.resetRooms);
 	    };
 
-	    Book.prototype.resetRooms = function() {
+	    Book.prototype.resetRooms = function() {};
+
+	    Book.prototype.resetRooms2 = function() {
 	      $('#Rooms').empty();
 	      $('#Rooms').append(this.roomsHtml(Data.year, Data.monthIdx, Data.begDay, Data.numDays));
 	      return this.roomsJQuery();

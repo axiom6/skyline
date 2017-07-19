@@ -172,6 +172,7 @@ class Input
       else
         r = null
         alert( "Unknown Reservation Status: #{r.status} Name:#{r.last}" )
+      @master.setLast( r.arrive, r.roomId, r.last )
       r
 
     doDel = () =>

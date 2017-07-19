@@ -30061,215 +30061,216 @@
 	    };
 
 	    Fire.prototype.add = function(t, id, object) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      object[this.keyProp] = id;
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'add', id, object);
+	            return _this.publish(table, 'add', id, object);
 	          } else {
-	            return _this.onError(tableName, 'add', id, object, {
+	            return _this.onError(table, 'add', id, object, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).set(object, onComplete);
+	      this.fd.ref(table + '/' + id).set(object, onComplete);
 	    };
 
 	    Fire.prototype.get = function(t, id) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          if ((snapshot != null) && (snapshot.val() != null)) {
-	            return _this.publish(tableName, 'get', id, snapshot.val());
+	            return _this.publish(table, 'get', id, snapshot.val());
 	          } else {
-	            return _this.onError(tableName, 'get', id, {
+	            return _this.onError(table, 'get', id, {
 	              msg: 'Fire get error'
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).once('value', onComplete);
+	      this.fd.ref(table + '/' + id).once('value', onComplete);
 	    };
 
 	    Fire.prototype.put = function(t, id, object) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'put', id, object);
+	            return _this.publish(table, 'put', id, object);
 	          } else {
-	            return _this.onError(tableName, 'put', id, object, {
+	            return _this.onError(table, 'put', id, object, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).set(object, onComplete);
+	      this.fd.ref(table + '/' + id).set(object, onComplete);
 	    };
 
 	    Fire.prototype.del = function(t, id) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'del', id, {});
+	            return _this.publish(table, 'del', id, {});
 	          } else {
-	            return _this.onError(tableName, 'del', id, {}, {
+	            return _this.onError(table, 'del', id, {}, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).remove(onComplete);
+	      this.fd.ref(table + '/' + id).remove(onComplete);
 	    };
 
 	    Fire.prototype.insert = function(t, objects) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'insert', 'none', objects);
+	            return _this.publish(table, 'insert', 'none', objects);
 	          } else {
-	            return _this.onError(tableName, 'insert', 'none', {
+	            return _this.onError(table, 'insert', 'none', {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).set(objects, onComplete);
+	      this.fd.ref(table).set(objects, onComplete);
 	    };
 
 	    Fire.prototype.select = function(t, where) {
-	      var onComplete, tableName;
+	      var onComplete, table;
 	      if (where == null) {
 	        where = Store.where;
 	      }
 	      Util.noop(where);
-	      tableName = this.tableName(t);
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          if ((snapshot != null) && (snapshot.val() != null)) {
-	            return _this.publish(tableName, 'select', 'none', snapshot.val());
+	            return _this.publish(table, 'select', 'none', snapshot.val());
 	          } else {
-	            return _this.publish(tableName, 'select', 'none', {});
+	            return _this.publish(table, 'select', 'none', {});
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).once('value', onComplete);
+	      this.fd.ref(table).once('value', onComplete);
 	    };
 
 	    Fire.prototype.range = function(t, beg, end) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          var val;
 	          if ((snapshot != null) && (snapshot.val() != null)) {
 	            val = _this.toObjects(snapshot.val());
-	            return _this.publish(tableName, 'range', 'none', val);
+	            return _this.publish(table, 'range', 'none', val);
 	          } else {
-	            return _this.publish(tableName, 'range', 'none', {});
+	            return _this.publish(table, 'range', 'none', {});
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete);
+	      this.fd.ref(table).orderByKey().startAt(beg).endAt(end).once('value', onComplete);
 	    };
 
 	    Fire.prototype.update = function(t, objects) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'update', 'none', objects);
+	            return _this.publish(table, 'update', 'none', objects);
 	          } else {
-	            return _this.onError(tableName, 'update', 'none', {
+	            return _this.onError(table, 'update', 'none', {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).update(objects, onComplete);
+	      this.fd.ref(table).update(objects, onComplete);
 	    };
 
 	    Fire.prototype.remove = function(t, keys) {
-	      var i, key, len, ref, tableName;
-	      tableName = this.tableName(t);
-	      ref = this.fd.ref(t);
+	      var i, key, len, ref, table;
+	      table = this.tableName(t);
+	      ref = this.fd.ref(table);
 	      for (i = 0, len = keys.length; i < len; i++) {
 	        key = keys[i];
 	        ref.child(key).remove();
 	      }
-	      this.publish(tableName, 'remove', 'none', keys);
+	      this.publish(table, 'remove', 'none', keys);
 	    };
 
 	    Fire.prototype.make = function(t) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'make', 'none', {}, {});
+	            return _this.publish(table, 'make', 'none', {}, {});
 	          } else {
-	            return _this.onError(tableName, 'make', 'none', {}, {
+	            return _this.onError(table, 'make', 'none', {}, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref().set(tableName, onComplete);
+	      this.fd.ref().set(table, onComplete);
 	    };
 
 	    Fire.prototype.show = function(t, where) {
-	      var onComplete, tableName;
+	      var onComplete, table;
 	      if (where == null) {
 	        where = Store.where;
 	      }
-	      tableName = t != null ? this.tableName(t) : this.dbName;
+	      table = t != null ? this.tableName(t) : this.dbName;
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          var keys;
 	          if ((snapshot != null) && (snapshot.val() != null)) {
 	            keys = Util.toKeys(snapshot.val(), where, _this.keyProp);
-	            return _this.publish(tableName, 'show', 'none', keys, {
+	            return _this.publish(table, 'show', 'none', keys, {
 	              where: where.toString()
 	            });
 	          } else {
-	            return _this.onError(tableName, 'show', 'none', {}, {
+	            return _this.onError(table, 'show', 'none', {}, {
 	              where: where.toString()
 	            });
 	          }
 	        };
 	      })(this);
 	      if (t != null) {
-	        this.fd.ref(tableName).once('value', onComplete);
+	        this.fd.ref(table).once('value', onComplete);
 	      } else {
 	        this.fd.ref().once('value', onComplete);
 	      }
 	    };
 
 	    Fire.prototype.drop = function(t) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, ref, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'drop', 'none', "OK");
+	            return _this.publish(table, 'drop', 'none', {});
 	          } else {
-	            return _this.onError(tableName, 'drop', 'none', {}, {
+	            return _this.onError(table, 'drop', 'none', {}, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).remove(onComplete);
+	      ref = this.fd.ref(table);
+	      ref.remove(onComplete);
 	    };
 
 	    Fire.prototype.on = function(t, onEvt, id, onFunc) {
@@ -32441,11 +32442,9 @@
 
 	// Generated by CoffeeScript 1.12.2
 	(function() {
-	  var $, Data, Res, UI,
+	  var Data, Res, UI,
 	    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
 	    hasProp = {}.hasOwnProperty;
-
-	  $ = __webpack_require__(2);
 
 	  Data = __webpack_require__(354);
 
@@ -32477,10 +32476,6 @@
 	      this.cans = {};
 	      this.order = 'Decend';
 	      this.today = Data.today();
-	      this.onCompleteResv = null;
-	      if (this.appName === 'Guest') {
-	        this.dateRange(Data.beg, Data.end);
-	      }
 	    }
 
 	    Res.prototype.dateRange = function(beg, end, onComplete) {
@@ -32586,14 +32581,11 @@
 	    };
 
 	    Res.prototype.status = function(date, roomId) {
-	      var day, dayId;
+	      var day, dayId, st;
 	      dayId = Data.dayId(date, roomId);
 	      day = this.days[dayId];
-	      if (day != null) {
-	        return day.status;
-	      } else {
-	        return 'Free';
-	      }
+	      st = day != null ? day.status : 'Free';
+	      return st;
 	    };
 
 	    Res.prototype.klass = function(date, roomId) {
@@ -32731,13 +32723,6 @@
 	      }
 	    };
 
-
-	    /*
-	      if day.status isnt 'Free'
-	      @store.del( 'Day', dayId )
-	      delete @days[dayId]
-	     */
-
 	    Res.prototype.calcPrice = function(roomId, guests, pets) {
 	      return this.rooms[roomId][guests] + pets * Data.petPrice;
 	    };
@@ -32761,6 +32746,20 @@
 	        dates[date] = "";
 	      }
 	      return dates;
+	    };
+
+	    Res.prototype.total = function(status, nights, roomId, guests, pets) {
+	      var tot;
+	      if (pets == null) {
+	        pets = 0;
+	      }
+	      tot = 0;
+	      if (status === 'Skyline') {
+	        tot = nights * (this.rooms[roomId][guests] + pets * Data.petPrice);
+	      } else {
+	        tot = nights * this.rooms[roomId].booking;
+	      }
+	      return tot;
 	    };
 
 	    Res.prototype.createResvSkyline = function(arrive, depart, roomId, last, status, guests, pets, spa, cust, payments) {
@@ -32905,13 +32904,22 @@
 	          return _this.insert(table, rows, Util.isFunc(onComplete) ? onComplete() : void 0);
 	        };
 	      })(this));
-	      return this.store.make(table);
+	      this.store.make(table);
 	    };
 
 	    Res.prototype.makeTables = function() {
 	      this.make('Room', Res.Rooms);
 	      this.store.make('Res');
-	      return this.store.make('Day');
+	      this.store.make('Day');
+	    };
+
+	    Res.prototype.dropMakeTable = function(table) {
+	      this.store.subscribe(table, 'drop', 'none', (function(_this) {
+	        return function() {
+	          return _this.store.make(table);
+	        };
+	      })(this));
+	      this.store.drop(table);
 	    };
 
 	    Res.prototype.setResvStatus = function(resv, post, purpose) {
@@ -32967,8 +32975,13 @@
 	    };
 
 	    Res.prototype.addDay = function(day) {
-	      this.days[day.dayId] = day;
-	      this.store.add('Day', day.dayId, day);
+	      if (day.status !== 'Unknown') {
+	        this.days[day.dayId] = day;
+	        this.store.add('Day', day.dayId, day);
+	      } else {
+	        Util.error('Unknown day', day);
+	        Util.error('Checkon res', this.resvs[day.resId]);
+	      }
 	    };
 
 	    Res.prototype.putDay = function(day) {
@@ -33163,11 +33176,11 @@
 	        $mmdd.text(mmdd1);
 	        if (htmlId === 'NRArrive') {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd1, 'Mine');
+	            onMMDD(htmlId, mmdd1, 'Mine');
 	          }
 	        } else {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd0, 'Free');
+	            onMMDD(htmlId, mmdd0, 'Free');
 	          }
 	        }
 	      };
@@ -33179,11 +33192,11 @@
 	        $mmdd.text(mmdd1);
 	        if (htmlId === 'NRStayTo') {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd1, 'Mine');
+	            onMMDD(htmlId, mmdd1, 'Mine');
 	          }
 	        } else {
 	          if (onMMDD != null) {
-	            onMMDD(mmdd0, 'Free');
+	            onMMDD(htmlId, mmdd0, 'Free');
 	          }
 	        }
 	      };
@@ -33874,6 +33887,10 @@
 	      return htm;
 	    };
 
+	    Master.prototype.setLast = function(date, roomId, last) {
+	      return this.$cell('M', date, roomId).find('div').text(last);
+	    };
+
 	    Master.prototype.border = function(date, roomId, resv, klass) {
 	      var bord, color;
 	      color = Data.toColor(klass);
@@ -34036,7 +34053,7 @@
 	      booked = this.toResvDate(book.booked);
 	      roomId = this.toResvRoomId(book.room);
 	      last = names[1];
-	      status = this.toStatus(book.status);
+	      status = this.toStatusBook(book.status);
 	      guests = this.toNumGuests(names);
 	      total = parseFloat(book.total.substr(3));
 	      return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
@@ -34094,20 +34111,8 @@
 	    };
 
 	    Upload.prototype.onCreateDay = function() {
-	      var day, dayId, ref, ref1, resId, resv;
 	      Util.log('Upload.onCreateDay');
-	      ref = this.res.days;
-	      for (dayId in ref) {
-	        if (!hasProp.call(ref, dayId)) continue;
-	        day = ref[dayId];
-	        this.res.delDay(day);
-	      }
-	      ref1 = this.res.resvs;
-	      for (resId in ref1) {
-	        if (!hasProp.call(ref1, resId)) continue;
-	        resv = ref1[resId];
-	        this.res.updateDaysFromResv(resv);
-	      }
+	      this.res.dropMakeTable('Day');
 	    };
 
 	    Upload.prototype.onCreateCan = function() {
@@ -34121,7 +34126,72 @@
 	      }
 	    };
 
-	    Upload.prototype.onCustomFix = function() {};
+	    Upload.prototype.onCustomFix = function() {
+	      var resvs;
+	      resvs = this.fixParse();
+	    };
+
+	    Upload.prototype.fixParse = function() {
+	      var book, j, k, len, len1, line, lines, ref, resv, resvs, text, toks;
+	      resvs = {};
+	      ref = [Bookings.june, Bookings.july, Bookings.aug, Bookings.sept, Bookings.july19];
+	      for (j = 0, len = ref.length; j < len; j++) {
+	        text = ref[j];
+	        lines = text.split('\n');
+	        for (k = 0, len1 = lines.length; k < len1; k++) {
+	          line = lines[k];
+	          toks = line.split(' ');
+	          book = this.fixToks(toks);
+	          resv = this.fixResv(book);
+	          resvs[resv.resId] = resv;
+	        }
+	      }
+	      return resvs;
+	    };
+
+	    Upload.prototype.fixToks = function(toks) {
+	      var book;
+	      book = {};
+	      book.arrive = toks[0];
+	      book.stayto = toks[1];
+	      book.nights = toks[2];
+	      book.room = toks[3];
+	      book.last = toks[4];
+	      book.guests = toks[5];
+	      book.status = toks[6];
+	      book.booked = toks[7];
+	      return book;
+	    };
+
+	    Upload.prototype.fixResv = function(book) {
+	      var arrive, booked, depart, guests, last, nights, roomId, status, stayto, total;
+	      arrive = this.toFixDate(book.arrive);
+	      stayto = this.toFixDate(book.stayto);
+	      depart = Data.advanceDate(stayto, 1);
+	      nights = Data.nights(arrive, depart);
+	      roomId = book.room;
+	      last = book.last;
+	      status = this.toStatusFix(book.status);
+	      guests = book.guests;
+	      booked = this.toFixDate(book.booked);
+	      total = this.res.total(status, nights, roomId, guests);
+	      return this.res.createResv(arrive, depart, booked, roomId, last, status, guests, 0, status, total);
+	    };
+
+	    Upload.prototype.toFixDate = function(mmdd) {
+	      var dd, mi, ref;
+	      ref = mmdd.length <= 2 ? [6, parseInt(mmdd)] : Data.midd(mmdd), mi = ref[0], dd = ref[1];
+	      return Data.toDateStr(dd, mi);
+	    };
+
+	    Upload.prototype.toStatusFix = function(s) {
+	      var r;
+	      r = s;
+	      if (s.length === 1) {
+	        r = s === 'B' ? 'Booking' : 'Skyline';
+	      }
+	      return r;
+	    };
 
 	    Upload.prototype.updateValid = function(uploadedResvs) {
 	      var resId, u, v, valid;
@@ -34178,7 +34248,7 @@
 	      }
 	    };
 
-	    Upload.prototype.toStatus = function(bookingStatus) {
+	    Upload.prototype.toStatusBook = function(bookingStatus) {
 	      switch (bookingStatus) {
 	        case 'OK':
 	          return 'Booking';
@@ -34208,6 +34278,22 @@
 	    function Bookings() {}
 
 	    module.exports = Bookings;
+
+	    Bookings.june = "06/30 07/02 3 7 Woods 1 Booking 06/16 $175 $525 $55.39 $580.39\n06/30 07/02 3 8 Rana 3 Booking 06/28 $120 $360 $37.98 $397.98\n06/30 07/02 3 S Hota 4 Booking 06/01 $155 $465 $49.06 $514.06\n06/29 07/06 8 2 Pachner 4 Booking 06/05 $185 $1480 $156.14 $1636.14\n06/29 06/30 2 N Han 4 Skyline 06/29 $165 $330 $34.81 $364.81\n06/28 06/30 3 5 Haynes 3 Booking 06/12 $195 $585 $61.72 $646.72\n06/27 06/28 2 8 Nepal 4 Booking 06/06 $130 $260 $27.43 $287.43\n06/26 06/29 4 4 FREEMAN 4 Booking 06/06 $145 $580 $61.19 $641.19\n06/25 06/26 2 2 Green 4 Booking 06/01 $185 $370 $39.03 $409.03\n06/25 06/29 5 3 Contractors 4 Skyline 06/28 $275 $1375 $145.06 $1520.06\n06/25 06/27 3 N b 4 Skyline 06/21 $165 $495 $52.22 $547.22\n06/23 06/24 2 1 Lofstrom 1 Booking 06/01 $145 $290 $30.59 $320.59\n06/23 06/24 2 2 CUI 2 Booking 06/13 $185 $370 $39.03 $409.03\n06/23 06/24 2 3 Chan;Che 8 Booking 06/04 $315 $630 $66.47 $696.47\n06/23 06/25 3 4 Roper 4 Booking 05/31 $145 $435 $45.89 $480.89\n06/23 06/24 2 5 Segura 4 Booking 06/11 $195 $390 $41.14 $431.14\n06/23 06/24 2 7 b 4 Skyline 06/21 $175 $350 $36.92 $386.92\n06/23 06/24 2 N Thomas 2 Booking 06/03 $165 $330 $34.81 $364.81\n06/23 06/24 2 S Shuck 4 Booking 06/01 $155 $310 $32.70 $342.70\n06/22 06/22 1 8 b 4 Skyline 06/21 $120 $120 $12.66 $132.66\n06/21 06/22 2 2 b 4 Skyline 06/21 $185 $370 $39.03 $409.03\n06/21 06/22 2 3 b 4 Skyline 06/21 $275 $550 $58.02 $608.02\n06/21 06/22 2 5 b 4 Skyline 06/21 $195 $390 $41.14 $431.14\n06/21 06/30 10 6 b 4 Skyline 06/21 $300 $3000 $316.50 $3316.50\n06/20 06/21 2 4 Rutledge 4 Booking 06/22 $145 $290 $30.59 $320.59\n06/18 06/19 2 4 Ross 4 Booking 06/10 $145 $290 $30.59 $320.59\n06/18 06/20 3 8 Schwindt 4 Booking 06/08 $120 $360 $37.98 $397.98\n06/16 06/17 2 2 Carpenter 2 Booking 06/15 $185 $370 $39.03 $409.03\n06/16 06/17 2 8 Nelsen 4 Booking 06/03 $145 $290 $30.59 $320.59\n06/16 06/17 2 N Price 3 Booking 06/08 $165 $330 $34.81 $364.81\n06/16 06/17 2 S peterson 4 Booking 06/06 $155 $310 $32.70 $342.70";
+
+	    Bookings.kuly18 = "6/29 7/6 2 Pachner 4 B 6/05 $185\n6/30 7/2 5 Hota    4 B 6/01 $155";
+
+	    Bookings.july19 = "1 1 1 3 Contractor 4 S 06/28\n1 4 1 4 x 4 S 06/21\n1 3 1 5 Name? 4 S 06/28\n1 2 1 7 Woods 4 S 06/29\n1 2 1 8 Rana 4 B 06/29\n1 3 1 N Diachuk 2 B 06/03\n2 4 1 3 Markottor 8 B 06/29\n2 4 1 6 Fiffen 4 S 06/29\n3 6 1 1 Who 4 S 07/06\n3 7 1 7 Bonnel 1 B 06/09\n3 5 1 8 Block 4 S 06/29\n3 6 1 S Kile 4 B 06/06\n4 5 1 S Carrera 4 B 06/28\n4 6 1 N Feldewert 2 B 06/22\n5 7 1 4 Costilo 4 S 06/27\n5 8 1 6 Kroger 12 B 06/02\n7 11 1 2 Shinn 3 B 06/21\n7 9 1 5 Brent 4 S 07/06\n7 8 1 8 Preiss 2 B 06/21\n7 9 1 N Chitty 2 B 06/23\n7 8 1 S South 2 B 06/20\n8 9 1 3 Perma 4 S 07/06\n8 10 1 4 Curtis 4 B 07/07\n9 9 1 1 Mir 4 B 07/09\n9 13 1 7 Dougherty 4 S 06/27\n9 10 1 8 Hakar 2 B 07/09\n9 15 1 5 Duelberg 1 B 07/09\n10 10 1 8 Jadin S B 07/09\n10 11 1 3 Pablo 8 B 07/04\n10 11 1 5 Murphy 4 B 07/01\n10 12 1 6 Calvin 5 B 06/23\n10 13 1 N Johnson 2 B 06/02\n11 11 1 1 Mir 4 B 07/09\n11 12 1 2 Russo 2 B 07/03\n12 13 1 3 Block 4 S 07/09\n12 13 1 4 Qui 4 B 06/21\n12 12 1 5 Block 4 S 07/09\n13 14 1 2 Duval 4 B 07/17\n13 15 1 5 Miller 4 S 07/13\n13 14 1 8 Maufrais 4 B 07/03\n14 15 1 1 Baca 4 B 07/04\n14 15 1 3 Romero 8 B 07/02\n14 15 1 4 Robertson 3 B 07/04\n14 15 1 6 Sturrock 12 B 07/08\n14 14 1 7 Poole 4 S 07/13\n14 15 1 N Contreras 4 B 06/12\n15 16 1 2 Larson 3 B 06/20\n15 16 1 7 Sue? 4 S 07/15\n15 17 1 8 Hall 2 B 06/19\n16 18 1 4 Garcia 4 B 06/02\n16 17 1 5 Macarthy 4 D 07/11\n16 17 1 6 Block 4 S 06/21";
+
+	    Bookings.july19a = "1 1 1 3 Contractor 4 S 06/28\n1 4 1 4 x          4 S 06/21\n1 3 1 5 Name?      4 S 06/28\n1 2 1 7 Woods      4 S 06/29\n1 2 1 8 Rana       4 B 06/29\n1 3 1 N Diachuk    2 B 06/03\n2 4 1 3 Markottor  8 B 06/29\n2 4 1 6 Fiffen     4 S 06/29\n3 6 1 1 Who        4 S 07/06\n3 7 1 7 Bonnel     1 B 06/09\n3 5 1 8 Block      4 S 06/29\n3 6 1 S Kile       4 B 06/06\n4 5 1 S Carrera    4 B 06/28\n4 6 1 N Feldewert  2 B 06/22\n5 7 1 4 Costilo    4 S 06/27\n5 8 1 6 Kroger    12 B 06/02\n7 11 1 2 Shinn     3 B 06/21\n7 9  1 5 Brent     4 S 07/06\n7 8  1 8 Preiss    2 B 06/21\n7 9  1 N Chitty    2 B 06/23\n7 8  1 S South     2 B 06/20\n8 9  1 3 Perma     4 S 07/06\n8 10 1 4 Curtis    4 B 07/07\n9 9  1 1 Mir       4 B 07/09\n9 13 1 7 Dougherty 4 S 06/27\n9 10  1 8 Hakar    2 B 07/09\n9 15  1 5 Duelberg 1 B 07/09\n10 10 1 8 Jadin    S B 07/09\n10 11 1 3 Pablo    8 B 07/04\n10 11 1 5 Murphy   4 B 07/01\n10 12 1 6 Calvin   5 B 06/23\n10 13 1 N Johnson  2 B 06/02\n11 11 1 1 Mir      4 B 07/09\n11 12 1 2 Russo    2 B 07/03\n12 13 1 3 Block    4 S 07/09\n12 13 1 4 Qui      4 B 06/21\n12 12 1 5 Block    4 S 07/09\n13 14 1 2 Duval    4 B  07/17\n13 15 1 5 Miller   4 S  07/13\n13 14 1 8 Maufrais 4 B  07/03\n14 15 1 1 Baca     4 B  07/04\n14 15 1 3 Romero   8 B  07/02\n14 15 1 4 Robertson 3 B 07/04\n14 15 1 6 Sturrock 12 B 07/08\n14 14 1 7 Poole     4 S 07/13\n14 15 1 N Contreras 4 B 06/12\n15 16 1 2 Larson    3 B 06/20\n15 16 1 7 Sue?      4 S 07/15\n15 17 1 8 Hall      2 B 06/19\n16 18 1 4 Garcia    4 B 06/02\n16 17 1 5 Macarthy  4 D 07/11\n16 17 1 6 Block     4 S 06/21";
+
+	    Bookings.july20 = "6/29 7/6 2 Pachner 4 B 6/05 $185\n6/30 7/2 5 Hota    4 B 6/01 $155\n1 1 3 Contractor 4 S 6/1 279\n1 4 4 x          4 S 6/21 275\n1 3 5 Name?      4 S 6/28 195\n1 2 7 Woods      4 S 6/29 175\n1 2 8 Rana       4 B 6/29 120\n1 3 N Diachuk    2 B 6/3  165\n2 4 3 Markottor  8 B 6/29 315\n2 4 6 Fiffen     4 S 6/29 300\n3 6 1 Who        4 S 7/6  145\n3 7 7 Bonnel     1 B 6/9  175\n3 5 8 Block  4\n3 6 S Kile  4\n4 5 S Carrera 4\n4 6 N Feldewert 2\n5 7 4 Costilo 4\n5 8 6 Kroger 12\n7 11 2 Shinn 3\n7 9  5 Brent  4\n7 8  8 Preiss 2\n7 9  N Chitty 2\n7 8  S South  2\n8 9  3 Perma  4\n8 10 4 Curtis 4\n9 9  1 Mir 4\n9 13  7 Dougherty\n9 10  8 Hakar 2\n9 15  5 Duelberg 1\n10 10 8 Jadin\n10 11 3 Pablo 8\n10 11 5 Murphy 4\n10 12 6 Calvin 5\n10 13 N Johnson 2\n11 11 1 Mir  4\n11 12 2 Russo 2\n12 13 3 Block 4\n12 13 4 Qui  4\n12 12 5 Block 4\n13 14 2 Duval 4\n13 15 5 Miller 4\n13 14 8 Maufrais 4\n14 15 1 Baca 4\n14 15 3 Romero 8\n14 15 4 Roberttson 3\n14 15 6 Sturrock 12\n14 14 7 Poole\n14 15 N Contreras\n15 16 2 Larson 3\n15 16 7 Sue?\n15 17 8 Hall 2\n16 18 4 Garcia 4\n16 17 5 Mcarthy 4\n16 17 6 Block  4";
+
+	    Bookings.july = "07/31 08/03 4 S Krupa 3 Booking 06/30 $155 $620 $65.41 $685.41\n07/30 08/04 6 8 Young 4 Booking 06/08 $120 $720 $75.96 $795.96\n07/29 07/30 2 4 Alton 2 Skyline 07/09 $125 $250 $26.38 $276.38\n07/28 07/29 2 2 ??? 4 Skyline 07/18 $185 $370 $39.03 $409.03\n07/28 07/29 2 7 Ramos 2 Booking 07/09 $165 $330 $34.81 $364.81\n07/28 07/29 2 8 Bardallis 3 Booking 06/26 $120 $240 $25.32 $265.32\n07/28 07/29 2 S Ravel 4 Booking 06/28 $155 $310 $32.70 $342.70\n07/27 07/27 1 2 Bl 4 Skyline 07/18 $185 $185 $19.52 $204.52\n07/27 07/28 2 4 Schreiner 4 Booking 07/17 $145 $290 $30.59 $320.59\n07/27 07/27 1 8 Bl 4 Skyline 07/18 $120 $120 $12.66 $132.66\n07/26 07/29 4 1 Shriver 4 Booking 07/09 $145 $580 $61.19 $641.19\n07/26 07/29 4 3 Miller 4 Skyline 07/01 $275 $1100 $116.05 $1216.05\n07/26 07/29 4 5 Miller 4 Skyline 07/01 $195 $780 $82.29 $862.29\n07/26 07/29 4 6 Miller 4 Skyline 07/01 $300 $1200 $126.60 $1326.60\n07/26 07/29 4 N Shriver 4 Booking 06/29 $165 $660 $69.63 $729.63\n07/26 07/27 2 S Richardson 4 Booking 06/07 $155 $310 $32.70 $342.70\n07/25 07/26 2 4 Steiner 3 Booking 06/20 $145 $290 $30.59 $320.59\n07/24 07/25 2 1 huls 2 Booking 07/09 $125 $250 $26.38 $276.38\n07/24 07/26 3 2 Constantine 3 Booking 06/27 $185 $555 $58.55 $613.55\n07/24 07/25 2 5 Davis 3 Booking 07/13 $195 $390 $41.14 $431.14\n07/24 07/25 2 N huls 2 Booking 06/11 $165 $330 $34.81 $364.81\n07/23 07/25 3 6 Narasimhan 10 Booking 06/05 $315 $945 $99.70 $1044.70\n07/23 07/26 4 8 Mann 4 Booking 06/08 $120 $480 $50.64 $530.64\n07/22 07/23 2 5 stone 2 Booking 07/03 $195 $390 $41.14 $431.14\n07/22 07/27 6 7 Masom 4 Skyline 07/09 $175 $1050 $110.77 $1160.77\n07/21 07/23 3 1 Henderson 4 Booking 07/09 $145 $435 $45.89 $480.89\n07/21 07/22 2 2 wills 4 Booking 07/01 $185 $370 $39.03 $409.03\n07/21 07/22 2 3 Keleher 8 Booking 06/07 $315 $630 $66.47 $696.47\n07/21 07/22 2 4 Sterup 2 Booking 06/01 $145 $290 $30.59 $320.59\n07/21 07/22 2 8 Micheal 2 Booking 06/17 $120 $240 $25.32 $265.32\n07/21 07/23 3 N Henderson 4 Booking 06/27 $165 $495 $52.22 $547.22\n07/21 07/24 4 S Broten 4 Booking 06/25 $155 $620 $65.41 $685.41\n07/20 07/21 2 5 Geiker 4 Skyline 06/29 $195 $390 $41.14 $431.14\n07/20 07/21 2 6 Villanueva 12 Booking 06/03 $315 $630 $66.47 $696.47\n07/18 07/19 2 1 Copper 4 Skyline 07/11 $145 $290 $30.59 $320.59\n07/17 07/19 3 2 Frank 2 Booking 07/08 $185 $555 $58.55 $613.55\n07/17 07/20 4 S Wilkins 4 Booking 06/15 $155 $620 $65.41 $685.41\n07/16 07/19 4 N Becker 4 Booking 07/03 $165 $660 $69.63 $729.63";
+
+	    Bookings.aug = "08/31 08/31 1 3 Jenkine 4 Skyline 06/27 $275 $275 $29.01 $304.01\n08/22 08/26 5 8 Nichols 2 Booking 07/18 $98 $490 $51.70 $541.70\n08/20 08/20 1 6 Brenner 4 Skyline 06/27 $300 $300 $31.65 $331.65\n08/18 08/19 2 2 Mitchell 4 Booking 06/30 $185 $370 $39.03 $409.03\n08/18 08/19 2 8 Bryant 4 Booking 07/06 $120 $240 $25.32 $265.32\n08/16 08/19 4 S Howell 4 Skyline 07/18 $155 $620 $65.41 $685.41\n08/14 08/18 5 6 Jones 2 Skyline 07/09 $235 $1175 $123.96 $1298.96\n08/14 08/15 2 8 Leech 4 Booking 06/07 $130 $260 $27.43 $287.43\n08/14 08/16 3 N TAK 2 Booking 07/09 $145 $435 $45.89 $480.89\n08/13 08/14 2 2 Sanders 2 Skyline 07/10 $165 $330 $34.81 $364.81\n08/13 08/19 7 7 Maris 4 Skyline 06/27 $175 $1225 $129.24 $1354.24\n08/12 08/12 1 1 Sanders 2 Booking 07/10 $125 $125 $13.19 $138.19\n08/12 08/15 4 4 Settle 2 Booking 07/18 $125 $500 $52.75 $552.75\n08/12 08/15 4 5 settle 2 Booking 07/09 $195 $780 $82.29 $862.29\n08/11 08/11 1 1 Colbert 4 Skyline 07/16 $145 $145 $15.30 $160.30\n08/11 08/11 1 4 Colbert 4 Skyline 07/16 $145 $145 $15.30 $160.30\n08/11 08/12 2 6 Jones 10 Booking 07/15 $360 $720 $75.96 $795.96\n08/11 08/12 2 7 Mischer 1 Booking 07/16 $165 $330 $34.81 $364.81\n08/10 08/14 5 3 Yeaman 4 Skyline 07/18 $275 $1375 $145.06 $1520.06\n08/10 08/12 3 8 Clark 4 Booking 06/06 $130 $390 $41.14 $431.14\n08/10 08/13 4 S Burns 2 Booking 07/07 $155 $620 $65.41 $685.41\n08/09 08/10 2 5 Casali 6 Skyline 07/10 $215 $430 $45.37 $475.37\n08/09 08/10 2 6 Casali 16 Booking 06/30 $445 $890 $93.89 $983.89\n08/08 08/12 5 2 Dasarakotohpa 4 Skyline 07/09 $185 $925 $97.59 $1022.59\n08/08 08/12 5 N Chavez 4 Booking 07/14 $165 $825 $87.04 $912.04\n08/07 08/10 4 1 Dusterbeck 4 Skyline 07/09 $145 $580 $61.19 $641.19\n08/07 08/08 2 8 Bates 2 Booking 07/18 $98 $196 $20.68 $216.68\n08/06 08/07 2 4 MacDowell 4 Skyline 07/18 $145 $290 $30.59 $320.59\n08/06 08/08 3 5 Lansome 4 Skyline 07/16 $195 $585 $61.72 $646.72\n08/05 08/08 4 6 Pham 4 Booking 07/11 $300 $1200 $126.60 $1326.60\n08/05 08/06 2 8 Edwards 4 Skyline 07/09 $120 $240 $25.32 $265.32\n08/04 08/05 2 1 Gagon 4 Skyline 07/09 $145 $290 $30.59 $320.59\n08/04 08/05 2 3 Hedgecock 8 Booking 06/24 $315 $630 $66.47 $696.47\n08/04 08/05 2 4 Hagen 2 Booking 06/29 $145 $290 $30.59 $320.59\n08/04 08/05 2 7 Hagen 2 Booking 07/09 $165 $330 $34.81 $364.81\n08/04 08/06 3 N Zink 4 Booking 06/30 $165 $495 $52.22 $547.22\n08/04 08/04 1 S Vink? 4 Skyline 07/18 $155 $155 $16.35 $171.35\n08/03 08/04 2 2 Glynn 3 Booking 07/07 $185 $370 $39.03 $409.03\n08/03 08/04 2 6 bieber 12 Booking 07/05 $300 $600 $63.30 $663.30\n08/02 08/02 1 4 Stewart 4 Skyline 07/09 $145 $145 $15.30 $160.30\n08/01 08/03 3 3 Jenkine 4 Skyline 07/09 $275 $825 $87.04 $912.04\n08/01 08/04 4 5 Vinkevicius 4 Booking 07/12 $195 $780 $82.29 $862.29\n08/01 08/02 2 6 YEAGER 12 Booking 06/22 $315 $630 $66.47 $696.47\n08/01 08/02 2 N Oliver 4 Booking 07/11 $165 $330 $34.81 $364.81\n07/31 08/03 4 S Krupa 3 Booking 06/30 $155 $620 $65.41 $685.41\n07/30 08/04 6 8 Young 4 Booking 06/08 $120 $720 $75.96 $795.96";
+
+	    Bookings.sept = "09/01 09/03 3 1 Kelller 4 Skyline 07/11 $145 $435 $45.89 $480.89\n09/01 09/03 3 4 Keller 4 Skyline 07/11 $145 $435 $45.89 $480.89\n09/01 09/03 3 6 b 4 Skyline 06/21 $300 $900 $94.95 $994.95\n09/01 09/03 3 8 Seacreas 4 Booking 07/03 $120 $360 $37.98 $397.98\n09/02 09/03 2 N Husbands 4 Booking 07/05 $165 $330 $34.81 $364.81\n09/02 09/03 2 S Retana 2 Booking 07/02 $155 $310 $32.70 $342.70\n09/07 09/12 6 3 Cunningham 3 Booking 06/13 $1 $1 $0.11 $1.11\n09/07 09/08 2 4 Wight 4 Booking 06/13 $145 $290 $30.59 $320.59\n09/07 09/09 3 6 Andrus 4 Skyline 07/11 $300 $900 $94.95 $994.95\n09/07 09/09 3 N Fleming 2 Booking 06/30 $165 $495 $52.22 $547.22\n09/08 09/09 2 1 Featherstun 1 Booking 06/02 $145 $290 $30.59 $320.59\n09/08 09/09 2 8 Hajek 2 Booking 06/12 $120 $240 $25.32 $265.32\n09/08 09/09 2 S Dreiling 1 Booking 06/15 $155 $310 $32.70 $342.70\n09/09 09/10 2 2 Rhodes 4 Booking 07/16 $185 $370 $39.03 $409.03\n09/14 09/17 4 6 Jame 8 Skyline 07/16 $340 $1360 $143.48 $1503.48\n09/15 09/16 2 8 Smith 4 Booking 07/15 $120 $240 $25.32 $265.32";
 
 	    Bookings.bookingResvs = "Guest name	Arrival	Departure	Room Name	Booked on	Status	Total Price	Commission	Reference Number\nDavid Oliver 4 guests	01 August 2017	03 August 2017	Upper Skyline North	11 July 2017	OK	US$330	US$49.50	1188635457";
 
@@ -37574,12 +37660,19 @@
 	    Input.prototype.action = function() {
 	      var onMMDD;
 	      onMMDD = (function(_this) {
-	        return function(mmdd, klass) {
+	        return function(htmlId, mmdd, klass) {
 	          var date, dd, mi, ref, roomId;
 	          ref = Data.midd(mmdd), mi = ref[0], dd = ref[1];
 	          date = Data.toDateStr(dd, mi);
 	          roomId = _this.resv.roomId;
 	          _this.master.fillCell(roomId, date, klass);
+	          if (htmlId === 'NRArrive') {
+	            _this.resv.arrive = date;
+	          }
+	          if (htmlId === 'NRStayTo') {
+	            _this.resv.stayto = date;
+	          }
+	          _this.refreshResv(_this.resv);
 	        };
 	      })(this);
 	      UI.onArrowsMMDD('NRArrive', onMMDD);
@@ -37621,7 +37714,7 @@
 	    };
 
 	    Input.prototype.stayto = function() {
-	      return UI.htmlArrows('NRStayTo', 'NRArrive');
+	      return UI.htmlArrows('NRStayTo', 'NRStayTo');
 	    };
 
 	    Input.prototype.rooms = function() {
@@ -37653,6 +37746,7 @@
 	    };
 
 	    Input.prototype.refreshResv = function(resv) {
+	      resv.depart = Data.advanceDate(resv.stayto, 1);
 	      resv.nights = Data.nights(resv.arrive, resv.depart);
 	      resv.price = resv.status === 'Skyline' || resv.status === 'Deposit' ? this.res.calcPrice(resv.roomId, resv.guests, resv.pets) : resv.price;
 	      resv.deposit = resv.price * 0.5;
@@ -37671,6 +37765,7 @@
 	      $('#NRTotal').text('$' + resv.total);
 	      $('#NRTax').text('$' + resv.tax);
 	      $('#NRCharge').text('$' + resv.charge);
+	      this.master.setLast(resv.arrive, resv.roomId, resv.last);
 	      if (this.state === 'add') {
 	        $('#NRCreate').show();
 	        $('#NRChange').hide();
@@ -37696,6 +37791,7 @@
 	            r = null;
 	            alert("Unknown Reservation Status: " + r.status + " Name:" + r.last);
 	          }
+	          _this.master.setLast(r.arrive, r.roomId, r.last);
 	          return r;
 	        };
 	      })(this);
