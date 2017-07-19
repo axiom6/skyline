@@ -5,33 +5,10 @@ include::../dir/inc/DefBook.adoc[]
 # [.black]#Plan#
 
 ### [.black]#Important#
-
-
-* Upload
-  ** Improve Text Transfer
-  ** Just filter out invalids
-  ** Date stamp cancellations
-* Input
-  ** Make Dates Easier
-  ** Collision Detection
-* Query
-  ** Make Dates Easier
-  ** Easy Printing
-* Season
-  ** Disable
 * Guest
   ** Update to Owner
   ** Deploy Info Site
   ** Deploy Guest
-
-### [.black]#Integrate#
-
-* Bookings
-  ** Set Up #6 and block  June, Beth Adrus
-  ** Enlarge and upload more photos
-  ** Review listings
-  ** Determine steps for going live
-* Guest
   ** Weekend Hint
   ** Guest Lookup Checkin with PayBalance
   ** Confirmation EMail from Firebase
@@ -41,6 +18,18 @@ include::../dir/inc/DefBook.adoc[]
   ** Stripe Bank Account
   ** Firebase auth and deploy
   ** Move www.skylinecottages.com from GoDaddy
+* Upload
+  ** Improve Text Transfer
+  ** Just filter out invalids
+  ** Date stamp cancellations
+* Season
+  ** Disable
+
+### [.black]#Integrate#
+* Bookings
+  ** Enlarge and upload more photos
+  ** Review listings
+  ** Determine steps for going live
 * Owner
   ** Group Reservation Days
   ** Clean Up Confirmation
@@ -57,6 +46,12 @@ include::../dir/inc/DefBook.adoc[]
 * Trips With Pets
 
 ## [.black]#Guest Site Completed#
+* Input
+  ** Make Dates Easier
+  ** Collision Detection
+* Query
+  ** Make Dates Easier
+  ** Easy Printing
 * Res
   ** Get JSON
   ** Convert legacy status

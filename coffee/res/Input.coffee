@@ -35,7 +35,7 @@ class Input
     @refreshResv( @resv )
     return
 
-  updateResv:(       arrive, stayto, roomId, resv ) ->
+  updateResv:( arrive, stayto, roomId, resv ) ->
     [arrive,stayto] = if resv.resId isnt @lastResId then [resv.arrive,resv.stayto] else [arrive,stayto]
     if @updateDates( arrive, stayto, roomId, resv )
       @resv = resv
@@ -71,11 +71,15 @@ class Input
     
   action:() ->
 
-    onMMDD = ( mmdd, klass ) =>
+    onMMDD = ( htmlId, mmdd, klass ) =>
       [mi,dd] = Data.midd(mmdd)
       date    = Data.toDateStr( dd, mi )
       roomId  = @resv.roomId
       @master.fillCell( roomId, date, klass )
+      @resv.arrive = date if htmlId is 'NRArrive'
+      @resv.stayto = date if htmlId is 'NRStayTo'
+      #Util.log( 'Input.onMDD', htmlId, date, @resv )
+      @refreshResv( @resv )
       return
 
     UI.onArrowsMMDD( 'NRArrive', onMMDD )
@@ -113,7 +117,7 @@ class Input
     @resvSubmits()
 
   arrive:() -> UI.htmlArrows( 'NRArrive', 'NRArrive' )
-  stayto:() -> UI.htmlArrows( 'NRStayTo', 'NRArrive' )
+  stayto:() -> UI.htmlArrows( 'NRStayTo', 'NRStayTo' )
   rooms: () -> UI.htmlSelect( 'NRRooms',  @res.roomKeys,      @resv.roomId )
   guests:() -> UI.htmlSelect( 'NRGuests', Data.persons,      4             )
   pets:  () -> UI.htmlSelect( 'NRPets',   Data.pets,         0             )
@@ -127,6 +131,7 @@ class Input
     htm
 
   refreshResv:( resv ) ->
+    resv.depart  = Data.advanceDate(resv.stayto,1)
     resv.nights  = Data.nights( resv.arrive, resv.depart )
     resv.price   = if resv.status is 'Skyline' or resv.status is 'Deposit' then @res.calcPrice(resv.roomId,resv.guests,resv.pets) else resv.price
     resv.deposit = resv.price * 0.5
@@ -145,6 +150,7 @@ class Input
     $('#NRTotal' ).text( '$'+resv.total  )
     $('#NRTax'   ).text( '$'+resv.tax    )
     $('#NRCharge').text( '$'+resv.charge )
+    @master.setLast( resv.arrive, resv.roomId, resv.last )
     if      @state is 'add'
       $('#NRCreate').show()
       $('#NRChange').hide()

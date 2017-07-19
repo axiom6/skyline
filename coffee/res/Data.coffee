@@ -160,12 +160,19 @@ class Data
     Data.weekdays[weekdayIdx]
 
   @isDate:( date ) ->
+    return false if not Util.isStr(date) or date.length isnt 6
     [yy,mi,dd] = @yymidd( date )
     valid  = true
     valid &= yy is Data.year
     valid &= 0 <= mi and mi <= 11
     valid &= 1 <= dd and dd <= 31
     valid
+
+  @begEndDates:(  begDate1,   endDate1 ) ->
+    return [null,null] if not ( begDate1? and endDate1? )
+    begDate2 = if begDate1 <= endDate1 then begDate1 else endDate1
+    endDate2 = if endDate1 >  begDate1 then endDate1 else begDate1
+    [begDate2,endDate2]
 
   @yymidd:( date ) ->
     yy = parseInt( date.substr( 0,2 ) )

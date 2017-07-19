@@ -205,7 +205,7 @@
 	          _this.counts[completeSubject].count++;
 	          if (_this.counts[completeSubject].count === subjects.length) {
 	            _this.counts[completeSubject].count = 0;
-	            if (typeof onComplete === 'function') {
+	            if (Util.isFunc(onComplete)) {
 	              return onComplete(objects);
 	            } else {
 	              return _this.publish(completeSubject, objects);
@@ -32347,12 +32347,25 @@
 
 	    Data.isDate = function(date) {
 	      var dd, mi, ref, valid, yy;
+	      if (!Util.isStr(date) || date.length !== 6) {
+	        return false;
+	      }
 	      ref = this.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
 	      valid = true;
 	      valid &= yy === Data.year;
 	      valid &= 0 <= mi && mi <= 11;
 	      valid &= 1 <= dd && dd <= 31;
 	      return valid;
+	    };
+
+	    Data.begEndDates = function(begDate1, endDate1) {
+	      var begDate2, endDate2;
+	      if (!((begDate1 != null) && (endDate1 != null))) {
+	        return [null, null];
+	      }
+	      begDate2 = begDate1 <= endDate1 ? begDate1 : endDate1;
+	      endDate2 = endDate1 > begDate1 ? endDate1 : begDate1;
+	      return [begDate2, endDate2];
 	    };
 
 	    Data.yymidd = function(date) {
@@ -32484,7 +32497,7 @@
 	            day = ref[dayId];
 	            day.status = Data.toStatus(day.status);
 	          }
-	          if (onComplete != null) {
+	          if (Util.isFunc(onComplete)) {
 	            return onComplete();
 	          }
 	        };
@@ -32499,7 +32512,7 @@
 	      this.store.subscribe('Day', 'select', 'none', (function(_this) {
 	        return function(days) {
 	          _this.days = days;
-	          if (onComplete != null) {
+	          if (Util.isFunc(onComplete)) {
 	            return onComplete();
 	          }
 	        };
@@ -32526,7 +32539,7 @@
 	              _this.updateDaysFromResv(resv, false);
 	            }
 	          }
-	          if (onComplete != null) {
+	          if (Util.isFunc(onComplete)) {
 	            return onComplete();
 	          }
 	        };
@@ -32861,7 +32874,7 @@
 	      }
 	      this.store.subscribe(table, 'insert', 'none', (function(_this) {
 	        return function(rows) {
-	          if (onComplete != null) {
+	          if (Util.isFunc(onComplete)) {
 	            return onComplete(rows);
 	          }
 	        };
@@ -32875,7 +32888,7 @@
 	      }
 	      this.store.subscribe(table, 'select', 'none', (function(_this) {
 	        return function(rows) {
-	          if (onComplete != null) {
+	          if (Util.isFunc(onComplete)) {
 	            return onComplete(rows);
 	          }
 	        };
@@ -32889,7 +32902,7 @@
 	      }
 	      this.store.subscribe(table, 'make', 'none', (function(_this) {
 	        return function() {
-	          return _this.insert(table, rows, onComplete != null ? onComplete() : void 0);
+	          return _this.insert(table, rows, Util.isFunc(onComplete) ? onComplete() : void 0);
 	        };
 	      })(this));
 	      return this.store.make(table);
@@ -33432,7 +33445,7 @@
 	      $('#ResAdd').hide();
 	      $('#ResTbl').show();
 	      $('#Master').show();
-	      if (onComplete != null) {
+	      if (Util.isFunc(onComplete)) {
 	        onComplete();
 	      }
 	    };
@@ -33501,7 +33514,7 @@
 	      $('#ResAdd').hide();
 	      $('#ResTbl').hide();
 	      $('#Season').show();
-	      if (onComplete != null) {
+	      if (Util.isFunc(onComplete)) {
 	        onComplete();
 	      }
 	    };
@@ -33529,7 +33542,7 @@
 	        $('#Dailys').append(this.dailysHtml());
 	      }
 	      $('#Dailys').show();
-	      if (onComplete != null) {
+	      if (Util.isFunc(onComplete)) {
 	        onComplete();
 	      }
 	    };
@@ -33639,12 +33652,11 @@
 	    };
 
 	    Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
-	      var $cell, $cells, beg, end, i, len, next, status;
+	      var $cell, $cells, beg, end, i, len, next, ref, status;
 	      if (!((begDate != null) && (endDate != null) && (roomId != null))) {
 	        return [null, null];
 	      }
-	      beg = Math.min(begDate, endDate).toString();
-	      end = Math.max(begDate, endDate).toString();
+	      ref = Data.begEndDates(begDate, endDate), beg = ref[0], end = ref[1];
 	      $cells = [];
 	      next = beg;
 	      while (next <= end) {

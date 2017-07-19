@@ -1,5 +1,4 @@
 
-$    = require( 'jquery'      )
 Data = require( 'js/res/Data' )
 UI   = require( 'js/res/UI'   )
 
@@ -19,14 +18,12 @@ class Res
     @cans      = {}
     @order     = 'Decend'
     @today     = Data.today()
-    @onCompleteResv = null
-    @dateRange( Data.beg, Data.end ) if @appName is 'Guest' # Get entire season for both Guest and Owner
 
   dateRange:( beg, end, onComplete=null ) ->
     @store.subscribe( 'Day', 'range', 'none', (days) =>
       @days = days
       day.status = Data.toStatus(day.status) for own dayId, day of @days
-      onComplete() if onComplete? )
+      onComplete() if Util.isFunc(onComplete) )
     @store.range( 'Day', beg+'1', end+'S' )
     return
 
@@ -34,7 +31,7 @@ class Res
     @store.subscribe( 'Day', 'select', 'none', (days) =>
       @days = days
       #day.status = Data.toStatus(day.status) for own dayId, day of @days
-      onComplete() if onComplete? )
+      onComplete() if Util.isFunc(onComplete) )
     @store.select( 'Day' )
     return
 
@@ -43,7 +40,7 @@ class Res
       @resvs = resvs
       if genDays
         @updateDaysFromResv( resv, false ) for own resId, resv of @resvs
-      onComplete() if onComplete? ) # resvs not passed to onComplete() - accesss @resvs later on
+      onComplete() if Util.isFunc(onComplete) ) # resvs not passed to onComplete() - accesss @resvs later on
     @store.select( 'Res' )
     return
 
@@ -75,7 +72,9 @@ class Res
   status:( date, roomId ) ->
     dayId = Data.dayId( date, roomId )
     day   = @days[dayId]
-    if day? then day.status else 'Free'
+    st    = if day? then day.status else 'Free'
+    #Util.trace( 'Res.status', st ) if not Util.isStr(st) or st is 'Unknown'
+    st
 
   klass:( date, roomId ) ->
     resv   = @getResv( date, roomId )
@@ -149,12 +148,6 @@ class Res
       @store.add( 'Day', dayId, day ) if add
       @days[dayId] = day
     return
-    
-  ###
-    if day.status isnt 'Free'
-    @store.del( 'Day', dayId )
-    delete @days[dayId]
-  ###
 
   calcPrice:( roomId, guests, pets ) ->
     #Util.log( 'Res.calcPrice()', { roomId:roomId, guests:guests, pets:pets, guestprice:@rooms[roomId][guests], petfee:pets*Data.petPrice  } )
@@ -242,17 +235,17 @@ class Res
   #onResId:( op, doResv, resId ) => @store.on( 'Res', op,  resId, (resId,resv) => doResv(resId,resv) )
 
   insert:( table, rows, onComplete=null ) =>
-    @store.subscribe( table, 'insert', 'none', (rows) => onComplete(rows) if onComplete? )
+    @store.subscribe( table, 'insert', 'none', (rows) => onComplete(rows) if Util.isFunc(onComplete) )
     @store.insert(    table,  rows )
     return
 
   select:( table, rows, onComplete=null ) =>
-    @store.subscribe( table, 'select', 'none', (rows) => onComplete(rows) if onComplete? )
+    @store.subscribe( table, 'select', 'none', (rows) => onComplete(rows) if Util.isFunc(onComplete) )
     @store.select(    table )
     return
 
   make:( table, rows, onComplete=null ) ->
-    @store.subscribe( table, 'make', 'none', ()  => @insert( table, rows, onComplete() if onComplete? ) )
+    @store.subscribe( table, 'make', 'none', ()  => @insert( table, rows, onComplete() if Util.isFunc(onComplete) ) )
     @store.make( table )
 
   makeTables:() ->

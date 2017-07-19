@@ -9,10 +9,11 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Book, Fire, Home, Pay, Pict, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
+        var Book, Data, Fire, Home, Pay, Pict, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
         Util.jquery = require('jquery');
         Stream = require('js/store/Stream');
         Fire = require('js/store/Fire');
+        Data = require('js/res/Data');
         Home = require('js/res/Home');
         Pict = require('public/js/Pict');
         Res = require('js/res/Res');

@@ -11,6 +11,7 @@ class Book
     @rooms    = @res.rooms
     @res.book = @
     @$cells   = []
+    @last     = null # Last date clicked
     @totals   = 0
     @method   = 'site'
 
@@ -21,7 +22,6 @@ class Book
     $('#Book'    ).append( @bookHtml()  )
     $('#Insts'   ).append( @instructHtml() )
     $('#Inits'   ).append( @initsHtml() )
-    $('#Rooms'   ).append( @roomsHtml(Data.year,Data.monthIdx,Data.begDay,Data.numDays) )
     $('#Guest'   ).append( @guestHtml() )
     $('.guests'  ).change( @onGuests  )
     $('.pets'    ).change( @onPets    )
@@ -33,8 +33,12 @@ class Book
     $('#GoToPay' ).click(  @onGoToPay ) # .prop('disabled',true)
     $('#Totals').css( { height:'21px' } )
     $('#Navb').hide()
-    $('#Book').show()
-    @roomsJQuery()
+    onComplete = () =>
+      $('#Rooms').append( @roomsHtml(Data.year,Data.monthIdx,Data.begDay,Data.numDays) )
+      @roomsJQuery()
+      $('#Book').show()
+    @res.dateRange( Data.beg, Data.end, onComplete )
+    return
 
   bookHtml:() ->
     """
@@ -80,7 +84,8 @@ class Book
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td class="td-left">#{@seeRoom(roomId,room)}</td><td class="guests">#{@g(roomId)}</td><td class="pets">#{@p(roomId)}</td><td>#{@spa(roomId)}</td><td id="#{roomId}M" class="room-price">#{'$'+@calcPrice(roomId)}</td>"""
       for day in [1..numDays]
-        htm += @createCell( roomId, room, day )
+        date = Data.toDateStr( Data.dayMonth(day) )
+        htm += @createCell( date, roomId )
       htm += """<td class="room-total" id="#{roomId}T"></td></tr>"""
     htm += """<tr>"""
     htm += """<td></td>""" for day in [1..numDays+5]
@@ -164,23 +169,15 @@ class Book
     msg += "Enter Email\n"          if not ev
     msg
 
-  createCell:( roomId, roomRm, day ) ->
-    date   = Data.toDateStr( Data.dayMonth(day) )
-    status = @getStatus( roomId, date )
-    """<td id="#{@cellId(date,roomId)}" class="room-#{status}" data-status="#{status}"></td>"""
+  #Util.log('Book.createCell', { date:date, roomId:roomId, status:status, color:Data.toColor(status), style:style, htm:htm } )
+  createCell:( date, roomId ) ->
+    status = @res.status( date, roomId )
+    style  = """background:#{Data.toColor(status)};"""
+    """<td id="#{@cellId(date,roomId)}" class="room-#{status}" style="#{style}"></td>"""
 
-  getStatus:( roomId, date ) ->
-    room = @rooms[roomId]
-    if not Util.isObjEmpty(room.days) and room.days[date].status?
-      room.days[date].status
-    else
-      @res.getStatus( roomId, date )
 
   cellId:( date,  roomId ) ->
      'R' + date + roomId
-
-  resId:( date,  roomId ) ->
-          date + roomId
 
   roomIdCell:( $cell ) ->
     $cell.attr('id').substr(7,1)
@@ -202,6 +199,8 @@ class Book
         $cell.click( (event) => @onCellBook(event) )
         @$cells.push( $cell )
         @updateTotal( roomId )
+        status = @res.status( date, roomId )
+        @cellStatus( $cell, status )
     return
 
   calcPrice:( roomId ) =>
@@ -233,8 +232,8 @@ class Book
     $('#GoToPay').prop('disabled',false) if @totals > 0
     return
 
-  g:(roomId) -> @res.htmlSelect( roomId+'G', Data.persons, 2, 'guests', @rooms[roomId].max )
-  p:(roomId) -> @res.htmlSelect( roomId+'P', Data.pets,    0, 'pets',   3                  )
+  g:(roomId) -> UI.htmlSelect( roomId+'G', Data.persons, 2, 'guests', @rooms[roomId].max )
+  p:(roomId) -> UI.htmlSelect( roomId+'P', Data.pets,    0, 'pets',   3                  )
 
   onGuests:( event ) =>
     roomId = $(event.target).attr('id').charAt(0)
@@ -285,6 +284,8 @@ class Book
     @res.dateRange( beg, end, @resetRooms )
 
   resetRooms:() =>
+
+  resetRooms2:() =>
     $('#Rooms').empty()
     $('#Rooms').append( @roomsHtml( Data.year, Data.monthIdx, Data.begDay, Data.numDays ) )
     @roomsJQuery()
@@ -301,91 +302,56 @@ class Book
     
   onCellBook:( event ) =>
     $cell  = $(event.target)
-    [roomId,status] = @cellBook( $cell )
-    @fillInRooms( roomId, $cell ) if status is 'Mine'
+    [date,roomId,status] = @cellBook( $cell )
+    @fillInCells( @last, date, roomId, 'Free', status ) if status is 'Mine'
+    @last = date
+    return
+
+  fillInCells:( begDate, endDate, roomId, free, fill ) ->
+    return if not ( begDate? and endDate? and roomId? )
+    [beg,end] = Data.begEndDates( begDate, endDate )
+    $cells = []
+    next   = beg
+    while next <= end
+      $cell  = @$cell( 'M', next, roomId )
+      status = @res.status( next, roomId )
+      if status is free or status is fill or status is 'Cancel'
+        $cells.push( $cell )
+        next = Data.advanceDate( next, 1 )
+      else
+        return [null,null]
+    for $cell in $cells
+      @cellStatus( $cell, fill )
+    return
 
   cellBook:( $cell ) ->
-    status = $cell.attr('data-status')
     date   = @dateCell(   $cell )
     roomId = @roomIdCell( $cell )
-    resId  = @resId( date, roomId )
+    resId  = Data.resId(  date, roomId )
+    status = @res.status( date, roomId )
     if      status is 'Free'
       status = 'Mine'
       @updateCellStatus( $cell, 'Mine', resId )
     else if status is 'Mine'
       status = 'Free'
       @updateCellStatus( $cell, 'Free', resId )
-    [roomId,status]
+    [date,roomId,status]
 
   updateCellStatus:( $cell, status, resId ) ->
     @cellStatus(     $cell, status )
     date   = @dateCell(   $cell )
     roomId = @roomIdCell( $cell )
-    room   = @rooms[roomId]
-    resId  = @resId( date, roomId )
+    resId  = Data.resId( date, roomId )
+    day    = @res.day(   date, roomId )
     if status is 'Mine'
-      room.days[date]  = { "status":status, "resId":resId }
+      @res.setDay( day, status, resId )
     else if status is 'Free'
-      delete  room.days[date]
       weekday = Data.weekday(date)
       if weekday is 'Fri' or weekday is 'Sat'
         nday = Data.advanceDate( date, 1 )
         @cellStatus( @$cell( nday, roomId ), 'Free' )
-        delete room.days[nday]
     @updateTotal( roomId  )
     [roomId,status]
-
-  # Only status of 'Mine' is supported
-  fillInRooms:( roomId, $end ) ->
-    days    = @dayArray( roomId  )
-    return if days is 'none'
-    bday    = days[0]
-    weekday = Data.weekday(bday)
-    weekend = weekday is 'Fri' or weekday is 'Sat'
-    if      days.length is 1 and  weekend
-      @fillInNextDay( bday, roomId )
-    else if days.length is 2 and @fillIsConsistent( roomId, days, $end )
-      @doFillInRooms( days, roomId )
-    return
-
-  dayArray:( roomId ) ->
-    days  = []
-    for date, day of @rooms[roomId].days
-        days.push( date )
-    if Util.isArray(days) then days.sort() else 'none'
-
-  fillInNextDay:(   bday, roomId ) ->
-    resId = @resId( bday, roomId )
-    nday  = Data.advanceDate( bday, 1 )
-    $cell = @$cell(nday,roomId)
-    if $cell.attr('data-status') is 'Free'
-      @updateCellStatus( $cell, 'Mine', resId )
-    return
-
-  fillIsConsistent:( roomId, days, $end ) ->
-    bday = days[0]
-    eday = days[days.length-1]
-    nday = Data.advanceDate( bday, 1 )
-    while nday < eday                      # Avoid any booked rooms
-      $cell = @$cell(nday,roomId)
-      if not Data.isElem($cell) or $cell.attr('data-status') isnt 'Free'
-        # Free up last clicked cell because an inconsistency was detected
-        $end.attr('data-status','Mine')
-        @cellBook( $end )
-        return false
-      nday = Data.advanceDate( nday, 1 )
-    true
-
-  doFillInRooms:( days, roomId ) ->
-    bday = days[0]
-    nday = Data.advanceDate( bday, 1 )
-    eday = days[days.length-1]
-    while nday < eday
-      #Util.log( 'Book.fillInRooms() Two', bday, nday, eday )
-      $cell = @$cell(nday,roomId)
-      @cellBook( $cell ) if Data.isElem( $cell )
-      nday = Data.advanceDate( nday, 1 )
-    return
 
   allocDays:( days ) =>
     for own dayId, day of days
@@ -394,14 +360,19 @@ class Book
       @allocCell( date, day.status, roomId )
     return
 
+  """
   allocResv:( resv ) ->
     #$cell = @$cell( resv.arrive, resv.roomId )
     #$div  = $cell.find('div')
     #$div.text( resv.last )
     return
+  """
 
   allocCell:( date, status, roomId ) ->
     @cellStatus( @$cell(date,roomId), status )
 
-  cellStatus:( $cell, status ) ->
-    $cell.removeClass().addClass("room-"+status).attr('data-status',status)
+  cellStatus:( $cell, klass ) ->
+    $cell.removeClass().addClass("room-"+klass)
+    $cell.css( { background:Data.toColor(klass) } )
+    #Util.log( 'Book.cellStatus', klass, Data.toColor(klass) )
+    return

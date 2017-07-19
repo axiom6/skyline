@@ -96,12 +96,19 @@
     Input.prototype.action = function() {
       var onMMDD;
       onMMDD = (function(_this) {
-        return function(mmdd, klass) {
+        return function(htmlId, mmdd, klass) {
           var date, dd, mi, ref, roomId;
           ref = Data.midd(mmdd), mi = ref[0], dd = ref[1];
           date = Data.toDateStr(dd, mi);
           roomId = _this.resv.roomId;
           _this.master.fillCell(roomId, date, klass);
+          if (htmlId === 'NRArrive') {
+            _this.resv.arrive = date;
+          }
+          if (htmlId === 'NRStayTo') {
+            _this.resv.stayto = date;
+          }
+          _this.refreshResv(_this.resv);
         };
       })(this);
       UI.onArrowsMMDD('NRArrive', onMMDD);
@@ -143,7 +150,7 @@
     };
 
     Input.prototype.stayto = function() {
-      return UI.htmlArrows('NRStayTo', 'NRArrive');
+      return UI.htmlArrows('NRStayTo', 'NRStayTo');
     };
 
     Input.prototype.rooms = function() {
@@ -175,6 +182,7 @@
     };
 
     Input.prototype.refreshResv = function(resv) {
+      resv.depart = Data.advanceDate(resv.stayto, 1);
       resv.nights = Data.nights(resv.arrive, resv.depart);
       resv.price = resv.status === 'Skyline' || resv.status === 'Deposit' ? this.res.calcPrice(resv.roomId, resv.guests, resv.pets) : resv.price;
       resv.deposit = resv.price * 0.5;
@@ -193,6 +201,7 @@
       $('#NRTotal').text('$' + resv.total);
       $('#NRTax').text('$' + resv.tax);
       $('#NRCharge').text('$' + resv.charge);
+      this.master.setLast(resv.arrive, resv.roomId, resv.last);
       if (this.state === 'add') {
         $('#NRCreate').show();
         $('#NRChange').hide();

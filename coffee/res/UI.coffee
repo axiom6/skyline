@@ -39,9 +39,9 @@ class UI
       #Util.log( 'Input.decMMDD', mmdd0, mmdd1 )
       $mmdd.text( mmdd1 )
       if htmlId is 'NRArrive'
-         onMMDD( mmdd1, 'Mine' ) if onMMDD?
+         onMMDD( htmlId, mmdd1, 'Mine' ) if onMMDD?
       else
-         onMMDD( mmdd0, 'Free' ) if onMMDD?
+         onMMDD( htmlId, mmdd0, 'Free' ) if onMMDD?
       return
 
     incMMDD = () ->
@@ -51,9 +51,9 @@ class UI
       #Util.log( 'Input.incMMDD', mmdd0, mmdd1 )
       $mmdd.text( mmdd1 )
       if htmlId is 'NRStayTo'
-         onMMDD( mmdd1, 'Mine' ) if onMMDD?
+         onMMDD( htmlId, mmdd1, 'Mine' ) if onMMDD?
       else
-         onMMDD( mmdd0, 'Free' ) if onMMDD?
+         onMMDD( htmlId, mmdd0, 'Free' ) if onMMDD?
       return
 
     $('#'+htmlId+'L').click( decMMDD )

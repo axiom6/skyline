@@ -259,12 +259,25 @@
 
     Data.isDate = function(date) {
       var dd, mi, ref, valid, yy;
+      if (!Util.isStr(date) || date.length !== 6) {
+        return false;
+      }
       ref = this.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
       valid = true;
       valid &= yy === Data.year;
       valid &= 0 <= mi && mi <= 11;
       valid &= 1 <= dd && dd <= 31;
       return valid;
+    };
+
+    Data.begEndDates = function(begDate1, endDate1) {
+      var begDate2, endDate2;
+      if (!((begDate1 != null) && (endDate1 != null))) {
+        return [null, null];
+      }
+      begDate2 = begDate1 <= endDate1 ? begDate1 : endDate1;
+      endDate2 = endDate1 > begDate1 ? endDate1 : begDate1;
+      return [begDate2, endDate2];
     };
 
     Data.yymidd = function(date) {

@@ -81,7 +81,7 @@
       $('#ResAdd').hide();
       $('#ResTbl').show();
       $('#Master').show();
-      if (onComplete != null) {
+      if (Util.isFunc(onComplete)) {
         onComplete();
       }
     };
@@ -150,7 +150,7 @@
       $('#ResAdd').hide();
       $('#ResTbl').hide();
       $('#Season').show();
-      if (onComplete != null) {
+      if (Util.isFunc(onComplete)) {
         onComplete();
       }
     };
@@ -178,7 +178,7 @@
         $('#Dailys').append(this.dailysHtml());
       }
       $('#Dailys').show();
-      if (onComplete != null) {
+      if (Util.isFunc(onComplete)) {
         onComplete();
       }
     };
@@ -288,12 +288,11 @@
     };
 
     Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
-      var $cell, $cells, beg, end, i, len, next, status;
+      var $cell, $cells, beg, end, i, len, next, ref, status;
       if (!((begDate != null) && (endDate != null) && (roomId != null))) {
         return [null, null];
       }
-      beg = Math.min(begDate, endDate).toString();
-      end = Math.max(begDate, endDate).toString();
+      ref = Data.begEndDates(begDate, endDate), beg = ref[0], end = ref[1];
       $cells = [];
       next = beg;
       while (next <= end) {
@@ -509,6 +508,10 @@
       htm = "<td id=\"" + (this.cellId('M', date, roomId)) + "\" class=\"room-" + klass + "\" style=\"" + bord + "\" ";
       htm += "data-roomid=\"" + roomId + "\" data-date=\"" + date + "\" data-cell=\"y\">" + last + "</td>";
       return htm;
+    };
+
+    Master.prototype.setLast = function(date, roomId, last) {
+      return this.$cell('M', date, roomId).find('div').text(last);
     };
 
     Master.prototype.border = function(date, roomId, resv, klass) {

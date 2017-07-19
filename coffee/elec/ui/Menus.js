@@ -199,7 +199,7 @@
             label: 'Guest',
             click: (function(_this) {
               return function() {
-                return _this.action.view('Guest', '/public/index.html');
+                return _this.action.view('Guest', '/public/guest.html');
               };
             })(this)
           }, {

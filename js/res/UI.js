@@ -81,11 +81,11 @@
         $mmdd.text(mmdd1);
         if (htmlId === 'NRArrive') {
           if (onMMDD != null) {
-            onMMDD(mmdd1, 'Mine');
+            onMMDD(htmlId, mmdd1, 'Mine');
           }
         } else {
           if (onMMDD != null) {
-            onMMDD(mmdd0, 'Free');
+            onMMDD(htmlId, mmdd0, 'Free');
           }
         }
       };
@@ -97,11 +97,11 @@
         $mmdd.text(mmdd1);
         if (htmlId === 'NRStayTo') {
           if (onMMDD != null) {
-            onMMDD(mmdd1, 'Mine');
+            onMMDD(htmlId, mmdd1, 'Mine');
           }
         } else {
           if (onMMDD != null) {
-            onMMDD(mmdd0, 'Free');
+            onMMDD(htmlId, mmdd0, 'Free');
           }
         }
       };

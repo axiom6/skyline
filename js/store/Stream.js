@@ -120,7 +120,7 @@
           _this.counts[completeSubject].count++;
           if (_this.counts[completeSubject].count === subjects.length) {
             _this.counts[completeSubject].count = 0;
-            if (typeof onComplete === 'function') {
+            if (Util.isFunc(onComplete)) {
               return onComplete(objects);
             } else {
               return _this.publish(completeSubject, objects);

@@ -50,7 +50,7 @@ class Master
     $('#ResAdd').hide()
     $('#ResTbl').show()
     $('#Master').show()
-    onComplete() if onComplete?
+    onComplete() if Util.isFunc(onComplete)
     return
 
   doPrint:() =>
@@ -62,7 +62,6 @@ class Master
     onComplete = () =>
       $('#Buttons, #ResTbl').hide( 'fast', @doPrint )
     @onMasterBtn( onComplete )
-
     return
 
   onResTblPrt:() =>
@@ -99,7 +98,7 @@ class Master
     $('#ResAdd').hide()
     $('#ResTbl').hide()
     $('#Season').show()
-    onComplete() if onComplete?
+    onComplete() if Util.isFunc(onComplete)
     return
 
   onSeasonPrt:() =>
@@ -116,7 +115,7 @@ class Master
     $('#Upload').hide()
     $('#Dailys').append( @dailysHtml() ) if Util.isEmpty( $('#Dailys').children() )
     $('#Dailys').show()
-    onComplete() if onComplete?
+    onComplete() if Util.isFunc(onComplete)
     return
 
   onDailysPrt:() =>
@@ -198,8 +197,7 @@ class Master
   # Also order dates if necessary
   fillInCells:( begDate, endDate, roomId, free, fill ) ->
     return [null,null] if not ( begDate? and endDate? and roomId? )
-    beg    = Math.min( begDate, endDate ).toString()
-    end    = Math.max( begDate, endDate ).toString()
+    [beg,end] = Data.begEndDates( begDate, endDate )
     $cells = []
     next   = beg
     while next <= end
@@ -343,6 +341,9 @@ class Master
     htm    = """<td id="#{@cellId('M',date,roomId)}" class="room-#{klass}" style="#{bord}" """
     htm   += """data-roomid="#{roomId}" data-date="#{date}" data-cell="y">#{last}</td>""" # Lower case roomid
     htm
+
+  setLast:( date, roomId, last ) ->
+    @$cell( 'M',  date,  roomId ).find('div').text(last)
 
   border:( date, roomId,   resv, klass ) ->
     color = Data.toColor( klass )

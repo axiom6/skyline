@@ -23,6 +23,7 @@
       this.onCellBook = bind(this.onCellBook, this);
       this.onTest = bind(this.onTest, this);
       this.onPop = bind(this.onPop, this);
+      this.resetRooms2 = bind(this.resetRooms2, this);
       this.resetRooms = bind(this.resetRooms, this);
       this.onDay = bind(this.onDay, this);
       this.onMonth = bind(this.onMonth, this);
@@ -34,18 +35,19 @@
       this.rooms = this.res.rooms;
       this.res.book = this;
       this.$cells = [];
+      this.last = null;
       this.totals = 0;
       this.method = 'site';
     }
 
     Book.prototype.ready = function() {
+      var onComplete;
       this.res.roomUI(this.rooms);
       $('#Book').empty();
       $('#Pays').empty();
       $('#Book').append(this.bookHtml());
       $('#Insts').append(this.instructHtml());
       $('#Inits').append(this.initsHtml());
-      $('#Rooms').append(this.roomsHtml(Data.year, Data.monthIdx, Data.begDay, Data.numDays));
       $('#Guest').append(this.guestHtml());
       $('.guests').change(this.onGuests);
       $('.pets').change(this.onPets);
@@ -59,8 +61,14 @@
         height: '21px'
       });
       $('#Navb').hide();
-      $('#Book').show();
-      return this.roomsJQuery();
+      onComplete = (function(_this) {
+        return function() {
+          $('#Rooms').append(_this.roomsHtml(Data.year, Data.monthIdx, Data.begDay, Data.numDays));
+          _this.roomsJQuery();
+          return $('#Book').show();
+        };
+      })(this);
+      this.res.dateRange(Data.beg, Data.end, onComplete);
     };
 
     Book.prototype.bookHtml = function() {
@@ -86,7 +94,7 @@
     };
 
     Book.prototype.roomsHtml = function(year, monthIdx, begDay, numDays) {
-      var day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday, weekdayIdx;
+      var date, day, htm, i, j, k, l, ref, ref1, ref2, ref3, ref4, room, roomId, weekday, weekdayIdx;
       weekdayIdx = new Date(2000 + year, monthIdx, 1).getDay();
       htm = "<table><thead>";
       htm += "<tr><th></th><th></th><th></th><th></th><th></th>";
@@ -105,7 +113,8 @@
         room = ref2[roomId];
         htm += "<tr id=\"" + roomId + "\"><td class=\"td-left\">" + (this.seeRoom(roomId, room)) + "</td><td class=\"guests\">" + (this.g(roomId)) + "</td><td class=\"pets\">" + (this.p(roomId)) + "</td><td>" + (this.spa(roomId)) + "</td><td id=\"" + roomId + "M\" class=\"room-price\">" + ('$' + this.calcPrice(roomId)) + "</td>";
         for (day = k = 1, ref3 = numDays; 1 <= ref3 ? k <= ref3 : k >= ref3; day = 1 <= ref3 ? ++k : --k) {
-          htm += this.createCell(roomId, room, day);
+          date = Data.toDateStr(Data.dayMonth(day));
+          htm += this.createCell(date, roomId);
         }
         htm += "<td class=\"room-total\" id=\"" + roomId + "T\"></td></tr>";
       }
@@ -192,29 +201,15 @@
       return msg;
     };
 
-    Book.prototype.createCell = function(roomId, roomRm, day) {
-      var date, status;
-      date = Data.toDateStr(Data.dayMonth(day));
-      status = this.getStatus(roomId, date);
-      return "<td id=\"" + (this.cellId(date, roomId)) + "\" class=\"room-" + status + "\" data-status=\"" + status + "\"></td>";
-    };
-
-    Book.prototype.getStatus = function(roomId, date) {
-      var room;
-      room = this.rooms[roomId];
-      if (!Util.isObjEmpty(room.days) && (room.days[date].status != null)) {
-        return room.days[date].status;
-      } else {
-        return this.res.getStatus(roomId, date);
-      }
+    Book.prototype.createCell = function(date, roomId) {
+      var status, style;
+      status = this.res.status(date, roomId);
+      style = "background:" + (Data.toColor(status)) + ";";
+      return "<td id=\"" + (this.cellId(date, roomId)) + "\" class=\"room-" + status + "\" style=\"" + style + "\"></td>";
     };
 
     Book.prototype.cellId = function(date, roomId) {
       return 'R' + date + roomId;
-    };
-
-    Book.prototype.resId = function(date, roomId) {
-      return date + roomId;
     };
 
     Book.prototype.roomIdCell = function($cell) {
@@ -230,7 +225,7 @@
     };
 
     Book.prototype.roomsJQuery = function() {
-      var $cell, date, day, i, j, len, ref, ref1, ref2, room, roomId;
+      var $cell, date, day, i, j, len, ref, ref1, ref2, room, roomId, status;
       ref = this.$cells;
       for (i = 0, len = ref.length; i < len; i++) {
         $cell = ref[i];
@@ -251,6 +246,8 @@
           })(this));
           this.$cells.push($cell);
           this.updateTotal(roomId);
+          status = this.res.status(date, roomId);
+          this.cellStatus($cell, status);
         }
       }
     };
@@ -294,11 +291,11 @@
     };
 
     Book.prototype.g = function(roomId) {
-      return this.res.htmlSelect(roomId + 'G', Data.persons, 2, 'guests', this.rooms[roomId].max);
+      return UI.htmlSelect(roomId + 'G', Data.persons, 2, 'guests', this.rooms[roomId].max);
     };
 
     Book.prototype.p = function(roomId) {
-      return this.res.htmlSelect(roomId + 'P', Data.pets, 0, 'pets', 3);
+      return UI.htmlSelect(roomId + 'P', Data.pets, 0, 'pets', 3);
     };
 
     Book.prototype.onGuests = function(event) {
@@ -361,7 +358,9 @@
       return this.res.dateRange(beg, end, this.resetRooms);
     };
 
-    Book.prototype.resetRooms = function() {
+    Book.prototype.resetRooms = function() {};
+
+    Book.prototype.resetRooms2 = function() {
       $('#Rooms').empty();
       $('#Rooms').append(this.roomsHtml(Data.year, Data.monthIdx, Data.begDay, Data.numDays));
       return this.roomsJQuery();
@@ -379,20 +378,45 @@
     };
 
     Book.prototype.onCellBook = function(event) {
-      var $cell, ref, roomId, status;
+      var $cell, date, ref, roomId, status;
       $cell = $(event.target);
-      ref = this.cellBook($cell), roomId = ref[0], status = ref[1];
+      ref = this.cellBook($cell), date = ref[0], roomId = ref[1], status = ref[2];
       if (status === 'Mine') {
-        return this.fillInRooms(roomId, $cell);
+        this.fillInCells(this.last, date, roomId, 'Free', status);
+      }
+      this.last = date;
+    };
+
+    Book.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
+      var $cell, $cells, beg, end, i, len, next, ref, status;
+      if (!((begDate != null) && (endDate != null) && (roomId != null))) {
+        return;
+      }
+      ref = Data.begEndDates(begDate, endDate), beg = ref[0], end = ref[1];
+      $cells = [];
+      next = beg;
+      while (next <= end) {
+        $cell = this.$cell('M', next, roomId);
+        status = this.res.status(next, roomId);
+        if (status === free || status === fill || status === 'Cancel') {
+          $cells.push($cell);
+          next = Data.advanceDate(next, 1);
+        } else {
+          return [null, null];
+        }
+      }
+      for (i = 0, len = $cells.length; i < len; i++) {
+        $cell = $cells[i];
+        this.cellStatus($cell, fill);
       }
     };
 
     Book.prototype.cellBook = function($cell) {
       var date, resId, roomId, status;
-      status = $cell.attr('data-status');
       date = this.dateCell($cell);
       roomId = this.roomIdCell($cell);
-      resId = this.resId(date, roomId);
+      resId = Data.resId(date, roomId);
+      status = this.res.status(date, roomId);
       if (status === 'Free') {
         status = 'Mine';
         this.updateCellStatus($cell, 'Mine', resId);
@@ -400,104 +424,27 @@
         status = 'Free';
         this.updateCellStatus($cell, 'Free', resId);
       }
-      return [roomId, status];
+      return [date, roomId, status];
     };
 
     Book.prototype.updateCellStatus = function($cell, status, resId) {
-      var date, nday, room, roomId, weekday;
+      var date, day, nday, roomId, weekday;
       this.cellStatus($cell, status);
       date = this.dateCell($cell);
       roomId = this.roomIdCell($cell);
-      room = this.rooms[roomId];
-      resId = this.resId(date, roomId);
+      resId = Data.resId(date, roomId);
+      day = this.res.day(date, roomId);
       if (status === 'Mine') {
-        room.days[date] = {
-          "status": status,
-          "resId": resId
-        };
+        this.res.setDay(day, status, resId);
       } else if (status === 'Free') {
-        delete room.days[date];
         weekday = Data.weekday(date);
         if (weekday === 'Fri' || weekday === 'Sat') {
           nday = Data.advanceDate(date, 1);
           this.cellStatus(this.$cell(nday, roomId), 'Free');
-          delete room.days[nday];
         }
       }
       this.updateTotal(roomId);
       return [roomId, status];
-    };
-
-    Book.prototype.fillInRooms = function(roomId, $end) {
-      var bday, days, weekday, weekend;
-      days = this.dayArray(roomId);
-      if (days === 'none') {
-        return;
-      }
-      bday = days[0];
-      weekday = Data.weekday(bday);
-      weekend = weekday === 'Fri' || weekday === 'Sat';
-      if (days.length === 1 && weekend) {
-        this.fillInNextDay(bday, roomId);
-      } else if (days.length === 2 && this.fillIsConsistent(roomId, days, $end)) {
-        this.doFillInRooms(days, roomId);
-      }
-    };
-
-    Book.prototype.dayArray = function(roomId) {
-      var date, day, days, ref;
-      days = [];
-      ref = this.rooms[roomId].days;
-      for (date in ref) {
-        day = ref[date];
-        days.push(date);
-      }
-      if (Util.isArray(days)) {
-        return days.sort();
-      } else {
-        return 'none';
-      }
-    };
-
-    Book.prototype.fillInNextDay = function(bday, roomId) {
-      var $cell, nday, resId;
-      resId = this.resId(bday, roomId);
-      nday = Data.advanceDate(bday, 1);
-      $cell = this.$cell(nday, roomId);
-      if ($cell.attr('data-status') === 'Free') {
-        this.updateCellStatus($cell, 'Mine', resId);
-      }
-    };
-
-    Book.prototype.fillIsConsistent = function(roomId, days, $end) {
-      var $cell, bday, eday, nday;
-      bday = days[0];
-      eday = days[days.length - 1];
-      nday = Data.advanceDate(bday, 1);
-      while (nday < eday) {
-        $cell = this.$cell(nday, roomId);
-        if (!Data.isElem($cell) || $cell.attr('data-status') !== 'Free') {
-          $end.attr('data-status', 'Mine');
-          this.cellBook($end);
-          return false;
-        }
-        nday = Data.advanceDate(nday, 1);
-      }
-      return true;
-    };
-
-    Book.prototype.doFillInRooms = function(days, roomId) {
-      var $cell, bday, eday, nday;
-      bday = days[0];
-      nday = Data.advanceDate(bday, 1);
-      eday = days[days.length - 1];
-      while (nday < eday) {
-        $cell = this.$cell(nday, roomId);
-        if (Data.isElem($cell)) {
-          this.cellBook($cell);
-        }
-        nday = Data.advanceDate(nday, 1);
-      }
     };
 
     Book.prototype.allocDays = function(days) {
@@ -511,14 +458,17 @@
       }
     };
 
-    Book.prototype.allocResv = function(resv) {};
+    "allocResv:( resv ) ->\n  #$cell = @$cell( resv.arrive, resv.roomId )\n  #$div  = $cell.find('div')\n  #$div.text( resv.last )\n  return";
 
     Book.prototype.allocCell = function(date, status, roomId) {
       return this.cellStatus(this.$cell(date, roomId), status);
     };
 
-    Book.prototype.cellStatus = function($cell, status) {
-      return $cell.removeClass().addClass("room-" + status).attr('data-status', status);
+    Book.prototype.cellStatus = function($cell, klass) {
+      $cell.removeClass().addClass("room-" + klass);
+      $cell.css({
+        background: Data.toColor(klass)
+      });
     };
 
     return Book;

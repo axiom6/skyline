@@ -72,7 +72,7 @@ class Stream
       @counts[completeSubject].count++
       if @counts[completeSubject].count is subjects.length
          @counts[completeSubject].count = 0
-         if typeof onComplete is 'function' then onComplete(objects) else @publish( completeSubject, objects )
+         if Util.isFunc(onComplete) then onComplete(objects) else @publish( completeSubject, objects )
     for subject in subjects
       @subscribe(  subject, onNext )
     return

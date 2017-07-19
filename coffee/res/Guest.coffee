@@ -12,6 +12,7 @@ class Guest
       Stream  = require( 'js/store/Stream' )
       Fire    = require( 'js/store/Fire'   )
       #Memory = require( 'js/store/Memory' )
+      Data    = require( 'js/res/Data'     )
       Home    = require( 'js/res/Home'     )
       Pict    = require( 'public/js/Pict'  )
       Res     = require( 'js/res/Res'      )
