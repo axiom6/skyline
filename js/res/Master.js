@@ -511,7 +511,14 @@
     };
 
     Master.prototype.setLast = function(date, roomId, last) {
-      return this.$cell('M', date, roomId).find('div').text(last);
+      var $cell, $div;
+      $cell = this.$cell('M', date, roomId);
+      $div = $cell.find('div');
+      if ($.is($div)) {
+        $div.text(last);
+      } else {
+        $cell.append("<div>" + last + "</div>");
+      }
     };
 
     Master.prototype.border = function(date, roomId, resv, klass) {

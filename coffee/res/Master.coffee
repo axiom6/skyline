@@ -343,7 +343,13 @@ class Master
     htm
 
   setLast:( date, roomId, last ) ->
-    @$cell( 'M',  date,  roomId ).find('div').text(last)
+    $cell = @$cell( 'M',  date,  roomId )
+    $div  =  $cell.find('div')
+    if $.is( $div )
+      $div.text(last)
+    else
+      $cell.append( "<div>#{last}</div>" )
+    return
 
   border:( date, roomId,   resv, klass ) ->
     color = Data.toColor( klass )

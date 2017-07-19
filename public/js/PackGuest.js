@@ -30070,215 +30070,216 @@
 	    };
 
 	    Fire.prototype.add = function(t, id, object) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      object[this.keyProp] = id;
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'add', id, object);
+	            return _this.publish(table, 'add', id, object);
 	          } else {
-	            return _this.onError(tableName, 'add', id, object, {
+	            return _this.onError(table, 'add', id, object, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).set(object, onComplete);
+	      this.fd.ref(table + '/' + id).set(object, onComplete);
 	    };
 
 	    Fire.prototype.get = function(t, id) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          if ((snapshot != null) && (snapshot.val() != null)) {
-	            return _this.publish(tableName, 'get', id, snapshot.val());
+	            return _this.publish(table, 'get', id, snapshot.val());
 	          } else {
-	            return _this.onError(tableName, 'get', id, {
+	            return _this.onError(table, 'get', id, {
 	              msg: 'Fire get error'
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).once('value', onComplete);
+	      this.fd.ref(table + '/' + id).once('value', onComplete);
 	    };
 
 	    Fire.prototype.put = function(t, id, object) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'put', id, object);
+	            return _this.publish(table, 'put', id, object);
 	          } else {
-	            return _this.onError(tableName, 'put', id, object, {
+	            return _this.onError(table, 'put', id, object, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).set(object, onComplete);
+	      this.fd.ref(table + '/' + id).set(object, onComplete);
 	    };
 
 	    Fire.prototype.del = function(t, id) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'del', id, {});
+	            return _this.publish(table, 'del', id, {});
 	          } else {
-	            return _this.onError(tableName, 'del', id, {}, {
+	            return _this.onError(table, 'del', id, {}, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName + '/' + id).remove(onComplete);
+	      this.fd.ref(table + '/' + id).remove(onComplete);
 	    };
 
 	    Fire.prototype.insert = function(t, objects) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'insert', 'none', objects);
+	            return _this.publish(table, 'insert', 'none', objects);
 	          } else {
-	            return _this.onError(tableName, 'insert', 'none', {
+	            return _this.onError(table, 'insert', 'none', {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).set(objects, onComplete);
+	      this.fd.ref(table).set(objects, onComplete);
 	    };
 
 	    Fire.prototype.select = function(t, where) {
-	      var onComplete, tableName;
+	      var onComplete, table;
 	      if (where == null) {
 	        where = Store.where;
 	      }
 	      Util.noop(where);
-	      tableName = this.tableName(t);
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          if ((snapshot != null) && (snapshot.val() != null)) {
-	            return _this.publish(tableName, 'select', 'none', snapshot.val());
+	            return _this.publish(table, 'select', 'none', snapshot.val());
 	          } else {
-	            return _this.publish(tableName, 'select', 'none', {});
+	            return _this.publish(table, 'select', 'none', {});
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).once('value', onComplete);
+	      this.fd.ref(table).once('value', onComplete);
 	    };
 
 	    Fire.prototype.range = function(t, beg, end) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          var val;
 	          if ((snapshot != null) && (snapshot.val() != null)) {
 	            val = _this.toObjects(snapshot.val());
-	            return _this.publish(tableName, 'range', 'none', val);
+	            return _this.publish(table, 'range', 'none', val);
 	          } else {
-	            return _this.publish(tableName, 'range', 'none', {});
+	            return _this.publish(table, 'range', 'none', {});
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).orderByKey().startAt(beg).endAt(end).once('value', onComplete);
+	      this.fd.ref(table).orderByKey().startAt(beg).endAt(end).once('value', onComplete);
 	    };
 
 	    Fire.prototype.update = function(t, objects) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'update', 'none', objects);
+	            return _this.publish(table, 'update', 'none', objects);
 	          } else {
-	            return _this.onError(tableName, 'update', 'none', {
+	            return _this.onError(table, 'update', 'none', {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).update(objects, onComplete);
+	      this.fd.ref(table).update(objects, onComplete);
 	    };
 
 	    Fire.prototype.remove = function(t, keys) {
-	      var i, key, len, ref, tableName;
-	      tableName = this.tableName(t);
-	      ref = this.fd.ref(t);
+	      var i, key, len, ref, table;
+	      table = this.tableName(t);
+	      ref = this.fd.ref(table);
 	      for (i = 0, len = keys.length; i < len; i++) {
 	        key = keys[i];
 	        ref.child(key).remove();
 	      }
-	      this.publish(tableName, 'remove', 'none', keys);
+	      this.publish(table, 'remove', 'none', keys);
 	    };
 
 	    Fire.prototype.make = function(t) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'make', 'none', {}, {});
+	            return _this.publish(table, 'make', 'none', {}, {});
 	          } else {
-	            return _this.onError(tableName, 'make', 'none', {}, {
+	            return _this.onError(table, 'make', 'none', {}, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref().set(tableName, onComplete);
+	      this.fd.ref().set(table, onComplete);
 	    };
 
 	    Fire.prototype.show = function(t, where) {
-	      var onComplete, tableName;
+	      var onComplete, table;
 	      if (where == null) {
 	        where = Store.where;
 	      }
-	      tableName = t != null ? this.tableName(t) : this.dbName;
+	      table = t != null ? this.tableName(t) : this.dbName;
 	      onComplete = (function(_this) {
 	        return function(snapshot) {
 	          var keys;
 	          if ((snapshot != null) && (snapshot.val() != null)) {
 	            keys = Util.toKeys(snapshot.val(), where, _this.keyProp);
-	            return _this.publish(tableName, 'show', 'none', keys, {
+	            return _this.publish(table, 'show', 'none', keys, {
 	              where: where.toString()
 	            });
 	          } else {
-	            return _this.onError(tableName, 'show', 'none', {}, {
+	            return _this.onError(table, 'show', 'none', {}, {
 	              where: where.toString()
 	            });
 	          }
 	        };
 	      })(this);
 	      if (t != null) {
-	        this.fd.ref(tableName).once('value', onComplete);
+	        this.fd.ref(table).once('value', onComplete);
 	      } else {
 	        this.fd.ref().once('value', onComplete);
 	      }
 	    };
 
 	    Fire.prototype.drop = function(t) {
-	      var onComplete, tableName;
-	      tableName = this.tableName(t);
+	      var onComplete, ref, table;
+	      table = this.tableName(t);
 	      onComplete = (function(_this) {
 	        return function(error) {
 	          if (error == null) {
-	            return _this.publish(tableName, 'drop', 'none', "OK");
+	            return _this.publish(table, 'drop', 'none', {});
 	          } else {
-	            return _this.onError(tableName, 'drop', 'none', {}, {
+	            return _this.onError(table, 'drop', 'none', {}, {
 	              error: error
 	            });
 	          }
 	        };
 	      })(this);
-	      this.fd.ref(tableName).remove(onComplete);
+	      ref = this.fd.ref(table);
+	      ref.remove(onComplete);
 	    };
 
 	    Fire.prototype.on = function(t, onEvt, id, onFunc) {
@@ -33199,6 +33200,20 @@
 	      return dates;
 	    };
 
+	    Res.prototype.total = function(status, nights, roomId, guests, pets) {
+	      var tot;
+	      if (pets == null) {
+	        pets = 0;
+	      }
+	      tot = 0;
+	      if (status === 'Skyline') {
+	        tot = nights * (this.rooms[roomId][guests] + pets * Data.petPrice);
+	      } else {
+	        tot = nights * this.rooms[roomId].booking;
+	      }
+	      return tot;
+	    };
+
 	    Res.prototype.createResvSkyline = function(arrive, depart, roomId, last, status, guests, pets, spa, cust, payments) {
 	      var booked, nights, price, total;
 	      if (spa == null) {
@@ -33341,13 +33356,22 @@
 	          return _this.insert(table, rows, Util.isFunc(onComplete) ? onComplete() : void 0);
 	        };
 	      })(this));
-	      return this.store.make(table);
+	      this.store.make(table);
 	    };
 
 	    Res.prototype.makeTables = function() {
 	      this.make('Room', Res.Rooms);
 	      this.store.make('Res');
-	      return this.store.make('Day');
+	      this.store.make('Day');
+	    };
+
+	    Res.prototype.dropMakeTable = function(table) {
+	      this.store.subscribe(table, 'drop', 'none', (function(_this) {
+	        return function() {
+	          return _this.store.make(table);
+	        };
+	      })(this));
+	      this.store.drop(table);
 	    };
 
 	    Res.prototype.setResvStatus = function(resv, post, purpose) {
@@ -33403,8 +33427,13 @@
 	    };
 
 	    Res.prototype.addDay = function(day) {
-	      this.days[day.dayId] = day;
-	      this.store.add('Day', day.dayId, day);
+	      if (day.status !== 'Unknown') {
+	        this.days[day.dayId] = day;
+	        this.store.add('Day', day.dayId, day);
+	      } else {
+	        Util.error('Unknown day', day);
+	        Util.error('Checkon res', this.resvs[day.resId]);
+	      }
 	    };
 
 	    Res.prototype.putDay = function(day) {
