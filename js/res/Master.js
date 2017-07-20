@@ -514,7 +514,7 @@
       var $cell, $div;
       $cell = this.$cell('M', date, roomId);
       $div = $cell.find('div');
-      if ($.is($div)) {
+      if (UI.isElem($div)) {
         $div.text(last);
       } else {
         $cell.append("<div>" + last + "</div>");

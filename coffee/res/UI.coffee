@@ -6,6 +6,10 @@ class UI
 
   module.exports = UI
 
+  @isEmpty:( $elem ) -> $elem? and $elem.length? and $elem.length is 0
+
+  @isElem:(  $elem ) -> not UI.isEmpty( $elem )
+
   @htmlSelect:( htmlId, array, choice, klass="", max=undefined ) ->
     style = if Util.isStr(klass) then klass else htmlId
     htm   = """<select name="#{htmlId}" id="#{htmlId}" class="#{style}">"""

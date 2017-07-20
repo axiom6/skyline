@@ -11,6 +11,14 @@
 
     module.exports = UI;
 
+    UI.isEmpty = function($elem) {
+      return ($elem != null) && ($elem.length != null) && $elem.length === 0;
+    };
+
+    UI.isElem = function($elem) {
+      return !UI.isEmpty($elem);
+    };
+
     UI.htmlSelect = function(htmlId, array, choice, klass, max) {
       var elem, htm, i, len, selected, style, where;
       if (klass == null) {

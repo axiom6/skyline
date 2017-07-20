@@ -345,7 +345,7 @@ class Master
   setLast:( date, roomId, last ) ->
     $cell = @$cell( 'M',  date,  roomId )
     $div  =  $cell.find('div')
-    if $.is( $div )
+    if UI.isElem( $div )
       $div.text(last)
     else
       $cell.append( "<div>#{last}</div>" )
