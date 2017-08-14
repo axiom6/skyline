@@ -45,7 +45,7 @@ class Upload
       continue if toks[0] is 'Guest name'
       book   = @bookFromToks( toks )
       resv   = @resvFromBook( book )
-      resvs[resv.resId ] = resv
+      resvs[resv.resId ] = resv if resv?
     resvs
 
   bookFromToks:( toks ) ->
@@ -74,7 +74,10 @@ class Upload
     status = @toStatusBook( book.status )
     guests = @toNumGuests( names )
     total  = parseFloat( book.total.substr(3) )
-    @res.createResvBooking( arrive, depart, roomId, last, status, guests, total, booked )
+    if status is 'Booking'
+      @res.createResvBooking( arrive, depart, roomId, last, status, guests, total, booked )
+    else
+      null
 
   onUploadRes:() =>
     Util.log( 'Upload.onUploadRes')
@@ -109,11 +112,10 @@ class Upload
 
   onCreateDay:() =>
     Util.log( 'Upload.onCreateDay')
-    @res.dropMakeTable('Day')
-    #for own dayId, day of @res.days
-    #  @res.delDay( day )
-    #for own resId, resv of @res.resvs
-    #  @res.updateDaysFromResv( resv )
+    for own dayId, day of @res.days
+      @res.delDay( day )
+    for own resId, resv of @res.resvs
+      @res.updateDaysFromResv( resv )
     return
 
   onCreateCan:() =>

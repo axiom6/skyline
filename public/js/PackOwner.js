@@ -32907,20 +32907,20 @@
 	      this.store.make(table);
 	    };
 
-	    Res.prototype.makeTables = function() {
-	      this.make('Room', Res.Rooms);
-	      this.store.make('Res');
-	      this.store.make('Day');
-	    };
 
-	    Res.prototype.dropMakeTable = function(table) {
-	      this.store.subscribe(table, 'drop', 'none', (function(_this) {
-	        return function() {
-	          return _this.store.make(table);
-	        };
-	      })(this));
-	      this.store.drop(table);
-	    };
+	    /*
+	    makeTables:() ->
+	      @make( 'Room', Res.Rooms )
+	      @store.make( 'Res' )
+	      @store.make( 'Day' )
+	      return
+	    
+	     * Destroys whole data base up to root
+	    dropMakeTable:( table ) ->
+	      @store.subscribe( table, 'drop', 'none', () => @store.make(table) )
+	      @store.drop( table )
+	      return
+	     */
 
 	    Res.prototype.setResvStatus = function(resv, post, purpose) {
 	      if (post === 'post') {
@@ -34040,7 +34040,9 @@
 	        }
 	        book = this.bookFromToks(toks);
 	        resv = this.resvFromBook(book);
-	        resvs[resv.resId] = resv;
+	        if (resv != null) {
+	          resvs[resv.resId] = resv;
+	        }
 	      }
 	      return resvs;
 	    };
@@ -34071,7 +34073,11 @@
 	      status = this.toStatusBook(book.status);
 	      guests = this.toNumGuests(names);
 	      total = parseFloat(book.total.substr(3));
-	      return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
+	      if (status === 'Booking') {
+	        return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
+	      } else {
+	        return null;
+	      }
 	    };
 
 	    Upload.prototype.onUploadRes = function() {
@@ -34126,8 +34132,20 @@
 	    };
 
 	    Upload.prototype.onCreateDay = function() {
+	      var day, dayId, ref, ref1, resId, resv;
 	      Util.log('Upload.onCreateDay');
-	      this.res.dropMakeTable('Day');
+	      ref = this.res.days;
+	      for (dayId in ref) {
+	        if (!hasProp.call(ref, dayId)) continue;
+	        day = ref[dayId];
+	        this.res.delDay(day);
+	      }
+	      ref1 = this.res.resvs;
+	      for (resId in ref1) {
+	        if (!hasProp.call(ref1, resId)) continue;
+	        resv = ref1[resId];
+	        this.res.updateDaysFromResv(resv);
+	      }
 	    };
 
 	    Upload.prototype.onCreateCan = function() {

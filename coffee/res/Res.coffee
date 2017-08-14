@@ -257,16 +257,19 @@ class Res
     @store.make( table )
     return
 
+  ###
   makeTables:() ->
     @make( 'Room', Res.Rooms )
     @store.make( 'Res' )
     @store.make( 'Day' )
     return
 
+  # Destroys whole data base up to root
   dropMakeTable:( table ) ->
     @store.subscribe( table, 'drop', 'none', () => @store.make(table) )
     @store.drop( table )
     return
+  ###
 
   setResvStatus:( resv, post, purpose ) ->
     if        post is 'post'

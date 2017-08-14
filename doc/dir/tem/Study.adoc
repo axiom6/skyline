@@ -1,7 +1,0 @@
-
-include::../dir/inc/DefStudy.adoc[]
-
-''''
-== [.black]#Study#
-
-

@@ -465,20 +465,20 @@
       this.store.make(table);
     };
 
-    Res.prototype.makeTables = function() {
-      this.make('Room', Res.Rooms);
-      this.store.make('Res');
-      this.store.make('Day');
-    };
 
-    Res.prototype.dropMakeTable = function(table) {
-      this.store.subscribe(table, 'drop', 'none', (function(_this) {
-        return function() {
-          return _this.store.make(table);
-        };
-      })(this));
-      this.store.drop(table);
-    };
+    /*
+    makeTables:() ->
+      @make( 'Room', Res.Rooms )
+      @store.make( 'Res' )
+      @store.make( 'Day' )
+      return
+    
+     * Destroys whole data base up to root
+    dropMakeTable:( table ) ->
+      @store.subscribe( table, 'drop', 'none', () => @store.make(table) )
+      @store.drop( table )
+      return
+     */
 
     Res.prototype.setResvStatus = function(resv, post, purpose) {
       if (post === 'post') {
