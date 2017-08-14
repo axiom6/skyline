@@ -229,6 +229,14 @@
     };
 
     Fire.prototype.drop = function(t) {
+      var table;
+      table = this.tableName(t);
+      this.onError(table, 'drop', 'none', {}, {
+        error: 'Fire.drop(t) not implemented'
+      });
+    };
+
+    Fire.prototype.dropDanger = function(t) {
       var onComplete, ref, table;
       table = this.tableName(t);
       onComplete = (function(_this) {

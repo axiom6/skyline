@@ -21,7 +21,7 @@
       this.res = res;
       this.onCustomFix = bind(this.onCustomFix, this);
       this.onCreateCan = bind(this.onCreateCan, this);
-      this.onCreateDay = bind(this.onCreateDay, this);
+      this.onUpdateDays = bind(this.onUpdateDays, this);
       this.onCreateRes = bind(this.onCreateRes, this);
       this.onUploadCan = bind(this.onUploadCan, this);
       this.onUploadRes = bind(this.onUploadRes, this);
@@ -35,7 +35,7 @@
       htm += "<h1  class=\"UploadH1\">Upload Booking.com</h1>";
       htm += "<button id=\"UploadRes\" class=\"btn btn-primary\">Upload Res</button>";
       htm += "<button id=\"UploadCan\" class=\"btn btn-primary\">Upload Can</button>";
-      htm += "<button id=\"CreateDay\" class=\"btn btn-primary\">Create Day</button>";
+      htm += "<button id=\"UpdateDay\" class=\"btn btn-primary\">Update Days</button>";
       htm += "<button id=\"CustomFix\" class=\"btn btn-primary\">Custom Fix</button>";
       htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
       return htm;
@@ -166,9 +166,9 @@
       }
     };
 
-    Upload.prototype.onCreateDay = function() {
+    Upload.prototype.onUpdateDays = function() {
       var day, dayId, ref, ref1, resId, resv;
-      Util.log('Upload.onCreateDay');
+      Util.log('Upload.onReUpdateDays');
       ref = this.res.days;
       for (dayId in ref) {
         if (!hasProp.call(ref, dayId)) continue;

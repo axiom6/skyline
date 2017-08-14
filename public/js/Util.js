@@ -69,7 +69,9 @@ Util = (function() {
     }
     Util.root = root;
     Util.rootJS = Util.root + 'js/';
-    Util.resetModuleExports(prj);
+    Util.arg = prj;
+    Util.prj = prj === 'skytest' ? 'skyline' : prj;
+    Util.resetModuleExports(Util.prj);
     Util.fixTestGlobals();
     if (Util.isCommonJS && (moduleCommonJS != null)) {
       require(moduleCommonJS);
@@ -104,8 +106,8 @@ Util = (function() {
     }
   };
 
-  Util.initJasime = function() {
-    Util.resetModuleExports();
+  Util.initJasime = function(prj) {
+    Util.resetModuleExports(prj);
     if (!Util.isCommonJS) {
       window.require = Util.loadScript;
     } else {

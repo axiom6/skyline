@@ -253,13 +253,10 @@
     };
 
     Book.prototype.calcPrice = function(roomId) {
-      var guests, pets, price, room;
+      var room;
       room = this.rooms[roomId];
-      guests = room.guests;
-      pets = room.pets;
-      price = this.rooms[roomId][guests] + pets * Data.petPrice;
-      room.price = price;
-      return price;
+      room.price = this.res.calcPrice(roomId, room.guests, room.pets, 'Skyline');
+      return room.price;
     };
 
     Book.prototype.updateTotal = function(roomId) {

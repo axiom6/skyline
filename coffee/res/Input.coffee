@@ -27,9 +27,10 @@ class Input
     @resv.depart = Data.advanceDate( stayto, 1 )
     @resv.roomId = roomId
     @resv.last   = ""
-    @resv.status = 'Skyline'
+    @resv.status = 'Booking'
     @resv.guests = 4
     @resv.pets   = 0
+    @resv.price  = @res.calcPrice(@resv.roomId,@resv.guests,@resv.pets,@resv.status)
     @resv.booked = Data.today()
     @state       = 'add'
     @refreshResv( @resv )
@@ -133,7 +134,7 @@ class Input
   refreshResv:( resv ) ->
     resv.depart  = Data.advanceDate(resv.stayto,1)
     resv.nights  = Data.nights( resv.arrive, resv.depart )
-    resv.price   = if resv.status is 'Skyline' or resv.status is 'Deposit' then @res.calcPrice(resv.roomId,resv.guests,resv.pets) else resv.price
+    resv.price   = @res.calcPrice(resv.roomId,resv.guests,resv.pets,resv.status)
     resv.deposit = resv.price * 0.5
     resv.total   = resv.nights * resv.price
     resv.tax     = parseFloat( Util.toFixed( resv.total * Data.tax ) )
@@ -177,7 +178,8 @@ class Input
 
     doDel = () =>
       @resv.status = 'Free'
-      @res.updateDaysFromResv( @resv )
+      @resv.last   = ''
+      @res.deleteDaysFromResv( @resv )
       @resv
       
     $('#NRCreate').click () =>
@@ -189,6 +191,7 @@ class Input
       return
 
     $('#NRChange').click () =>
+      resv = doDel()
       resv = doRes()
       @res.putResv( resv ) if resv?
       return

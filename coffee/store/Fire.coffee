@@ -139,13 +139,19 @@ class Fire extends Store
   # ref.remove( onComplete ) is Dangerous and has removed all tables in Firebase
   drop:( t ) ->
     table = @tableName(t)
+    @onError( table, 'drop', 'none', {}, { error:'Fire.drop(t) not implemented'  } )
+    return
+
+  # ref.remove( onComplete ) is Dangerous and has removed all tables in Firebase
+  dropDanger:( t ) ->
+    table = @tableName(t)
     onComplete = (error) =>
       if not error?
         @publish( table, 'drop', 'none', {} )
       else
         @onError( table, 'drop', 'none', {}, { error:error } )
     ref = @fd.ref(table)
-    ref.remove( onComplete )
+    ref.remove( onComplete )  # Dangerous
     return
 
   # Have too clarify id with snapshot.key

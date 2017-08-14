@@ -19,7 +19,7 @@ class Upload
     htm += """<button id="UploadCan" class="btn btn-primary">Upload Can</button>"""
     #tm += """<button id="CreateRes" class="btn btn-primary">Create Res</button>"""
     #tm += """<button id="CreateCan" class="btn btn-primary">Create Can</button>"""
-    htm += """<button id="CreateDay" class="btn btn-primary">Create Day</button>"""
+    htm += """<button id="UpdateDay" class="btn btn-primary">Update Days</button>"""
     htm += """<button id="CustomFix" class="btn btn-primary">Custom Fix</button>"""
     htm += """<textarea id="UploadText" class="UploadText" rows="50" cols="100"></textarea>"""
     htm
@@ -110,8 +110,8 @@ class Upload
       @res.addResv( resv )
     return
 
-  onCreateDay:() =>
-    Util.log( 'Upload.onCreateDay')
+  onUpdateDays:() =>
+    Util.log( 'Upload.onReUpdateDays')
     for own dayId, day of @res.days
       @res.delDay( day )
     for own resId, resv of @res.resvs

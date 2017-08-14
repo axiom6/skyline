@@ -48,7 +48,8 @@ class Menus
 
   view:() ->
     { label: 'View', submenu: [
-      { label: 'Close', accelerator:'Command+W', click: () => @action.close() }
-      { label: 'Guest', click: () => @action.view( 'Guest', '/public/guest.html' ) }
-      { label: 'Owner', click: () => @action.view( 'Owner', '/public/owner.html' ) }
+      { label: 'Close',  accelerator:'Command+W', click: () => @action.close() }
+      { label: 'Guest',  click: () => @action.view( 'Guest',  '/public/guest.html'  ) }
+      { label: 'Owner',  click: () => @action.view( 'Owner',  '/public/index.html'  ) }
+      { label: 'Tester', click: () => @action.view( 'Tester', '/public/tester.html' ) }
       { label: 'Toggle Dev Tools', accelerator: 'Command+T', click: () => @action.toggleDevTools() } ] }

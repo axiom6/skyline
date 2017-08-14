@@ -206,7 +206,7 @@
       $('#UploadRes').click(this.upload.onUploadRes);
       $('#UploadCan').click(this.upload.onUploadCan);
       $('#CreateRes').click(this.upload.onCreateRes);
-      $('#CreateDay').click(this.upload.onCreateDay);
+      $('#CreateDay').click(this.upload.onUpdateDays);
       $('#CreateCan').click(this.upload.onCreateCan);
       $('#CustomFix').click(this.upload.onCustomFix);
       $('#Upload').show();

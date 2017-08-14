@@ -203,12 +203,9 @@ class Book
     return
 
   calcPrice:( roomId ) =>
-    room   = @rooms[roomId]
-    guests = room.guests
-    pets   = room.pets
-    price  = @rooms[roomId][guests]+pets*Data.petPrice
-    room.price = price
-    price
+    room       = @rooms[roomId]
+    room.price = @res.calcPrice( roomId, room.guests, room.pets, 'Skyline' )
+    room.price
 
   updateTotal:( roomId ) ->
     price  = @calcPrice( roomId )

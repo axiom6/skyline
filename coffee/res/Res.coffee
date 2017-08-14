@@ -97,7 +97,7 @@ class Res
   day:( date, roomId ) ->
     dayId = Data.dayId( date, roomId )
     day   = @days[dayId]
-    if day? then day else @setDay( {}, 'Free', 'none' )
+    if day? then day else @setDay( {}, 'Free', 'none', dayId )
 
   dayIds:( arrive, stayto, roomId ) ->
     depart = Data.advanceDate( stayto, 1 )
@@ -136,22 +136,37 @@ class Res
       @addCan( can )
     @resvs
 
-  updateDaysFromResv:( resv, add=true ) ->
+  daysFromResv:( resv ) ->
     days = {} # resv days
     for i in [0...resv.nights]
       dayId       = Data.dayId( Data.advanceDate( resv.arrive, i ), resv.roomId )
-      days[dayId] = @setDay( {}, resv.status, resv.resId )
-    #Util.log( 'Res.updateDaysFromResv', { last:resv.last, arrive:resv.arrive, stayto:resv.stayto, nights:resv.nights, days:days } )
+      days[dayId] = @setDay( {}, resv.status, resv.resId, dayId )
+    days
+
+  deleteDaysFromResv:( resv ) ->
+    days = @daysFromResv( resv )
+    for dayId, day of days
+      day.status = 'Free'
     @allocDays( days )
     @allocResv( resv )
     for dayId, day of days
-      @store.add( 'Day', dayId, day ) if add
-      @days[dayId] = day
+      @delDay( day )
     return
 
-  calcPrice:( roomId, guests, pets ) ->
+  updateDaysFromResv:( resv, add=true ) ->
+    days = @daysFromResv( resv )
+    @allocDays( days )
+    @allocResv( resv )
+    for dayId, day of days
+      @addDay( day )
+    return
+
+  calcPrice:( roomId, guests, pets, status ) ->
     #Util.log( 'Res.calcPrice()', { roomId:roomId, guests:guests, pets:pets, guestprice:@rooms[roomId][guests], petfee:pets*Data.petPrice  } )
-    @rooms[roomId][guests] + pets*Data.petPrice
+    if status is 'Booking' or status is 'Prepaid'
+      @rooms[roomId].booking
+    else
+      @rooms[roomId][guests] + pets*Data.petPrice
 
   spaOptOut:( roomId, isSpaOptOut=true ) ->
     if @rooms[roomId].spa is 'O' and isSpaOptOut then Data.spaOptOut else 0
@@ -316,6 +331,7 @@ class Res
 
   addDay:( day ) ->
     if day.status isnt 'Unknown'
+
       @days[day.dayId] = day
       @store.add( 'Day', day.dayId, day )
     else
@@ -344,9 +360,10 @@ class Res
     return
 
   # Used for Days / dayId / roomId and for Res / rooms[dayId] since both has status and resid properties
-  setDay:( day, status, resId ) ->
+  setDay:( day, status, resId, dayId ) ->
     day.status = status
     day.resId  = resId
+    day.dayId  = dayId
     day
 
   # ......Utilities ......

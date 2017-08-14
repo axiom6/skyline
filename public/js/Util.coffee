@@ -36,8 +36,9 @@ class Util
   @init:( moduleCommonJS=undefined, moduleWebPack=undefined, root=Util.root, prj="ui" ) ->
     Util.root   = root
     Util.rootJS = Util.root + 'js/'
-    #Util.log( "Util.init() rootJS", Util.rootJS )
-    Util.resetModuleExports( prj )
+    Util.arg = prj
+    Util.prj = if prj is 'skytest' then 'skyline' else prj
+    Util.resetModuleExports( Util.prj )
     Util.fixTestGlobals()
     if     Util.isCommonJS and moduleCommonJS?
       require( moduleCommonJS )
@@ -72,8 +73,8 @@ class Util
       Util.error( 'Util.requireModule() module not found', module )
       null
 
-  @initJasime:() ->
-    Util.resetModuleExports()
+  @initJasime:( prj ) ->
+    Util.resetModuleExports( prj )
     if not Util.isCommonJS
       window.require = Util.loadScript
     else

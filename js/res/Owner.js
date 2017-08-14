@@ -9,15 +9,16 @@
 
     Owner.init = function() {
       return Util.ready(function() {
-        var Data, Fire, Master, Memory, Res, Stream, master, res, store, stream;
+        var Data, Fire, Master, Memory, Res, Stream, config, master, res, store, stream;
         Stream = require('js/store/Stream');
         Fire = require('js/store/Fire');
         Memory = require('js/store/Memory');
         Data = require('js/res/Data');
         Res = require('js/res/Res');
         Master = require('js/res/Master');
+        config = Util.arg === 'skytest' ? Data.configSkytest : Data.configSkyline;
         stream = new Stream([]);
-        store = new Fire(stream, "skytest", Data.configSkytest);
+        store = new Fire(stream, Util.arg, config);
         res = new Res(stream, store, 'Owner');
         master = new Master(stream, store, res);
         return master.ready();

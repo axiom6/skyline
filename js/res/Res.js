@@ -183,7 +183,7 @@
       if (day != null) {
         return day;
       } else {
-        return this.setDay({}, 'Free', 'none');
+        return this.setDay({}, 'Free', 'none', dayId);
       }
     };
 
@@ -260,29 +260,51 @@
       return this.resvs;
     };
 
-    Res.prototype.updateDaysFromResv = function(resv, add) {
-      var day, dayId, days, i, j, ref;
-      if (add == null) {
-        add = true;
-      }
+    Res.prototype.daysFromResv = function(resv) {
+      var dayId, days, i, j, ref;
       days = {};
       for (i = j = 0, ref = resv.nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         dayId = Data.dayId(Data.advanceDate(resv.arrive, i), resv.roomId);
-        days[dayId] = this.setDay({}, resv.status, resv.resId);
+        days[dayId] = this.setDay({}, resv.status, resv.resId, dayId);
+      }
+      return days;
+    };
+
+    Res.prototype.deleteDaysFromResv = function(resv) {
+      var day, dayId, days;
+      days = this.daysFromResv(resv);
+      for (dayId in days) {
+        day = days[dayId];
+        day.status = 'Free';
       }
       this.allocDays(days);
       this.allocResv(resv);
       for (dayId in days) {
         day = days[dayId];
-        if (add) {
-          this.store.add('Day', dayId, day);
-        }
-        this.days[dayId] = day;
+        this.delDay(day);
       }
     };
 
-    Res.prototype.calcPrice = function(roomId, guests, pets) {
-      return this.rooms[roomId][guests] + pets * Data.petPrice;
+    Res.prototype.updateDaysFromResv = function(resv, add) {
+      var day, dayId, days;
+      if (add == null) {
+        add = true;
+      }
+      days = this.daysFromResv(resv);
+      this.allocDays(days);
+      this.allocResv(resv);
+      for (dayId in days) {
+        day = days[dayId];
+        this.addDay(day);
+      }
+    };
+
+    Res.prototype.calcPrice = function(roomId, guests, pets, status) {
+      if (status === 'Booking' || status === 'Prepaid') {
+        return this.rooms[roomId].booking;
+      } else {
+        return this.rooms[roomId][guests] + pets * Data.petPrice;
+      }
     };
 
     Res.prototype.spaOptOut = function(roomId, isSpaOptOut) {
@@ -564,9 +586,10 @@
       }
     };
 
-    Res.prototype.setDay = function(day, status, resId) {
+    Res.prototype.setDay = function(day, status, resId, dayId) {
       day.status = status;
       day.resId = resId;
+      day.dayId = dayId;
       return day;
     };
 

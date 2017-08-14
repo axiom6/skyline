@@ -206,7 +206,14 @@
             label: 'Owner',
             click: (function(_this) {
               return function() {
-                return _this.action.view('Owner', '/public/owner.html');
+                return _this.action.view('Owner', '/public/index.html');
+              };
+            })(this)
+          }, {
+            label: 'Tester',
+            click: (function(_this) {
+              return function() {
+                return _this.action.view('Tester', '/public/tester.html');
               };
             })(this)
           }, {

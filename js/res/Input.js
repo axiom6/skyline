@@ -40,9 +40,10 @@
       this.resv.depart = Data.advanceDate(stayto, 1);
       this.resv.roomId = roomId;
       this.resv.last = "";
-      this.resv.status = 'Skyline';
+      this.resv.status = 'Booking';
       this.resv.guests = 4;
       this.resv.pets = 0;
+      this.resv.price = this.res.calcPrice(this.resv.roomId, this.resv.guests, this.resv.pets, this.resv.status);
       this.resv.booked = Data.today();
       this.state = 'add';
       this.refreshResv(this.resv);
@@ -184,7 +185,7 @@
     Input.prototype.refreshResv = function(resv) {
       resv.depart = Data.advanceDate(resv.stayto, 1);
       resv.nights = Data.nights(resv.arrive, resv.depart);
-      resv.price = resv.status === 'Skyline' || resv.status === 'Deposit' ? this.res.calcPrice(resv.roomId, resv.guests, resv.pets) : resv.price;
+      resv.price = this.res.calcPrice(resv.roomId, resv.guests, resv.pets, resv.status);
       resv.deposit = resv.price * 0.5;
       resv.total = resv.nights * resv.price;
       resv.tax = parseFloat(Util.toFixed(resv.total * Data.tax));
@@ -234,7 +235,8 @@
       doDel = (function(_this) {
         return function() {
           _this.resv.status = 'Free';
-          _this.res.updateDaysFromResv(_this.resv);
+          _this.resv.last = '';
+          _this.res.deleteDaysFromResv(_this.resv);
           return _this.resv;
         };
       })(this);
@@ -254,6 +256,7 @@
       $('#NRChange').click((function(_this) {
         return function() {
           var resv;
+          resv = doDel();
           resv = doRes();
           if (resv != null) {
             _this.res.putResv(resv);

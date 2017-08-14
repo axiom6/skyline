@@ -14,11 +14,12 @@ class Owner
       Res      = require( 'js/res/Res'      )
       Master   = require( 'js/res/Master'   )
 
+      config   = if  Util.arg is 'skytest' then Data.configSkytest else Data.configSkyline
       stream   = new Stream( [] )
-      store    = new Fire(   stream, "skytest", Data.configSkytest )
-      #tore    = new Memory( stream, "skytest" )
-      res      = new Res(    stream, store, 'Owner' )
-      master   = new Master( stream, store, res     )
+      store    = new Fire(   stream, Util.arg ,config )
+      #tore    = new Memory( stream, Util.arg         )
+      res      = new Res(    stream, store, 'Owner'   )
+      master   = new Master( stream, store, res       )
       master.ready()
 
 Owner.init()
