@@ -87,14 +87,8 @@
         mmdd0 = $mmdd.text();
         mmdd1 = Data.advanceMMDD(mmdd0, -1);
         $mmdd.text(mmdd1);
-        if (htmlId === 'NRArrive') {
-          if (onMMDD != null) {
-            onMMDD(htmlId, mmdd1, 'Mine');
-          }
-        } else {
-          if (onMMDD != null) {
-            onMMDD(htmlId, mmdd0, 'Free');
-          }
+        if (onMMDD != null) {
+          onMMDD(htmlId, mmdd0, mmdd1);
         }
       };
       incMMDD = function() {
@@ -103,14 +97,8 @@
         mmdd0 = $mmdd.text();
         mmdd1 = Data.advanceMMDD(mmdd0, 1);
         $mmdd.text(mmdd1);
-        if (htmlId === 'NRStayTo') {
-          if (onMMDD != null) {
-            onMMDD(htmlId, mmdd1, 'Mine');
-          }
-        } else {
-          if (onMMDD != null) {
-            onMMDD(htmlId, mmdd0, 'Free');
-          }
+        if (onMMDD != null) {
+          onMMDD(htmlId, mmdd0, mmdd1);
         }
       };
       $('#' + htmlId + 'L').click(decMMDD);

@@ -95,20 +95,42 @@
     };
 
     Input.prototype.action = function() {
-      var onMMDD;
-      onMMDD = (function(_this) {
-        return function(htmlId, mmdd, klass) {
-          var date, dd, mi, ref, roomId;
+      var onMMDD, toDate;
+      toDate = (function(_this) {
+        return function(mmdd) {
+          var dd, mi, ref;
           ref = Data.midd(mmdd), mi = ref[0], dd = ref[1];
-          date = Data.toDateStr(dd, mi);
+          return Data.toDateStr(dd, mi);
+        };
+      })(this);
+      onMMDD = (function(_this) {
+        return function(htmlId, mmdd0, mmdd1) {
+          var date0, date1, dayId, roomId;
           roomId = _this.resv.roomId;
-          _this.master.fillCell(roomId, date, klass);
+          date0 = toDate(mmdd0);
+          date1 = toDate(mmdd1);
           if (htmlId === 'NRArrive') {
-            _this.resv.arrive = date;
+            if (date1 < date0) {
+              _this.master.fillCell(roomId, date1, _this.resv.status);
+            } else {
+              dayId = Data.dayId(date0, roomId);
+              _this.res.delDay(_this.res.days[dayId]);
+              _this.master.fillCell(roomId, date0, 'Free');
+            }
+            _this.res.allocResv(_this.resv, 'Free');
+            _this.resv.arrive = date1;
+            _this.res.allocResv(_this.resv, _this.resv.status);
+          } else if (htmlId === 'NRStayTo') {
+            if (date1 > date0) {
+              _this.master.fillCell(roomId, date1, _this.resv.status);
+            } else {
+              dayId = Data.dayId(date0, roomId);
+              _this.res.delDay(_this.res.days[dayId]);
+              _this.master.fillCell(roomId, date0, 'Free');
+            }
+            _this.resv.stayto = date1;
           }
-          if (htmlId === 'NRStayTo') {
-            _this.resv.stayto = date;
-          }
+          Util.log('Input.onMDD', htmlId, date0, date1, _this.resv.arrive, _this.resv.stayto);
           _this.refreshResv(_this.resv);
         };
       })(this);
@@ -234,8 +256,6 @@
       })(this);
       doDel = (function(_this) {
         return function() {
-          _this.resv.status = 'Free';
-          _this.resv.last = '';
           _this.res.deleteDaysFromResv(_this.resv);
           return _this.resv;
         };

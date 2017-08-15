@@ -72,14 +72,33 @@ class Input
     
   action:() ->
 
-    onMMDD = ( htmlId, mmdd, klass ) =>
+    toDate = ( mmdd ) =>
       [mi,dd] = Data.midd(mmdd)
-      date    = Data.toDateStr( dd, mi )
+      Data.toDateStr( dd, mi )
+
+    onMMDD = ( htmlId, mmdd0, mmdd1 ) =>
       roomId  = @resv.roomId
-      @master.fillCell( roomId, date, klass )
-      @resv.arrive = date if htmlId is 'NRArrive'
-      @resv.stayto = date if htmlId is 'NRStayTo'
-      #Util.log( 'Input.onMDD', htmlId, date, @resv )
+      date0   = toDate( mmdd0 )
+      date1   = toDate( mmdd1 )
+      if htmlId is 'NRArrive'
+        if date1 < date0
+          @master.fillCell( roomId, date1, @resv.status )
+        else
+          dayId = Data.dayId( date0, roomId )
+          @res.delDay( @res.days[dayId] )
+          @master.fillCell( roomId, date0, 'Free' )
+        @res.allocResv( @resv, 'Free' )
+        @resv.arrive = date1
+        @res.allocResv( @resv, @resv.status )
+      else if htmlId is 'NRStayTo'
+        if date1 > date0
+          @master.fillCell( roomId, date1, @resv.status )
+        else
+          dayId = Data.dayId( date0, roomId )
+          @res.delDay( @res.days[dayId] )
+          @master.fillCell( roomId, date0, 'Free' )
+        @resv.stayto = date1
+      Util.log( 'Input.onMDD', htmlId, date0, date1, @resv.arrive, @resv.stayto )
       @refreshResv( @resv )
       return
 
@@ -177,8 +196,6 @@ class Input
       r
 
     doDel = () =>
-      @resv.status = 'Free'
-      @resv.last   = ''
       @res.deleteDaysFromResv( @resv )
       @resv
       

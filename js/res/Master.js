@@ -491,11 +491,17 @@
       return htm;
     };
 
-    Master.prototype.allocResv = function(resv) {
-      var $cell, $div;
+    Master.prototype.allocResv = function(resv, status) {
+      var $cell;
+      if (status == null) {
+        status = resv.status;
+      }
       $cell = this.$cell('M', resv.arrive, resv.roomId);
-      $div = $cell.find('div');
-      $div.text(resv.last);
+      if (status === 'Free') {
+        $cell.remove('div');
+      } else {
+        $cell.find('div').text(resv.last);
+      }
     };
 
     Master.prototype.createCell = function(date, roomId) {

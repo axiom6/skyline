@@ -326,10 +326,12 @@ class Master
     htm += "</tbody></table>"
     htm
 
-  allocResv:( resv ) ->
+  allocResv:( resv, status=resv.status ) ->
     $cell = @$cell( 'M', resv.arrive, resv.roomId )
-    $div  = $cell.find('div')
-    $div.text( resv.last )
+    if status is 'Free'
+      $cell.remove( 'div' )
+    else
+      $cell.find('div').text( resv.last )
     return
 
   createCell:( date, roomId ) ->

@@ -455,7 +455,7 @@
       }
     };
 
-    "allocResv:( resv ) ->\n  #$cell = @$cell( resv.arrive, resv.roomId )\n  #$div  = $cell.find('div')\n  #$div.text( resv.last )\n  return";
+    "allocResv:( resv, status ) ->\n  $cell = @$cell( 'M', resv.arrive, resv.roomId )\n  if status is 'Free'\n    $cell.remove( 'div' )\n  else\n    $cell.find('div').text( resv.last )\n  return";
 
     Book.prototype.allocCell = function(date, status, roomId) {
       return this.cellStatus(this.$cell(date, roomId), status);

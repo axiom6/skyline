@@ -357,10 +357,12 @@ class Book
     return
 
   """
-  allocResv:( resv ) ->
-    #$cell = @$cell( resv.arrive, resv.roomId )
-    #$div  = $cell.find('div')
-    #$div.text( resv.last )
+  allocResv:( resv, status ) ->
+    $cell = @$cell( 'M', resv.arrive, resv.roomId )
+    if status is 'Free'
+      $cell.remove( 'div' )
+    else
+      $cell.find('div').text( resv.last )
     return
   """
 

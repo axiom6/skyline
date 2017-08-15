@@ -40,24 +40,18 @@ class UI
       $mmdd = $('#'+htmlId)
       mmdd0 = $mmdd.text()
       mmdd1 = Data.advanceMMDD(   mmdd0,  -1   )
-      #Util.log( 'Input.decMMDD', mmdd0, mmdd1 )
       $mmdd.text( mmdd1 )
-      if htmlId is 'NRArrive'
-         onMMDD( htmlId, mmdd1, 'Mine' ) if onMMDD?
-      else
-         onMMDD( htmlId, mmdd0, 'Free' ) if onMMDD?
+      onMMDD( htmlId, mmdd0, mmdd1 ) if onMMDD?
+      #Util.log( 'Input.decMMDD', mmdd0, mmdd1 )
       return
 
     incMMDD = () ->
       $mmdd = $('#'+htmlId)
       mmdd0 = $mmdd.text()
       mmdd1 = Data.advanceMMDD(   mmdd0, 1     )
-      #Util.log( 'Input.incMMDD', mmdd0, mmdd1 )
       $mmdd.text( mmdd1 )
-      if htmlId is 'NRStayTo'
-         onMMDD( htmlId, mmdd1, 'Mine' ) if onMMDD?
-      else
-         onMMDD( htmlId, mmdd0, 'Free' ) if onMMDD?
+      onMMDD( htmlId, mmdd0, mmdd1 ) if onMMDD?
+      # Util.log( 'Input.incMMDD', mmdd0, mmdd1 )
       return
 
     $('#'+htmlId+'L').click( decMMDD )

@@ -121,9 +121,9 @@ class Res
     @master.allocDays( days ) if @master?
     return
 
-  allocResv:( resv ) ->
-    @book.  allocResv( resv ) if @book?
-    @master.allocResv( resv ) if @master?
+  allocResv:( resv, status=resv.status ) ->
+    #@book. allocResv( resv, status ) if @book?
+    @master.allocResv( resv, status ) if @master?
     return
 
   updateResvs:( newResvs ) ->
@@ -148,7 +148,7 @@ class Res
     for dayId, day of days
       day.status = 'Free'
     @allocDays( days )
-    @allocResv( resv )
+    @allocResv( resv, 'Free' )
     for dayId, day of days
       @delDay( day )
     return

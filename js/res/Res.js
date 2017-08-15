@@ -231,12 +231,12 @@
       }
     };
 
-    Res.prototype.allocResv = function(resv) {
-      if (this.book != null) {
-        this.book.allocResv(resv);
+    Res.prototype.allocResv = function(resv, status) {
+      if (status == null) {
+        status = resv.status;
       }
       if (this.master != null) {
-        this.master.allocResv(resv);
+        this.master.allocResv(resv, status);
       }
     };
 
@@ -278,7 +278,7 @@
         day.status = 'Free';
       }
       this.allocDays(days);
-      this.allocResv(resv);
+      this.allocResv(resv, 'Free');
       for (dayId in days) {
         day = days[dayId];
         this.delDay(day);
