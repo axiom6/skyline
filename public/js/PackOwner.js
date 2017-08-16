@@ -32333,17 +32333,17 @@
 	      return Util.pad(mi + 1) + '/' + Util.pad(dd);
 	    };
 
-	    Data.nights = function(arrive, depart) {
-	      var arriveDay, arriveMon, departDay, departMon, num;
+	    Data.nights = function(arrive, stayto) {
+	      var arriveDay, arriveMon, num, staytoDay, staytoMon;
 	      num = 0;
 	      arriveDay = parseInt(arrive.substr(4, 2));
 	      arriveMon = parseInt(arrive.substr(2, 2));
-	      departDay = parseInt(depart.substr(4, 2));
-	      departMon = parseInt(depart.substr(2, 2));
-	      if (arriveMon === departMon) {
-	        num = departDay - arriveDay;
-	      } else if (arriveMon + 1 === departMon) {
-	        num = Data.numDayMonth[arriveMon - 1] - arriveDay + departDay;
+	      staytoDay = parseInt(stayto.substr(4, 2));
+	      staytoMon = parseInt(stayto.substr(2, 2));
+	      if (arriveMon === staytoMon) {
+	        num = staytoDay - arriveDay + 1;
+	      } else if (arriveMon + 1 === staytoMon) {
+	        num = Data.numDayMonth[arriveMon - 1] - arriveDay + staytoDay + 1;
 	      }
 	      return Math.abs(num);
 	    };
@@ -32591,6 +32591,9 @@
 
 	    Res.prototype.status = function(date, roomId) {
 	      var day, dayId, st;
+	      if (roomId === 0) {
+	        return 'Free';
+	      }
 	      dayId = Data.dayId(date, roomId);
 	      day = this.days[dayId];
 	      st = day != null ? day.status : 'Free';
@@ -32639,9 +32642,8 @@
 	    };
 
 	    Res.prototype.dayIds = function(arrive, stayto, roomId) {
-	      var depart, i, ids, j, nights, ref;
-	      depart = Data.advanceDate(stayto, 1);
-	      nights = Data.nights(arrive, depart);
+	      var i, ids, j, nights, ref;
+	      nights = Data.nights(arrive, stayto);
 	      ids = [];
 	      for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
 	        ids.push(Data.dayId(Data.advanceDate(arrive, i), roomId));
@@ -32682,15 +32684,6 @@
 	      }
 	    };
 
-	    Res.prototype.allocResv = function(resv) {
-	      if (this.book != null) {
-	        this.book.allocResv(resv);
-	      }
-	      if (this.master != null) {
-	        this.master.allocResv(resv);
-	      }
-	    };
-
 	    Res.prototype.updateResvs = function(newResvs) {
 	      var resId, resv;
 	      for (resId in newResvs) {
@@ -32711,12 +32704,16 @@
 	      return this.resvs;
 	    };
 
+	    Res.prototype.isResvDay = function(day, resv) {
+	      return (day != null) && day.resId === resv.resId;
+	    };
+
 	    Res.prototype.daysFromResv = function(resv) {
 	      var dayId, days, i, j, ref;
 	      days = {};
 	      for (i = j = 0, ref = resv.nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
 	        dayId = Data.dayId(Data.advanceDate(resv.arrive, i), resv.roomId);
-	        days[dayId] = this.setDay({}, resv.status, resv.resId, dayId);
+	        days[dayId] = this.isResvDay(this.days[dayId], resv) ? this.days[dayId] : this.setDay({}, resv.status, resv.resId, dayId);
 	      }
 	      return days;
 	    };
@@ -32729,7 +32726,6 @@
 	        day.status = 'Free';
 	      }
 	      this.allocDays(days);
-	      this.allocResv(resv);
 	      for (dayId in days) {
 	        day = days[dayId];
 	        this.delDay(day);
@@ -32743,10 +32739,11 @@
 	      }
 	      days = this.daysFromResv(resv);
 	      this.allocDays(days);
-	      this.allocResv(resv);
-	      for (dayId in days) {
-	        day = days[dayId];
-	        this.addDay(day);
+	      if (add) {
+	        for (dayId in days) {
+	          day = days[dayId];
+	          this.addDay(day);
+	        }
 	      }
 	    };
 
@@ -32793,7 +32790,7 @@
 	      return tot;
 	    };
 
-	    Res.prototype.createResvSkyline = function(arrive, depart, roomId, last, status, guests, pets, spa, cust, payments) {
+	    Res.prototype.createResvSkyline = function(arrive, stayto, roomId, last, status, guests, pets, spa, cust, payments) {
 	      var booked, nights, price, total;
 	      if (spa == null) {
 	        spa = false;
@@ -32806,19 +32803,19 @@
 	      }
 	      booked = Data.today();
 	      price = this.rooms[roomId][guests] + pets * Data.petPrice;
-	      nights = Data.nights(arrive, depart);
+	      nights = Data.nights(arrive, stayto);
 	      total = price * nights;
-	      return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
+	      return this.createResv(arrive, stayto, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
 	    };
 
-	    Res.prototype.createResvBooking = function(arrive, depart, roomId, last, status, guests, total, booked) {
+	    Res.prototype.createResvBooking = function(arrive, stayto, roomId, last, status, guests, total, booked) {
 	      var pets;
-	      total = total === 0 ? this.rooms[roomId].booking * Data.nights(arrive, depart) : total;
+	      total = total === 0 ? this.rooms[roomId].booking * Data.nights(arrive, stayto) : total;
 	      pets = 0;
-	      return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total);
+	      return this.createResv(arrive, stayto, booked, roomId, last, status, guests, pets, 'Booking', total);
 	    };
 
-	    Res.prototype.createResv = function(arrive, depart, booked, roomId, last, status, guests, pets, source, total, spa, cust, payments) {
+	    Res.prototype.createResv = function(arrive, stayto, booked, roomId, last, status, guests, pets, source, total, spa, cust, payments) {
 	      var resv;
 	      if (spa == null) {
 	        spa = false;
@@ -32830,11 +32827,11 @@
 	        payments = {};
 	      }
 	      resv = {};
-	      resv.nights = Data.nights(arrive, depart);
+	      resv.nights = Data.nights(arrive, stayto);
 	      resv.arrive = arrive;
-	      resv.depart = depart;
+	      resv.stayto = stayto;
+	      resv.depart = Data.advanceDate(stayto, 1);
 	      resv.booked = booked;
-	      resv.stayto = Data.advanceDate(arrive, resv.nights - 1);
 	      resv.roomId = roomId;
 	      resv.last = last;
 	      resv.status = status;
@@ -32853,6 +32850,14 @@
 	      resv.payments = payments;
 	      this.updateDaysFromResv(resv);
 	      return resv;
+	    };
+
+	    Res.prototype.copyResv = function(r) {
+	      var c;
+	      c = Object.assign({}, r);
+	      c.cust = Object.assign({}, r.cust);
+	      c.payments = Object.assign({}, r.payments);
+	      return c;
 	    };
 
 	    Res.prototype.createCust = function(first, last, phone, email, source) {
@@ -32973,25 +32978,26 @@
 
 	    Res.prototype.addResv = function(resv) {
 	      this.resvs[resv.resId] = resv;
+	      this.updateDaysFromResv(resv);
 	      this.store.add('Res', resv.resId, resv);
 	    };
 
 	    Res.prototype.putResv = function(resv) {
-	      if (resv == null) {
-	        Util.error('Res.putResv resv null');
-	      }
 	      this.resvs[resv.resId] = resv;
+	      this.updateDaysFromResv(resv);
 	      this.store.put('Res', resv.resId, resv);
 	    };
 
 	    Res.prototype.delResv = function(resv) {
 	      delete this.resvs[resv.resId];
+	      this.deleteDaysFromResv(resv);
 	      this.store.del('Res', resv.resId);
 	    };
 
 	    Res.prototype.addCan = function(can) {
 	      can['cancel'] = this.today;
 	      this.cans[can.resId] = can;
+	      this.deleteDaysFromResv(can);
 	      this.store.add('Can', can.resId, can);
 	    };
 
@@ -33214,14 +33220,8 @@
 	        mmdd0 = $mmdd.text();
 	        mmdd1 = Data.advanceMMDD(mmdd0, -1);
 	        $mmdd.text(mmdd1);
-	        if (htmlId === 'NRArrive') {
-	          if (onMMDD != null) {
-	            onMMDD(htmlId, mmdd1, 'Mine');
-	          }
-	        } else {
-	          if (onMMDD != null) {
-	            onMMDD(htmlId, mmdd0, 'Free');
-	          }
+	        if (onMMDD != null) {
+	          onMMDD(htmlId, mmdd0, mmdd1);
 	        }
 	      };
 	      incMMDD = function() {
@@ -33230,14 +33230,8 @@
 	        mmdd0 = $mmdd.text();
 	        mmdd1 = Data.advanceMMDD(mmdd0, 1);
 	        $mmdd.text(mmdd1);
-	        if (htmlId === 'NRStayTo') {
-	          if (onMMDD != null) {
-	            onMMDD(htmlId, mmdd1, 'Mine');
-	          }
-	        } else {
-	          if (onMMDD != null) {
-	            onMMDD(htmlId, mmdd0, 'Free');
-	          }
+	        if (onMMDD != null) {
+	          onMMDD(htmlId, mmdd0, mmdd1);
 	        }
 	      };
 	      $('#' + htmlId + 'L').click(decMMDD);
@@ -33429,11 +33423,11 @@
 
 	  Upload = __webpack_require__(359);
 
-	  Query = __webpack_require__(363);
+	  Query = __webpack_require__(362);
 
-	  Input = __webpack_require__(364);
+	  Input = __webpack_require__(363);
 
-	  Season = __webpack_require__(365);
+	  Season = __webpack_require__(364);
 
 	  Master = (function() {
 	    module.exports = Master;
@@ -33470,6 +33464,7 @@
 	      this.dateEnd = this.res.today;
 	      this.dateSel = "End";
 	      this.roomId = null;
+	      this.nextId = null;
 	      this.resMode = 'Table';
 	    }
 
@@ -33484,6 +33479,7 @@
 	      $('#DailysBtn').click(this.onDailysBtn);
 	      $('#DailysPrt').click(this.onDailysPrt);
 	      $('#UploadBtn').click(this.onUploadBtn);
+	      $('#ReadyMBtn').click(this.readyMaster);
 	      this.res.selectAllResvs(this.readyMaster, true);
 	    };
 
@@ -33622,8 +33618,7 @@
 	      this.upload.bindUploadPaste();
 	      $('#UploadRes').click(this.upload.onUploadRes);
 	      $('#UploadCan').click(this.upload.onUploadCan);
-	      $('#CreateRes').click(this.upload.onCreateRes);
-	      $('#CreateDay').click(this.upload.onUpdateDays);
+	      $('#UpdateDay').click(this.upload.onUpdateDay);
 	      $('#CreateCan').click(this.upload.onCreateCan);
 	      $('#CustomFix').click(this.upload.onCustomFix);
 	      $('#Upload').show();
@@ -33661,31 +33656,40 @@
 	          _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Mine', 'Free');
 	          $cell = $(event.target);
 	          $cell = $cell.is('div') ? $cell.parent() : $cell;
-	          date = $cell.attr('data-date');
-	          _this.roomId = $cell.attr('data-roomid');
-	          if ((date == null) || (_this.roomId == null)) {
+	          date = $cell.is('td') ? $cell.attr('data-date') : Data.toDateStr($cell.text());
+	          _this.nextId = $cell.is('td') ? $cell.attr('data-roomid') : 0;
+	          if ((date == null) || (_this.nextId == null)) {
 	            return;
 	          }
-	          ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2];
-	          if (_this.resMode === 'Table') {
+	          ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2], _this.roomId = ref[3];
+	          if (_this.roomId === 0) {
+	            $('#ResAdd').hide();
+	            $('#ResTbl').show();
+	            _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine');
 	            _this.query.updateBody(_this.dateBeg, _this.dateEnd, 'arrive');
-	          } else if (_this.resMode === 'Input') {
+	          } else {
+	            $('#ResTbl').hide();
+	            $('#ResAdd').show();
 	            resv = _this.res.getResv(date, _this.roomId);
 	            if (resv == null) {
 	              _this.input.createResv(_this.dateBeg, _this.dateEnd, _this.roomId);
 	            } else {
-	              _this.input.updateResv(_this.dateBeg, _this.dateEnd, _this.roomId, resv);
+	              _this.input.updateResv(resv);
 	            }
 	          }
 	        };
 	      })(this);
+	      $('thead #Day th').click(doCell);
 	      $('[data-cell="y"]').click(doCell);
 	      $('[data-cell="y"]').contextmenu(doCell);
 	    };
 
 	    Master.prototype.mouseDates = function(date) {
 	      this.res.order = 'Decend';
-	      if (this.dateBeg <= date && date <= this.dateEnd) {
+	      if (this.nextId !== this.roomId) {
+	        this.dateBeg = date;
+	        this.dateEnd = date;
+	      } else if (this.dateBeg <= date && date <= this.dateEnd) {
 	        if (this.dateSel === 'Beg') {
 	          this.dateBeg = date;
 	          this.dateSel = 'End';
@@ -33701,7 +33705,7 @@
 	          this.dateBeg = date;
 	        }
 	      }
-	      return [this.dateBeg, this.dateEnd, this.dateSel];
+	      return [this.dateBeg, this.dateEnd, this.dateSel, this.nextId];
 	    };
 
 	    Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
@@ -33724,7 +33728,11 @@
 	      }
 	      for (i = 0, len = $cells.length; i < len; i++) {
 	        $cell = $cells[i];
-	        this.cellStatus($cell, fill);
+	        if (roomId === 0) {
+	          this.dayStatus($cell, fill);
+	        } else {
+	          this.cellStatus($cell, fill);
+	        }
 	      }
 	      return [beg, end];
 	    };
@@ -33808,12 +33816,18 @@
 	      this.cellStatus(this.$cell('M', date, roomId), klass);
 	    };
 
-	    Master.prototype.fillCell = function(roomId, date, klass) {
+	    Master.prototype.fillCell = function(date, roomId, klass) {
 	      this.cellStatus(this.$cell('M', date, roomId), klass);
 	    };
 
 	    Master.prototype.cellStatus = function($cell, klass) {
 	      $cell.removeClass().addClass("room-" + klass);
+	      $cell.css({
+	        background: Data.toColor(klass)
+	      });
+	    };
+
+	    Master.prototype.dayStatus = function($cell, klass) {
 	      $cell.css({
 	        background: Data.toColor(klass)
 	      });
@@ -33888,9 +33902,10 @@
 	        weekday = Data.weekdays[(weekdayIdx + day - 1) % 7].charAt(0);
 	        htm += "<th>" + weekday + "</th>";
 	      }
-	      htm += "</tr><tr><th></th>";
+	      htm += "</tr><tr id=\"Day\"\"><th></th>";
 	      for (day = j = ref2 = begDay, ref3 = endDay; ref2 <= ref3 ? j <= ref3 : j >= ref3; day = ref2 <= ref3 ? ++j : --j) {
-	        htm += "<th>" + day + "</th>";
+	        date = Data.toDateStr(day, monthIdx);
+	        htm += "<th id=\"" + (this.cellId('M', date, 0)) + "\">" + day + "</th>";
 	      }
 	      htm += "</tr></thead><tbody>";
 	      ref4 = this.rooms;
@@ -33908,13 +33923,6 @@
 	      return htm;
 	    };
 
-	    Master.prototype.allocResv = function(resv) {
-	      var $cell, $div;
-	      $cell = this.$cell('M', resv.arrive, resv.roomId);
-	      $div = $cell.find('div');
-	      $div.text(resv.last);
-	    };
-
 	    Master.prototype.createCell = function(date, roomId) {
 	      var bord, dd, htm, klass, last, mi, ref, resv, yy;
 	      ref = Data.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
@@ -33927,7 +33935,7 @@
 	      return htm;
 	    };
 
-	    Master.prototype.setLast = function(date, roomId, last) {
+	    Master.prototype.addLast = function(date, roomId, last, status) {
 	      var $cell, $div;
 	      $cell = this.$cell('M', date, roomId);
 	      $div = $cell.find('div');
@@ -33936,6 +33944,21 @@
 	      } else {
 	        $cell.append("<div>" + last + "</div>");
 	      }
+	    };
+
+	    Master.prototype.updArrival = function(arrive0, arrive1, roomId, last, status) {
+	      if (arrive1 > arrive0) {
+	        this.fillCell(arrive0, roomId, 'Free');
+	      }
+	      this.delLast(arrive0, roomId);
+	      if (arrive1 < arrive0) {
+	        this.fillCell(arrive1, roomId, status);
+	      }
+	      this.addLast(arrive1, roomId, last, status);
+	    };
+
+	    Master.prototype.delLast = function(date, roomId) {
+	      return this.$cell('M', date, roomId).empty();
 	    };
 
 	    Master.prototype.border = function(date, roomId, resv, klass) {
@@ -34018,8 +34041,7 @@
 	      this.res = res;
 	      this.onCustomFix = bind(this.onCustomFix, this);
 	      this.onCreateCan = bind(this.onCreateCan, this);
-	      this.onUpdateDays = bind(this.onUpdateDays, this);
-	      this.onCreateRes = bind(this.onCreateRes, this);
+	      this.onUpdateDay = bind(this.onUpdateDay, this);
 	      this.onUploadCan = bind(this.onUploadCan, this);
 	      this.onUploadRes = bind(this.onUploadRes, this);
 	      this.uploadedText = "";
@@ -34030,10 +34052,10 @@
 	      var htm;
 	      htm = "";
 	      htm += "<h1  class=\"UploadH1\">Upload Booking.com</h1>";
-	      htm += "<button id=\"UploadRes\" class=\"btn btn-primary\">Upload Res</button>";
-	      htm += "<button id=\"UploadCan\" class=\"btn btn-primary\">Upload Can</button>";
-	      htm += "<button id=\"UpdateDay\" class=\"btn btn-primary\">Update Days</button>";
-	      htm += "<button id=\"CustomFix\" class=\"btn btn-primary\">Custom Fix</button>";
+	      htm += "<button   id=\"UploadRes\"  class=\"btn btn-primary\">Upload Res</button>";
+	      htm += "<button   id=\"UploadCan\"  class=\"btn btn-primary\">Upload Can</button>";
+	      htm += "<button   id=\"UpdateDay\"  class=\"btn btn-primary\">Update Day</button>";
+	      htm += "<button   id=\"CustomFix\"  class=\"btn btn-primary\">Custom Fix</button>";
 	      htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
 	      return htm;
 	    };
@@ -34095,10 +34117,11 @@
 	    };
 
 	    Upload.prototype.resvFromBook = function(book) {
-	      var arrive, booked, depart, guests, last, names, roomId, status, total;
+	      var arrive, booked, depart, guests, last, names, roomId, status, stayto, total;
 	      names = book.names.split(' ');
 	      arrive = this.toResvDate(book.arrive);
 	      depart = this.toResvDate(book.depart);
+	      stayto = Data.advanceDate(depart, -1);
 	      booked = this.toResvDate(book.booked);
 	      roomId = this.toResvRoomId(book.room);
 	      last = names[1];
@@ -34106,7 +34129,7 @@
 	      guests = this.toNumGuests(names);
 	      total = parseFloat(book.total.substr(3));
 	      if (status === 'Booking') {
-	        return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
+	        return this.res.createResvBooking(arrive, stayto, roomId, last, status, guests, total, booked);
 	      } else {
 	        return null;
 	      }
@@ -34146,44 +34169,47 @@
 	      return this.uploadedResvs = {};
 	    };
 
-	    Upload.prototype.onCreateRes = function() {
-	      var ref, resId, resv, resvs;
-	      Util.log('Upload.onCreateRes');
-	      ref = this.res.resvs;
-	      for (resId in ref) {
-	        if (!hasProp.call(ref, resId)) continue;
-	        resv = ref[resId];
-	        this.res.delResv(resv);
-	      }
-	      resvs = __webpack_require__(361);
-	      for (resId in resvs) {
-	        if (!hasProp.call(resvs, resId)) continue;
-	        resv = resvs[resId];
-	        this.res.addResv(resv);
-	      }
-	    };
 
-	    Upload.prototype.onUpdateDays = function() {
-	      var day, dayId, ref, ref1, resId, resv;
-	      Util.log('Upload.onReUpdateDays');
-	      ref = this.res.days;
-	      for (dayId in ref) {
-	        if (!hasProp.call(ref, dayId)) continue;
-	        day = ref[dayId];
-	        this.res.delDay(day);
-	      }
-	      ref1 = this.res.resvs;
-	      for (resId in ref1) {
-	        if (!hasProp.call(ref1, resId)) continue;
-	        resv = ref1[resId];
-	        this.res.updateDaysFromResv(resv);
-	      }
+	    /* For dev only. Repopulates database
+	    onCreateRes:() =>
+	      Util.log( 'Upload.onCreateRes')
+	      for own resId, resv of @res.resvs
+	        @res.delResv( resv )
+	      resvs = require( 'data/res.json' )
+	      for own resId, resv of resvs
+	        @res.addResv( resv )
+	      return
+	     */
+
+	    Upload.prototype.onUpdateDay = function() {
+	      var onComplete;
+	      Util.log('Upload.onUpdateDay');
+	      onComplete = (function(_this) {
+	        return function() {
+	          var day, dayId, ref, ref1, resId, results, resv;
+	          ref = _this.res.days;
+	          for (dayId in ref) {
+	            if (!hasProp.call(ref, dayId)) continue;
+	            day = ref[dayId];
+	            _this.res.delDay(day);
+	          }
+	          ref1 = _this.res.resvs;
+	          results = [];
+	          for (resId in ref1) {
+	            if (!hasProp.call(ref1, resId)) continue;
+	            resv = ref1[resId];
+	            results.push(_this.res.updateDaysFromResv(resv));
+	          }
+	          return results;
+	        };
+	      })(this);
+	      this.res.selectAllDays(onComplete);
 	    };
 
 	    Upload.prototype.onCreateCan = function() {
 	      var can, canId, cans;
 	      Util.log('Upload.onCreateCan');
-	      cans = __webpack_require__(362);
+	      cans = __webpack_require__(361);
 	      for (canId in cans) {
 	        if (!hasProp.call(cans, canId)) continue;
 	        can = cans[canId];
@@ -34229,18 +34255,17 @@
 	    };
 
 	    Upload.prototype.fixResv = function(book) {
-	      var arrive, booked, depart, guests, last, nights, roomId, status, stayto, total;
+	      var arrive, booked, guests, last, nights, roomId, status, stayto, total;
 	      arrive = this.toFixDate(book.arrive);
 	      stayto = this.toFixDate(book.stayto);
-	      depart = Data.advanceDate(stayto, 1);
-	      nights = Data.nights(arrive, depart);
+	      nights = Data.nights(arrive, stayto);
 	      roomId = book.room;
 	      last = book.last;
 	      status = this.toStatusFix(book.status);
 	      guests = book.guests;
 	      booked = this.toFixDate(book.booked);
 	      total = this.res.total(status, nights, roomId, guests);
-	      return this.res.createResv(arrive, depart, booked, roomId, last, status, guests, 0, status, total);
+	      return this.res.createResv(arrive, stayto, booked, roomId, last, status, guests, 0, status, total);
 	    };
 
 	    Upload.prototype.toFixDate = function(mmdd) {
@@ -34391,2975 +34416,6 @@
 
 /***/ },
 /* 361 */
-/***/ function(module, exports) {
-
-	module.exports = {
-		"1706162": {
-			"arrive": "170616",
-			"balance": 0,
-			"booked": "170615",
-			"charge": "409.03",
-			"depart": "170618",
-			"guests": "2",
-			"key": "1706162",
-			"last": "Carpenter",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 185,
-			"resId": "1706162",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170617",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1706168": {
-			"arrive": "170616",
-			"balance": 0,
-			"booked": "170603",
-			"charge": "320.59",
-			"depart": "170618",
-			"guests": "4",
-			"key": "1706168",
-			"last": "Nelsen",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 145,
-			"resId": "1706168",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170617",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1706184": {
-			"arrive": "170618",
-			"balance": 0,
-			"booked": "170610",
-			"charge": "320.59",
-			"depart": "170620",
-			"guests": "4",
-			"key": "1706184",
-			"last": "Ross",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 145,
-			"resId": "1706184",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170619",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1706188": {
-			"arrive": "170618",
-			"balance": 0,
-			"booked": "170608",
-			"charge": "397.98",
-			"depart": "170621",
-			"guests": "4",
-			"key": "1706188",
-			"last": "Schwindt",
-			"nights": 3,
-			"paid": 0,
-			"pets": "?",
-			"price": 120,
-			"resId": "1706188",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170620",
-			"tax": "37.98",
-			"total": 360
-		},
-		"1706204": {
-			"arrive": "170620",
-			"balance": 0,
-			"booked": "170622",
-			"charge": "320.59",
-			"depart": "170622",
-			"guests": "4",
-			"last": "Rutledge",
-			"nights": 2,
-			"paid": 0,
-			"pets": "0",
-			"price": 145,
-			"resId": "1706204",
-			"roomId": "4",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170621",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1706212": {
-			"arrive": "170621",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "409.03",
-			"depart": "170623",
-			"guests": 4,
-			"key": "1706212",
-			"last": "b",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1706212",
-			"roomId": "2",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170622",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1706213": {
-			"arrive": "170621",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "608.02",
-			"depart": "170623",
-			"guests": 4,
-			"key": "1706213",
-			"last": "b",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 275,
-			"resId": "1706213",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170622",
-			"tax": "58.02",
-			"total": 550
-		},
-		"1706215": {
-			"arrive": "170621",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "431.14",
-			"depart": "170623",
-			"guests": 4,
-			"key": "1706215",
-			"last": "b",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1706215",
-			"roomId": "5",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170622",
-			"tax": "41.14",
-			"total": 390
-		},
-		"1706216": {
-			"arrive": "170621",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "3316.50",
-			"depart": "170701",
-			"guests": 4,
-			"key": "1706216",
-			"last": "b",
-			"nights": 10,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1706216",
-			"roomId": "6",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170630",
-			"tax": "316.50",
-			"total": 3000
-		},
-		"1706228": {
-			"arrive": "170622",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "132.66",
-			"depart": "170623",
-			"guests": 4,
-			"key": "1706228",
-			"last": "b",
-			"nights": 1,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1706228",
-			"roomId": "8",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170622",
-			"tax": "12.66",
-			"total": 120
-		},
-		"1706231": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170601",
-			"charge": "320.59",
-			"depart": "170625",
-			"guests": "1",
-			"key": "1706231",
-			"last": "Lofstrom",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 145,
-			"resId": "1706231",
-			"roomId": "1",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170624",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1706232": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170613",
-			"charge": "409.03",
-			"depart": "170625",
-			"guests": "2",
-			"key": "1706232",
-			"last": "CUI",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 185,
-			"resId": "1706232",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170624",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1706233": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170604",
-			"charge": "696.47",
-			"depart": "170625",
-			"guests": "8",
-			"key": "1706233",
-			"last": "Chan;Che",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 315,
-			"resId": "1706233",
-			"roomId": "3",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170624",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1706234": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170531",
-			"charge": "480.89",
-			"depart": "170626",
-			"guests": "4",
-			"key": "1706234",
-			"last": "Roper",
-			"nights": 3,
-			"paid": 0,
-			"pets": "?",
-			"price": 145,
-			"resId": "1706234",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170625",
-			"tax": "45.89",
-			"total": 435
-		},
-		"1706235": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170611",
-			"charge": "431.14",
-			"depart": "170625",
-			"guests": "4",
-			"key": "1706235",
-			"last": "Segura",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 195,
-			"resId": "1706235",
-			"roomId": "5",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170624",
-			"tax": "41.14",
-			"total": 390
-		},
-		"1706237": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "386.92",
-			"depart": "170625",
-			"guests": 4,
-			"key": "1706237",
-			"last": "b",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 175,
-			"resId": "1706237",
-			"roomId": "7",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170624",
-			"tax": "36.92",
-			"total": 350
-		},
-		"1706252": {
-			"arrive": "170625",
-			"balance": 0,
-			"booked": "170601",
-			"charge": "409.03",
-			"depart": "170627",
-			"guests": "4",
-			"key": "1706252",
-			"last": "Green",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 185,
-			"resId": "1706252",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170626",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1706253": {
-			"arrive": "170625",
-			"balance": 0,
-			"booked": "170628",
-			"charge": "1520.06",
-			"depart": "170630",
-			"guests": 4,
-			"last": "Contractors",
-			"nights": 5,
-			"paid": 0,
-			"pets": 0,
-			"price": 275,
-			"resId": "1706253",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170629",
-			"tax": "145.06",
-			"total": 1375
-		},
-		"1706264": {
-			"arrive": "170626",
-			"balance": 0,
-			"booked": "170606",
-			"charge": "641.19",
-			"depart": "170630",
-			"guests": "4",
-			"key": "1706264",
-			"last": "FREEMAN",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1706264",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170629",
-			"tax": "61.19",
-			"total": 580
-		},
-		"1706278": {
-			"arrive": "170627",
-			"balance": 0,
-			"booked": "170606",
-			"charge": "287.43",
-			"depart": "170629",
-			"guests": "4",
-			"key": "1706278",
-			"last": "Nepal",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 130,
-			"resId": "1706278",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170628",
-			"tax": "27.43",
-			"total": 260
-		},
-		"1706285": {
-			"arrive": "170628",
-			"balance": 0,
-			"booked": "170612",
-			"charge": "646.72",
-			"depart": "170701",
-			"guests": "3",
-			"key": "1706285",
-			"last": "Haynes",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1706285",
-			"roomId": "5",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170630",
-			"tax": "61.72",
-			"total": 585
-		},
-		"1706292": {
-			"arrive": "170629",
-			"balance": 0,
-			"booked": "170605",
-			"charge": "1636.14",
-			"depart": "170707",
-			"guests": "4",
-			"key": "1706292",
-			"last": "Pachner",
-			"nights": 8,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1706292",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170706",
-			"tax": "156.14",
-			"total": 1480
-		},
-		"1706307": {
-			"arrive": "170630",
-			"balance": 0,
-			"booked": "170616",
-			"charge": "580.39",
-			"depart": "170703",
-			"guests": "1",
-			"key": "1706307",
-			"last": "Woods",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 175,
-			"resId": "1706307",
-			"roomId": "7",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170702",
-			"tax": "55.39",
-			"total": 525
-		},
-		"1706308": {
-			"arrive": "170630",
-			"balance": 0,
-			"booked": "170628",
-			"charge": "397.98",
-			"depart": "170703",
-			"guests": "3",
-			"key": "1706308",
-			"last": "Rana",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1706308",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170702",
-			"tax": "37.98",
-			"total": 360
-		},
-		"1707013": {
-			"arrive": "170701",
-			"balance": 0,
-			"booked": "170628",
-			"charge": "304.01",
-			"depart": "170702",
-			"guests": 4,
-			"key": "1707013",
-			"last": "Contractor",
-			"nights": 1,
-			"paid": 0,
-			"pets": 0,
-			"price": 275,
-			"resId": "1707013",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170701",
-			"tax": "29.01",
-			"total": 275
-		},
-		"1707014": {
-			"arrive": "170701",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "641.19",
-			"depart": "170705",
-			"guests": 4,
-			"key": "1707014",
-			"last": "x",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707014",
-			"roomId": "4",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170704",
-			"tax": "61.19",
-			"total": 580
-		},
-		"1707015": {
-			"arrive": "170701",
-			"balance": 0,
-			"booked": "170628",
-			"charge": "646.72",
-			"depart": "170704",
-			"guests": 4,
-			"key": "1707015",
-			"last": "Name?",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707015",
-			"roomId": "5",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170703",
-			"tax": "61.72",
-			"total": 585
-		},
-		"1707017": {
-			"arrive": "170701",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "386.92",
-			"depart": "170703",
-			"guests": 4,
-			"key": "1707017",
-			"last": "Woods",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 175,
-			"resId": "1707017",
-			"roomId": "7",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170702",
-			"tax": "36.92",
-			"total": 350
-		},
-		"1707018": {
-			"arrive": "170701",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "265.32",
-			"depart": "170703",
-			"guests": 4,
-			"key": "1707018",
-			"last": "Rana",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707018",
-			"roomId": "8",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170702",
-			"tax": "25.32",
-			"total": 240
-		},
-		"1707023": {
-			"arrive": "170702",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "1044.70",
-			"depart": "170705",
-			"guests": "8",
-			"last": "Markotter",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707023",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170704",
-			"tax": "99.70",
-			"total": 945
-		},
-		"1707026": {
-			"arrive": "170702",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "994.95",
-			"depart": "170705",
-			"guests": 4,
-			"key": "1707026",
-			"last": "Fiffen",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1707026",
-			"roomId": "6",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170704",
-			"tax": "94.95",
-			"total": 900
-		},
-		"1707031": {
-			"arrive": "170703",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "641.19",
-			"depart": "170707",
-			"guests": 4,
-			"key": "1707031",
-			"last": "x",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707031",
-			"roomId": "1",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170706",
-			"tax": "61.19",
-			"total": 580
-		},
-		"1707037": {
-			"arrive": "170703",
-			"balance": 0,
-			"booked": "170609",
-			"charge": "967.31",
-			"depart": "170708",
-			"guests": "1",
-			"key": "1707037",
-			"last": "Bonnel",
-			"nights": 5,
-			"paid": 0,
-			"pets": 0,
-			"price": 175,
-			"resId": "1707037",
-			"roomId": "7",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170707",
-			"tax": "92.31",
-			"total": 875
-		},
-		"1707038": {
-			"arrive": "170703",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "397.98",
-			"depart": "170706",
-			"guests": 4,
-			"key": "1707038",
-			"last": "Block",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707038",
-			"roomId": "8",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170705",
-			"tax": "37.98",
-			"total": 360
-		},
-		"1707045": {
-			"arrive": "170704",
-			"balance": 0,
-			"booked": "170628",
-			"charge": "431.14",
-			"depart": "170706",
-			"guests": 4,
-			"key": "1707045",
-			"last": "Carrera",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707045",
-			"roomId": "5",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170705",
-			"tax": "41.14",
-			"total": 390
-		},
-		"1707054": {
-			"arrive": "170705",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "480.89",
-			"depart": "170708",
-			"guests": 4,
-			"key": "1707054",
-			"last": "Costillo",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707054",
-			"roomId": "4",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170707",
-			"tax": "45.89",
-			"total": 435
-		},
-		"1707056": {
-			"arrive": "170705",
-			"balance": 0,
-			"booked": "170602",
-			"charge": "1392.93",
-			"depart": "170709",
-			"guests": "12",
-			"key": "1707056",
-			"last": "Kroeger",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707056",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170708",
-			"tax": "132.93",
-			"total": 1260
-		},
-		"1707072": {
-			"arrive": "170707",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "1022.59",
-			"depart": "170712",
-			"guests": "3",
-			"key": "1707072",
-			"last": "Shinn",
-			"nights": 5,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1707072",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170711",
-			"tax": "97.59",
-			"total": 925
-		},
-		"1707078": {
-			"arrive": "170707",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "265.32",
-			"depart": "170709",
-			"guests": "2",
-			"key": "1707078",
-			"last": "Preiss",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707078",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170708",
-			"tax": "25.32",
-			"total": 240
-		},
-		"1707083": {
-			"arrive": "170708",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "608.02",
-			"depart": "170710",
-			"guests": 4,
-			"key": "1707083",
-			"last": "x",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 275,
-			"resId": "1707083",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170709",
-			"tax": "58.02",
-			"total": 550
-		},
-		"1707084": {
-			"arrive": "170708",
-			"balance": 0,
-			"booked": "170607",
-			"charge": "480.89",
-			"depart": "170711",
-			"guests": "4",
-			"key": "1707084",
-			"last": "Curtis",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707084",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170710",
-			"tax": "45.89",
-			"total": 435
-		},
-		"1707097": {
-			"arrive": "170709",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "967.31",
-			"depart": "170714",
-			"guests": 4,
-			"key": "1707097",
-			"last": "Dougherty",
-			"nights": 5,
-			"paid": 0,
-			"pets": 0,
-			"price": 175,
-			"resId": "1707097",
-			"roomId": "7",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170713",
-			"tax": "92.31",
-			"total": 875
-		},
-		"1707098": {
-			"arrive": "170709",
-			"balance": 0,
-			"booked": "170605",
-			"charge": "287.43",
-			"depart": "170711",
-			"guests": "2",
-			"key": "1707098",
-			"last": "Hakar",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 130,
-			"resId": "1707098",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170710",
-			"tax": "27.43",
-			"total": 260
-		},
-		"1707103": {
-			"arrive": "170710",
-			"balance": 0,
-			"booked": "170704",
-			"charge": "696.47",
-			"depart": "170712",
-			"guests": "8",
-			"key": "1707103",
-			"last": "pablo",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707103",
-			"roomId": "3",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170711",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1707105": {
-			"arrive": "170710",
-			"balance": 0,
-			"booked": "170701",
-			"charge": "431.14",
-			"depart": "170712",
-			"guests": "4",
-			"key": "1707105",
-			"last": "Murphy",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707105",
-			"roomId": "5",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170711",
-			"tax": "41.14",
-			"total": 390
-		},
-		"1707106": {
-			"arrive": "170710",
-			"balance": 0,
-			"booked": "170613",
-			"charge": "1044.70",
-			"depart": "170713",
-			"guests": "5",
-			"key": "1707106",
-			"last": "Calvin",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707106",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170712",
-			"tax": "99.70",
-			"total": 945
-		},
-		"1707118": {
-			"arrive": "170711",
-			"balance": 0,
-			"booked": "170703",
-			"charge": "265.32",
-			"depart": "170713",
-			"guests": "2",
-			"key": "1707118",
-			"last": "Russo",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707118",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170712",
-			"tax": "25.32",
-			"total": 240
-		},
-		"1707124": {
-			"arrive": "170712",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "320.59",
-			"depart": "170714",
-			"guests": "4",
-			"key": "1707124",
-			"last": "Qiu",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707124",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170713",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1707125": {
-			"arrive": "170712",
-			"balance": 0,
-			"booked": "170703",
-			"charge": "215.57",
-			"depart": "170713",
-			"guests": 4,
-			"key": "1707125",
-			"last": "Block",
-			"nights": 1,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707125",
-			"roomId": "5",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170712",
-			"tax": "20.57",
-			"total": 195
-		},
-		"1707135": {
-			"arrive": "170713",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "646.72",
-			"depart": "170716",
-			"guests": 4,
-			"key": "1707135",
-			"last": "Block",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707135",
-			"roomId": "5",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170715",
-			"tax": "61.72",
-			"total": 585
-		},
-		"1707138": {
-			"arrive": "170713",
-			"balance": 0,
-			"booked": "170703",
-			"charge": "265.32",
-			"depart": "170715",
-			"guests": "4",
-			"key": "1707138",
-			"last": "maufrais",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707138",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170714",
-			"tax": "25.32",
-			"total": 240
-		},
-		"1707141": {
-			"arrive": "170714",
-			"balance": 0,
-			"booked": "170704",
-			"charge": "320.59",
-			"depart": "170716",
-			"guests": "1",
-			"key": "1707141",
-			"last": "Baca",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707141",
-			"roomId": "1",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170715",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1707143": {
-			"arrive": "170714",
-			"balance": 0,
-			"booked": "170702",
-			"charge": "696.47",
-			"depart": "170716",
-			"guests": "8",
-			"key": "1707143",
-			"last": "Romero",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707143",
-			"roomId": "3",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170715",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1707144": {
-			"arrive": "170714",
-			"balance": 0,
-			"booked": "170604",
-			"charge": "320.59",
-			"depart": "170716",
-			"guests": "3",
-			"key": "1707144",
-			"last": "Robertson",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707144",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170715",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1707146": {
-			"arrive": "170714",
-			"balance": 0,
-			"booked": "170608",
-			"charge": "696.47",
-			"depart": "170716",
-			"guests": "12",
-			"key": "1707146",
-			"last": "Sturrock",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707146",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170715",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1707152": {
-			"arrive": "170715",
-			"balance": 0,
-			"booked": "170620",
-			"charge": "409.03",
-			"depart": "170717",
-			"guests": "3",
-			"key": "1707152",
-			"last": "larson",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1707152",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170716",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1707158": {
-			"arrive": "170715",
-			"balance": 0,
-			"booked": "170609",
-			"charge": "397.98",
-			"depart": "170718",
-			"guests": "2",
-			"key": "1707158",
-			"last": "Hall",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707158",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170717",
-			"tax": "37.98",
-			"total": 360
-		},
-		"1707164": {
-			"arrive": "170716",
-			"balance": 0,
-			"booked": "170602",
-			"charge": "480.89",
-			"depart": "170719",
-			"guests": "4",
-			"key": "1707164",
-			"last": "Garcia",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707164",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170718",
-			"tax": "45.89",
-			"total": 435
-		},
-		"1707166": {
-			"arrive": "170716",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "663.30",
-			"depart": "170718",
-			"guests": 4,
-			"key": "1707166",
-			"last": "b",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1707166",
-			"roomId": "6",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170717",
-			"tax": "63.30",
-			"total": 600
-		},
-		"1707177": {
-			"arrive": "170717",
-			"balance": 0,
-			"booked": "170614",
-			"charge": "386.92",
-			"depart": "170719",
-			"guests": "1",
-			"key": "1707177",
-			"last": "wolery",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 175,
-			"resId": "1707177",
-			"roomId": "7",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170718",
-			"tax": "36.92",
-			"total": 350
-		},
-		"1707205": {
-			"arrive": "170720",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "431.14",
-			"depart": "170722",
-			"guests": 4,
-			"key": "1707205",
-			"last": "Geiker",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707205",
-			"roomId": "5",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170721",
-			"tax": "41.14",
-			"total": 390
-		},
-		"1707206": {
-			"arrive": "170720",
-			"balance": 0,
-			"booked": "170603",
-			"charge": "696.47",
-			"depart": "170722",
-			"guests": "12",
-			"key": "1707206",
-			"last": "Villanueva",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707206",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170721",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1707212": {
-			"arrive": "170721",
-			"balance": 0,
-			"booked": "170701",
-			"charge": "409.03",
-			"depart": "170723",
-			"guests": "4",
-			"key": "1707212",
-			"last": "wills",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1707212",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170722",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1707213": {
-			"arrive": "170721",
-			"balance": 0,
-			"booked": "170607",
-			"charge": "696.47",
-			"depart": "170723",
-			"guests": "8",
-			"key": "1707213",
-			"last": "Keleher",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707213",
-			"roomId": "3",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170722",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1707214": {
-			"arrive": "170721",
-			"balance": 0,
-			"booked": "170601",
-			"charge": "320.59",
-			"depart": "170723",
-			"guests": "2",
-			"key": "1707214",
-			"last": "Sterup",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707214",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170722",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1707218": {
-			"arrive": "170721",
-			"balance": 0,
-			"booked": "170617",
-			"charge": "265.32",
-			"depart": "170723",
-			"guests": "2",
-			"key": "1707218",
-			"last": "Micheal",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707218",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170722",
-			"tax": "25.32",
-			"total": 240
-		},
-		"1707225": {
-			"arrive": "170722",
-			"balance": 0,
-			"booked": "170703",
-			"charge": "431.14",
-			"depart": "170724",
-			"guests": "2",
-			"key": "1707225",
-			"last": "stone",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707225",
-			"roomId": "5",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170723",
-			"tax": "41.14",
-			"total": 390
-		},
-		"1707236": {
-			"arrive": "170723",
-			"balance": 0,
-			"booked": "170605",
-			"charge": "1044.70",
-			"depart": "170726",
-			"guests": "10",
-			"key": "1707236",
-			"last": "Narasimhan",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1707236",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170725",
-			"tax": "99.70",
-			"total": 945
-		},
-		"1707238": {
-			"arrive": "170723",
-			"balance": 0,
-			"booked": "170608",
-			"charge": "530.64",
-			"depart": "170727",
-			"guests": "4",
-			"key": "1707238",
-			"last": "Mann",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707238",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170726",
-			"tax": "50.64",
-			"total": 480
-		},
-		"1707242": {
-			"arrive": "170724",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "613.55",
-			"depart": "170727",
-			"guests": "3",
-			"key": "1707242",
-			"last": "Constantine",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1707242",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170726",
-			"tax": "58.55",
-			"total": 555
-		},
-		"1707254": {
-			"arrive": "170725",
-			"balance": 0,
-			"booked": "170620",
-			"charge": "320.59",
-			"depart": "170727",
-			"guests": "3",
-			"key": "1707254",
-			"last": "Steiner",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707254",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170726",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1707263": {
-			"arrive": "170726",
-			"balance": 0,
-			"booked": "170701",
-			"charge": "1216.05",
-			"depart": "170730",
-			"guests": 4,
-			"last": "Miller",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 275,
-			"resId": "1707263",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170729",
-			"tax": "116.05",
-			"total": 1100
-		},
-		"1707265": {
-			"arrive": "170726",
-			"balance": 0,
-			"booked": "170701",
-			"charge": "862.29",
-			"depart": "170730",
-			"guests": 4,
-			"last": "Miller",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1707265",
-			"roomId": "5",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170729",
-			"tax": "82.29",
-			"total": 780
-		},
-		"1707266": {
-			"arrive": "170726",
-			"balance": 0,
-			"booked": "170701",
-			"charge": "1326.60",
-			"depart": "170730",
-			"guests": 4,
-			"last": "Miller",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1707266",
-			"roomId": "6",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170729",
-			"tax": "126.60",
-			"total": 1200
-		},
-		"1707282": {
-			"arrive": "170728",
-			"balance": 0,
-			"booked": "170630",
-			"charge": "409.03",
-			"depart": "170730",
-			"guests": "2",
-			"key": "1707282",
-			"last": "Ramos",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1707282",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170729",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1707288": {
-			"arrive": "170728",
-			"balance": 0,
-			"booked": "170626",
-			"charge": "265.32",
-			"depart": "170730",
-			"guests": "3",
-			"key": "1707288",
-			"last": "Bardallis",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707288",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170729",
-			"tax": "25.32",
-			"total": 240
-		},
-		"1707294": {
-			"arrive": "170729",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "320.59",
-			"depart": "170731",
-			"guests": 4,
-			"key": "1707294",
-			"last": "Halls",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1707294",
-			"roomId": "4",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170730",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1707308": {
-			"arrive": "170730",
-			"balance": 0,
-			"booked": "170608",
-			"charge": "795.96",
-			"depart": "170805",
-			"guests": "4",
-			"key": "1707308",
-			"last": "Young",
-			"nights": 6,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1707308",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170804",
-			"tax": "75.96",
-			"total": 720
-		},
-		"1708015": {
-			"arrive": "170801",
-			"balance": 0,
-			"booked": "170608",
-			"charge": "862.29",
-			"depart": "170805",
-			"guests": "4",
-			"key": "1708015",
-			"last": "VINKEVICIUS",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 195,
-			"resId": "1708015",
-			"roomId": "5",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170804",
-			"tax": "82.29",
-			"total": 780
-		},
-		"1708016": {
-			"arrive": "170801",
-			"balance": 0,
-			"booked": "170622",
-			"charge": "696.47",
-			"depart": "170803",
-			"guests": "12",
-			"key": "1708016",
-			"last": "YEAGER",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1708016",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170802",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1708036": {
-			"arrive": "170803",
-			"balance": 0,
-			"booked": "170705",
-			"charge": "663.30",
-			"depart": "170805",
-			"guests": "12",
-			"key": "1708036",
-			"last": "bieber",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1708036",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170804",
-			"tax": "63.30",
-			"total": 600
-		},
-		"1708043": {
-			"arrive": "170804",
-			"balance": 0,
-			"booked": "170624",
-			"charge": "696.47",
-			"depart": "170806",
-			"guests": "8",
-			"key": "1708043",
-			"last": "Hedgecock",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1708043",
-			"roomId": "3",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170805",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1708044": {
-			"arrive": "170804",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "320.59",
-			"depart": "170806",
-			"guests": "2",
-			"key": "1708044",
-			"last": "Hagen",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1708044",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170805",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1708046": {
-			"arrive": "170804",
-			"balance": 0,
-			"booked": "170614",
-			"charge": "696.47",
-			"depart": "170806",
-			"guests": "12",
-			"key": "1708046",
-			"last": "Troia",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 315,
-			"resId": "1708046",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170805",
-			"tax": "66.47",
-			"total": 630
-		},
-		"1708058": {
-			"arrive": "170805",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "265.32",
-			"depart": "170807",
-			"guests": 4,
-			"last": "Jenkine",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1708058",
-			"roomId": "8",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170806",
-			"tax": "25.32",
-			"total": 240
-		},
-		"1708096": {
-			"arrive": "170809",
-			"balance": 0,
-			"booked": "170630",
-			"charge": "983.89",
-			"depart": "170811",
-			"guests": "16",
-			"key": "1708096",
-			"last": "Casali",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 445,
-			"resId": "1708096",
-			"roomId": "6",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170810",
-			"tax": "93.89",
-			"total": 890,
-			"v": 0
-		},
-		"1708108": {
-			"arrive": "170810",
-			"balance": 0,
-			"booked": "170606",
-			"charge": "431.14",
-			"depart": "170813",
-			"guests": "4",
-			"key": "1708108",
-			"last": "Clark",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 130,
-			"resId": "1708108",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170812",
-			"tax": "41.14",
-			"total": 390
-		},
-		"1708113": {
-			"arrive": "170811",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "1216.05",
-			"depart": "170815",
-			"guests": 4,
-			"last": "Yeaman",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 275,
-			"resId": "1708113",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170814",
-			"tax": "116.05",
-			"total": 1100
-		},
-		"1708124": {
-			"arrive": "170812",
-			"balance": 0,
-			"booked": "170703",
-			"charge": "641.19",
-			"depart": "170816",
-			"guests": "2",
-			"key": "1708124",
-			"last": "settle",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1708124",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170815",
-			"tax": "61.19",
-			"total": 580
-		},
-		"1708137": {
-			"arrive": "170813",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "1354.24",
-			"depart": "170820",
-			"guests": 4,
-			"key": "1708137",
-			"last": "Maris",
-			"nights": 7,
-			"paid": 0,
-			"pets": 0,
-			"price": 175,
-			"resId": "1708137",
-			"roomId": "7",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170819",
-			"tax": "129.24",
-			"total": 1225
-		},
-		"1708148": {
-			"arrive": "170814",
-			"balance": 0,
-			"booked": "170607",
-			"charge": "287.43",
-			"depart": "170816",
-			"guests": "4",
-			"key": "1708148",
-			"last": "Leech",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 130,
-			"resId": "1708148",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170815",
-			"tax": "27.43",
-			"total": 260
-		},
-		"1708182": {
-			"arrive": "170818",
-			"balance": 0,
-			"booked": "170630",
-			"charge": "409.03",
-			"depart": "170820",
-			"guests": "4",
-			"key": "1708182",
-			"last": "Mitchell",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 185,
-			"resId": "1708182",
-			"roomId": "2",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170819",
-			"tax": "39.03",
-			"total": 370
-		},
-		"1708188": {
-			"arrive": "170818",
-			"balance": 0,
-			"booked": "170616",
-			"charge": "397.98",
-			"depart": "170821",
-			"guests": "4",
-			"key": "1708188",
-			"last": "Palmer",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1708188",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170820",
-			"tax": "37.98",
-			"total": 360
-		},
-		"1708206": {
-			"arrive": "170820",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "331.65",
-			"depart": "170821",
-			"guests": 4,
-			"last": "Brenner",
-			"nights": 1,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1708206",
-			"roomId": "6",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170820",
-			"tax": "31.65",
-			"total": 300
-		},
-		"1708228": {
-			"arrive": "170822",
-			"balance": 0,
-			"booked": "170702",
-			"charge": "663.30",
-			"depart": "170827",
-			"guests": "2",
-			"key": "1708228",
-			"last": "NICHOLS",
-			"nights": 5,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1708228",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170826",
-			"tax": "63.30",
-			"total": 600
-		},
-		"1708313": {
-			"arrive": "170831",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "304.01",
-			"depart": "170901",
-			"guests": 4,
-			"key": "1708313",
-			"last": "Jenkine",
-			"nights": 1,
-			"paid": 0,
-			"pets": 0,
-			"price": 275,
-			"resId": "1708313",
-			"roomId": "3",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170831",
-			"tax": "29.01",
-			"total": 275
-		},
-		"1709011": {
-			"arrive": "170901",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "480.89",
-			"depart": "170904",
-			"guests": 4,
-			"key": "1709011",
-			"last": "b",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1709011",
-			"roomId": "1",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170903",
-			"tax": "45.89",
-			"total": 435
-		},
-		"1709014": {
-			"arrive": "170901",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "480.89",
-			"depart": "170904",
-			"guests": 4,
-			"key": "1709014",
-			"last": "b",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1709014",
-			"roomId": "4",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170903",
-			"tax": "45.89",
-			"total": 435
-		},
-		"1709016": {
-			"arrive": "170901",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "994.95",
-			"depart": "170904",
-			"guests": 4,
-			"key": "1709016",
-			"last": "b",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1709016",
-			"roomId": "6",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170903",
-			"tax": "94.95",
-			"total": 900
-		},
-		"1709018": {
-			"arrive": "170901",
-			"balance": 0,
-			"booked": "170703",
-			"charge": "397.98",
-			"depart": "170904",
-			"guests": "4",
-			"key": "1709018",
-			"last": "Seacreas",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1709018",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170903",
-			"tax": "37.98",
-			"total": 360
-		},
-		"1709073": {
-			"arrive": "170907",
-			"balance": 0,
-			"booked": "170613",
-			"charge": "1.11",
-			"depart": "170913",
-			"guests": "3",
-			"key": "1709073",
-			"last": "Cunningham",
-			"nights": 6,
-			"paid": 0,
-			"pets": 0,
-			"price": 0.16666666666666666,
-			"resId": "1709073",
-			"roomId": "3",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170912",
-			"tax": "0.11",
-			"total": 1,
-			"v": 0
-		},
-		"1709074": {
-			"arrive": "170907",
-			"balance": 0,
-			"booked": "170613",
-			"charge": "320.59",
-			"depart": "170909",
-			"guests": "4",
-			"key": "1709074",
-			"last": "Wight",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1709074",
-			"roomId": "4",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170908",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1709076": {
-			"arrive": "170907",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "994.95",
-			"depart": "170910",
-			"guests": 4,
-			"key": "1709076",
-			"last": "b",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 300,
-			"resId": "1709076",
-			"roomId": "6",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170909",
-			"tax": "94.95",
-			"total": 900
-		},
-		"1709081": {
-			"arrive": "170908",
-			"balance": 0,
-			"booked": "170602",
-			"charge": "320.59",
-			"depart": "170910",
-			"guests": "1",
-			"key": "1709081",
-			"last": "Featherstun",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 145,
-			"resId": "1709081",
-			"roomId": "1",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170909",
-			"tax": "30.59",
-			"total": 290
-		},
-		"1709088": {
-			"arrive": "170908",
-			"balance": 0,
-			"booked": "170612",
-			"charge": "265.32",
-			"depart": "170910",
-			"guests": "2",
-			"key": "1709088",
-			"last": "Hajek",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 120,
-			"resId": "1709088",
-			"roomId": "8",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170909",
-			"tax": "25.32",
-			"total": 240
-		},
-		"170616N": {
-			"arrive": "170616",
-			"balance": 0,
-			"booked": "170608",
-			"charge": "364.81",
-			"depart": "170618",
-			"guests": "3",
-			"key": "170616N",
-			"last": "Price",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 165,
-			"resId": "170616N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170617",
-			"tax": "34.81",
-			"total": 330
-		},
-		"170616S": {
-			"arrive": "170616",
-			"balance": 0,
-			"booked": "170606",
-			"charge": "342.70",
-			"depart": "170618",
-			"guests": "4",
-			"key": "170616S",
-			"last": "peterson",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 155,
-			"resId": "170616S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170617",
-			"tax": "32.70",
-			"total": 310
-		},
-		"170623N": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170603",
-			"charge": "364.81",
-			"depart": "170625",
-			"guests": "2",
-			"key": "170623N",
-			"last": "Thomas",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 165,
-			"resId": "170623N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170624",
-			"tax": "34.81",
-			"total": 330
-		},
-		"170623S": {
-			"arrive": "170623",
-			"balance": 0,
-			"booked": "170601",
-			"charge": "342.70",
-			"depart": "170625",
-			"guests": "4",
-			"key": "170623S",
-			"last": "Shuck",
-			"nights": 2,
-			"paid": 0,
-			"pets": "?",
-			"price": 155,
-			"resId": "170623S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170624",
-			"tax": "32.70",
-			"total": 310
-		},
-		"170625N": {
-			"arrive": "170625",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "547.22",
-			"depart": "170628",
-			"guests": 4,
-			"key": "170625N",
-			"last": "b",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170625N",
-			"roomId": "N",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170627",
-			"tax": "52.22",
-			"total": 495
-		},
-		"170629N": {
-			"arrive": "170629",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "364.81",
-			"depart": "170701",
-			"guests": 4,
-			"last": "Han",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170629N",
-			"roomId": "N",
-			"source": "Skyline",
-			"spaOptOut": 0,
-			"status": "Skyline",
-			"stayto": "170630",
-			"tax": "34.81",
-			"total": 330
-		},
-		"170630S": {
-			"arrive": "170630",
-			"balance": 0,
-			"booked": "170601",
-			"charge": "514.06",
-			"depart": "170703",
-			"guests": "4",
-			"key": "170630S",
-			"last": "Hota",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170630S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170702",
-			"tax": "49.06",
-			"total": 465
-		},
-		"170701N": {
-			"arrive": "170701",
-			"balance": 0,
-			"booked": "170603",
-			"charge": "547.22",
-			"depart": "170704",
-			"guests": "2",
-			"key": "170701N",
-			"last": "Diachuk",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170701N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170703",
-			"tax": "52.22",
-			"total": 495
-		},
-		"170703S": {
-			"arrive": "170703",
-			"balance": 0,
-			"booked": "170606",
-			"charge": "685.41",
-			"depart": "170707",
-			"guests": "4",
-			"key": "170703S",
-			"last": "Kile",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170703S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170706",
-			"tax": "65.41",
-			"total": 620
-		},
-		"170704N": {
-			"arrive": "170704",
-			"balance": 0,
-			"booked": "170622",
-			"charge": "547.22",
-			"depart": "170707",
-			"guests": "2",
-			"key": "170704N",
-			"last": "Feldewert",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170704N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170706",
-			"tax": "52.22",
-			"total": 495
-		},
-		"170707N": {
-			"arrive": "170707",
-			"balance": 0,
-			"booked": "170621",
-			"charge": "547.22",
-			"depart": "170710",
-			"guests": "2",
-			"key": "170707N",
-			"last": "Chitty",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170707N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170709",
-			"tax": "52.22",
-			"total": 495
-		},
-		"170707S": {
-			"arrive": "170707",
-			"balance": 0,
-			"booked": "170620",
-			"charge": "342.70",
-			"depart": "170709",
-			"guests": "2",
-			"key": "170707S",
-			"last": "south",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170707S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170708",
-			"tax": "32.70",
-			"total": 310
-		},
-		"170709S": {
-			"arrive": "170709",
-			"balance": 0,
-			"booked": "170609",
-			"charge": "1199.47",
-			"depart": "170716",
-			"guests": "1",
-			"key": "170709S",
-			"last": "1",
-			"nights": 7,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170709S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170715",
-			"tax": "114.47",
-			"total": 1085
-		},
-		"170710N": {
-			"arrive": "170710",
-			"balance": 0,
-			"booked": "170602",
-			"charge": "729.63",
-			"depart": "170714",
-			"guests": "2",
-			"key": "170710N",
-			"last": "Johnson",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170710N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170713",
-			"tax": "69.63",
-			"total": 660
-		},
-		"170714N": {
-			"arrive": "170714",
-			"balance": 0,
-			"booked": "170612",
-			"charge": "364.81",
-			"depart": "170716",
-			"guests": "4",
-			"key": "170714N",
-			"last": "Contreras",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170714N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170715",
-			"tax": "34.81",
-			"total": 330
-		},
-		"170716N": {
-			"arrive": "170716",
-			"balance": 0,
-			"booked": "170703",
-			"charge": "729.63",
-			"depart": "170720",
-			"guests": "4",
-			"key": "170716N",
-			"last": "Becker",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170716N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170719",
-			"tax": "69.63",
-			"total": 660
-		},
-		"170721N": {
-			"arrive": "170721",
-			"balance": 0,
-			"booked": "170627",
-			"charge": "547.22",
-			"depart": "170724",
-			"guests": "4",
-			"key": "170721N",
-			"last": "Henderson",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170721N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170723",
-			"tax": "52.22",
-			"total": 495
-		},
-		"170721S": {
-			"arrive": "170721",
-			"balance": 0,
-			"booked": "170625",
-			"charge": "685.41",
-			"depart": "170725",
-			"guests": "4",
-			"key": "170721S",
-			"last": "Broten",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170721S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170724",
-			"tax": "65.41",
-			"total": 620
-		},
-		"170724N": {
-			"arrive": "170724",
-			"balance": 0,
-			"booked": "170611",
-			"charge": "364.81",
-			"depart": "170726",
-			"guests": "2",
-			"key": "170724N",
-			"last": "huls",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170724N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170725",
-			"tax": "34.81",
-			"total": 330
-		},
-		"170726N": {
-			"arrive": "170726",
-			"balance": 0,
-			"booked": "170629",
-			"charge": "729.63",
-			"depart": "170730",
-			"guests": "4",
-			"key": "170726N",
-			"last": "Shriver",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170726N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170729",
-			"tax": "69.63",
-			"total": 660
-		},
-		"170726S": {
-			"arrive": "170726",
-			"balance": 0,
-			"booked": "170607",
-			"charge": "342.70",
-			"depart": "170728",
-			"guests": "4",
-			"key": "170726S",
-			"last": "Richardson",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170726S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170727",
-			"tax": "32.70",
-			"total": 310
-		},
-		"170728S": {
-			"arrive": "170728",
-			"balance": 0,
-			"booked": "170628",
-			"charge": "342.70",
-			"depart": "170730",
-			"guests": "4",
-			"key": "170728S",
-			"last": "Ravel",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170728S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170729",
-			"tax": "32.70",
-			"total": 310
-		},
-		"170731S": {
-			"arrive": "170731",
-			"balance": 0,
-			"booked": "170630",
-			"charge": "685.41",
-			"depart": "170804",
-			"guests": "3",
-			"key": "170731S",
-			"last": "Krupa",
-			"nights": 4,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170731S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170803",
-			"tax": "65.41",
-			"total": 620
-		},
-		"170804N": {
-			"arrive": "170804",
-			"balance": 0,
-			"booked": "170630",
-			"charge": "547.22",
-			"depart": "170807",
-			"guests": "4",
-			"key": "170804N",
-			"last": "Zink",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170804N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170806",
-			"tax": "52.22",
-			"total": 495
-		},
-		"170814S": {
-			"arrive": "170814",
-			"balance": 0,
-			"booked": "170612",
-			"charge": "514.06",
-			"depart": "170817",
-			"guests": "2",
-			"key": "170814S",
-			"last": "TAK",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170814S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170816",
-			"tax": "49.06",
-			"total": 465
-		},
-		"170819S": {
-			"arrive": "170819",
-			"balance": 0,
-			"booked": "170613",
-			"charge": "342.70",
-			"depart": "170821",
-			"guests": "4",
-			"key": "170819S",
-			"last": "Basiouny",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170819S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170820",
-			"tax": "32.70",
-			"total": 310
-		},
-		"170902N": {
-			"arrive": "170902",
-			"balance": 0,
-			"booked": "170705",
-			"charge": "364.81",
-			"depart": "170904",
-			"guests": "4",
-			"key": "170902N",
-			"last": "Husbands",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170902N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170903",
-			"tax": "34.81",
-			"total": 330
-		},
-		"170902S": {
-			"arrive": "170902",
-			"balance": 0,
-			"booked": "170702",
-			"charge": "342.70",
-			"depart": "170904",
-			"guests": "2",
-			"key": "170902S",
-			"last": "Retana",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170902S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170903",
-			"tax": "32.70",
-			"total": 310
-		},
-		"170907N": {
-			"arrive": "170907",
-			"balance": 0,
-			"booked": "170630",
-			"charge": "547.22",
-			"depart": "170910",
-			"guests": "2",
-			"key": "170907N",
-			"last": "Fleming",
-			"nights": 3,
-			"paid": 0,
-			"pets": 0,
-			"price": 165,
-			"resId": "170907N",
-			"roomId": "N",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170909",
-			"tax": "52.22",
-			"total": 495
-		},
-		"170908S": {
-			"arrive": "170908",
-			"balance": 0,
-			"booked": "170615",
-			"charge": "342.70",
-			"depart": "170910",
-			"guests": "1",
-			"key": "170908S",
-			"last": "Dreiling",
-			"nights": 2,
-			"paid": 0,
-			"pets": 0,
-			"price": 155,
-			"resId": "170908S",
-			"roomId": "S",
-			"source": "Booking",
-			"spaOptOut": 0,
-			"status": "Booking",
-			"stayto": "170909",
-			"tax": "32.70",
-			"total": 310
-		}
-	};
-
-/***/ },
-/* 362 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -37525,7 +34581,7 @@
 	};
 
 /***/ },
-/* 363 */
+/* 362 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -37624,7 +34680,7 @@
 
 
 /***/ },
-/* 364 */
+/* 363 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2
@@ -37647,7 +34703,6 @@
 	      this.master = master;
 	      this.resv = {};
 	      this.state = 'add';
-	      this.lastResId = 'none';
 	    }
 
 	    Input.prototype.readyInput = function() {
@@ -37668,6 +34723,7 @@
 	      this.resv.stayto = stayto;
 	      this.resv.depart = Data.advanceDate(stayto, 1);
 	      this.resv.roomId = roomId;
+	      this.resv.resId = Data.resId(arrive, roomId);
 	      this.resv.last = "";
 	      this.resv.status = 'Booking';
 	      this.resv.guests = 4;
@@ -37678,34 +34734,10 @@
 	      this.refreshResv(this.resv);
 	    };
 
-	    Input.prototype.updateResv = function(arrive, stayto, roomId, resv) {
-	      var ref;
-	      ref = resv.resId !== this.lastResId ? [resv.arrive, resv.stayto] : [arrive, stayto], arrive = ref[0], stayto = ref[1];
-	      if (this.updateDates(arrive, stayto, roomId, resv)) {
-	        this.resv = resv;
-	        this.state = 'put';
-	        this.refreshResv(this.resv);
-	        this.lastResId = this.resv.resId;
-	      } else {
-	        alert("Reservation Dates Not Free: Arrive" + arrive + " StayTo:" + stayto + " RoomId:#" + roomId + " Name:" + resv.last);
-	      }
-	    };
-
-	    Input.prototype.updateDates = function(arrive, stayto, roomId, resv) {
-	      var beg, end, free;
-	      if (!((arrive != null) && (stayto != null) && (roomId != null))) {
-	        return false;
-	      }
-	      beg = Math.min(arrive, stayto).toString();
-	      end = Math.max(arrive, stayto).toString();
-	      if (beg != null) {
-	        resv.arrive = beg;
-	      }
-	      if (end != null) {
-	        resv.stayto = end;
-	      }
-	      free = this.res.datesFree(arrive, stayto, roomId, resv);
-	      return free;
+	    Input.prototype.updateResv = function(resv) {
+	      this.resv = this.res.copyResv(resv);
+	      this.state = 'put';
+	      this.refreshResv(this.resv);
 	    };
 
 	    Input.prototype.html = function() {
@@ -37724,19 +34756,42 @@
 	    };
 
 	    Input.prototype.action = function() {
-	      var onMMDD;
-	      onMMDD = (function(_this) {
-	        return function(htmlId, mmdd, klass) {
-	          var date, dd, mi, ref, roomId;
+	      var delDay, onMMDD, toDate;
+	      toDate = (function(_this) {
+	        return function(mmdd) {
+	          var dd, mi, ref;
 	          ref = Data.midd(mmdd), mi = ref[0], dd = ref[1];
-	          date = Data.toDateStr(dd, mi);
+	          return Data.toDateStr(dd, mi);
+	        };
+	      })(this);
+	      delDay = (function(_this) {
+	        return function(date, roomId) {
+	          var dayId;
+	          dayId = Data.dayId(date, roomId);
+	          return _this.res.delDay(_this.res.days[dayId]);
+	        };
+	      })(this);
+	      onMMDD = (function(_this) {
+	        return function(htmlId, mmdd0, mmdd1) {
+	          var date0, date1, roomId;
 	          roomId = _this.resv.roomId;
-	          _this.master.fillCell(roomId, date, klass);
+	          date0 = toDate(mmdd0);
+	          date1 = toDate(mmdd1);
 	          if (htmlId === 'NRArrive') {
-	            _this.resv.arrive = date;
-	          }
-	          if (htmlId === 'NRStayTo') {
-	            _this.resv.stayto = date;
+	            _this.res.delResv(_this.resv);
+	            _this.resv.resId = Data.resId(date1, roomId);
+	            _this.resv.arrive = date1;
+	            _this.resv.nights = Data.nights(_this.resv.arrive, _this.resv.stayto);
+	            _this.res.addResv(_this.resv);
+	            _this.master.updArrival(date0, date1, _this.resv.roomId, _this.resv.last, _this.resv.status);
+	          } else if (htmlId === 'NRStayTo') {
+	            if (date1 < date0) {
+	              _this.master.fillCell(date0, roomId, 'Free');
+	              delDay(date0, roomId);
+	            } else {
+	              _this.master.fillCell(date1, roomId, _this.resv.status);
+	            }
+	            _this.resv.stayto = date1;
 	          }
 	          _this.refreshResv(_this.resv);
 	        };
@@ -37813,7 +34868,7 @@
 
 	    Input.prototype.refreshResv = function(resv) {
 	      resv.depart = Data.advanceDate(resv.stayto, 1);
-	      resv.nights = Data.nights(resv.arrive, resv.depart);
+	      resv.nights = Data.nights(resv.arrive, resv.stayto);
 	      resv.price = this.res.calcPrice(resv.roomId, resv.guests, resv.pets, resv.status);
 	      resv.deposit = resv.price * 0.5;
 	      resv.total = resv.nights * resv.price;
@@ -37831,7 +34886,7 @@
 	      $('#NRTotal').text('$' + resv.total);
 	      $('#NRTax').text('$' + resv.tax);
 	      $('#NRCharge').text('$' + resv.charge);
-	      this.master.setLast(resv.arrive, resv.roomId, resv.last);
+	      this.master.addLast(resv.arrive, resv.roomId, resv.last);
 	      if (this.state === 'add') {
 	        $('#NRCreate').show();
 	        $('#NRChange').hide();
@@ -37844,70 +34899,51 @@
 	    };
 
 	    Input.prototype.resvSubmits = function() {
-	      var doDel, doRes;
+	      var doRes;
 	      doRes = (function(_this) {
 	        return function() {
 	          var r;
 	          r = _this.resv;
 	          if (r.status === 'Skyline' || 'Deposit') {
-	            r = _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+	            r = _this.res.createResvSkyline(r.arrive, r.stayto, r.roomId, r.last, r.status, r.guests, r.pets);
 	          } else if (r.status === 'Booking' || 'Prepaid') {
-	            r = _this.res.createResvBooking(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
+	            r = _this.res.createResvBooking(r.arrive, r.stayto, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
 	          } else {
-	            r = null;
 	            alert("Unknown Reservation Status: " + r.status + " Name:" + r.last);
 	          }
-	          _this.master.setLast(r.arrive, r.roomId, r.last);
-	          return r;
-	        };
-	      })(this);
-	      doDel = (function(_this) {
-	        return function() {
-	          _this.resv.status = 'Free';
-	          _this.resv.last = '';
-	          _this.res.deleteDaysFromResv(_this.resv);
-	          return _this.resv;
+	          _this.master.addLast(r.arrive, r.roomId, r.last);
+	          _this.resv = r;
 	        };
 	      })(this);
 	      $('#NRCreate').click((function(_this) {
 	        return function() {
-	          var resv;
 	          if (Util.isStr(_this.resv.last)) {
-	            resv = doRes();
-	            if (resv != null) {
-	              _this.res.addResv(resv);
-	            }
+	            doRes();
+	            _this.res.addResv(_this.resv);
 	          } else {
-	            alert('Incomplete Reservation');
+	            alert('Incomplete Reservation Last Name Blank');
 	          }
 	        };
 	      })(this));
 	      $('#NRChange').click((function(_this) {
 	        return function() {
-	          var resv;
-	          resv = doDel();
-	          resv = doRes();
-	          if (resv != null) {
-	            _this.res.putResv(resv);
-	          }
+	          _this.res.deleteDaysFromResv(_this.resv);
+	          doRes();
+	          _this.res.putResv(_this.resv);
 	        };
 	      })(this));
 	      $('#NRDelete').click((function(_this) {
 	        return function() {
-	          var resv;
-	          resv = doDel();
-	          resv.status = 'Cancel';
-	          _this.res.delResv(resv);
+	          _this.resv.status = 'Cancel';
+	          _this.res.delResv(_this.resv);
 	        };
 	      })(this));
 	      return $('#NRCancel').click((function(_this) {
 	        return function() {
-	          var resv;
-	          resv = doRes();
-	          resv.status = 'Cancel';
-	          if (resv != null) {
-	            _this.res.canResv(resv);
-	          }
+	          doRes();
+	          _this.resv.status = 'Cancel';
+	          _this.res.delResv(_this.resv);
+	          _this.res.canResv(_this.resv);
 	        };
 	      })(this));
 	    };
@@ -37920,7 +34956,7 @@
 
 
 /***/ },
-/* 365 */
+/* 364 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Generated by CoffeeScript 1.12.2

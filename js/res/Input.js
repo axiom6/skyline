@@ -243,7 +243,6 @@
       $('#NRChange').click((function(_this) {
         return function() {
           _this.res.deleteDaysFromResv(_this.resv);
-          Util.log('Input.NRChange', _this.resv.resId, _this.resv.arrive, _this.resv.stayto);
           doRes();
           _this.res.putResv(_this.resv);
         };

@@ -61,7 +61,6 @@ class Input
       [mi,dd] = Data.midd(mmdd)
       Data.toDateStr( dd, mi )
 
-
     delDay = ( date, roomId ) =>
       dayId = Data.dayId( date, roomId )
       @res.delDay( @res.days[dayId] )
@@ -191,7 +190,6 @@ class Input
 
     $('#NRChange').click () =>
       @res.deleteDaysFromResv( @resv )
-      Util.log( 'Input.NRChange', @resv.resId, @resv.arrive, @resv.stayto )
       doRes()
       @res.putResv( @resv )
       return
