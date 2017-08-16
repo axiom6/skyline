@@ -21,8 +21,7 @@
       this.res = res;
       this.onCustomFix = bind(this.onCustomFix, this);
       this.onCreateCan = bind(this.onCreateCan, this);
-      this.onUpdateDays = bind(this.onUpdateDays, this);
-      this.onCreateRes = bind(this.onCreateRes, this);
+      this.onUpdateDay = bind(this.onUpdateDay, this);
       this.onUploadCan = bind(this.onUploadCan, this);
       this.onUploadRes = bind(this.onUploadRes, this);
       this.uploadedText = "";
@@ -33,10 +32,10 @@
       var htm;
       htm = "";
       htm += "<h1  class=\"UploadH1\">Upload Booking.com</h1>";
-      htm += "<button id=\"UploadRes\" class=\"btn btn-primary\">Upload Res</button>";
-      htm += "<button id=\"UploadCan\" class=\"btn btn-primary\">Upload Can</button>";
-      htm += "<button id=\"UpdateDay\" class=\"btn btn-primary\">Update Days</button>";
-      htm += "<button id=\"CustomFix\" class=\"btn btn-primary\">Custom Fix</button>";
+      htm += "<button   id=\"UploadRes\"  class=\"btn btn-primary\">Upload Res</button>";
+      htm += "<button   id=\"UploadCan\"  class=\"btn btn-primary\">Upload Can</button>";
+      htm += "<button   id=\"UpdateDay\"  class=\"btn btn-primary\">Update Day</button>";
+      htm += "<button   id=\"CustomFix\"  class=\"btn btn-primary\">Custom Fix</button>";
       htm += "<textarea id=\"UploadText\" class=\"UploadText\" rows=\"50\" cols=\"100\"></textarea>";
       return htm;
     };
@@ -98,10 +97,11 @@
     };
 
     Upload.prototype.resvFromBook = function(book) {
-      var arrive, booked, depart, guests, last, names, roomId, status, total;
+      var arrive, booked, depart, guests, last, names, roomId, status, stayto, total;
       names = book.names.split(' ');
       arrive = this.toResvDate(book.arrive);
       depart = this.toResvDate(book.depart);
+      stayto = Data.advanceDate(depart, -1);
       booked = this.toResvDate(book.booked);
       roomId = this.toResvRoomId(book.room);
       last = names[1];
@@ -109,7 +109,7 @@
       guests = this.toNumGuests(names);
       total = parseFloat(book.total.substr(3));
       if (status === 'Booking') {
-        return this.res.createResvBooking(arrive, depart, roomId, last, status, guests, total, booked);
+        return this.res.createResvBooking(arrive, stayto, roomId, last, status, guests, total, booked);
       } else {
         return null;
       }
@@ -149,38 +149,41 @@
       return this.uploadedResvs = {};
     };
 
-    Upload.prototype.onCreateRes = function() {
-      var ref, resId, resv, resvs;
-      Util.log('Upload.onCreateRes');
-      ref = this.res.resvs;
-      for (resId in ref) {
-        if (!hasProp.call(ref, resId)) continue;
-        resv = ref[resId];
-        this.res.delResv(resv);
-      }
-      resvs = require('data/res.json');
-      for (resId in resvs) {
-        if (!hasProp.call(resvs, resId)) continue;
-        resv = resvs[resId];
-        this.res.addResv(resv);
-      }
-    };
 
-    Upload.prototype.onUpdateDays = function() {
-      var day, dayId, ref, ref1, resId, resv;
-      Util.log('Upload.onReUpdateDays');
-      ref = this.res.days;
-      for (dayId in ref) {
-        if (!hasProp.call(ref, dayId)) continue;
-        day = ref[dayId];
-        this.res.delDay(day);
-      }
-      ref1 = this.res.resvs;
-      for (resId in ref1) {
-        if (!hasProp.call(ref1, resId)) continue;
-        resv = ref1[resId];
-        this.res.updateDaysFromResv(resv);
-      }
+    /* For dev only. Repopulates database
+    onCreateRes:() =>
+      Util.log( 'Upload.onCreateRes')
+      for own resId, resv of @res.resvs
+        @res.delResv( resv )
+      resvs = require( 'data/res.json' )
+      for own resId, resv of resvs
+        @res.addResv( resv )
+      return
+     */
+
+    Upload.prototype.onUpdateDay = function() {
+      var onComplete;
+      Util.log('Upload.onUpdateDay');
+      onComplete = (function(_this) {
+        return function() {
+          var day, dayId, ref, ref1, resId, results, resv;
+          ref = _this.res.days;
+          for (dayId in ref) {
+            if (!hasProp.call(ref, dayId)) continue;
+            day = ref[dayId];
+            _this.res.delDay(day);
+          }
+          ref1 = _this.res.resvs;
+          results = [];
+          for (resId in ref1) {
+            if (!hasProp.call(ref1, resId)) continue;
+            resv = ref1[resId];
+            results.push(_this.res.updateDaysFromResv(resv));
+          }
+          return results;
+        };
+      })(this);
+      this.res.selectAllDays(onComplete);
     };
 
     Upload.prototype.onCreateCan = function() {
@@ -232,18 +235,17 @@
     };
 
     Upload.prototype.fixResv = function(book) {
-      var arrive, booked, depart, guests, last, nights, roomId, status, stayto, total;
+      var arrive, booked, guests, last, nights, roomId, status, stayto, total;
       arrive = this.toFixDate(book.arrive);
       stayto = this.toFixDate(book.stayto);
-      depart = Data.advanceDate(stayto, 1);
-      nights = Data.nights(arrive, depart);
+      nights = Data.nights(arrive, stayto);
       roomId = book.room;
       last = book.last;
       status = this.toStatusFix(book.status);
       guests = book.guests;
       booked = this.toFixDate(book.booked);
       total = this.res.total(status, nights, roomId, guests);
-      return this.res.createResv(arrive, depart, booked, roomId, last, status, guests, 0, status, total);
+      return this.res.createResv(arrive, stayto, booked, roomId, last, status, guests, 0, status, total);
     };
 
     Upload.prototype.toFixDate = function(mmdd) {

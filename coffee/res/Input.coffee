@@ -8,9 +8,8 @@ class Input
   module.exports = Input
 
   constructor:( @stream, @store, @res, @master ) ->
-    @resv       = {}
-    @state      = 'add'
-    @lastResId  = 'none'
+    @resv        = {}
+    @state       = 'add'
 
   readyInput:() ->
     $('#ResAdd').empty()
@@ -26,6 +25,7 @@ class Input
     @resv.stayto = stayto
     @resv.depart = Data.advanceDate( stayto, 1 )
     @resv.roomId = roomId
+    @resv.resId  = Data.resId( arrive, roomId ) # Not need but for completeness
     @resv.last   = ""
     @resv.status = 'Booking'
     @resv.guests = 4
@@ -36,26 +36,11 @@ class Input
     @refreshResv( @resv )
     return
 
-  updateResv:( arrive, stayto, roomId, resv ) ->
-    [arrive,stayto] = if resv.resId isnt @lastResId then [resv.arrive,resv.stayto] else [arrive,stayto]
-    if @updateDates( arrive, stayto, roomId, resv )
-      @resv = resv
-      @state = 'put'
-      @refreshResv( @resv )
-      @lastResId = @resv.resId
-    else
-      alert( "Reservation Dates Not Free: Arrive#{arrive} StayTo:#{stayto} RoomId:##{roomId} Name:#{resv.last}" )
+  updateResv:( resv ) ->
+    @resv = @res.copyResv( resv ) # Make full copy
+    @state = 'put'
+    @refreshResv( @resv )
     return
-
-  updateDates:( arrive, stayto, roomId, resv ) ->
-    return false if not ( arrive? and stayto? and roomId? )
-    beg = Math.min( arrive, stayto ).toString()
-    end = Math.max( arrive, stayto ).toString()
-    resv.arrive = beg if beg?
-    resv.stayto = end if end?
-    free = @res.datesFree( arrive, stayto, roomId, resv )
-    #Util.log( 'Input.updateDates', beg, end, roomId, free )
-    free
     
   html:() ->
     htm  = """<table id="NRTable"><thead>"""
@@ -76,29 +61,30 @@ class Input
       [mi,dd] = Data.midd(mmdd)
       Data.toDateStr( dd, mi )
 
+
+    delDay = ( date, roomId ) =>
+      dayId = Data.dayId( date, roomId )
+      @res.delDay( @res.days[dayId] )
+
     onMMDD = ( htmlId, mmdd0, mmdd1 ) =>
       roomId  = @resv.roomId
       date0   = toDate( mmdd0 )
       date1   = toDate( mmdd1 )
       if htmlId is 'NRArrive'
-        if date1 < date0
-          @master.fillCell( roomId, date1, @resv.status )
-        else
-          dayId = Data.dayId( date0, roomId )
-          @res.delDay( @res.days[dayId] )
-          @master.fillCell( roomId, date0, 'Free' )
-        @res.allocResv( @resv, 'Free' )
+        @res.delResv( @resv )
+        @resv.resId  = Data.resId( date1, roomId )
         @resv.arrive = date1
-        @res.allocResv( @resv, @resv.status )
+        @resv.nights = Data.nights( @resv.arrive, @resv.stayto )
+        @res.addResv( @resv )
+        @master.updArrival( date0, date1, @resv.roomId, @resv.last, @resv.status )
       else if htmlId is 'NRStayTo'
-        if date1 > date0
-          @master.fillCell( roomId, date1, @resv.status )
+        if date1 < date0
+          @master.fillCell( date0, roomId, 'Free' )
+          delDay( date0, roomId )
         else
-          dayId = Data.dayId( date0, roomId )
-          @res.delDay( @res.days[dayId] )
-          @master.fillCell( roomId, date0, 'Free' )
+          @master.fillCell( date1, roomId, @resv.status )
         @resv.stayto = date1
-      Util.log( 'Input.onMDD', htmlId, date0, date1, @resv.arrive, @resv.stayto )
+      #Util.log( 'Input.onMDD', htmlId, date0, date1, @resv.arrive, @resv.stayto )
       @refreshResv( @resv )
       return
 
@@ -152,7 +138,7 @@ class Input
 
   refreshResv:( resv ) ->
     resv.depart  = Data.advanceDate(resv.stayto,1)
-    resv.nights  = Data.nights( resv.arrive, resv.depart )
+    resv.nights  = Data.nights( resv.arrive, resv.stayto )
     resv.price   = @res.calcPrice(resv.roomId,resv.guests,resv.pets,resv.status)
     resv.deposit = resv.price * 0.5
     resv.total   = resv.nights * resv.price
@@ -170,7 +156,7 @@ class Input
     $('#NRTotal' ).text( '$'+resv.total  )
     $('#NRTax'   ).text( '$'+resv.tax    )
     $('#NRCharge').text( '$'+resv.charge )
-    @master.setLast( resv.arrive, resv.roomId, resv.last )
+    @master.addLast( resv.arrive, resv.roomId, resv.last )
     if      @state is 'add'
       $('#NRCreate').show()
       $('#NRChange').hide()
@@ -186,42 +172,40 @@ class Input
     doRes = () =>
       r = @resv
       if      r.status is 'Skyline' or 'Deposit'
-        r = @res.createResvSkyline( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets )
+        r = @res.createResvSkyline( r.arrive, r.stayto, r.roomId, r.last, r.status, r.guests, r.pets )
       else if r.status is 'Booking' or 'Prepaid'
-        r = @res.createResvBooking( r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked )
+        r = @res.createResvBooking( r.arrive, r.stayto, r.roomId, r.last, r.status, r.guests, r.total, r.booked )
       else
-        r = null
         alert( "Unknown Reservation Status: #{r.status} Name:#{r.last}" )
-      @master.setLast( r.arrive, r.roomId, r.last )
-      r
-
-    doDel = () =>
-      @res.deleteDaysFromResv( @resv )
-      @resv
+      @master.addLast( r.arrive, r.roomId, r.last )
+      @resv = r
+      return
       
     $('#NRCreate').click () =>
-      if Util.isStr( @resv.last )
-        resv = doRes()
-        @res.addResv( resv ) if resv?
+      if Util.isStr(  @resv.last )
+        doRes()
+        @res.addResv( @resv )
       else
-        alert( 'Incomplete Reservation' )
+        alert( 'Incomplete Reservation Last Name Blank' )
       return
 
     $('#NRChange').click () =>
-      resv = doDel()
-      resv = doRes()
-      @res.putResv( resv ) if resv?
+      @res.deleteDaysFromResv( @resv )
+      Util.log( 'Input.NRChange', @resv.resId, @resv.arrive, @resv.stayto )
+      doRes()
+      @res.putResv( @resv )
       return
 
     $('#NRDelete').click () =>
-      resv = doDel()
-      resv.status = 'Cancel'
-      @res.delResv( resv )
+      @resv.status = 'Cancel'
+      @res.delResv( @resv )
       return
 
+    # For later
     $('#NRCancel').click () =>
-      resv = doRes()
-      resv.status = 'Cancel'
-      @res.canResv( resv ) if resv?
+      doRes()
+      @resv.status = 'Cancel'
+      @res.delResv( @resv )
+      @res.canResv( @resv )
       return
     

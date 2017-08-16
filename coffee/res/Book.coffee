@@ -356,16 +356,6 @@ class Book
       @allocCell( date, day.status, roomId )
     return
 
-  """
-  allocResv:( resv, status ) ->
-    $cell = @$cell( 'M', resv.arrive, resv.roomId )
-    if status is 'Free'
-      $cell.remove( 'div' )
-    else
-      $cell.find('div').text( resv.last )
-    return
-  """
-
   allocCell:( date, status, roomId ) ->
     @cellStatus( @$cell(date,roomId), status )
 

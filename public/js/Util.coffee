@@ -524,7 +524,8 @@ class Util
     compare = (a,b) -> (    b[prop] -  a[prop]                                                  ) if type is 'number' and order is 'Decend'
     array.sort( compare )
 
-  @pad:( n ) ->
+  @pad:( m ) ->
+    n = Util.toInt(m)
     if n < 10 then '0'+n.toString() else n.toString()
 
   @padStr:( n ) ->

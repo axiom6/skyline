@@ -235,17 +235,17 @@
       return Util.pad(mi + 1) + '/' + Util.pad(dd);
     };
 
-    Data.nights = function(arrive, depart) {
-      var arriveDay, arriveMon, departDay, departMon, num;
+    Data.nights = function(arrive, stayto) {
+      var arriveDay, arriveMon, num, staytoDay, staytoMon;
       num = 0;
       arriveDay = parseInt(arrive.substr(4, 2));
       arriveMon = parseInt(arrive.substr(2, 2));
-      departDay = parseInt(depart.substr(4, 2));
-      departMon = parseInt(depart.substr(2, 2));
-      if (arriveMon === departMon) {
-        num = departDay - arriveDay;
-      } else if (arriveMon + 1 === departMon) {
-        num = Data.numDayMonth[arriveMon - 1] - arriveDay + departDay;
+      staytoDay = parseInt(stayto.substr(4, 2));
+      staytoMon = parseInt(stayto.substr(2, 2));
+      if (arriveMon === staytoMon) {
+        num = staytoDay - arriveDay + 1;
+      } else if (arriveMon + 1 === staytoMon) {
+        num = Data.numDayMonth[arriveMon - 1] - arriveDay + staytoDay + 1;
       }
       return Math.abs(num);
     };

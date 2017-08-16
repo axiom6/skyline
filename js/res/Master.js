@@ -53,6 +53,7 @@
       this.dateEnd = this.res.today;
       this.dateSel = "End";
       this.roomId = null;
+      this.nextId = null;
       this.resMode = 'Table';
     }
 
@@ -67,6 +68,7 @@
       $('#DailysBtn').click(this.onDailysBtn);
       $('#DailysPrt').click(this.onDailysPrt);
       $('#UploadBtn').click(this.onUploadBtn);
+      $('#ReadyMBtn').click(this.readyMaster);
       this.res.selectAllResvs(this.readyMaster, true);
     };
 
@@ -205,8 +207,7 @@
       this.upload.bindUploadPaste();
       $('#UploadRes').click(this.upload.onUploadRes);
       $('#UploadCan').click(this.upload.onUploadCan);
-      $('#CreateRes').click(this.upload.onCreateRes);
-      $('#CreateDay').click(this.upload.onUpdateDays);
+      $('#UpdateDay').click(this.upload.onUpdateDay);
       $('#CreateCan').click(this.upload.onCreateCan);
       $('#CustomFix').click(this.upload.onCustomFix);
       $('#Upload').show();
@@ -244,31 +245,40 @@
           _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Mine', 'Free');
           $cell = $(event.target);
           $cell = $cell.is('div') ? $cell.parent() : $cell;
-          date = $cell.attr('data-date');
-          _this.roomId = $cell.attr('data-roomid');
-          if ((date == null) || (_this.roomId == null)) {
+          date = $cell.is('td') ? $cell.attr('data-date') : Data.toDateStr($cell.text());
+          _this.nextId = $cell.is('td') ? $cell.attr('data-roomid') : 0;
+          if ((date == null) || (_this.nextId == null)) {
             return;
           }
-          ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2];
-          if (_this.resMode === 'Table') {
+          ref = _this.mouseDates(date), _this.dateBeg = ref[0], _this.dateEnd = ref[1], _this.dateSel = ref[2], _this.roomId = ref[3];
+          if (_this.roomId === 0) {
+            $('#ResAdd').hide();
+            $('#ResTbl').show();
+            _this.fillInCells(_this.dateBeg, _this.dateEnd, _this.roomId, 'Free', 'Mine');
             _this.query.updateBody(_this.dateBeg, _this.dateEnd, 'arrive');
-          } else if (_this.resMode === 'Input') {
+          } else {
+            $('#ResTbl').hide();
+            $('#ResAdd').show();
             resv = _this.res.getResv(date, _this.roomId);
             if (resv == null) {
               _this.input.createResv(_this.dateBeg, _this.dateEnd, _this.roomId);
             } else {
-              _this.input.updateResv(_this.dateBeg, _this.dateEnd, _this.roomId, resv);
+              _this.input.updateResv(resv);
             }
           }
         };
       })(this);
+      $('thead #Day th').click(doCell);
       $('[data-cell="y"]').click(doCell);
       $('[data-cell="y"]').contextmenu(doCell);
     };
 
     Master.prototype.mouseDates = function(date) {
       this.res.order = 'Decend';
-      if (this.dateBeg <= date && date <= this.dateEnd) {
+      if (this.nextId !== this.roomId) {
+        this.dateBeg = date;
+        this.dateEnd = date;
+      } else if (this.dateBeg <= date && date <= this.dateEnd) {
         if (this.dateSel === 'Beg') {
           this.dateBeg = date;
           this.dateSel = 'End';
@@ -284,7 +294,7 @@
           this.dateBeg = date;
         }
       }
-      return [this.dateBeg, this.dateEnd, this.dateSel];
+      return [this.dateBeg, this.dateEnd, this.dateSel, this.nextId];
     };
 
     Master.prototype.fillInCells = function(begDate, endDate, roomId, free, fill) {
@@ -307,7 +317,11 @@
       }
       for (i = 0, len = $cells.length; i < len; i++) {
         $cell = $cells[i];
-        this.cellStatus($cell, fill);
+        if (roomId === 0) {
+          this.dayStatus($cell, fill);
+        } else {
+          this.cellStatus($cell, fill);
+        }
       }
       return [beg, end];
     };
@@ -391,12 +405,18 @@
       this.cellStatus(this.$cell('M', date, roomId), klass);
     };
 
-    Master.prototype.fillCell = function(roomId, date, klass) {
+    Master.prototype.fillCell = function(date, roomId, klass) {
       this.cellStatus(this.$cell('M', date, roomId), klass);
     };
 
     Master.prototype.cellStatus = function($cell, klass) {
       $cell.removeClass().addClass("room-" + klass);
+      $cell.css({
+        background: Data.toColor(klass)
+      });
+    };
+
+    Master.prototype.dayStatus = function($cell, klass) {
       $cell.css({
         background: Data.toColor(klass)
       });
@@ -471,9 +491,10 @@
         weekday = Data.weekdays[(weekdayIdx + day - 1) % 7].charAt(0);
         htm += "<th>" + weekday + "</th>";
       }
-      htm += "</tr><tr><th></th>";
+      htm += "</tr><tr id=\"Day\"\"><th></th>";
       for (day = j = ref2 = begDay, ref3 = endDay; ref2 <= ref3 ? j <= ref3 : j >= ref3; day = ref2 <= ref3 ? ++j : --j) {
-        htm += "<th>" + day + "</th>";
+        date = Data.toDateStr(day, monthIdx);
+        htm += "<th id=\"" + (this.cellId('M', date, 0)) + "\">" + day + "</th>";
       }
       htm += "</tr></thead><tbody>";
       ref4 = this.rooms;
@@ -491,19 +512,6 @@
       return htm;
     };
 
-    Master.prototype.allocResv = function(resv, status) {
-      var $cell;
-      if (status == null) {
-        status = resv.status;
-      }
-      $cell = this.$cell('M', resv.arrive, resv.roomId);
-      if (status === 'Free') {
-        $cell.remove('div');
-      } else {
-        $cell.find('div').text(resv.last);
-      }
-    };
-
     Master.prototype.createCell = function(date, roomId) {
       var bord, dd, htm, klass, last, mi, ref, resv, yy;
       ref = Data.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
@@ -516,7 +524,7 @@
       return htm;
     };
 
-    Master.prototype.setLast = function(date, roomId, last) {
+    Master.prototype.addLast = function(date, roomId, last, status) {
       var $cell, $div;
       $cell = this.$cell('M', date, roomId);
       $div = $cell.find('div');
@@ -525,6 +533,21 @@
       } else {
         $cell.append("<div>" + last + "</div>");
       }
+    };
+
+    Master.prototype.updArrival = function(arrive0, arrive1, roomId, last, status) {
+      if (arrive1 > arrive0) {
+        this.fillCell(arrive0, roomId, 'Free');
+      }
+      this.delLast(arrive0, roomId);
+      if (arrive1 < arrive0) {
+        this.fillCell(arrive1, roomId, status);
+      }
+      this.addLast(arrive1, roomId, last, status);
+    };
+
+    Master.prototype.delLast = function(date, roomId) {
+      return this.$cell('M', date, roomId).empty();
     };
 
     Master.prototype.border = function(date, roomId, resv, klass) {

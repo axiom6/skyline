@@ -142,16 +142,16 @@ class Data
     Util.pad(mi+1) + '/' + Util.pad(dd)
 
   # Only good for a 28 to 30 day interval
-  @nights:( arrive, depart ) ->
+  @nights:( arrive, stayto ) ->
     num       = 0
     arriveDay = parseInt( arrive.substr( 4,2 ) )
     arriveMon = parseInt( arrive.substr( 2,2 ) )
-    departDay = parseInt( depart.substr( 4,2 ) )
-    departMon = parseInt( depart.substr( 2,2 ) )
-    if      arriveMon   is departMon
-      num = departDay - arriveDay
-    else if arriveMon+1 is departMon
-      num = Data.numDayMonth[arriveMon-1] - arriveDay + departDay
+    staytoDay = parseInt( stayto.substr( 4,2 ) )
+    staytoMon = parseInt( stayto.substr( 2,2 ) )
+    if      arriveMon   is staytoMon
+      num = staytoDay - arriveDay + 1
+    else if arriveMon+1 is staytoMon
+      num = Data.numDayMonth[arriveMon-1] - arriveDay + staytoDay + 1
     Math.abs(num)
 
   @weekday:( date ) ->

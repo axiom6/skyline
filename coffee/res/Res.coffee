@@ -70,6 +70,7 @@ class Res
     nights < Data.newDays
 
   status:( date, roomId ) ->
+    return 'Free' if roomId is 0
     dayId = Data.dayId( date, roomId )
     day   = @days[dayId]
     st    = if day? then day.status else 'Free'
@@ -91,7 +92,6 @@ class Res
 
   getResv:( date, roomId ) ->
     day   = @day( date, roomId )
-    #Util.log( 'Res.getResv', date, roomId, day ) if day?
     if day? then @resvs[day.resId] else null
 
   day:( date, roomId ) ->
@@ -100,8 +100,7 @@ class Res
     if day? then day else @setDay( {}, 'Free', 'none', dayId )
 
   dayIds:( arrive, stayto, roomId ) ->
-    depart = Data.advanceDate( stayto, 1 )
-    nights = Data.nights( arrive, depart )
+    nights = Data.nights( arrive, stayto )
     ids = []
     for i in [0...nights]
       ids.push( Data.dayId( Data.advanceDate( arrive, i ), roomId ) )
@@ -121,11 +120,6 @@ class Res
     @master.allocDays( days ) if @master?
     return
 
-  allocResv:( resv, status=resv.status ) ->
-    #@book. allocResv( resv, status ) if @book?
-    @master.allocResv( resv, status ) if @master?
-    return
-
   updateResvs:( newResvs ) ->
     for own resId, resv of newResvs
       @addResv( resv )
@@ -136,11 +130,14 @@ class Res
       @addCan( can )
     @resvs
 
+  isResvDay:( day, resv ) ->
+    day? and day.resId is resv.resId
+
   daysFromResv:( resv ) ->
     days = {} # resv days
     for i in [0...resv.nights]
       dayId       = Data.dayId( Data.advanceDate( resv.arrive, i ), resv.roomId )
-      days[dayId] = @setDay( {}, resv.status, resv.resId, dayId )
+      days[dayId] = if @isResvDay(@days[dayId],resv) then @days[dayId] else @setDay( {}, resv.status, resv.resId, dayId )
     days
 
   deleteDaysFromResv:( resv ) ->
@@ -148,7 +145,6 @@ class Res
     for dayId, day of days
       day.status = 'Free'
     @allocDays( days )
-    @allocResv( resv, 'Free' )
     for dayId, day of days
       @delDay( day )
     return
@@ -156,9 +152,9 @@ class Res
   updateDaysFromResv:( resv, add=true ) ->
     days = @daysFromResv( resv )
     @allocDays( days )
-    @allocResv( resv )
-    for dayId, day of days
-      @addDay( day )
+    if add
+      for dayId, day of days
+        @addDay( day )
     return
 
   calcPrice:( roomId, guests, pets, status ) ->
@@ -188,25 +184,25 @@ class Res
       tot = nights *   @rooms[roomId].booking
     tot
 
-  createResvSkyline:( arrive, depart, roomId, last, status, guests, pets, spa=false, cust={}, payments={} ) ->
+  createResvSkyline:( arrive, stayto, roomId, last, status, guests, pets, spa=false, cust={}, payments={} ) ->
     booked = Data.today()
     price  = @rooms[roomId][guests] + pets*Data.petPrice
-    nights = Data.nights( arrive, depart )
+    nights = Data.nights( arrive, stayto )
     total  = price * nights
-    @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments )
+    @createResv( arrive, stayto, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments )
 
-  createResvBooking:( arrive, depart, roomId, last, status, guests, total, booked ) ->
-    total  = if total is 0 then @rooms[roomId].booking * Data.nights( arrive, depart ) else total
+  createResvBooking:( arrive, stayto, roomId, last, status, guests, total, booked ) ->
+    total  = if total is 0 then @rooms[roomId].booking * Data.nights( arrive, stayto ) else total
     pets   = 0
-    @createResv( arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total )
+    @createResv( arrive, stayto, booked, roomId, last, status, guests, pets, 'Booking', total )
 
-  createResv:( arrive, depart, booked, roomId, last, status, guests, pets, source, total, spa=false, cust={}, payments={} ) ->
+  createResv:( arrive, stayto, booked, roomId, last, status, guests, pets, source, total, spa=false, cust={}, payments={} ) ->
     resv           = {}
-    resv.nights    = Data.nights( arrive, depart )
+    resv.nights    = Data.nights( arrive, stayto )
     resv.arrive    = arrive
-    resv.depart    = depart
+    resv.stayto    = stayto
+    resv.depart    = Data.advanceDate( stayto, 1 )
     resv.booked    = booked
-    resv.stayto    = Data.advanceDate( arrive, resv.nights - 1 )
     resv.roomId    = roomId
     resv.last      = last
     resv.status    = status
@@ -225,6 +221,13 @@ class Res
     resv.payments  = payments
     @updateDaysFromResv( resv )
     resv
+
+  # Copy the entire resv inluding cust and payments
+  copyResv:( r ) ->
+    c          = Object.assign( {}, r          )
+    c.cust     = Object.assign( {}, r.cust     )
+    c.payments = Object.assign( {}, r.payments )
+    c
 
   createCust:( first, last, phone, email, source ) ->
     cust = {}
@@ -299,23 +302,26 @@ class Res
 
   addResv:( resv ) ->
     @resvs[resv.resId] = resv
+    @updateDaysFromResv( resv )
     @store.add( 'Res', resv.resId, resv )
     return
 
   putResv:( resv ) ->
-    Util.error('Res.putResv resv null') if not resv?
     @resvs[resv.resId] = resv
+    @updateDaysFromResv( resv )
     @store.put( 'Res', resv.resId, resv )
     return
 
   delResv:( resv ) ->                     
     delete @resvs[resv.resId]
+    @deleteDaysFromResv( resv )
     @store.del( 'Res', resv.resId )
     return
 
   addCan:( can ) ->
     can['cancel'] = @today
     @cans[can.resId] = can
+    @deleteDaysFromResv( can )
     @store.add( 'Can', can.resId, can )
     return
     
@@ -331,7 +337,6 @@ class Res
 
   addDay:( day ) ->
     if day.status isnt 'Unknown'
-
       @days[day.dayId] = day
       @store.add( 'Day', day.dayId, day )
     else

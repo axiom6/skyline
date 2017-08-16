@@ -18,7 +18,6 @@
       this.master = master;
       this.resv = {};
       this.state = 'add';
-      this.lastResId = 'none';
     }
 
     Input.prototype.readyInput = function() {
@@ -39,6 +38,7 @@
       this.resv.stayto = stayto;
       this.resv.depart = Data.advanceDate(stayto, 1);
       this.resv.roomId = roomId;
+      this.resv.resId = Data.resId(arrive, roomId);
       this.resv.last = "";
       this.resv.status = 'Booking';
       this.resv.guests = 4;
@@ -49,34 +49,10 @@
       this.refreshResv(this.resv);
     };
 
-    Input.prototype.updateResv = function(arrive, stayto, roomId, resv) {
-      var ref;
-      ref = resv.resId !== this.lastResId ? [resv.arrive, resv.stayto] : [arrive, stayto], arrive = ref[0], stayto = ref[1];
-      if (this.updateDates(arrive, stayto, roomId, resv)) {
-        this.resv = resv;
-        this.state = 'put';
-        this.refreshResv(this.resv);
-        this.lastResId = this.resv.resId;
-      } else {
-        alert("Reservation Dates Not Free: Arrive" + arrive + " StayTo:" + stayto + " RoomId:#" + roomId + " Name:" + resv.last);
-      }
-    };
-
-    Input.prototype.updateDates = function(arrive, stayto, roomId, resv) {
-      var beg, end, free;
-      if (!((arrive != null) && (stayto != null) && (roomId != null))) {
-        return false;
-      }
-      beg = Math.min(arrive, stayto).toString();
-      end = Math.max(arrive, stayto).toString();
-      if (beg != null) {
-        resv.arrive = beg;
-      }
-      if (end != null) {
-        resv.stayto = end;
-      }
-      free = this.res.datesFree(arrive, stayto, roomId, resv);
-      return free;
+    Input.prototype.updateResv = function(resv) {
+      this.resv = this.res.copyResv(resv);
+      this.state = 'put';
+      this.refreshResv(this.resv);
     };
 
     Input.prototype.html = function() {
@@ -95,7 +71,7 @@
     };
 
     Input.prototype.action = function() {
-      var onMMDD, toDate;
+      var delDay, onMMDD, toDate;
       toDate = (function(_this) {
         return function(mmdd) {
           var dd, mi, ref;
@@ -103,34 +79,35 @@
           return Data.toDateStr(dd, mi);
         };
       })(this);
+      delDay = (function(_this) {
+        return function(date, roomId) {
+          var dayId;
+          dayId = Data.dayId(date, roomId);
+          return _this.res.delDay(_this.res.days[dayId]);
+        };
+      })(this);
       onMMDD = (function(_this) {
         return function(htmlId, mmdd0, mmdd1) {
-          var date0, date1, dayId, roomId;
+          var date0, date1, roomId;
           roomId = _this.resv.roomId;
           date0 = toDate(mmdd0);
           date1 = toDate(mmdd1);
           if (htmlId === 'NRArrive') {
-            if (date1 < date0) {
-              _this.master.fillCell(roomId, date1, _this.resv.status);
-            } else {
-              dayId = Data.dayId(date0, roomId);
-              _this.res.delDay(_this.res.days[dayId]);
-              _this.master.fillCell(roomId, date0, 'Free');
-            }
-            _this.res.allocResv(_this.resv, 'Free');
+            _this.res.delResv(_this.resv);
+            _this.resv.resId = Data.resId(date1, roomId);
             _this.resv.arrive = date1;
-            _this.res.allocResv(_this.resv, _this.resv.status);
+            _this.resv.nights = Data.nights(_this.resv.arrive, _this.resv.stayto);
+            _this.res.addResv(_this.resv);
+            _this.master.updArrival(date0, date1, _this.resv.roomId, _this.resv.last, _this.resv.status);
           } else if (htmlId === 'NRStayTo') {
-            if (date1 > date0) {
-              _this.master.fillCell(roomId, date1, _this.resv.status);
+            if (date1 < date0) {
+              _this.master.fillCell(date0, roomId, 'Free');
+              delDay(date0, roomId);
             } else {
-              dayId = Data.dayId(date0, roomId);
-              _this.res.delDay(_this.res.days[dayId]);
-              _this.master.fillCell(roomId, date0, 'Free');
+              _this.master.fillCell(date1, roomId, _this.resv.status);
             }
             _this.resv.stayto = date1;
           }
-          Util.log('Input.onMDD', htmlId, date0, date1, _this.resv.arrive, _this.resv.stayto);
           _this.refreshResv(_this.resv);
         };
       })(this);
@@ -206,7 +183,7 @@
 
     Input.prototype.refreshResv = function(resv) {
       resv.depart = Data.advanceDate(resv.stayto, 1);
-      resv.nights = Data.nights(resv.arrive, resv.depart);
+      resv.nights = Data.nights(resv.arrive, resv.stayto);
       resv.price = this.res.calcPrice(resv.roomId, resv.guests, resv.pets, resv.status);
       resv.deposit = resv.price * 0.5;
       resv.total = resv.nights * resv.price;
@@ -224,7 +201,7 @@
       $('#NRTotal').text('$' + resv.total);
       $('#NRTax').text('$' + resv.tax);
       $('#NRCharge').text('$' + resv.charge);
-      this.master.setLast(resv.arrive, resv.roomId, resv.last);
+      this.master.addLast(resv.arrive, resv.roomId, resv.last);
       if (this.state === 'add') {
         $('#NRCreate').show();
         $('#NRChange').hide();
@@ -237,68 +214,52 @@
     };
 
     Input.prototype.resvSubmits = function() {
-      var doDel, doRes;
+      var doRes;
       doRes = (function(_this) {
         return function() {
           var r;
           r = _this.resv;
           if (r.status === 'Skyline' || 'Deposit') {
-            r = _this.res.createResvSkyline(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.pets);
+            r = _this.res.createResvSkyline(r.arrive, r.stayto, r.roomId, r.last, r.status, r.guests, r.pets);
           } else if (r.status === 'Booking' || 'Prepaid') {
-            r = _this.res.createResvBooking(r.arrive, r.depart, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
+            r = _this.res.createResvBooking(r.arrive, r.stayto, r.roomId, r.last, r.status, r.guests, r.total, r.booked);
           } else {
-            r = null;
             alert("Unknown Reservation Status: " + r.status + " Name:" + r.last);
           }
-          _this.master.setLast(r.arrive, r.roomId, r.last);
-          return r;
-        };
-      })(this);
-      doDel = (function(_this) {
-        return function() {
-          _this.res.deleteDaysFromResv(_this.resv);
-          return _this.resv;
+          _this.master.addLast(r.arrive, r.roomId, r.last);
+          _this.resv = r;
         };
       })(this);
       $('#NRCreate').click((function(_this) {
         return function() {
-          var resv;
           if (Util.isStr(_this.resv.last)) {
-            resv = doRes();
-            if (resv != null) {
-              _this.res.addResv(resv);
-            }
+            doRes();
+            _this.res.addResv(_this.resv);
           } else {
-            alert('Incomplete Reservation');
+            alert('Incomplete Reservation Last Name Blank');
           }
         };
       })(this));
       $('#NRChange').click((function(_this) {
         return function() {
-          var resv;
-          resv = doDel();
-          resv = doRes();
-          if (resv != null) {
-            _this.res.putResv(resv);
-          }
+          _this.res.deleteDaysFromResv(_this.resv);
+          Util.log('Input.NRChange', _this.resv.resId, _this.resv.arrive, _this.resv.stayto);
+          doRes();
+          _this.res.putResv(_this.resv);
         };
       })(this));
       $('#NRDelete').click((function(_this) {
         return function() {
-          var resv;
-          resv = doDel();
-          resv.status = 'Cancel';
-          _this.res.delResv(resv);
+          _this.resv.status = 'Cancel';
+          _this.res.delResv(_this.resv);
         };
       })(this));
       return $('#NRCancel').click((function(_this) {
         return function() {
-          var resv;
-          resv = doRes();
-          resv.status = 'Cancel';
-          if (resv != null) {
-            _this.res.canResv(resv);
-          }
+          doRes();
+          _this.resv.status = 'Cancel';
+          _this.res.delResv(_this.resv);
+          _this.res.canResv(_this.resv);
         };
       })(this));
     };

@@ -42,7 +42,6 @@ class UI
       mmdd1 = Data.advanceMMDD(   mmdd0,  -1   )
       $mmdd.text( mmdd1 )
       onMMDD( htmlId, mmdd0, mmdd1 ) if onMMDD?
-      #Util.log( 'Input.decMMDD', mmdd0, mmdd1 )
       return
 
     incMMDD = () ->
@@ -51,7 +50,6 @@ class UI
       mmdd1 = Data.advanceMMDD(   mmdd0, 1     )
       $mmdd.text( mmdd1 )
       onMMDD( htmlId, mmdd0, mmdd1 ) if onMMDD?
-      # Util.log( 'Input.incMMDD', mmdd0, mmdd1 )
       return
 
     $('#'+htmlId+'L').click( decMMDD )

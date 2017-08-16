@@ -15,12 +15,10 @@ class Upload
   html:() ->
     htm  = ""
     htm += """<h1  class="UploadH1">Upload Booking.com</h1>"""
-    htm += """<button id="UploadRes" class="btn btn-primary">Upload Res</button>"""
-    htm += """<button id="UploadCan" class="btn btn-primary">Upload Can</button>"""
-    #tm += """<button id="CreateRes" class="btn btn-primary">Create Res</button>"""
-    #tm += """<button id="CreateCan" class="btn btn-primary">Create Can</button>"""
-    htm += """<button id="UpdateDay" class="btn btn-primary">Update Days</button>"""
-    htm += """<button id="CustomFix" class="btn btn-primary">Custom Fix</button>"""
+    htm += """<button   id="UploadRes"  class="btn btn-primary">Upload Res</button>"""
+    htm += """<button   id="UploadCan"  class="btn btn-primary">Upload Can</button>"""
+    htm += """<button   id="UpdateDay"  class="btn btn-primary">Update Day</button>"""
+    htm += """<button   id="CustomFix"  class="btn btn-primary">Custom Fix</button>"""
     htm += """<textarea id="UploadText" class="UploadText" rows="50" cols="100"></textarea>"""
     htm
 
@@ -67,6 +65,7 @@ class Upload
     names  = book.names.split(' ')
     arrive = @toResvDate( book.arrive )
     depart = @toResvDate( book.depart )
+    stayto = Data.advanceDate( depart, -1 )
     booked = @toResvDate( book.booked )
     roomId = @toResvRoomId( book.room )
     #first = names[0]
@@ -75,7 +74,7 @@ class Upload
     guests = @toNumGuests( names )
     total  = parseFloat( book.total.substr(3) )
     if status is 'Booking'
-      @res.createResvBooking( arrive, depart, roomId, last, status, guests, total, booked )
+      @res.createResvBooking( arrive, stayto, roomId, last, status, guests, total, booked )
     else
       null
 
@@ -101,6 +100,7 @@ class Upload
     @res.updateCancels(           @uploadedResvs )
     @uploadedResvs = {}
 
+  ### For dev only. Repopulates database
   onCreateRes:() =>
     Util.log( 'Upload.onCreateRes')
     for own resId, resv of @res.resvs
@@ -109,13 +109,17 @@ class Upload
     for own resId, resv of resvs
       @res.addResv( resv )
     return
+  ###
 
-  onUpdateDays:() =>
-    Util.log( 'Upload.onReUpdateDays')
-    for own dayId, day of @res.days
-      @res.delDay( day )
-    for own resId, resv of @res.resvs
-      @res.updateDaysFromResv( resv )
+  onUpdateDay:() =>
+    Util.log( 'Upload.onUpdateDay')
+    onComplete = () =>
+      for own dayId, day  of @res.days
+        @res.delDay( day )
+        #Util.log( 'Upload.onUpdateDay() day del', day )
+      for own resId, resv of @res.resvs
+        @res.updateDaysFromResv( resv )
+    @res.selectAllDays( onComplete )
     return
 
   onCreateCan:() =>
@@ -160,15 +164,14 @@ class Upload
   fixResv:( book ) ->
     arrive = @toFixDate(  book.arrive )
     stayto = @toFixDate(  book.stayto )
-    depart = Data.advanceDate( stayto, 1 )
-    nights = Data.nights( arrive, depart )
+    nights = Data.nights( arrive, stayto )
     roomId = book.room
     last   = book.last
     status = @toStatusFix( book.status )
     guests = book.guests
     booked = @toFixDate(  book.booked )
     total  = @res.total( status, nights, roomId, guests )
-    @res.createResv( arrive, depart, booked, roomId, last, status, guests, 0, status, total )
+    @res.createResv( arrive, stayto, booked, roomId, last, status, guests, 0, status, total )
 
   toFixDate:( mmdd ) ->
     [mi,dd] = if mmdd.length <= 2 then [6,parseInt(mmdd)] else Data.midd(mmdd)

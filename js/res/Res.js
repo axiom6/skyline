@@ -140,6 +140,9 @@
 
     Res.prototype.status = function(date, roomId) {
       var day, dayId, st;
+      if (roomId === 0) {
+        return 'Free';
+      }
       dayId = Data.dayId(date, roomId);
       day = this.days[dayId];
       st = day != null ? day.status : 'Free';
@@ -188,9 +191,8 @@
     };
 
     Res.prototype.dayIds = function(arrive, stayto, roomId) {
-      var depart, i, ids, j, nights, ref;
-      depart = Data.advanceDate(stayto, 1);
-      nights = Data.nights(arrive, depart);
+      var i, ids, j, nights, ref;
+      nights = Data.nights(arrive, stayto);
       ids = [];
       for (i = j = 0, ref = nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         ids.push(Data.dayId(Data.advanceDate(arrive, i), roomId));
@@ -231,15 +233,6 @@
       }
     };
 
-    Res.prototype.allocResv = function(resv, status) {
-      if (status == null) {
-        status = resv.status;
-      }
-      if (this.master != null) {
-        this.master.allocResv(resv, status);
-      }
-    };
-
     Res.prototype.updateResvs = function(newResvs) {
       var resId, resv;
       for (resId in newResvs) {
@@ -260,12 +253,16 @@
       return this.resvs;
     };
 
+    Res.prototype.isResvDay = function(day, resv) {
+      return (day != null) && day.resId === resv.resId;
+    };
+
     Res.prototype.daysFromResv = function(resv) {
       var dayId, days, i, j, ref;
       days = {};
       for (i = j = 0, ref = resv.nights; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         dayId = Data.dayId(Data.advanceDate(resv.arrive, i), resv.roomId);
-        days[dayId] = this.setDay({}, resv.status, resv.resId, dayId);
+        days[dayId] = this.isResvDay(this.days[dayId], resv) ? this.days[dayId] : this.setDay({}, resv.status, resv.resId, dayId);
       }
       return days;
     };
@@ -278,7 +275,6 @@
         day.status = 'Free';
       }
       this.allocDays(days);
-      this.allocResv(resv, 'Free');
       for (dayId in days) {
         day = days[dayId];
         this.delDay(day);
@@ -292,10 +288,11 @@
       }
       days = this.daysFromResv(resv);
       this.allocDays(days);
-      this.allocResv(resv);
-      for (dayId in days) {
-        day = days[dayId];
-        this.addDay(day);
+      if (add) {
+        for (dayId in days) {
+          day = days[dayId];
+          this.addDay(day);
+        }
       }
     };
 
@@ -342,7 +339,7 @@
       return tot;
     };
 
-    Res.prototype.createResvSkyline = function(arrive, depart, roomId, last, status, guests, pets, spa, cust, payments) {
+    Res.prototype.createResvSkyline = function(arrive, stayto, roomId, last, status, guests, pets, spa, cust, payments) {
       var booked, nights, price, total;
       if (spa == null) {
         spa = false;
@@ -355,19 +352,19 @@
       }
       booked = Data.today();
       price = this.rooms[roomId][guests] + pets * Data.petPrice;
-      nights = Data.nights(arrive, depart);
+      nights = Data.nights(arrive, stayto);
       total = price * nights;
-      return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
+      return this.createResv(arrive, stayto, booked, roomId, last, status, guests, pets, 'Skyline', total, spa, cust, payments);
     };
 
-    Res.prototype.createResvBooking = function(arrive, depart, roomId, last, status, guests, total, booked) {
+    Res.prototype.createResvBooking = function(arrive, stayto, roomId, last, status, guests, total, booked) {
       var pets;
-      total = total === 0 ? this.rooms[roomId].booking * Data.nights(arrive, depart) : total;
+      total = total === 0 ? this.rooms[roomId].booking * Data.nights(arrive, stayto) : total;
       pets = 0;
-      return this.createResv(arrive, depart, booked, roomId, last, status, guests, pets, 'Booking', total);
+      return this.createResv(arrive, stayto, booked, roomId, last, status, guests, pets, 'Booking', total);
     };
 
-    Res.prototype.createResv = function(arrive, depart, booked, roomId, last, status, guests, pets, source, total, spa, cust, payments) {
+    Res.prototype.createResv = function(arrive, stayto, booked, roomId, last, status, guests, pets, source, total, spa, cust, payments) {
       var resv;
       if (spa == null) {
         spa = false;
@@ -379,11 +376,11 @@
         payments = {};
       }
       resv = {};
-      resv.nights = Data.nights(arrive, depart);
+      resv.nights = Data.nights(arrive, stayto);
       resv.arrive = arrive;
-      resv.depart = depart;
+      resv.stayto = stayto;
+      resv.depart = Data.advanceDate(stayto, 1);
       resv.booked = booked;
-      resv.stayto = Data.advanceDate(arrive, resv.nights - 1);
       resv.roomId = roomId;
       resv.last = last;
       resv.status = status;
@@ -402,6 +399,14 @@
       resv.payments = payments;
       this.updateDaysFromResv(resv);
       return resv;
+    };
+
+    Res.prototype.copyResv = function(r) {
+      var c;
+      c = Object.assign({}, r);
+      c.cust = Object.assign({}, r.cust);
+      c.payments = Object.assign({}, r.payments);
+      return c;
     };
 
     Res.prototype.createCust = function(first, last, phone, email, source) {
@@ -522,25 +527,26 @@
 
     Res.prototype.addResv = function(resv) {
       this.resvs[resv.resId] = resv;
+      this.updateDaysFromResv(resv);
       this.store.add('Res', resv.resId, resv);
     };
 
     Res.prototype.putResv = function(resv) {
-      if (resv == null) {
-        Util.error('Res.putResv resv null');
-      }
       this.resvs[resv.resId] = resv;
+      this.updateDaysFromResv(resv);
       this.store.put('Res', resv.resId, resv);
     };
 
     Res.prototype.delResv = function(resv) {
       delete this.resvs[resv.resId];
+      this.deleteDaysFromResv(resv);
       this.store.del('Res', resv.resId);
     };
 
     Res.prototype.addCan = function(can) {
       can['cancel'] = this.today;
       this.cans[can.resId] = can;
+      this.deleteDaysFromResv(can);
       this.store.add('Can', can.resId, can);
     };
 

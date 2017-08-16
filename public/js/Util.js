@@ -895,7 +895,9 @@ Util = (function() {
     return array.sort(compare);
   };
 
-  Util.pad = function(n) {
+  Util.pad = function(m) {
+    var n;
+    n = Util.toInt(m);
     if (n < 10) {
       return '0' + n.toString();
     } else {

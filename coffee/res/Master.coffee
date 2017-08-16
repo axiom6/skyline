@@ -22,6 +22,7 @@ class Master
     @dateEnd       = @res.today
     @dateSel       = "End"
     @roomId        = null
+    @nextId        = null
     @resMode       = 'Table' # or 'Input'
 
   ready:() ->
@@ -37,9 +38,10 @@ class Master
     $('#DailysBtn').click( @onDailysBtn )
     $('#DailysPrt').click( @onDailysPrt )
     $('#UploadBtn').click( @onUploadBtn )
+    $('#ReadyMBtn').click( @readyMaster )
     #res.dateRange( Data.beg, Data.end, @readyMaster ) # This works
     #res.selectAllDaysResvs( @readyMaster )
-    @res.selectAllResvs(     @readyMaster, true )
+    @res.selectAllResvs( @readyMaster, true )
     return
 
   onMasterBtn:( onComplete=null ) =>
@@ -132,12 +134,11 @@ class Master
     $('#Dailys').hide()
     $('#Upload').append( @upload.html() ) if Util.isEmpty( $('#Upload').children() )
     @upload.bindUploadPaste()
-    $('#UploadRes').click( @upload.onUploadRes  )
-    $('#UploadCan').click( @upload.onUploadCan  )
-    $('#CreateRes').click( @upload.onCreateRes  )
-    $('#CreateDay').click( @upload.onUpdateDays )
-    $('#CreateCan').click( @upload.onCreateCan  )
-    $('#CustomFix').click( @upload.onCustomFix  )
+    $('#UploadRes').click( @upload.onUploadRes )
+    $('#UploadCan').click( @upload.onUploadCan )
+    $('#UpdateDay').click( @upload.onUpdateDay )
+    $('#CreateCan').click( @upload.onCreateCan )
+    $('#CustomFix').click( @upload.onCustomFix )
     $('#Upload').show()
     return
 
@@ -151,6 +152,7 @@ class Master
     @query.readyQuery()
     @input.readyInput()
     @readyCells()
+    #Util.log( 'Master.readyMaster()' )
     return
 
   readyCells:() =>
@@ -159,28 +161,37 @@ class Master
       @fillInCells( @dateBeg, @dateEnd, @roomId, 'Mine', 'Free' )
       $cell   = $(event.target)
       $cell   = if $cell.is('div') then $cell.parent() else $cell
-      date    = $cell.attr('data-date'   )
-      @roomId = $cell.attr('data-roomid' )
-      return if not date? or not @roomId?
-      [@dateBeg,@dateEnd,@dateSel] = @mouseDates(date)
+      date    = if $cell.is('td' ) then $cell.attr('data-date'  ) else Data.toDateStr( $cell.text() )
+      @nextId = if $cell.is('td' ) then $cell.attr('data-roomid') else 0
+      return if not date? or not @nextId?
+      [@dateBeg,@dateEnd,@dateSel,@roomId] = @mouseDates(date)
 
-      if @resMode is 'Table'
+      if @roomId is 0
+        $('#ResAdd').hide()
+        $('#ResTbl').show()
+        @fillInCells( @dateBeg, @dateEnd, @roomId, 'Free', 'Mine' )
         @query.updateBody( @dateBeg, @dateEnd, 'arrive' )
-      else if @resMode is 'Input'
+      else
+        $('#ResTbl').hide()
+        $('#ResAdd').show()
         resv = @res.getResv( date, @roomId )
         if not resv?
           @input.createResv( @dateBeg, @dateEnd, @roomId )
         else
-          @input.updateResv( @dateBeg, @dateEnd, @roomId, resv )
+          @input.updateResv( resv )
       return
 
+    $('thead #Day th'  ).click(       doCell )
     $('[data-cell="y"]').click(       doCell )
     $('[data-cell="y"]').contextmenu( doCell )
     return
 
   mouseDates:( date ) ->
     @res.order = 'Decend' # Will flip to 'Ascend'
-    if        @dateBeg <= date and date <= @dateEnd
+    if        @nextId isnt @roomId
+              @dateBeg  =  date
+              @dateEnd  =  date
+    else if   @dateBeg <= date and date <= @dateEnd
       if      @dateSel is 'Beg'
               @dateBeg  =  date
               @dateSel  = 'End'
@@ -191,7 +202,7 @@ class Master
       @dateEnd  = date if @dateEnd < date
       @dateBeg  = date if @dateBeg > date
     #Util.log( 'Master.mouseDates()', @dateBeg, date, @dateEnd, @dateSel )
-    [@dateBeg,@dateEnd,@dateSel]
+    [@dateBeg,@dateEnd,@dateSel,@nextId]
 
   # Only fill in freeStatus cells return success
   # Also order dates if necessary
@@ -209,7 +220,7 @@ class Master
       else
         return [null,null]
     for $cell in $cells
-       @cellStatus( $cell, fill )
+       if roomId is 0 then @dayStatus($cell,fill) else @cellStatus($cell,fill)
     [beg,end]
 
   listenToDays:() =>
@@ -264,12 +275,16 @@ class Master
     @cellStatus( @$cell('M',date,roomId), klass )
     return
 
-  fillCell:( roomId, date, klass ) ->
+  fillCell:( date, roomId, klass ) ->
     @cellStatus( @$cell('M',date,roomId), klass )
     return
 
   cellStatus:( $cell, klass ) ->
     $cell.removeClass().addClass( "room-"+klass)
+    $cell.css( { background:Data.toColor(klass) } )
+    return
+
+  dayStatus:( $cell, klass ) ->
     $cell.css( { background:Data.toColor(klass) } )
     return
 
@@ -312,10 +327,11 @@ class Master
     htm += """<tr><th></th>"""
     for day in [begDay..endDay]
       weekday = Data.weekdays[(weekdayIdx+day-1)%7].charAt(0)
-      htm += "<th>#{weekday}</th>"
-    htm  += "</tr><tr><th></th>"
+      htm += """<th>#{weekday}</th>"""
+    htm  += """</tr><tr id="Day""><th></th>"""
     for day in [begDay..endDay]
-      htm += "<th>#{day}</th>"
+      date = Data.toDateStr( day, monthIdx )
+      htm += """<th id="#{@cellId('M',date,0)}">#{day}</th>"""
     htm  += "</tr></thead><tbody>"
     for own roomId, room of @rooms
       htm += """<tr id="#{roomId}"><td>#{roomId}</td>"""
@@ -325,14 +341,6 @@ class Master
       htm += """</tr>"""
     htm += "</tbody></table>"
     htm
-
-  allocResv:( resv, status=resv.status ) ->
-    $cell = @$cell( 'M', resv.arrive, resv.roomId )
-    if status is 'Free'
-      $cell.remove( 'div' )
-    else
-      $cell.find('div').text( resv.last )
-    return
 
   createCell:( date, roomId ) ->
     [yy,mi,dd] = Data.yymidd( date )
@@ -344,7 +352,7 @@ class Master
     htm   += """data-roomid="#{roomId}" data-date="#{date}" data-cell="y">#{last}</td>""" # Lower case roomid
     htm
 
-  setLast:( date, roomId, last ) ->
+  addLast:(    date, roomId, last, status ) ->
     $cell = @$cell( 'M',  date,  roomId )
     $div  =  $cell.find('div')
     if UI.isElem( $div )
@@ -352,6 +360,16 @@ class Master
     else
       $cell.append( "<div>#{last}</div>" )
     return
+
+  updArrival:( arrive0, arrive1, roomId, last, status ) ->
+    @fillCell( arrive0, roomId, 'Free'       ) if arrive1 > arrive0
+    @delLast(  arrive0, roomId               )
+    @fillCell( arrive1, roomId, status       ) if arrive1 < arrive0
+    @addLast(  arrive1, roomId, last, status )
+    return
+
+  delLast:(     date, roomId ) ->
+    @$cell('M', date, roomId ).empty()
 
   border:( date, roomId,   resv, klass ) ->
     color = Data.toColor( klass )
