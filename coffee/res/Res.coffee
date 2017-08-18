@@ -404,17 +404,26 @@ class Res
     for own resId, resv of resvs
       array.push(  resv )
     @order = if @order is 'Decend' then 'Ascend' else 'Decend'
+    @order = 'Ascend' if prop is 'stayto'
     Util.quicksort( array, prop, @order )
 
-  resvSortDebug:( array, prop, order) ->
-    #til.log( '------ Res.sortArray() xxx', { a:array[0][prop], b:array[3][prop], sort:@stringAscend( array[0], array[3] ) } )
+  resvArrayDepart:( ) ->
+    array = []
+    beg   = Data.toDateStr( 1 )
+    end   = Data.toDateStr( Data.numDaysMonth() )
+    for resId, resv of @resvs when beg <= resv.depart and resv.depart <= end
+      array.push( resv )
+    Util.quicksort( array, 'depart', 'Ascend' )
+
+  resvSortDebug:( array, prop, order ) ->
     Util.log( array[i][prop] ) for i in [0...array.length]
-    #array = @sortArray( array, prop, 'string', 'Ascend' )
-    @order = if @order is 'Decend' then 'Ascend' else 'Decend'
     array = Util.quicksort( array, prop, order )
     Util.log( '------ Res.sortArray() end' )
     Util.log( array[i][prop] ) for i in [0...array.length]
     array
+
+    #array = @sortArray( array, prop, 'string', 'Ascend' )
+    #til.log( '------ Res.sortArray() xxx', { a:array[0][prop], b:array[3][prop], sort:@stringAscend( array[0], array[3] ) } )
 
 
 

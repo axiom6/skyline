@@ -67,11 +67,16 @@ class Master
     return
 
   onResTblPrt:() =>
-    @query.updateBody( @begQuery(), Data.toDateStr( Data.numDaysMonth() ), 'arrive' )
+    $('#QArrive').text( Data.ddMMDD( 1                   ) )
+    $('#QStayTo').text( Data.ddMMDD( Data.numDaysMonth() ) )
+    @query.resvBody( @res.resvArrayDepart() )
     onComplete = () =>
       $('#Buttons, #Master').hide( 'fast', @doPrint )
     @onMasterBtn( onComplete )
     return
+
+  begStayTo:() ->
+    Data.toDateStr( Data.numDaysMonth(), Data.monthIdx-1 )
 
   begQuery:() ->
     [yy,mi,dd] = Data.yymidd( @res.today )

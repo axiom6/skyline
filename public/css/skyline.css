@@ -253,6 +253,10 @@ img.center {
 .RTOldRow {
   background-color: #FFFFFF;
 }
+.RTTotRow {
+  background-color: #CCCCCC;
+  font-weight: bold;
+}
 .RTTable th {
   border: 1px solid grey;
   padding: 3px;
@@ -599,7 +603,7 @@ img.center {
   top: 40px;
   width: 92%;
   height: 250px;
-  font-size: 15px;
+  font-size: 14px;
 }
 .Master {
   position: relative;

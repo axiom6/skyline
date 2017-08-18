@@ -34,7 +34,10 @@
       var resvs;
       $('#QArrive').text(Data.toMMDD(beg));
       $('#QStayTo').text(Data.toMMDD(end));
-      resvs = {};
+      resvs = [];
+      if (prop === 'depart') {
+        resvs = this.res.resvArrayDepart();
+      }
       if (end != null) {
         resvs = this.res.resvArrayByProp(beg, end, prop);
       } else {
@@ -57,7 +60,8 @@
       htm += "<table class=\"RTTable\"><thead><tr>";
       htm += "<th id=\"RHArrive\">Arrive</th><th id=\"RHStayTo\">Stay To</th><th id=\"RHNights\">Nights</th><th id=\"RHRoom\"  >Room</th>";
       htm += "<th id=\"RHName\"  >Name</th>  <th id=\"RHGuests\">Guests</th> <th id=\"RHStatus\">Status</th><th id=\"RHBooked\">Booked</th>";
-      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHTotal\" >Total</th>  <th id=\"RHTax\"   >Tax</th>   <th id=\"RHCharge\">Charge</th>";
+      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHTotal\" >Total</th>  <th id=\"RHCommis\">Comm</th>  <th id=\"RHTax\"  >Tax</th>";
+      htm += "<th id=\"RHCharge\">Charge</th>";
       htm += "</tr><tr>";
       htm += "<th id=\"QArrive\"></th><th id=\"QStayTo\"></th><th></th><th></th>";
       htm += "<th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th>";
@@ -66,24 +70,45 @@
     };
 
     Query.prototype.resvBody = function(resvs) {
-      var arrive, booked, charge, htm, i, len, r, stayto, tax, trClass;
+      var arrive, booked, charge, charges, commis, commiss, htm, i, len, r, stayto, tax, taxes, totals, trClass;
       $('#RTBody').empty();
       htm = "";
+      totals = 0;
+      taxes = 0;
+      commiss = 0;
+      charges = 0;
       for (i = 0, len = resvs.length; i < len; i++) {
         r = resvs[i];
         arrive = Data.toMMDD(r.arrive);
         stayto = Data.toMMDD(r.stayto);
         booked = Data.toMMDD(r.booked);
+        commis = r.status === 'Booking' || r.status === 'Prepaid' ? '$' + Util.toFixed(r.total * Data.commis) : '';
         tax = Util.toFixed(r.total * Data.tax);
         charge = Util.toFixed(r.total + parseFloat(tax));
-        trClass = this.res.isNewResv(r) ? 'RTNewRow' : 'RTOldRow';
+        trClass = 'RTOldRow';
         htm += "<tr class=\"" + trClass + "\">";
         htm += "<td class=\"RTArrive\">" + arrive + "  </td><td class=\"RTStayto\">" + stayto + "</td><td class=\"RTNights\">" + r.nights + "</td>";
         htm += "<td class=\"RTRoomId\">" + r.roomId + "</td><td class=\"RTLast\"  >" + r.last + "</td><td class=\"RTGuests\">" + r.guests + "</td>";
         htm += "<td class=\"RTStatus\">" + r.status + "</td><td class=\"RTBooked\">" + booked + "</td><td class=\"RTPrice\" >$" + r.price + "</td>";
-        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCharge\">$" + charge + " </td></tr>";
+        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCommis\">" + commis + "  </td>";
+        htm += "<td class=\"RTCharge\">$" + charge + " </td></tr>";
+        totals += r.total;
+        taxes += r.total * Data.tax;
+        if (r.status === 'Booking' || r.status === 'Prepaid') {
+          commiss += r.total * Data.commis;
+        }
+        charges += r.total + parseFloat(tax);
       }
-      return $('#RTBody').append(htm);
+      taxes = Util.toFixed(taxes);
+      commiss = Util.toFixed(commiss);
+      charges = Util.toFixed(charges);
+      htm += "<tr class=\"'RTTotRow'\">";
+      htm += "<td class=\"RTArrive\">          </td><td class=\"RTStayto\">         </td><td class=\"RTNights\">           </td>";
+      htm += "<td class=\"RTRoomId\">          </td><td class=\"RTLast\"  >         </td><td class=\"RTGuests\">           </td>";
+      htm += "<td class=\"RTStatus\">          </td><td class=\"RTBooked\">         </td><td class=\"RTPrice\" >           </td>";
+      htm += "<td class=\"RTTotal\" >$" + totals + "</td><td class=\"RTTax\"   >$" + taxes + "  </td><td class=\"RTCommis\">" + commiss + "</td>";
+      htm += "<td class=\"RTCharge\">$" + charges + "</td></tr>";
+      $('#RTBody').append(htm);
     };
 
     return Query;

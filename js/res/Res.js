@@ -652,7 +652,25 @@
         array.push(resv);
       }
       this.order = this.order === 'Decend' ? 'Ascend' : 'Decend';
+      if (prop === 'stayto') {
+        this.order = 'Ascend';
+      }
       return Util.quicksort(array, prop, this.order);
+    };
+
+    Res.prototype.resvArrayDepart = function() {
+      var array, beg, end, ref, resId, resv;
+      array = [];
+      beg = Data.toDateStr(1);
+      end = Data.toDateStr(Data.numDaysMonth());
+      ref = this.resvs;
+      for (resId in ref) {
+        resv = ref[resId];
+        if (beg <= resv.depart && resv.depart <= end) {
+          array.push(resv);
+        }
+      }
+      return Util.quicksort(array, 'depart', 'Ascend');
     };
 
     Res.prototype.resvSortDebug = function(array, prop, order) {
@@ -660,7 +678,6 @@
       for (i = j = 0, ref = array.length; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         Util.log(array[i][prop]);
       }
-      this.order = this.order === 'Decend' ? 'Ascend' : 'Decend';
       array = Util.quicksort(array, prop, order);
       Util.log('------ Res.sortArray() end');
       for (i = k = 0, ref1 = array.length; 0 <= ref1 ? k < ref1 : k > ref1; i = 0 <= ref1 ? ++k : --k) {

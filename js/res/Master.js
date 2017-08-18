@@ -105,13 +105,19 @@
 
     Master.prototype.onResTblPrt = function() {
       var onComplete;
-      this.query.updateBody(this.begQuery(), Data.toDateStr(Data.numDaysMonth()), 'arrive');
+      $('#QArrive').text(Data.ddMMDD(1));
+      $('#QStayTo').text(Data.ddMMDD(Data.numDaysMonth()));
+      this.query.resvBody(this.res.resvArrayDepart());
       onComplete = (function(_this) {
         return function() {
           return $('#Buttons, #Master').hide('fast', _this.doPrint);
         };
       })(this);
       this.onMasterBtn(onComplete);
+    };
+
+    Master.prototype.begStayTo = function() {
+      return Data.toDateStr(Data.numDaysMonth(), Data.monthIdx - 1);
     };
 
     Master.prototype.begQuery = function() {

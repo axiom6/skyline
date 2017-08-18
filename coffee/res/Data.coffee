@@ -10,6 +10,7 @@ class Data
   @statusesSel = ["Deposit","Skyline","Prepaid",  "Booking","Cancel"]
   @sources     = ["Skyline","Booking","Website"]
   @tax         = 0.1055 # Official Estes Park tax rate. Also in Booking.com
+  @commis      = 0.15   # Bookings commision
   @season      = ["May","June","July","August","September","October"]
   @months      = ["January","February","March","April","May","June","July","August","September","October","November","December"]
   @months3     = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
@@ -187,6 +188,9 @@ class Data
 
   @toMMDD:( date ) ->
     [yy,mi,dd] = @yymidd( date )
+    Util.pad(mi+1) + '/' + Util.pad(dd)
+
+  @ddMMDD:( dd, mi=Data.monthIdx ) ->
     Util.pad(mi+1) + '/' + Util.pad(dd)
 
   @toMMDD2:( date ) ->

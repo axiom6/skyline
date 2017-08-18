@@ -33103,7 +33103,24 @@
 	        array.push(resv);
 	      }
 	      this.order = this.order === 'Decend' ? 'Ascend' : 'Decend';
+	      if (prop === 'stayto') {
+	        this.order = 'Ascend';
+	      }
 	      return Util.quicksort(array, prop, this.order);
+	    };
+
+	    Res.prototype.resvArrayDepart = function() {
+	      var array, end, ref, resId, resv;
+	      array = [];
+	      end = Data.toDateStr(Data.numDaysMonth());
+	      ref = this.resvs;
+	      for (resId in ref) {
+	        resv = ref[resId];
+	        if (1 <= resv.depart && resv.depart <= end) {
+	          array.push(resv);
+	        }
+	      }
+	      return Util.quicksort(array, prop, 'Ascend');
 	    };
 
 	    Res.prototype.resvSortDebug = function(array, prop, order) {
@@ -33516,13 +33533,19 @@
 
 	    Master.prototype.onResTblPrt = function() {
 	      var onComplete;
-	      this.query.updateBody(this.begQuery(), Data.toDateStr(Data.numDaysMonth()), 'arrive');
+	      $('#QArrive').text(Data.toMMDD(1));
+	      $('#QStayTo').text(Data.toMMDD(Data.numDaysMonth()));
+	      this.query.resvBody(this.res.resvArrayDepart());
 	      onComplete = (function(_this) {
 	        return function() {
 	          return $('#Buttons, #Master').hide('fast', _this.doPrint);
 	        };
 	      })(this);
 	      this.onMasterBtn(onComplete);
+	    };
+
+	    Master.prototype.begStayTo = function() {
+	      return Data.toDateStr(Data.numDaysMonth(), Data.monthIdx - 1);
 	    };
 
 	    Master.prototype.begQuery = function() {
@@ -34620,7 +34643,10 @@
 	      var resvs;
 	      $('#QArrive').text(Data.toMMDD(beg));
 	      $('#QStayTo').text(Data.toMMDD(end));
-	      resvs = {};
+	      resvs = [];
+	      if (prop === 'depart') {
+	        resvs = this.res.resvArrayDepart();
+	      }
 	      if (end != null) {
 	        resvs = this.res.resvArrayByProp(beg, end, prop);
 	      } else {
@@ -34643,7 +34669,8 @@
 	      htm += "<table class=\"RTTable\"><thead><tr>";
 	      htm += "<th id=\"RHArrive\">Arrive</th><th id=\"RHStayTo\">Stay To</th><th id=\"RHNights\">Nights</th><th id=\"RHRoom\"  >Room</th>";
 	      htm += "<th id=\"RHName\"  >Name</th>  <th id=\"RHGuests\">Guests</th> <th id=\"RHStatus\">Status</th><th id=\"RHBooked\">Booked</th>";
-	      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHTotal\" >Total</th>  <th id=\"RHTax\"   >Tax</th>   <th id=\"RHCharge\">Charge</th>";
+	      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHTotal\" >Total</th>  <th id=\"RHCommis\">Commiss</th><th id=\"RHTax\"  >Tax</th>";
+	      htm += "<th id=\"RHCharge\">Charge</th>";
 	      htm += "</tr><tr>";
 	      htm += "<th id=\"QArrive\"></th><th id=\"QStayTo\"></th><th></th><th></th>";
 	      htm += "<th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th>";
@@ -34652,7 +34679,7 @@
 	    };
 
 	    Query.prototype.resvBody = function(resvs) {
-	      var arrive, booked, charge, htm, i, len, r, stayto, tax, trClass;
+	      var arrive, booked, charge, commis, htm, i, len, r, stayto, tax, trClass;
 	      $('#RTBody').empty();
 	      htm = "";
 	      for (i = 0, len = resvs.length; i < len; i++) {
@@ -34660,6 +34687,7 @@
 	        arrive = Data.toMMDD(r.arrive);
 	        stayto = Data.toMMDD(r.stayto);
 	        booked = Data.toMMDD(r.booked);
+	        commis = r.status === 'Booking' || r.status === 'Prepaid' ? '$' + Util.toFixed(r.total * Data.commis) : '';
 	        tax = Util.toFixed(r.total * Data.tax);
 	        charge = Util.toFixed(r.total + parseFloat(tax));
 	        trClass = this.res.isNewResv(r) ? 'RTNewRow' : 'RTOldRow';
@@ -34667,7 +34695,8 @@
 	        htm += "<td class=\"RTArrive\">" + arrive + "  </td><td class=\"RTStayto\">" + stayto + "</td><td class=\"RTNights\">" + r.nights + "</td>";
 	        htm += "<td class=\"RTRoomId\">" + r.roomId + "</td><td class=\"RTLast\"  >" + r.last + "</td><td class=\"RTGuests\">" + r.guests + "</td>";
 	        htm += "<td class=\"RTStatus\">" + r.status + "</td><td class=\"RTBooked\">" + booked + "</td><td class=\"RTPrice\" >$" + r.price + "</td>";
-	        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCharge\">$" + charge + " </td></tr>";
+	        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCommis\">" + commis + "  </td>";
+	        htm += "<td class=\"RTCharge\">$" + charge + " </td></tr>";
 	      }
 	      return $('#RTBody').append(htm);
 	    };

@@ -22,6 +22,8 @@
 
     Data.tax = 0.1055;
 
+    Data.commis = 0.15;
+
     Data.season = ["May", "June", "July", "August", "September", "October"];
 
     Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -298,6 +300,13 @@
     Data.toMMDD = function(date) {
       var dd, mi, ref, yy;
       ref = this.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
+      return Util.pad(mi + 1) + '/' + Util.pad(dd);
+    };
+
+    Data.ddMMDD = function(dd, mi) {
+      if (mi == null) {
+        mi = Data.monthIdx;
+      }
       return Util.pad(mi + 1) + '/' + Util.pad(dd);
     };
 
