@@ -69,7 +69,7 @@ class Query
       htm += """<td class="RTArrive">#{arrive}  </td><td class="RTStayto">#{stayto}</td><td class="RTNights">#{r.nights}</td>"""
       htm += """<td class="RTRoomId">#{r.roomId}</td><td class="RTLast"  >#{r.last}</td><td class="RTGuests">#{r.guests}</td>"""
       htm += """<td class="RTStatus">#{r.status}</td><td class="RTBooked">#{booked}</td><td class="RTPrice" >$#{r.price}</td>"""
-      htm += """<td class="RTTotal" >$#{r.total}</td><td class="RTTax"   >$#{tax}  </td><td class="RTCommis">#{commis}  </td>"""
+      htm += """<td class="RTTotal" >$#{r.total}</td><td class="RTCommis">#{commis}</td><td class="RTTax"   >$#{tax}    </td>"""
       htm += """<td class="RTCharge">$#{charge} </td></tr>"""
       totals  += r.total
       taxes   += r.total * Data.tax
@@ -79,10 +79,10 @@ class Query
     commiss = Util.toFixed( commiss )
     charges = Util.toFixed( charges )
     htm += """<tr class="'RTTotRow'">"""
-    htm += """<td class="RTArrive">          </td><td class="RTStayto">         </td><td class="RTNights">           </td>"""
-    htm += """<td class="RTRoomId">          </td><td class="RTLast"  >         </td><td class="RTGuests">           </td>"""
-    htm += """<td class="RTStatus">          </td><td class="RTBooked">         </td><td class="RTPrice" >           </td>"""
-    htm += """<td class="RTTotal" >$#{totals}</td><td class="RTTax"   >$#{taxes}  </td><td class="RTCommis">#{commiss}</td>"""
+    htm += """<td class="RTArrive">          </td><td class="RTStayto">          </td><td class="RTNights">         </td>"""
+    htm += """<td class="RTRoomId">          </td><td class="RTLast"  >          </td><td class="RTGuests">         </td>"""
+    htm += """<td class="RTStatus">          </td><td class="RTBooked">          </td><td class="RTPrice" >         </td>"""
+    htm += """<td class="RTTotal" >$#{totals}</td><td class="RTCommis">#{commiss}</td><td class="RTTax"   >$#{taxes}</td>"""
     htm += """<td class="RTCharge">$#{charges}</td></tr>"""
     $('#RTBody').append( htm )
     return

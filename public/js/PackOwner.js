@@ -32120,6 +32120,8 @@
 
 	    Data.tax = 0.1055;
 
+	    Data.commis = 0.15;
+
 	    Data.season = ["May", "June", "July", "August", "September", "October"];
 
 	    Data.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -32396,6 +32398,13 @@
 	    Data.toMMDD = function(date) {
 	      var dd, mi, ref, yy;
 	      ref = this.yymidd(date), yy = ref[0], mi = ref[1], dd = ref[2];
+	      return Util.pad(mi + 1) + '/' + Util.pad(dd);
+	    };
+
+	    Data.ddMMDD = function(dd, mi) {
+	      if (mi == null) {
+	        mi = Data.monthIdx;
+	      }
 	      return Util.pad(mi + 1) + '/' + Util.pad(dd);
 	    };
 
@@ -33110,17 +33119,18 @@
 	    };
 
 	    Res.prototype.resvArrayDepart = function() {
-	      var array, end, ref, resId, resv;
+	      var array, beg, end, ref, resId, resv;
 	      array = [];
+	      beg = Data.toDateStr(1);
 	      end = Data.toDateStr(Data.numDaysMonth());
 	      ref = this.resvs;
 	      for (resId in ref) {
 	        resv = ref[resId];
-	        if (1 <= resv.depart && resv.depart <= end) {
+	        if (beg <= resv.depart && resv.depart <= end) {
 	          array.push(resv);
 	        }
 	      }
-	      return Util.quicksort(array, prop, 'Ascend');
+	      return Util.quicksort(array, 'depart', 'Ascend');
 	    };
 
 	    Res.prototype.resvSortDebug = function(array, prop, order) {
@@ -33128,7 +33138,6 @@
 	      for (i = j = 0, ref = array.length; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
 	        Util.log(array[i][prop]);
 	      }
-	      this.order = this.order === 'Decend' ? 'Ascend' : 'Decend';
 	      array = Util.quicksort(array, prop, order);
 	      Util.log('------ Res.sortArray() end');
 	      for (i = k = 0, ref1 = array.length; 0 <= ref1 ? k < ref1 : k > ref1; i = 0 <= ref1 ? ++k : --k) {
@@ -33533,8 +33542,8 @@
 
 	    Master.prototype.onResTblPrt = function() {
 	      var onComplete;
-	      $('#QArrive').text(Data.toMMDD(1));
-	      $('#QStayTo').text(Data.toMMDD(Data.numDaysMonth()));
+	      $('#QArrive').text(Data.ddMMDD(1));
+	      $('#QStayTo').text(Data.ddMMDD(Data.numDaysMonth()));
 	      this.query.resvBody(this.res.resvArrayDepart());
 	      onComplete = (function(_this) {
 	        return function() {
@@ -34669,7 +34678,7 @@
 	      htm += "<table class=\"RTTable\"><thead><tr>";
 	      htm += "<th id=\"RHArrive\">Arrive</th><th id=\"RHStayTo\">Stay To</th><th id=\"RHNights\">Nights</th><th id=\"RHRoom\"  >Room</th>";
 	      htm += "<th id=\"RHName\"  >Name</th>  <th id=\"RHGuests\">Guests</th> <th id=\"RHStatus\">Status</th><th id=\"RHBooked\">Booked</th>";
-	      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHTotal\" >Total</th>  <th id=\"RHCommis\">Commiss</th><th id=\"RHTax\"  >Tax</th>";
+	      htm += "<th id=\"RHPrice\" >Price</th> <th id=\"RHTotal\" >Total</th>  <th id=\"RHCommis\">Comm</th>  <th id=\"RHTax\"  >Tax</th>";
 	      htm += "<th id=\"RHCharge\">Charge</th>";
 	      htm += "</tr><tr>";
 	      htm += "<th id=\"QArrive\"></th><th id=\"QStayTo\"></th><th></th><th></th>";
@@ -34679,9 +34688,13 @@
 	    };
 
 	    Query.prototype.resvBody = function(resvs) {
-	      var arrive, booked, charge, commis, htm, i, len, r, stayto, tax, trClass;
+	      var arrive, booked, charge, charges, commis, commiss, htm, i, len, r, stayto, tax, taxes, totals, trClass;
 	      $('#RTBody').empty();
 	      htm = "";
+	      totals = 0;
+	      taxes = 0;
+	      commiss = 0;
+	      charges = 0;
 	      for (i = 0, len = resvs.length; i < len; i++) {
 	        r = resvs[i];
 	        arrive = Data.toMMDD(r.arrive);
@@ -34690,15 +34703,30 @@
 	        commis = r.status === 'Booking' || r.status === 'Prepaid' ? '$' + Util.toFixed(r.total * Data.commis) : '';
 	        tax = Util.toFixed(r.total * Data.tax);
 	        charge = Util.toFixed(r.total + parseFloat(tax));
-	        trClass = this.res.isNewResv(r) ? 'RTNewRow' : 'RTOldRow';
+	        trClass = 'RTOldRow';
 	        htm += "<tr class=\"" + trClass + "\">";
 	        htm += "<td class=\"RTArrive\">" + arrive + "  </td><td class=\"RTStayto\">" + stayto + "</td><td class=\"RTNights\">" + r.nights + "</td>";
 	        htm += "<td class=\"RTRoomId\">" + r.roomId + "</td><td class=\"RTLast\"  >" + r.last + "</td><td class=\"RTGuests\">" + r.guests + "</td>";
 	        htm += "<td class=\"RTStatus\">" + r.status + "</td><td class=\"RTBooked\">" + booked + "</td><td class=\"RTPrice\" >$" + r.price + "</td>";
 	        htm += "<td class=\"RTTotal\" >$" + r.total + "</td><td class=\"RTTax\"   >$" + tax + "  </td><td class=\"RTCommis\">" + commis + "  </td>";
 	        htm += "<td class=\"RTCharge\">$" + charge + " </td></tr>";
+	        totals += r.total;
+	        taxes += r.total * Data.tax;
+	        if (r.status === 'Booking' || r.status === 'Prepaid') {
+	          commiss += r.total * Data.commis;
+	        }
+	        charges += r.total + parseFloat(tax);
 	      }
-	      return $('#RTBody').append(htm);
+	      taxes = Util.toFixed(taxes);
+	      commiss = Util.toFixed(commiss);
+	      charges = Util.toFixed(charges);
+	      htm += "<tr class=\"'RTTotRow'\">";
+	      htm += "<td class=\"RTArrive\">          </td><td class=\"RTStayto\">         </td><td class=\"RTNights\">           </td>";
+	      htm += "<td class=\"RTRoomId\">          </td><td class=\"RTLast\"  >         </td><td class=\"RTGuests\">           </td>";
+	      htm += "<td class=\"RTStatus\">          </td><td class=\"RTBooked\">         </td><td class=\"RTPrice\" >           </td>";
+	      htm += "<td class=\"RTTotal\" >$" + totals + "</td><td class=\"RTTax\"   >$" + taxes + "  </td><td class=\"RTCommis\">" + commiss + "</td>";
+	      htm += "<td class=\"RTCharge\">$" + charges + "</td></tr>";
+	      $('#RTBody').append(htm);
 	    };
 
 	    return Query;
