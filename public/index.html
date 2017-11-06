@@ -1,32 +1,40 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Owner</title>
+  <title>Skyline Cottages in Estes Park</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
   <link href="css/skyline.css" rel="stylesheet" type="text/css"/>
+  <link href="css/slide.css"   rel="stylesheet" type="text/css"/>
   <link href="css/payment.css" rel="stylesheet" type="text/css"/>
   <script src="js/Util.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/3.7.0/firebase.js"></script>
+  <script src="js/Tiny.js"></script>
+  <!--script src="https://www.gstatic.com/firebasejs/3.7.0/firebase.js"></script-->
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-messaging.js"></script>
+
 </head>
 <body class="body">
-<div id="Buttons" class="Buttons">
-  <button id="MasterBtn" class="btn btn-primary">Days</button>
-  <button id="MasterPrt" class="btn btn-primary">Print Days</button>
-  <button id="ResTblPrt" class="btn btn-primary">Print Table</button>
-  <button id="MakResBtn" class="btn btn-primary">Reservation</button>
-  <button id="SeasonBtn" class="btn btn-primary">Month</button>
-  <button id="SeasonPrt" class="btn btn-primary">Print Month</button>
-  <button id="DailysBtn" class="btn btn-primary">Daily</button>
-  <button id="DailysPrt" class="btn btn-primary">Print Daily</button>
-  <button id="UploadBtn" class="btn btn-primary">Upload</button>
-  <button id="ReadyMBtn" class="btn btn-primary">Refresh</button>
-</div>
-<div id="Master" class="Master"></div>
-<div id="Season" class="Season"></div>
-<div id="ResAdd" class="ResAdd"></div>
-<div id="ResTbl" class="ResTbl"></div>
-<div id="Dailys" class="Dailys"></div>
-<div id="Upload" class="Upload"></div>
-<script>Util.init( 'js/res/Owner',  'js/PackOwner.js', "../", "skyline" )</script>
+  <img src="img/all/SC-Logo001b.jpg" class="center">
+  <!--button id="MakeRes" class="btn btn-primary">Make Your<br/>Reservation</button-->
+  <button id="HomeBtn" class="btn btn-primary">Back to<br/>Home Page</button>
+  <button id="MapDirs" class="btn btn-primary">Map and<br/>Directions</button>
+  <button id="Contact" class="btn btn-primary">Contact</button>
+  <div    id="Caption">1/2 mile from Rocky Mountain National Park on the Big Thompson River</div>
+  <div id='Head' class="Head" style="height:80px;"></div>
+  <div id="View"><div id="Slides"></div>
+    <div id="ViewVid">
+      <iframe id="Video" title="Skyline Cottages" class="youtube-player"
+        src="https://www.youtube.com/embed/MsUfGee7kYY"
+        frameborder="0" allowFullScreen></iframe>
+    </div>
+  </div>
+  <div id="Book"></div>
+  <div id="Pays"></div>
+  <script>Util.init( 'js/res/Guest','js/PackGuest.js', "", "skyline" )</script>
 </body>
 </html>

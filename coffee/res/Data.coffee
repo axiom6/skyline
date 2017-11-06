@@ -34,6 +34,25 @@ class Data
 
   # npm -g install webpack@3.0.0 --save-dev
 
+  @configSkyriver = {
+    apiKey: "AIzaSyDJxypukgOw20z80EZW9w1ObgyqB20qfYI",
+    authDomain: "skyriver-81c21.firebaseapp.com",
+    databaseURL: "https://skyriver-81c21.firebaseio.com",
+    projectId: "skyriver-81c21",
+    storageBucket: "skyriver-81c21.appspot.com",
+    messagingSenderId: "1090600167020" }
+
+  @tomUID = "4eKA0L3Gl0aR8LSAnFtAlOMWLUd2"
+  @skyUID = "zf3UMOQz8FZiQ5hBypHeoAhDQnn2"
+  @sueUID = "K2osvFYkZoTGVzkEqdqrH8rkr8h2"
+  @skyPrj = "project-1090600167020"
+
+  ###
+    SkylineOnTheRiver.com 	TXT 	v=spf1 include:_spf.firebasemail.com ~all
+    smtpapi._domainkey.SkylineOnTheRiver.com 	TXT 	k=rsa; t=s; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDPtW5iwpXVPiH5FzJ7Nrl8USzuY9zqqzjE0D1r04xDN6qwziDnmgcFNNfMewVKN2D1O+2J9N14hRprzByFwfQW76yojh54Xu3uSbQ3JP0A7k8o8GutRF8zbFUA8n0ZH2y0cIEjMliXY4W4LwPA7m4q0ObmvSjhd63O9d8z1XkUBwIDAQAB
+    SkylineOnTheRiver.com 	TXT 	firebase=skyriver-81c21
+  ###
+
   @configSkytest = {
     apiKey: "AIzaSyAH4gtA-AVzTkwO_FXiEOlgDRK1rKLdJ2k",
     authDomain: "skytest-25d1c.firebaseapp.com",
@@ -57,9 +76,12 @@ class Data
     if index > 0 then Data.colors[index] else "yellow"
 
   @config:( uri ) ->
-    if uri is 'skyline' then @configSkyline else @configSkytest
+    switch  uri
+      when 'skyriver' then @configSkyriver
+      when 'skyline'  then @configSkyline
+      else                 @configSkytest
 
-  @databases = { skyline:"skyline-fed2b", skytest:"skytest-25d1c" }
+  @databases = { skyriver:"skyline-fed2b", skyline:"skyline-fed2b", skytest:"skytest-25d1c" }
 
   @stripeTestKey = "sk_test_FCa6Z3AusbsdhyV93B4CdWnV"
   @stripeTestPub = "pk_test_0VHIhWRH8hFwSeP2n084Ze4L"
