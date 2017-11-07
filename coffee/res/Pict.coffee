@@ -1,13 +1,11 @@
 
-$      = Util.requireModule('jquery',   'skyline')
-#Slide = Util.requireModule('js/Slide', 'skyline')
-#$     = require('jquery')
-#Slide = require('js/res/Slide')
+$ = Util.requireModule( 'jquery', 'skyline' )
 
 class Pict
 
-  module.exports = Pict if module? and module.exports?
-  window.Pict    = Pict
+  window.Pict = Pict
+
+  #console.log( window )
 
   @page:( title, prev, curr, next ) ->
     pict = new Pict()
@@ -35,17 +33,13 @@ class Pict
   createSlideShow:( parentId, roomId, w,  h ) ->
     $('#'+parentId).append( @wrapperHtml() )
     images = (Img) =>
-      htm = ""
-      #Util.log('Pict.createSlideShow()', Img )
+      htm = "" #Util.log('Pict.createSlideShow()', Img )
       dir = Img[roomId].dir
       for pic in Img[roomId]['pics']
         htm += @li( pic, dir )
       $('#slideshow').append( htm )
       @initTINY( w, h )
-      #@slide = @initSlide( w, h )
-    url = if roomId is 'M' then '../public/img/img.json' else '../img/img.json'
-    #url  = '../public/img/img.json'
-    #url  = '../data/img.json'
+    url = if parentId is 'RoomSlides' then '../img/img.json'  else 'img/img.json'
     $.getJSON( url, images )
     return
 

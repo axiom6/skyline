@@ -10,11 +10,17 @@
   <link href="css/payment.css" rel="stylesheet" type="text/css"/>
   <script src="js/Util.js"></script>
   <script src="js/Tiny.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/3.7.0/firebase.js"></script>
+  <script src="js/jquery-3.2.1.js"></script>
+  <script src="js/Pict.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-messaging.js"></script>
 </head>
 <body class="body">
-  <img src="img/all/SC-Logo001b.jpg" class="center">
-  <button id="MakeRes" class="btn btn-primary">Make Your<br/>Reservation</button>
+  <img src="img/site/SkylineLogo.jpg" class="center">
+  <!--button id="MakeRes" class="btn btn-primary">Make Your<br/>Reservation</button-->
   <button id="HomeBtn" class="btn btn-primary">Back to<br/>Home Page</button>
   <button id="MapDirs" class="btn btn-primary">Map and<br/>Directions</button>
   <button id="Contact" class="btn btn-primary">Contact</button>
@@ -27,6 +33,14 @@
         frameborder="0" allowFullScreen></iframe>
     </div>
   </div>
+
+  <div class="Gallery"><div id="First"   ></div></div>
+  <div class="Gallery"><div id="Deck"    ></div></div>
+  <div class="Gallery"><div id="Mtn"     ></div></div>
+  <div class="Gallery"><div id="River"   ></div></div>
+  <div class="Gallery"><div id="Walk"    ></div></div>
+  <div class="Gallery"><div id="Wildlife"></div></div>
+
   <div id="Book"></div>
   <div id="Pays"></div>
   <script>Util.init( 'js/res/Guest','js/PackGuest.js', "", "skyline" )</script>

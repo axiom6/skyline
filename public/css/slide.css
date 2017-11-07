@@ -69,11 +69,11 @@
 }
 #imgprev {
   left: 0;
-  background: url(../img/tiny/left.gif) left center no-repeat;
+  background: url(../img/site/left.gif) left center no-repeat;
 }
 #imgnext {
   right: 0;
-  background: url(../img/tiny/right.gif) right center no-repeat;
+  background: url(../img/site/right.gif) right center no-repeat;
 }
 #imglink {
   position: absolute;
@@ -90,7 +90,7 @@
   float: left;
   width: 20px;
   height: 81px;
-  background: #222 url(../img/tiny/scroll-left.gif) no-repeat center center;
+  background: #222 url(../img/site/scroll-left.gif) no-repeat center center;
 }
 #slideleft:hover {
   background-color: #333;
@@ -99,7 +99,7 @@
   float: right;
   width: 20px;
   height: 81px;
-  background: #222 url(../img/tiny/scroll-right.gif) center center no-repeat;
+  background: #222 url(../img/site/scroll-right.gif) center center no-repeat;
 }
 #slideright:hover {
   background-color: #333;

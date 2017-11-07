@@ -9,20 +9,19 @@
 
     Guest.init = function() {
       return Util.ready(function() {
-        var Book, Data, Fire, Home, Pay, Pict, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
+        var Book, Data, Fire, Home, Pay, Res, Stream, Test, book, home, pay, pict, res, store, stream, test;
         Util.jquery = require('jquery');
         Stream = require('js/store/Stream');
         Fire = require('js/store/Fire');
         Data = require('js/res/Data');
         Home = require('js/res/Home');
-        Pict = require('js/res/Pict');
         Res = require('js/res/Res');
         Pay = require('js/res/Pay');
         Book = require('js/res/Book');
         Test = require('js/res/Test');
-        pict = new Pict();
+        pict = new window.Pict();
         stream = new Stream([]);
-        store = new Fire(stream, "skyriver", Data.configSkyriver);
+        store = new Fire(stream, "skyline", Data.configSkyline);
         res = new Res(stream, store, 'Guest');
         home = new Home(stream, store, res, pict);
         pay = new Pay(stream, store, res, home);

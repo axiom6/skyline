@@ -10,20 +10,17 @@ class Guest
       Util.jquery = require( 'jquery' ) # Allows Pick cto be called outside of CommonJS
 
       Stream  = require( 'js/store/Stream' )
-      Fire    = require( 'js/store/Fire'   )
-      #Memory = require( 'js/store/Memory' )
+      Fire    = require( 'js/store/Fire'   ) #Memory = require( 'js/store/Memory' )
       Data    = require( 'js/res/Data'     )
       Home    = require( 'js/res/Home'     )
-      Pict    = require( 'js/res/Pict'     )
       Res     = require( 'js/res/Res'      )
       Pay     = require( 'js/res/Pay'      )
       Book    = require( 'js/res/Book'     )
       Test    = require( 'js/res/Test'     )
 
-      pict   = new Pict()
+      pict   = new window.Pict()
       stream = new Stream( [] )
-      store  = new Fire(   stream, "skyriver", Data.configSkyriver )
-      #store = new Memory( stream, "skyriver"  )
+      store  = new Fire(   stream, "skyline", Data.configSkyline ) #store = new Memory( stream, "skyriver"  )
       res    = new Res(    stream, store, 'Guest' )
       home   = new Home(   stream, store, res, pict )
       pay    = new Pay(    stream, store, res, home )

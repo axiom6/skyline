@@ -17,7 +17,15 @@ class Home
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
     $('#Head').append( @headHtml() )
     @listRooms()
-    @pict.createSlideShow('Slides', 'M', 600, 600 )
+
+    @pict.createSlideShow( 'Slides',   'First',    600, 600 )
+    #pict.createSlideShow( 'Deck',     'Deck',     600, 600 )
+    #pict.createSlideShow( 'Mtn',      'Mtn',      600, 600 )
+    #pict.createSlideShow( 'River',    'River',    600, 600 )
+    #pict.createSlideShow( 'Walk',     'Walk',     600, 600 )
+    #pict.createSlideShow( 'Wildlife', 'Wildlife', 600, 600 )
+    #pict.createSlideShow( 'Yard',     'Yard',     600, 600 )
+
     $('#VideoSee').click( @pict.onVideo )
     return
 

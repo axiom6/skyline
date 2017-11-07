@@ -127,6 +127,15 @@ img.center {
   border-radius: 12px;
   margin-left: 10px;
 }
+.Gallery {
+  position: relative;
+  left: 0;
+  width: 100%;
+  top: 0;
+  height: 740px;
+  background-color: #555;
+  color: yellow;
+}
 #View {
   position: relative;
   left: 0;

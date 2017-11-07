@@ -1,5 +1,5 @@
 {
-  "M": { "dir":"img/scenic/", "pics":[
+  "First": { "dir":"img/scenic/", "pics":[
     { "src":"SC-Sign.jpg",             "name":"Sign in Front on Highway 66",    "p":"<br/>"      },
     { "src":"SC-DownRiver.jpg",        "name":"Early morning looking downstream from Skyline Cottages.",       "p":"<br/>"  },
     { "src":"SC-Patio001.jpg",         "name":"Dine or relax on riverside deck with fantastic views of Long's Peak.", "p":"<br/>" },
@@ -8,6 +8,18 @@
     { "src":"SC-RiverWithLongs.jpg",   "name":"Looking Upstream on The Big Thompson River with Long's Peak.", "p":"<br/>" },
     { "src":"SLC-BigFish001.jpg",      "name":"Trophy Catch! A Seven Pound, 26-inch Rainbow Trout",    "p":"Caught from Skyline's riverwalk. Fishing rods available at office."   },
     { "src":"SLC-ElkInYard.jpg",       "name":"Majestic Elk from Private Deck",     "p":"<br/>"  } ] },
+  "Deck": { "dir":"../img/r1/", "pics":[
+    { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed.", "p":"<br/>"       } ] },
+  "Mtn": { "dir":"../img/r1/", "pics":[
+    { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed.", "p":"<br/>"       } ] },
+  "River": { "dir":"../img/r1/", "pics":[
+    { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed.", "p":"<br/>"       } ] },
+  "Walk": { "dir":"../img/r1/", "pics":[
+    { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed.", "p":"<br/>"       } ] },
+  "Wildlife": { "dir":"../img/r1/", "pics":[
+    { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed.", "p":"<br/>"       } ] },
+  "Yard": { "dir":"../img/r1/", "pics":[
+    { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed.", "p":"<br/>"       } ] },
   "1": { "dir":"../img/r1/", "pics":[
     { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed.", "p":"<br/>"       } ] },
   "2": { "dir":"../img/r2/", "pics":[
