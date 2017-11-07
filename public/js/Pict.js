@@ -34,6 +34,7 @@
     Pict.prototype.createSlideShow = function(parentId, roomId, w, h) {
       var images, url,
         _this = this;
+      $('#' + parentId).empty();
       $('#' + parentId).append(this.wrapperHtml());
       images = function(Img) {
         var dir, htm, pic, _i, _len, _ref;
@@ -58,7 +59,7 @@
     Pict.prototype.onVideo = function() {
       window.slideshow.auto = false;
       $('#Slides').hide();
-      $('#Video').show();
+      $('#VideoView').show();
       $('#ViewVid').show();
       $('#VideoSee').text('View Slides').click(this.onSlides);
     };

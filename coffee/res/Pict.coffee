@@ -30,10 +30,11 @@ class Pict
     $('#top').append( htm )
     return
 
-  createSlideShow:( parentId, roomId, w,  h ) ->
+  createSlideShow:( parentId, roomId, w, h ) ->
+    $('#'+parentId).empty()
     $('#'+parentId).append( @wrapperHtml() )
     images = (Img) =>
-      htm = "" #Util.log('Pict.createSlideShow()', Img )
+      htm = ""
       dir = Img[roomId].dir
       for pic in Img[roomId]['pics']
         htm += @li( pic, dir )
@@ -48,10 +49,10 @@ class Pict
 
   onVideo:() =>
     window.slideshow.auto=false
-    $('#Slides'  ).hide()
-    $('#Video'   ).show()
-    $('#ViewVid' ).show()
-    $('#VideoSee').text('View Slides').click( @onSlides )
+    $('#Slides'   ).hide()
+    $('#VideoView').show()
+    $('#ViewVid'  ).show()
+    $('#VideoSee' ).text('View Slides').click( @onSlides )
     return
 
   onSlides:(  ) =>

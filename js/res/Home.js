@@ -34,8 +34,29 @@
         return Util.toPage('rooms/Y.html');
       });
       $('#Head').append(this.headHtml());
-      this.listRooms();
+      this.viewHtml();
       this.pict.createSlideShow('Slides', 'First', 600, 600);
+      $('#First').click(function() {
+        return _this.pict.createSlideShow('Slides', 'First', 600, 600);
+      });
+      $('#Deck').click(function() {
+        return _this.pict.createSlideShow('Slides', 'Deck', 600, 600);
+      });
+      $('#Mtn').click(function() {
+        return _this.pict.createSlideShow('Slides', 'Mtn', 600, 600);
+      });
+      $('#River').click(function() {
+        return _this.pict.createSlideShow('Slides', 'River', 600, 600);
+      });
+      $('#Walk').click(function() {
+        return _this.pict.createSlideShow('Slides', 'Walk', 600, 600);
+      });
+      $('#Wild').click(function() {
+        return _this.pict.createSlideShow('Slides', 'Wild', 600, 600);
+      });
+      $('#Yard').click(function() {
+        return _this.pict.createSlideShow('Slides', 'Yard', 600, 600);
+      });
       $('#VideoSee').click(this.pict.onVideo);
     };
 
@@ -43,13 +64,14 @@
       return "<ul class=\"Head1\">\n <li>Trout Fishing</li>\n <li>Bring your Pet</li>\n <li>Owner On Site</li>\n</ul>\n<ul class=\"Head2\">\n  <li>Hiking</li>\n  <li>Free Wi-Fi</li>\n  <li>Cable TV</li>\n</ul>\n<ul class=\"Head3\">\n  <li>Private Parking Spaces</li>\n  <li>Kitchens in Every Cabin</li>\n  <li>3 Private Spas</li>\n</ul>\n<ul class=\"Head4\">\n  <li>Private Barbecue Grills</li>\n  <li>All Non-Smoking Cabins</li>\n  <li>Wood Burning Fireplaces</li>\n</ul>";
     };
 
-    Home.prototype.listRooms = function() {
+    Home.prototype.viewHtml = function() {
       var htm, room, roomId, _ref;
       $('#Slides').css({
         left: "22%",
         width: "78%"
       });
       htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
+      htm += this.viewBtns();
       htm += "<div class=\"RoomSee\">See Our Cabins</div>";
       htm += "<div class=\"FootSee\">Skyline Cottages Where the River Meets the Mountains</div>";
       htm += "<ul  class=\"RoomUL\">";
@@ -61,7 +83,10 @@
       }
       htm += "</ul>";
       $("#View").append(htm);
-      $("#View").append("<button id=\"VideoSee\" class=\"btn btn-primary\"\">View Video</button>");
+    };
+
+    Home.prototype.viewBtns = function() {
+      return "<div id=\"ViewBtns\">\n  <span id=\"Video\">Video</span>\n  <span id=\"First\">Overview</span>\n  <span id=\"Deck\" >Deck</span>\n  <span id=\"Mtn\"  >Mountains</span>\n  <span id=\"River\">River</span>\n  <span id=\"Walk\" >Walk</span>\n  <span id=\"Wild\" >Wildlife</span>\n  <span id=\"Yard\" >Yard</span>\n</div>";
     };
 
     Home.prototype.hideMkt = function() {

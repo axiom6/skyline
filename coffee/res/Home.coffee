@@ -12,19 +12,21 @@ class Home
   ready:( book ) ->
     @book = book
     $('#MakeRes').click( @onMakeRes )
-    $('#HomeBtn').click( @onHome )
+    $('#HomeBtn').click( @onHome    )
     $('#MapDirs').click( () => Util.toPage('rooms/X.html') )
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
     $('#Head').append( @headHtml() )
-    @listRooms()
+    @viewHtml()
 
     @pict.createSlideShow( 'Slides',   'First',    600, 600 )
-    #pict.createSlideShow( 'Deck',     'Deck',     600, 600 )
-    #pict.createSlideShow( 'Mtn',      'Mtn',      600, 600 )
-    #pict.createSlideShow( 'River',    'River',    600, 600 )
-    #pict.createSlideShow( 'Walk',     'Walk',     600, 600 )
-    #pict.createSlideShow( 'Wildlife', 'Wildlife', 600, 600 )
-    #pict.createSlideShow( 'Yard',     'Yard',     600, 600 )
+
+    $('#First').click( () => @pict.createSlideShow( 'Slides', 'First', 600, 600 ) )
+    $('#Deck' ).click( () => @pict.createSlideShow( 'Slides', 'Deck',  600, 600 ) )
+    $('#Mtn'  ).click( () => @pict.createSlideShow( 'Slides', 'Mtn',   600, 600 ) )
+    $('#River').click( () => @pict.createSlideShow( 'Slides', 'River', 600, 600 ) )
+    $('#Walk' ).click( () => @pict.createSlideShow( 'Slides', 'Walk',  600, 600 ) )
+    $('#Wild' ).click( () => @pict.createSlideShow( 'Slides', 'Wild',  600, 600 ) )
+    $('#Yard' ).click( () => @pict.createSlideShow( 'Slides', 'Yard',  600, 600 ) )
 
     $('#VideoSee').click( @pict.onVideo )
     return
@@ -53,9 +55,10 @@ class Home
     </ul>
     """
 
-  listRooms:() ->
+  viewHtml:() ->
     $('#Slides').css( { left:"22%", width:"78%" })
     htm  = """<div class="HomeSee">Enjoy Everything Skyline Has to Offer</div>"""
+    htm += @viewBtns()
     htm += """<div class="RoomSee">See Our Cabins</div>"""
     htm += """<div class="FootSee">Skyline Cottages Where the River Meets the Mountains</div>"""
     htm += """<ul  class="RoomUL">"""
@@ -63,8 +66,21 @@ class Home
       htm += """<li class="RoomLI"><a href="rooms/#{roomId}.html">#{room.name}</a></li>"""
     htm += """</ul>"""
     $("#View").append( htm )
-    $("#View").append("""<button id="VideoSee" class="btn btn-primary"">View Video</button>""")
     return
+
+  viewBtns:() ->
+    """<div id="ViewBtns">
+         <span id="Video">Video</span>
+         <span id="First">Overview</span>
+         <span id="Deck" >Deck</span>
+         <span id="Mtn"  >Mountains</span>
+         <span id="River">River</span>
+         <span id="Walk" >Walk</span>
+         <span id="Wild" >Wildlife</span>
+         <span id="Yard" >Yard</span>
+       </div>
+     """
+    #$("#View").append("""<button id="VideoSee" class="btn btn-primary"">View Video</button>""")
 
   hideMkt:() ->
     $('#MakeRes').hide()
