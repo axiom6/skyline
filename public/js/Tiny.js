@@ -119,8 +119,8 @@ TINY.slideshow.prototype={
     this.i=i;
     i.onload=new Function(this.n+'.le('+s+','+c+')');
     i.src=this.a[s].p;
-    //i.width  = slideshow.width;
-    //i.height = slideshow.height;
+    //i.style.width  = window.slideshow.width;
+    //i.style.height = window.slideshow.height;
     if(this.thumbs){
       var a=ElemByTag('img',this.p), l=a.length, x=0;
       for(x;x<l;x++){
@@ -137,6 +137,8 @@ TINY.slideshow.prototype={
 			var h=parseInt(this.r.offsetHeight);
 			this.r.style.height=0;
 			TINY.height.set(this.r,h,this.infoSpeed,0)
+      //this.r.style.width  = window.slideshow.width;
+      //this.r.style.height = window.slideshow.height;
 		}
 	}
 };

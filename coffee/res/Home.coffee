@@ -8,6 +8,7 @@ class Home
   module.exports = Home
 
   constructor:( @stream, @store, @res, @pict ) ->
+    @isFullScreen = false
 
   ready:( book ) ->
     @book = book
@@ -15,20 +16,39 @@ class Home
     $('#HomeBtn').click( @onHome    )
     $('#MapDirs').click( () => Util.toPage('rooms/X.html') )
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
-    $('#Head').append( @headHtml() )
-    @viewHtml()
 
-    @pict.createSlideShow( 'Slides',   'First',    600, 600 )
+    $('#HeadRel').append( @headHtml() )
+    $('#RoomRel').append( @roomHtml() )
+    $('#ViewRel').append( @viewHtml() )
 
-    $('#First').click( () => @pict.createSlideShow( 'Slides', 'First', 600, 600 ) )
-    $('#Deck' ).click( () => @pict.createSlideShow( 'Slides', 'Deck',  600, 600 ) )
-    $('#Mtn'  ).click( () => @pict.createSlideShow( 'Slides', 'Mtn',   600, 600 ) )
-    $('#River').click( () => @pict.createSlideShow( 'Slides', 'River', 600, 600 ) )
-    $('#Walk' ).click( () => @pict.createSlideShow( 'Slides', 'Walk',  600, 600 ) )
-    $('#Wild' ).click( () => @pict.createSlideShow( 'Slides', 'Wild',  600, 600 ) )
-    $('#Yard' ).click( () => @pict.createSlideShow( 'Slides', 'Yard',  600, 600 ) )
+    @pict.createSlideShow( 'Slides', 'Over' )
+
+    $('#Over' ).click( () => @pict.createSlideShow( 'Slides', 'Over'  ) )
+    $('#Deck' ).click( () => @pict.createSlideShow( 'Slides', 'Deck'  ) )
+    $('#Mtn'  ).click( () => @pict.createSlideShow( 'Slides', 'Mtn'   ) )
+    $('#River').click( () => @pict.createSlideShow( 'Slides', 'River' ) )
+    $('#Walk' ).click( () => @pict.createSlideShow( 'Slides', 'Walk'  ) )
+    $('#Wild' ).click( () => @pict.createSlideShow( 'Slides', 'Wild'  ) )
+    $('#Yard' ).click( () => @pict.createSlideShow( 'Slides', 'Yard'  ) )
+    $('#Full' ).click( () => if @isFullScreen then @normScreen() else @fullScreen() )
 
     $('#VideoSee').click( @pict.onVideo )
+    return
+
+  fullScreen:() ->
+    $('#HeadAbs').hide()
+    $('#RoomAbs').hide()
+    $('#ViewAbs').css( { left:0, top:0, width:'100%', height:'100%' } )
+    @pict.createSlideShow( 'Slides', 'Over' )
+    @isFullScreen = true
+    return
+
+  normScreen:() ->
+    $('#ViewAbs').css( { left:'18%', top:'26%', width:'82%', height:'74%' } )
+    $('#HeadAbs').show()
+    $('#RoomAbs').show()
+    @pict.createSlideShow( 'Slides', 'Over' )
+    @isFullScreen = false
     return
 
   headHtml:() ->
@@ -56,28 +76,35 @@ class Home
     """
 
   viewHtml:() ->
-    $('#Slides').css( { left:"22%", width:"78%" })
     htm  = """<div class="HomeSee">Enjoy Everything Skyline Has to Offer</div>"""
     htm += @viewBtns()
-    htm += """<div class="RoomSee">See Our Cabins</div>"""
-    htm += """<div class="FootSee">Skyline Cottages Where the River Meets the Mountains</div>"""
+    htm += """<div id="Slides"></div>"""
+    htm += """<div id="ViewVid">
+              <iframe id="VideoView" title="Skyline Cottages" class="youtube-player"
+                src="https://www.youtube.com/embed/MsUfGee7kYY"
+                frameborder="0" allowFullScreen></iframe>
+               </div>"""
+    htm
+
+  roomHtml:() ->
+    htm  = """<div class="RoomSee">See Our Cabins</div>"""
     htm += """<ul  class="RoomUL">"""
     for own roomId, room of @res.rooms
       htm += """<li class="RoomLI"><a href="rooms/#{roomId}.html">#{room.name}</a></li>"""
     htm += """</ul>"""
-    $("#View").append( htm )
-    return
+    htm
 
   viewBtns:() ->
-    """<div id="ViewBtns">
-         <span id="Video">Video</span>
-         <span id="First">Overview</span>
-         <span id="Deck" >Deck</span>
-         <span id="Mtn"  >Mountains</span>
-         <span id="River">River</span>
-         <span id="Walk" >Walk</span>
-         <span id="Wild" >Wildlife</span>
-         <span id="Yard" >Yard</span>
+    """<div class="ViewSee">
+         <button id="Video" class="btn btn-primary">Video</button>
+         <button id="Over"  class="btn btn-primary">Overview</button>
+         <button id="Deck"  class="btn btn-primary">Deck</button>
+         <button id="Mtn"   class="btn btn-primary">Mountains</button>
+         <button id="River" class="btn btn-primary">River</button>
+         <button id="Walk"  class="btn btn-primary">Walk</button>
+         <button id="Wild"  class="btn btn-primary">Wildlife</button>
+         <button id="Yard"  class="btn btn-primary">Yard</button>
+         <button id="Full"  class="btn btn-primary">Full</button>
        </div>
      """
     #$("#View").append("""<button id="VideoSee" class="btn btn-primary"">View Video</button>""")
@@ -117,3 +144,5 @@ class Home
   onHome:() =>
     @showMkt()
     return
+
+# htm += """<div class="FootSee">Skyline Cottages Where the River Meets the Mountains</div>"""

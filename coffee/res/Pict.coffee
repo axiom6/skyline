@@ -11,7 +11,7 @@ class Pict
     pict = new Pict()
     Util.ready () ->
       pict.roomPageHtml( title, prev, next )
-      pict.createSlideShow( 'RoomSlides', curr, 600, 600 )
+      pict.createSlideShow( 'RoomSlides', curr )
       return
     return
 
@@ -30,9 +30,13 @@ class Pict
     $('#top').append( htm )
     return
 
-  createSlideShow:( parentId, roomId, w, h ) ->
-    $('#'+parentId).empty()
-    $('#'+parentId).append( @wrapperHtml() )
+  createSlideShow:( parentId, roomId ) ->
+    $par = $('#'+parentId)
+    w    = $par.width()
+    h    = $par.height()
+    Util.log( 'Pict.createSlideShow()', { w:w, h:h } )
+    $par.empty()
+    $par.append( @wrapperHtml() )
     images = (Img) =>
       htm = ""
       dir = Img[roomId].dir
@@ -87,17 +91,18 @@ class Pict
     """
 
   resizeSlideView:( w, h ) ->
-    $('#wrapper'  ).css( { width:w,     height:h       } )
-    $('#fullsize' ).css( { width:w,     height:h-100   } )
-    $('#slidearea').css( { width:w- 45, height:61      } )
-    $('#image'    ).css( { width:w-100, height:h-200 } )
-    $('#image img').css( { width:w-100, height:h-200 } )
-    slideshow.width  = w-100
-    slideshow.height = h-200
+    $('#wrapper'    ).css( { width:w,     height:h     } )
+    $('#fullsize'   ).css( { width:w,     height:h-100 } )
+    $('#slidearea'  ).css( { width:w- 45, height:61    } )
+    $('#image'      ).css( { width:w-100, height:h-200 } )
+    $('#image > img').css( { width:w-100, height:h-200 } )
+    $('#imglink'    ).css( { width:w-100, height:h-200 } )
+
+    window.slideshow.width  = w-100
+    window.slideshow.height = h-200
     return
 
   initTINY:( w, h ) ->
-    Util.noop( w, h )
     TINY.ElemById('slideshow').style.display='none'
     TINY.ElemById('wrapper'  ).style.display='block'
     window.slideshow =  new TINY.slideshow("slideshow")
@@ -112,12 +117,11 @@ class Pict
     slideshow.scrollSpeed=4
     slideshow.spacing=5
     slideshow.active="#fff"
-    # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slideshow.init("slideshow","image","imgprev","imgnext","imglink")
-
+    @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
+    return
 
   initSlide:( w, h ) ->
-    Util.noop( w, h )
     slide = new Slide("slideshow")
     Slide.ElemById('slideshow').style.display='none'
     Slide.ElemById('wrapper'  ).style.display='block'
@@ -131,6 +135,6 @@ class Pict
     slide.scrollSpeed=4
     slide.spacing=5
     slide.active="#fff"
-    # @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
+    @resizeSlideView( w, h ) # Holding off for now. Let slide.less do the work
     slide.init("slide","image","imgprev","imgnext","imglink")
     slide

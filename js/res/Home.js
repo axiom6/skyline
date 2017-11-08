@@ -20,6 +20,7 @@
       this.pict = pict;
       this.onHome = __bind(this.onHome, this);
       this.onMakeRes = __bind(this.onMakeRes, this);
+      this.isFullScreen = false;
     }
 
     Home.prototype.ready = function(book) {
@@ -33,31 +34,65 @@
       $('#Contact').click(function() {
         return Util.toPage('rooms/Y.html');
       });
-      $('#Head').append(this.headHtml());
-      this.viewHtml();
-      this.pict.createSlideShow('Slides', 'First', 600, 600);
-      $('#First').click(function() {
-        return _this.pict.createSlideShow('Slides', 'First', 600, 600);
+      $('#HeadRel').append(this.headHtml());
+      $('#RoomRel').append(this.roomHtml());
+      $('#ViewRel').append(this.viewHtml());
+      this.pict.createSlideShow('Slides', 'Over');
+      $('#Over').click(function() {
+        return _this.pict.createSlideShow('Slides', 'Over');
       });
       $('#Deck').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Deck', 600, 600);
+        return _this.pict.createSlideShow('Slides', 'Deck');
       });
       $('#Mtn').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Mtn', 600, 600);
+        return _this.pict.createSlideShow('Slides', 'Mtn');
       });
       $('#River').click(function() {
-        return _this.pict.createSlideShow('Slides', 'River', 600, 600);
+        return _this.pict.createSlideShow('Slides', 'River');
       });
       $('#Walk').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Walk', 600, 600);
+        return _this.pict.createSlideShow('Slides', 'Walk');
       });
       $('#Wild').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Wild', 600, 600);
+        return _this.pict.createSlideShow('Slides', 'Wild');
       });
       $('#Yard').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Yard', 600, 600);
+        return _this.pict.createSlideShow('Slides', 'Yard');
+      });
+      $('#Full').click(function() {
+        if (_this.isFullScreen) {
+          return _this.normScreen();
+        } else {
+          return _this.fullScreen();
+        }
       });
       $('#VideoSee').click(this.pict.onVideo);
+    };
+
+    Home.prototype.fullScreen = function() {
+      $('#HeadAbs').hide();
+      $('#RoomAbs').hide();
+      $('#ViewAbs').css({
+        left: 0,
+        top: 0,
+        width: '100%',
+        height: '100%'
+      });
+      this.pict.createSlideShow('Slides', 'Over');
+      this.isFullScreen = true;
+    };
+
+    Home.prototype.normScreen = function() {
+      $('#ViewAbs').css({
+        left: '18%',
+        top: '26%',
+        width: '82%',
+        height: '74%'
+      });
+      $('#HeadAbs').show();
+      $('#RoomAbs').show();
+      this.pict.createSlideShow('Slides', 'Over');
+      this.isFullScreen = false;
     };
 
     Home.prototype.headHtml = function() {
@@ -65,15 +100,17 @@
     };
 
     Home.prototype.viewHtml = function() {
-      var htm, room, roomId, _ref;
-      $('#Slides').css({
-        left: "22%",
-        width: "78%"
-      });
+      var htm;
       htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
       htm += this.viewBtns();
-      htm += "<div class=\"RoomSee\">See Our Cabins</div>";
-      htm += "<div class=\"FootSee\">Skyline Cottages Where the River Meets the Mountains</div>";
+      htm += "<div id=\"Slides\"></div>";
+      htm += "<div id=\"ViewVid\">\n<iframe id=\"VideoView\" title=\"Skyline Cottages\" class=\"youtube-player\"\n  src=\"https://www.youtube.com/embed/MsUfGee7kYY\"\n  frameborder=\"0\" allowFullScreen></iframe>\n </div>";
+      return htm;
+    };
+
+    Home.prototype.roomHtml = function() {
+      var htm, room, roomId, _ref;
+      htm = "<div class=\"RoomSee\">See Our Cabins</div>";
       htm += "<ul  class=\"RoomUL\">";
       _ref = this.res.rooms;
       for (roomId in _ref) {
@@ -82,11 +119,11 @@
         htm += "<li class=\"RoomLI\"><a href=\"rooms/" + roomId + ".html\">" + room.name + "</a></li>";
       }
       htm += "</ul>";
-      $("#View").append(htm);
+      return htm;
     };
 
     Home.prototype.viewBtns = function() {
-      return "<div id=\"ViewBtns\">\n  <span id=\"Video\">Video</span>\n  <span id=\"First\">Overview</span>\n  <span id=\"Deck\" >Deck</span>\n  <span id=\"Mtn\"  >Mountains</span>\n  <span id=\"River\">River</span>\n  <span id=\"Walk\" >Walk</span>\n  <span id=\"Wild\" >Wildlife</span>\n  <span id=\"Yard\" >Yard</span>\n</div>";
+      return "<div class=\"ViewSee\">\n  <button id=\"Video\" class=\"btn btn-primary\">Video</button>\n  <button id=\"Over\"  class=\"btn btn-primary\">Overview</button>\n  <button id=\"Deck\"  class=\"btn btn-primary\">Deck</button>\n  <button id=\"Mtn\"   class=\"btn btn-primary\">Mountains</button>\n  <button id=\"River\" class=\"btn btn-primary\">River</button>\n  <button id=\"Walk\"  class=\"btn btn-primary\">Walk</button>\n  <button id=\"Wild\"  class=\"btn btn-primary\">Wildlife</button>\n  <button id=\"Yard\"  class=\"btn btn-primary\">Yard</button>\n  <button id=\"Full\"  class=\"btn btn-primary\">Full</button>\n</div>";
     };
 
     Home.prototype.hideMkt = function() {

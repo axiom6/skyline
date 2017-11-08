@@ -13,7 +13,7 @@
       pict = new Pict();
       Util.ready(function() {
         pict.roomPageHtml(title, prev, next);
-        pict.createSlideShow('RoomSlides', curr, 600, 600);
+        pict.createSlideShow('RoomSlides', curr);
       });
     };
 
@@ -31,11 +31,18 @@
       $('#top').append(htm);
     };
 
-    Pict.prototype.createSlideShow = function(parentId, roomId, w, h) {
-      var images, url,
+    Pict.prototype.createSlideShow = function(parentId, roomId) {
+      var $par, h, images, url, w,
         _this = this;
-      $('#' + parentId).empty();
-      $('#' + parentId).append(this.wrapperHtml());
+      $par = $('#' + parentId);
+      w = $par.width();
+      h = $par.height();
+      Util.log('Pict.createSlideShow()', {
+        w: w,
+        h: h
+      });
+      $par.empty();
+      $par.append(this.wrapperHtml());
       images = function(Img) {
         var dir, htm, pic, _i, _len, _ref;
         htm = "";
@@ -92,17 +99,20 @@
         width: w - 100,
         height: h - 200
       });
-      $('#image img').css({
+      $('#image > img').css({
         width: w - 100,
         height: h - 200
       });
-      slideshow.width = w - 100;
-      slideshow.height = h - 200;
+      $('#imglink').css({
+        width: w - 100,
+        height: h - 200
+      });
+      window.slideshow.width = w - 100;
+      window.slideshow.height = h - 200;
     };
 
     Pict.prototype.initTINY = function(w, h) {
       var slideshow;
-      Util.noop(w, h);
       TINY.ElemById('slideshow').style.display = 'none';
       TINY.ElemById('wrapper').style.display = 'block';
       window.slideshow = new TINY.slideshow("slideshow");
@@ -117,12 +127,12 @@
       slideshow.scrollSpeed = 4;
       slideshow.spacing = 5;
       slideshow.active = "#fff";
-      return slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
+      slideshow.init("slideshow", "image", "imgprev", "imgnext", "imglink");
+      this.resizeSlideView(w, h);
     };
 
     Pict.prototype.initSlide = function(w, h) {
       var slide;
-      Util.noop(w, h);
       slide = new Slide("slideshow");
       Slide.ElemById('slideshow').style.display = 'none';
       Slide.ElemById('wrapper').style.display = 'block';
@@ -136,6 +146,7 @@
       slide.scrollSpeed = 4;
       slide.spacing = 5;
       slide.active = "#fff";
+      this.resizeSlideView(w, h);
       slide.init("slide", "image", "imgprev", "imgnext", "imglink");
       return slide;
     };

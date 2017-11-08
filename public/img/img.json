@@ -1,5 +1,5 @@
 {
-  "First": { "dir":"img/first/", "pics":[
+  "Over": { "dir":"img/over/", "pics":[
     { "src":"MorningSun.jpg",     "name":"Morning sun on the Big Thompson River",       "p":"<br/>"  },
     { "src":"DownRiverFish.jpg",  "name":"Looking downstream from Skyline Cottages.",       "p":"<br/>"  },
     { "src":"Elk4-Office.jpg",    "name":"Elk Standing At Office", "p":"<br/>" },
@@ -109,8 +109,6 @@
     { "src":"Turkeys6.jpg",    "name":"Wild", "p":"<br/>" },
     { "src":"Turkeys7.jpg",    "name":"Wild", "p":"<br/>" } ] },
   "Yard": { "dir":"img/yard/", "pics":[
-    { "src":"Cloud3.jpg",    "name":"Yard", "p":"<br/>" },
-    { "src":"Lola1.jpg",    "name":"Lola", "p":"<br/>" },
     { "src":"Play2.jpg",    "name":"Yard", "p":"<br/>" },
     { "src":"Play3-Dogs.jpg",    "name":"Yard", "p":"<br/>" },
     { "src":"Play4-Dogs.jpg",    "name":"Yard", "p":"<br/>" },
