@@ -37,27 +37,27 @@
       $('#HeadRel').append(this.headHtml());
       $('#RoomRel').append(this.roomHtml());
       $('#ViewRel').append(this.viewHtml());
-      this.pict.createSlideShow('Slides', 'Over');
+      this.pict.createFoto('Slides', 'Over');
       $('#Over').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Over');
+        return _this.pict.createFoto('Slides', 'Over');
       });
       $('#Deck').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Deck');
+        return _this.pict.createFoto('Slides', 'Deck');
       });
       $('#Mtn').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Mtn');
+        return _this.pict.createFoto('Slides', 'Mtn');
       });
       $('#River').click(function() {
-        return _this.pict.createSlideShow('Slides', 'River');
+        return _this.pict.createFoto('Slides', 'River');
       });
       $('#Walk').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Walk');
+        return _this.pict.createFoto('Slides', 'Walk');
       });
       $('#Wild').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Wild');
+        return _this.pict.createFoto('Slides', 'Wild');
       });
       $('#Yard').click(function() {
-        return _this.pict.createSlideShow('Slides', 'Yard');
+        return _this.pict.createFoto('Slides', 'Yard');
       });
       $('#Full').click(function() {
         if (_this.isFullScreen) {

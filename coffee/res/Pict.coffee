@@ -51,6 +51,29 @@ class Pict
   li:( pic, dir ) ->
     """<li><h3>#{pic.name}</h3><span>#{dir}#{pic.src}</span><p>#{pic.p}</p><a href="#"><img src="#{dir}#{pic.src}" width="100" height="70" alt="#{pic.name}"/></a></li>"""
 
+  createFoto:( parentId, roomId ) ->
+    $par = $('#'+parentId)
+    w    = $par.width()
+    h    = $par.height()
+    $par.empty()
+    images = (Img) =>
+      htm = """<div id="slideshow" class="fotorama"  data-allowfullscreen="true">""" # data-nav="thumbs"
+      dir = Img[roomId].dir
+      for pic in Img[roomId]['pics']
+        htm += @fotoImg( pic, dir, w, h )
+      htm += """</div>"""
+      $par.append( htm )
+      $("#slideshow").fotorama()
+    url = if parentId is 'RoomSlides' then '../img/img.json'  else 'img/img.json'
+    $.getJSON( url, images )
+    return
+
+  fotoImg:( pic, dir, w, h ) ->
+    if Util.isStr( pic.name )
+      """<img src="#{dir}#{pic.src}" style="width:#{w}; height:#{h};" data-caption="#{pic.name}">"""
+    else
+      """<img src="#{dir}#{pic.src}" style="width:#{w}; height:#{h};" >"""
+
   onVideo:() =>
     window.slideshow.auto=false
     $('#Slides'   ).hide()
@@ -94,10 +117,11 @@ class Pict
     $('#wrapper'    ).css( { width:w,     height:h     } )
     $('#fullsize'   ).css( { width:w,     height:h-100 } )
     $('#slidearea'  ).css( { width:w- 45, height:61    } )
+    $('#information').css( { width:w,     height:0     } )
     $('#image'      ).css( { width:w-100, height:h-200 } )
     $('#image > img').css( { width:w-100, height:h-200 } )
     $('#imglink'    ).css( { width:w-100, height:h-200 } )
-
+    $('.imgnav'     ).css( { width:w-100, height:h-200 } )
     window.slideshow.width  = w-100
     window.slideshow.height = h-200
     return

@@ -63,6 +63,38 @@
       return "<li><h3>" + pic.name + "</h3><span>" + dir + pic.src + "</span><p>" + pic.p + "</p><a href=\"#\"><img src=\"" + dir + pic.src + "\" width=\"100\" height=\"70\" alt=\"" + pic.name + "\"/></a></li>";
     };
 
+    Pict.prototype.createFoto = function(parentId, roomId) {
+      var $par, h, images, url, w,
+        _this = this;
+      $par = $('#' + parentId);
+      w = $par.width();
+      h = $par.height();
+      $par.empty();
+      images = function(Img) {
+        var dir, htm, pic, _i, _len, _ref;
+        htm = "<div id=\"slideshow\" class=\"fotorama\"  data-allowfullscreen=\"true\">";
+        dir = Img[roomId].dir;
+        _ref = Img[roomId]['pics'];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          pic = _ref[_i];
+          htm += _this.fotoImg(pic, dir, w, h);
+        }
+        htm += "</div>";
+        $par.append(htm);
+        return $("#slideshow").fotorama();
+      };
+      url = parentId === 'RoomSlides' ? '../img/img.json' : 'img/img.json';
+      $.getJSON(url, images);
+    };
+
+    Pict.prototype.fotoImg = function(pic, dir, w, h) {
+      if (Util.isStr(pic.name)) {
+        return "<img src=\"" + dir + pic.src + "\" style=\"width:" + w + "; height:" + h + ";\" data-caption=\"" + pic.name + "\">";
+      } else {
+        return "<img src=\"" + dir + pic.src + "\" style=\"width:" + w + "; height:" + h + ";\" >";
+      }
+    };
+
     Pict.prototype.onVideo = function() {
       window.slideshow.auto = false;
       $('#Slides').hide();
@@ -95,6 +127,10 @@
         width: w - 45,
         height: 61
       });
+      $('#information').css({
+        width: w,
+        height: 0
+      });
       $('#image').css({
         width: w - 100,
         height: h - 200
@@ -104,6 +140,10 @@
         height: h - 200
       });
       $('#imglink').css({
+        width: w - 100,
+        height: h - 200
+      });
+      $('.imgnav').css({
         width: w - 100,
         height: h - 200
       });

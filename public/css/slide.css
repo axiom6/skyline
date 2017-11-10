@@ -6,8 +6,8 @@
   display: none;
 }
 #wrapper {
-  width: 600px;
-  height: 600px;
+  width: 800px;
+  height: 800px;
   margin: 50px auto;
   display: none;
 }
@@ -19,8 +19,8 @@
   position: relative;
   left: 0;
   top: 22px;
-  width: 600px;
-  height: 500px;
+  width: 800px;
+  height: 700px;
   padding: 20px 2px 2px 2px;
   border: 1px solid #ccc;
   background: #000;
@@ -29,7 +29,7 @@
 #information {
   position: absolute;
   bottom: 0;
-  width: 600px;
+  width: 800px;
   height: 0;
   background: #000;
   color: #fff;
@@ -48,22 +48,22 @@
   padding: 0 16px 8px;
 }
 #image {
-  width: 500px;
-  height: 400px;
+  width: 700px;
+  height: 700px;
 }
 #image img {
   position: absolute;
   z-index: 25;
   left: 50px;
-  width: 500px;
+  width: 700px;
   top: 40px;
-  height: 400px;
+  height: 700px;
 }
 /* width:auto */
 .imgnav {
   position: absolute;
   width: 10%;
-  height: 400px;
+  height: 700px;
   cursor: pointer;
   z-index: 150;
 }
@@ -77,7 +77,7 @@
 }
 #imglink {
   position: absolute;
-  height: 400px;
+  height: 700px;
   width: 100%;
   z-index: 100;
   opacity: .4;
@@ -107,7 +107,7 @@
 #slidearea {
   float: left;
   position: relative;
-  width: 555px;
+  width: 755px;
   margin-left: 5px;
   height: 81px;
   overflow: hidden;

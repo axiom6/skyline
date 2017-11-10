@@ -5,12 +5,18 @@
 <head>
   <title>Skyline Cottages in Estes Park</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-  <link href="css/skyline.css" rel="stylesheet" type="text/css"/>
-  <link href="css/slide.css"   rel="stylesheet" type="text/css"/>
-  <link href="css/payment.css" rel="stylesheet" type="text/css"/>
+  <link href="css/skyline.css"  rel="stylesheet" type="text/css"/>
+  <link href="css/fotorama.css" rel="stylesheet" type="text/css"/>
+  <link href="css/payment.css"  rel="stylesheet" type="text/css"/>
+  <style>
+    .fotorama                { background:black; }
+    .fotorama__caption       { text-align:center; bottom:2px;  }
+    .fotorama__caption__wrap { background:black; color:yellow }
+  </style>
   <script src="js/Util.js"></script>
-  <script src="js/Tiny.js"></script>
   <script src="js/jquery-3.2.1.js"></script>
+  <!--script>window.$ = require('jquery');</script-->
+  <script src="js/fotorama.js"></script>
   <script src="js/Pict.js"></script>
   <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-auth.js"></script>

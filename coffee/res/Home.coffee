@@ -21,15 +21,15 @@ class Home
     $('#RoomRel').append( @roomHtml() )
     $('#ViewRel').append( @viewHtml() )
 
-    @pict.createSlideShow( 'Slides', 'Over' )
+    @pict.createFoto( 'Slides', 'Over' )
 
-    $('#Over' ).click( () => @pict.createSlideShow( 'Slides', 'Over'  ) )
-    $('#Deck' ).click( () => @pict.createSlideShow( 'Slides', 'Deck'  ) )
-    $('#Mtn'  ).click( () => @pict.createSlideShow( 'Slides', 'Mtn'   ) )
-    $('#River').click( () => @pict.createSlideShow( 'Slides', 'River' ) )
-    $('#Walk' ).click( () => @pict.createSlideShow( 'Slides', 'Walk'  ) )
-    $('#Wild' ).click( () => @pict.createSlideShow( 'Slides', 'Wild'  ) )
-    $('#Yard' ).click( () => @pict.createSlideShow( 'Slides', 'Yard'  ) )
+    $('#Over' ).click( () => @pict.createFoto( 'Slides', 'Over'  ) )
+    $('#Deck' ).click( () => @pict.createFoto( 'Slides', 'Deck'  ) )
+    $('#Mtn'  ).click( () => @pict.createFoto( 'Slides', 'Mtn'   ) )
+    $('#River').click( () => @pict.createFoto( 'Slides', 'River' ) )
+    $('#Walk' ).click( () => @pict.createFoto( 'Slides', 'Walk'  ) )
+    $('#Wild' ).click( () => @pict.createFoto( 'Slides', 'Wild'  ) )
+    $('#Yard' ).click( () => @pict.createFoto( 'Slides', 'Yard'  ) )
     $('#Full' ).click( () => if @isFullScreen then @normScreen() else @fullScreen() )
 
     $('#VideoSee').click( @pict.onVideo )
