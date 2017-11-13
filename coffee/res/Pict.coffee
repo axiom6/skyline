@@ -69,10 +69,11 @@ class Pict
     return
 
   fotoImg:( pic, dir, w, h ) ->
-    if Util.isStr( pic.name )
-      """<img src="#{dir}#{pic.src}" style="width:#{w}; height:#{h};" data-caption="#{pic.name}">"""
-    else
-      """<img src="#{dir}#{pic.src}" style="width:#{w}; height:#{h};" >"""
+    #style = "max-width:100%; height:auto;"
+    img  = """<img src="#{dir}#{pic.src}" data-width="#{w}" data-ratio="#{w/h}" data-maxwidth="100%" data-maxheight="100%" """
+    img += """data-caption="#{pic.name}" """ if Util.isStr( pic.name )
+    img += """>"""
+    img
 
   onVideo:() =>
     window.slideshow.auto=false

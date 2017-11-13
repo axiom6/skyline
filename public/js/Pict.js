@@ -88,11 +88,13 @@
     };
 
     Pict.prototype.fotoImg = function(pic, dir, w, h) {
+      var img;
+      img = "<img src=\"" + dir + pic.src + "\" data-width=\"" + w + "\" data-ratio=\"" + (w / h) + "\" data-maxwidth=\"100%\" data-maxheight=\"100%\" ";
       if (Util.isStr(pic.name)) {
-        return "<img src=\"" + dir + pic.src + "\" style=\"width:" + w + "; height:" + h + ";\" data-caption=\"" + pic.name + "\">";
-      } else {
-        return "<img src=\"" + dir + pic.src + "\" style=\"width:" + w + "; height:" + h + ";\" >";
+        img += "data-caption=\"" + pic.name + "\" ";
       }
+      img += ">";
+      return img;
     };
 
     Pict.prototype.onVideo = function() {
