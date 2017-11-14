@@ -11,7 +11,7 @@ class Pict
     pict = new Pict()
     Util.ready () ->
       pict.roomPageHtml( title, prev, next )
-      pict.createSlideShow( 'RoomSlides', curr )
+      pict.createFoto( 'RoomSlides', curr )
       return
     return
 
@@ -34,7 +34,7 @@ class Pict
     $par = $('#'+parentId)
     w    = $par.width()
     h    = $par.height()
-    Util.log( 'Pict.createSlideShow()', { w:w, h:h } )
+    #Util.log( 'Pict.createSlideShow()', { w:w, h:h } )
     $par.empty()
     $par.append( @wrapperHtml() )
     images = (Img) =>
@@ -52,25 +52,30 @@ class Pict
     """<li><h3>#{pic.name}</h3><span>#{dir}#{pic.src}</span><p>#{pic.p}</p><a href="#"><img src="#{dir}#{pic.src}" width="100" height="70" alt="#{pic.name}"/></a></li>"""
 
   createFoto:( parentId, roomId ) ->
-    $par = $('#'+parentId)
-    w    = $par.width()
-    h    = $par.height()
+    $par  = $('#'+parentId)
+    w     = Math.max( $par.width(),  640 )
+    h     = Math.max( $par.height(), 640 )
+    r     = if w > 40 and h > 40 then w/h else 1.0
+    id    = if parentId is 'RoomSlides' then "slideroom" else "slideshow"
+    #Util.log( 'Pict.createFoto()', { w:w, h:h, r:r } )
     $par.empty()
     images = (Img) =>
-      htm = """<div id="slideshow" class="fotorama"  data-allowfullscreen="true">""" # data-nav="thumbs"
+      htm  = """<div id="#{id}" class="fotorama"  data-allowfullscreen="true" """ # data-nav="thumbs"
+      htm += """data-maxwidth="#{w}"   data-maxheight="#{h}"   data-ratio="#{r}" """
+      htm += """data-minwidth="#{640}" data-minheight="#{640}" >"""
       dir = Img[roomId].dir
       for pic in Img[roomId]['pics']
-        htm += @fotoImg( pic, dir, w, h )
+        htm += @fotoImg( pic, dir )
       htm += """</div>"""
       $par.append( htm )
-      $("#slideshow").fotorama()
+      $('#'+"#{id}").fotorama()
     url = if parentId is 'RoomSlides' then '../img/img.json'  else 'img/img.json'
     $.getJSON( url, images )
     return
 
-  fotoImg:( pic, dir, w, h ) ->
-    #style = "max-width:100%; height:auto;"
-    img  = """<img src="#{dir}#{pic.src}" data-width="#{w}" data-ratio="#{w/h}" data-maxwidth="100%" data-maxheight="100%" """
+  # data-width="#{w}"
+  fotoImg:( pic, dir ) ->
+    img  = """<img src="#{dir}#{pic.src}"  """
     img += """data-caption="#{pic.name}" """ if Util.isStr( pic.name )
     img += """>"""
     img

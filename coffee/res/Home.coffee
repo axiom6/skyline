@@ -12,16 +12,15 @@ class Home
 
   ready:( book ) ->
     @book = book
+    $('#HeadRel').append( @headHtml() )
+    $('#RoomRel').append( @roomHtml() )
+    $('#ViewRel').append( @viewHtml() )
     $('#MakeRes').click( @onMakeRes )
     $('#HomeBtn').click( @onHome    )
     $('#MapDirs').click( () => Util.toPage('rooms/X.html') )
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
 
-    $('#HeadRel').append( @headHtml() )
-    $('#RoomRel').append( @roomHtml() )
-    $('#ViewRel').append( @viewHtml() )
-
-    @pict.createFoto( 'Slides', 'Over' )
+  @pict.createFoto( 'Slides', 'Over' )
 
     $('#Over' ).click( () => @pict.createFoto( 'Slides', 'Over'  ) )
     $('#Deck' ).click( () => @pict.createFoto( 'Slides', 'Deck'  ) )
@@ -79,12 +78,15 @@ class Home
     htm  = """<div class="HomeSee">Enjoy Everything Skyline Has to Offer</div>"""
     htm += @viewBtns()
     htm += """<div id="Slides"></div>"""
-    htm += """<div id="ViewVid">
+    htm
+
+  ###
+      htm += """<div id="ViewVid">
               <iframe id="VideoView" title="Skyline Cottages" class="youtube-player"
                 src="https://www.youtube.com/embed/MsUfGee7kYY"
                 frameborder="0" allowFullScreen></iframe>
                </div>"""
-    htm
+  ###
 
   roomHtml:() ->
     htm  = """<div class="RoomSee">See Our Cabins</div>"""

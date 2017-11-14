@@ -13,7 +13,7 @@
       pict = new Pict();
       Util.ready(function() {
         pict.roomPageHtml(title, prev, next);
-        pict.createSlideShow('RoomSlides', curr);
+        pict.createFoto('RoomSlides', curr);
       });
     };
 
@@ -37,10 +37,6 @@
       $par = $('#' + parentId);
       w = $par.width();
       h = $par.height();
-      Util.log('Pict.createSlideShow()', {
-        w: w,
-        h: h
-      });
       $par.empty();
       $par.append(this.wrapperHtml());
       images = function(Img) {
@@ -64,32 +60,36 @@
     };
 
     Pict.prototype.createFoto = function(parentId, roomId) {
-      var $par, h, images, url, w,
+      var $par, h, id, images, r, url, w,
         _this = this;
       $par = $('#' + parentId);
-      w = $par.width();
-      h = $par.height();
+      w = Math.max($par.width(), 640);
+      h = Math.max($par.height(), 640);
+      r = w > 40 && h > 40 ? w / h : 1.0;
+      id = parentId === 'RoomSlides' ? "slideroom" : "slideshow";
       $par.empty();
       images = function(Img) {
         var dir, htm, pic, _i, _len, _ref;
-        htm = "<div id=\"slideshow\" class=\"fotorama\"  data-allowfullscreen=\"true\">";
+        htm = "<div id=\"" + id + "\" class=\"fotorama\"  data-allowfullscreen=\"true\" ";
+        htm += "data-maxwidth=\"" + w + "\"   data-maxheight=\"" + h + "\"   data-ratio=\"" + r + "\" ";
+        htm += "data-minwidth=\"" + 640 + "\" data-minheight=\"" + 640 + "\" >";
         dir = Img[roomId].dir;
         _ref = Img[roomId]['pics'];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           pic = _ref[_i];
-          htm += _this.fotoImg(pic, dir, w, h);
+          htm += _this.fotoImg(pic, dir);
         }
         htm += "</div>";
         $par.append(htm);
-        return $("#slideshow").fotorama();
+        return $('#' + ("" + id)).fotorama();
       };
       url = parentId === 'RoomSlides' ? '../img/img.json' : 'img/img.json';
       $.getJSON(url, images);
     };
 
-    Pict.prototype.fotoImg = function(pic, dir, w, h) {
+    Pict.prototype.fotoImg = function(pic, dir) {
       var img;
-      img = "<img src=\"" + dir + pic.src + "\" data-width=\"" + w + "\" data-ratio=\"" + (w / h) + "\" data-maxwidth=\"100%\" data-maxheight=\"100%\" ";
+      img = "<img src=\"" + dir + pic.src + "\"  ";
       if (Util.isStr(pic.name)) {
         img += "data-caption=\"" + pic.name + "\" ";
       }
