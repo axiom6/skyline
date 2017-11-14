@@ -26,6 +26,9 @@
     Home.prototype.ready = function(book) {
       var _this = this;
       this.book = book;
+      $('#HeadRel').append(this.headHtml());
+      $('#RoomRel').append(this.roomHtml());
+      $('#ViewRel').append(this.viewHtml());
       $('#MakeRes').click(this.onMakeRes);
       $('#HomeBtn').click(this.onHome);
       $('#MapDirs').click(function() {
@@ -34,9 +37,6 @@
       $('#Contact').click(function() {
         return Util.toPage('rooms/Y.html');
       });
-      $('#HeadRel').append(this.headHtml());
-      $('#RoomRel').append(this.roomHtml());
-      $('#ViewRel').append(this.viewHtml());
       this.pict.createFoto('Slides', 'Over');
       $('#Over').click(function() {
         return _this.pict.createFoto('Slides', 'Over');
@@ -59,40 +59,9 @@
       $('#Yard').click(function() {
         return _this.pict.createFoto('Slides', 'Yard');
       });
-      $('#Full').click(function() {
-        if (_this.isFullScreen) {
-          return _this.normScreen();
-        } else {
-          return _this.fullScreen();
-        }
+      $('#Vid').click(function() {
+        return _this.pict.createVid('Slides', 'Vid');
       });
-      $('#VideoSee').click(this.pict.onVideo);
-    };
-
-    Home.prototype.fullScreen = function() {
-      $('#HeadAbs').hide();
-      $('#RoomAbs').hide();
-      $('#ViewAbs').css({
-        left: 0,
-        top: 0,
-        width: '100%',
-        height: '100%'
-      });
-      this.pict.createSlideShow('Slides', 'Over');
-      this.isFullScreen = true;
-    };
-
-    Home.prototype.normScreen = function() {
-      $('#ViewAbs').css({
-        left: '18%',
-        top: '26%',
-        width: '82%',
-        height: '74%'
-      });
-      $('#HeadAbs').show();
-      $('#RoomAbs').show();
-      this.pict.createSlideShow('Slides', 'Over');
-      this.isFullScreen = false;
     };
 
     Home.prototype.headHtml = function() {
@@ -104,9 +73,17 @@
       htm = "<div class=\"HomeSee\">Enjoy Everything Skyline Has to Offer</div>";
       htm += this.viewBtns();
       htm += "<div id=\"Slides\"></div>";
-      htm += "<div id=\"ViewVid\">\n<iframe id=\"VideoView\" title=\"Skyline Cottages\" class=\"youtube-player\"\n  src=\"https://www.youtube.com/embed/MsUfGee7kYY\"\n  frameborder=\"0\" allowFullScreen></iframe>\n </div>";
       return htm;
     };
+
+    /*
+        htm += """<div id="ViewVid">
+                <iframe id="VideoView" title="Skyline Cottages" class="youtube-player"
+                  src="https://www.youtube.com/embed/MsUfGee7kYY"
+                  frameborder="0" allowFullScreen></iframe>
+                 </div>"""
+    */
+
 
     Home.prototype.roomHtml = function() {
       var htm, room, roomId, _ref;
@@ -123,7 +100,7 @@
     };
 
     Home.prototype.viewBtns = function() {
-      return "<div class=\"ViewSee\">\n  <button id=\"Video\" class=\"btn btn-primary\">Video</button>\n  <button id=\"Over\"  class=\"btn btn-primary\">Overview</button>\n  <button id=\"Deck\"  class=\"btn btn-primary\">Deck</button>\n  <button id=\"Mtn\"   class=\"btn btn-primary\">Mountains</button>\n  <button id=\"River\" class=\"btn btn-primary\">River</button>\n  <button id=\"Walk\"  class=\"btn btn-primary\">Walk</button>\n  <button id=\"Wild\"  class=\"btn btn-primary\">Wildlife</button>\n  <button id=\"Yard\"  class=\"btn btn-primary\">Yard</button>\n  <button id=\"Full\"  class=\"btn btn-primary\">Full</button>\n</div>";
+      return "<div class=\"ViewSee\">\n\n  <button id=\"Over\"  class=\"btn btn-primary\">Overview</button>\n  <button id=\"Deck\"  class=\"btn btn-primary\">Deck</button>\n  <button id=\"Mtn\"   class=\"btn btn-primary\">Mountains</button>\n  <button id=\"River\" class=\"btn btn-primary\">River</button>\n  <button id=\"Walk\"  class=\"btn btn-primary\">Walk</button>\n  <button id=\"Wild\"  class=\"btn btn-primary\">Wildlife</button>\n  <button id=\"Yard\"  class=\"btn btn-primary\">Yard</button>\n  <button id=\"Vid\"  class=\"btn btn-primary\">Video</button>\n</div>";
     };
 
     Home.prototype.hideMkt = function() {
@@ -163,6 +140,32 @@
 
     Home.prototype.onHome = function() {
       this.showMkt();
+    };
+
+    Home.prototype.fullScreen = function() {
+      $('#HeadAbs').hide();
+      $('#RoomAbs').hide();
+      $('#ViewAbs').css({
+        left: 0,
+        top: 0,
+        width: '100%',
+        height: '100%'
+      });
+      this.pict.createSlideShow('Slides', 'Over');
+      this.isFullScreen = true;
+    };
+
+    Home.prototype.normScreen = function() {
+      $('#ViewAbs').css({
+        left: '18%',
+        top: '26%',
+        width: '82%',
+        height: '74%'
+      });
+      $('#HeadAbs').show();
+      $('#RoomAbs').show();
+      this.pict.createSlideShow('Slides', 'Over');
+      this.isFullScreen = false;
     };
 
     return Home;

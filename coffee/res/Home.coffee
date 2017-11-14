@@ -20,34 +20,16 @@ class Home
     $('#MapDirs').click( () => Util.toPage('rooms/X.html') )
     $('#Contact').click( () => Util.toPage('rooms/Y.html') )
 
-  @pict.createFoto( 'Slides', 'Over' )
+    @pict.createFoto( 'Slides', 'Over' )
 
-    $('#Over' ).click( () => @pict.createFoto( 'Slides', 'Over'  ) )
-    $('#Deck' ).click( () => @pict.createFoto( 'Slides', 'Deck'  ) )
-    $('#Mtn'  ).click( () => @pict.createFoto( 'Slides', 'Mtn'   ) )
-    $('#River').click( () => @pict.createFoto( 'Slides', 'River' ) )
-    $('#Walk' ).click( () => @pict.createFoto( 'Slides', 'Walk'  ) )
-    $('#Wild' ).click( () => @pict.createFoto( 'Slides', 'Wild'  ) )
-    $('#Yard' ).click( () => @pict.createFoto( 'Slides', 'Yard'  ) )
-    $('#Full' ).click( () => if @isFullScreen then @normScreen() else @fullScreen() )
-
-    $('#VideoSee').click( @pict.onVideo )
-    return
-
-  fullScreen:() ->
-    $('#HeadAbs').hide()
-    $('#RoomAbs').hide()
-    $('#ViewAbs').css( { left:0, top:0, width:'100%', height:'100%' } )
-    @pict.createSlideShow( 'Slides', 'Over' )
-    @isFullScreen = true
-    return
-
-  normScreen:() ->
-    $('#ViewAbs').css( { left:'18%', top:'26%', width:'82%', height:'74%' } )
-    $('#HeadAbs').show()
-    $('#RoomAbs').show()
-    @pict.createSlideShow( 'Slides', 'Over' )
-    @isFullScreen = false
+    $('#Over' ).click( () => @pict.createFoto(  'Slides', 'Over'  ) )
+    $('#Deck' ).click( () => @pict.createFoto(  'Slides', 'Deck'  ) )
+    $('#Mtn'  ).click( () => @pict.createFoto(  'Slides', 'Mtn'   ) )
+    $('#River').click( () => @pict.createFoto(  'Slides', 'River' ) )
+    $('#Walk' ).click( () => @pict.createFoto(  'Slides', 'Walk'  ) )
+    $('#Wild' ).click( () => @pict.createFoto(  'Slides', 'Wild'  ) )
+    $('#Yard' ).click( () => @pict.createFoto(  'Slides', 'Yard'  ) )
+    $('#Vid'  ).click( () => @pict.createVid(   'Slides', 'Vid'   ) )
     return
 
   headHtml:() ->
@@ -98,7 +80,7 @@ class Home
 
   viewBtns:() ->
     """<div class="ViewSee">
-         <button id="Video" class="btn btn-primary">Video</button>
+
          <button id="Over"  class="btn btn-primary">Overview</button>
          <button id="Deck"  class="btn btn-primary">Deck</button>
          <button id="Mtn"   class="btn btn-primary">Mountains</button>
@@ -106,10 +88,9 @@ class Home
          <button id="Walk"  class="btn btn-primary">Walk</button>
          <button id="Wild"  class="btn btn-primary">Wildlife</button>
          <button id="Yard"  class="btn btn-primary">Yard</button>
-         <button id="Full"  class="btn btn-primary">Full</button>
+         <button id="Vid"  class="btn btn-primary">Video</button>
        </div>
      """
-    #$("#View").append("""<button id="VideoSee" class="btn btn-primary"">View Video</button>""")
 
   hideMkt:() ->
     $('#MakeRes').hide()
@@ -145,6 +126,22 @@ class Home
 
   onHome:() =>
     @showMkt()
+    return
+
+  fullScreen:() ->
+    $('#HeadAbs').hide()
+    $('#RoomAbs').hide()
+    $('#ViewAbs').css( { left:0, top:0, width:'100%', height:'100%' } )
+    @pict.createSlideShow( 'Slides', 'Over' )
+    @isFullScreen = true
+    return
+
+  normScreen:() ->
+    $('#ViewAbs').css( { left:'18%', top:'26%', width:'82%', height:'74%' } )
+    $('#HeadAbs').show()
+    $('#RoomAbs').show()
+    @pict.createSlideShow( 'Slides', 'Over' )
+    @isFullScreen = false
     return
 
 # htm += """<div class="FootSee">Skyline Cottages Where the River Meets the Mountains</div>"""

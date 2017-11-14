@@ -7,7 +7,7 @@
     { "src":"Sign6-Office.jpg",   "name":"Sign at Front Office", "p":"<br/>" },
     { "src":"Play1.jpg",          "name":"Playground",       "p":"<br/>" },
     { "src":"Skykitc302.jpg",     "name":"Dining in Cabin 6.", "p":"<br/>" },
-    { "src":"Skylvgrm333.jpg",    "name":"Living Room in Cabin 6",    "p":"<br/>"   } ] },
+    { "src":"Skylvgrm333.jpg",    "name":"Living Room in Cabin 6",    "p":"<br/>"  } ] },
   "Deck": { "dir":"img/deck/",    "pics":[
     { "src":"Deck2-Best.jpg",     "name":"Deck", "p":"<br/>" },
     { "src":"Deck1.jpg",          "name":"Deck", "p":"<br/>" },
