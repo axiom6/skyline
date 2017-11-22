@@ -15,7 +15,7 @@ body { color:black; }  // background-color: #333;
 
 #HeadRel  { position:relative; left:  0; width:100%; top:  0; height:100%; }
 #RoomRel  { position:relative; left:  0; width:100%; top:  0; height:100%; background-color:#555; }
-#ViewRel  { position:relative; left:  0; width:100%; top:  0; height:100%; background-color:#FFF; text-align:center; }
+#ViewRel  { position:relative; left:  0; width:100%; top:  0; height:100%; background-color:#111; text-align:center; }
 
 #Caption { text-align:center; margin-top:10px; font-weight:bold; }
 
@@ -36,8 +36,8 @@ body { color:black; }  // background-color: #333;
 #Rooms    { display:inline-block; }
 .Test     { background-color:black; color:white; border-radius:12px; margin-left:10px; }
 
-.HomeSee  { position:absolute; left:0; top:1%; width:100%; height:4%; font-weight:bold; font-size:1.2em; text-align:center; color:yellow; z-index:3; }
-.ViewSee  { position:absolute; left:0; top:5%; width:100%; height:4%; font-weight:bold; font-size:1.2em; text-align:center; color:yellow; z-index:3; }
+.HomeSee  { position:absolute; left:0; top:1%; width:100%; height:4%; font-weight:bold; font-size:1.2em; text-align:center; background-color:#111; color:yellow; z-index:3; }
+.ViewSee  { position:absolute; left:0; top:5%; width:100%; height:4%; font-weight:bold; font-size:1.2em; text-align:center; background-color:#111; color:yellow; z-index:3; }
 
 
 .RoomUL    { position:absolute; left:0;   width: 92%; top:   12%; height:  88%; list-style:none; padding-left:14px; }
@@ -45,16 +45,17 @@ body { color:black; }  // background-color: #333;
 .RoomLI    { color:white; height:8%;  }
 .RoomLI a  { color:white; }
 
-#Slides    { position:absolute; left:0; width:100%; top:     0; height:100%; background-color:#111;  }
-#ViewVid   { position:absolute; left:0; width:100%; top:     0; height:100%; background-color:#111; display:none; }
-#VideoView { position:relative; left:0; width: 80%; top:   12%; height: 80%;  background-color:#111; }
+#Slides    { position:absolute; left:0; width:100%; top:   11%; height: 89%; background-color:#111;  }
+#ViewVid   { position:absolute; left:0; width:100%; top:     0; height:100%; background-color:#111;  }
+#VideoView { position:relative; left:0; width: 80%; top:   12%; height: 80%; background-color:#111; }
 
 .FootSee   { position:absolute; left:20%; width: 80%; bottom:-1.5%; height: 7%; font-weight:bold; font-size:1.2em; text-align:center; }
 
 #RoomView     { text-align:center; }
-#RoomSlides   { display:inline-block; margin-top:24px; width:740px; height:740px; background-color:#111;  }
-#slideshow    {}
+#RoomSlides   { display:inline-block; margin-top:24px; width:740px; height:740px; background-color:#111; }
+#slideshow    { z-index:3; }
 #slideroom    { display:inline-block; width:640px; margin:auto; }
+.SkyVid       { margin-top:200px; }
 
 .guests       { text-align:center; width:44px; }
 .pets         { text-align:center; }
@@ -63,10 +64,6 @@ body { color:black; }  // background-color: #333;
 .depart-times { text-align:center; }
 .Months       { }
 .Days         { }
-
-//#QDates       { position:relative; left: 0;  top:0; width:100%; height:32px; }
-//#QArrive      { position:absolute; left: 0;  top:0;  width:10%; height:32px; border:1px solid black; padding:3px; }
-//#QStayTo      { position:absolute; left:10%; top:0;  width:10%; height:32px; border:1px solid black; padding:3px; }
 
 .RTTable      { border-collapse:collapse; margin:auto; }
 .RTNewRow     { background-color:#CCCCCC; }
@@ -240,7 +237,3 @@ body { color:black; }  // background-color: #333;
 .td-left     { text-align:left;   }
 .td-center   { text-align:center; }
 .td-right    { text-align:right;  }
-
-
-
-

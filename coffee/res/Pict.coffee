@@ -27,17 +27,20 @@ class Pict
         <span   class="room">#{title}</span>
         <button class="next" onclick="Util.toPage(#{nextPage});"    >Next Cabin</button>
     """
-    $('#top').append( htm )
+    $('#top').append( htm   )
     return
 
   createFoto:( parentId, roomId ) ->
     $par  = $('#'+parentId)
     w     = Math.max( $par.width(),  640 )
     h     = Math.max( $par.height(), 640 )
-    r     = if w > 40 and h > 40 then w/h else 1.0
+    r     = if w > 40 and h > 40 then 0.89*w/h else 0.89
     id    = if parentId is 'RoomSlides' then "slideroom" else "slideshow"
-    #Util.log( 'Pict.createFoto()', { w:w, h:h, r:r } )
+    Util.log( 'Pict.createFoto()', { w:w, h:h, r:r } )
     $par.empty()
+    #rapw = Math.min( w, h*r )
+    $('.HomeSee').width( 960 )
+    $('.ViewSee').width( 960 )
     images = (Img) =>
       htm  = """<div id="#{id}" class="fotorama"  data-allowfullscreen="true" """ # data-nav="thumbs"
       htm += """data-maxwidth="#{w}"   data-maxheight="#{h}"   data-ratio="#{r}" """
@@ -65,9 +68,22 @@ class Pict
     h     = Math.max( $par.height(), 640 )
     r     = if w > 40 and h > 40 then w/h else 1.0
     $par.empty()
+    htm   = """<div id="ViewVid">
+                 <iframe id="VideoView" title="Skyline Cottages" class="youtube-player"
+                   src="https://www.youtube.com/embed/MsUfGee7kYY" frameborder="0" allowFullScreen></iframe>
+               </div>"""
+    $par.append( htm )
+
+  createFotoVid:( parentId ) ->
+    $par  = $('#'+parentId)
+    w     = Math.max( $par.width(),  640 )
+    h     = Math.max( $par.height(), 640 )
+    r     = if w > 40 and h > 40 then w/h else 1.0
+    $par.empty()
     htm  = """<div id="slideshow" class="fotorama"  data-allowfullscreen="true" """
     htm += """data-maxwidth="#{w}"   data-maxheight="#{h}"   data-ratio="#{r}" """
     htm += """data-minwidth="#{640}" data-minheight="#{640}" >"""
-    htm += """<a   src="https://www.youtube.com/embed/MsUfGee7kYY">Skyline Tour</a>"""
+    htm += """<a href="https://www.youtube.com/embed/MsUfGee7kYY" data-video="true"><img class="SkyVid" src="img/site/youtube.png"></a>"""
+    # https://vimeo.com/240855827
     htm += """</div>"""
     $par.append( htm )

@@ -87,7 +87,7 @@ img.center {
   width: 100%;
   top: 0;
   height: 100%;
-  background-color: #FFF;
+  background-color: #111;
   text-align: center;
 }
 #Caption {
@@ -181,6 +181,7 @@ img.center {
   font-weight: bold;
   font-size: 1.2em;
   text-align: center;
+  background-color: #111;
   color: yellow;
   z-index: 3;
 }
@@ -193,6 +194,7 @@ img.center {
   font-weight: bold;
   font-size: 1.2em;
   text-align: center;
+  background-color: #111;
   color: yellow;
   z-index: 3;
 }
@@ -227,8 +229,8 @@ img.center {
   position: absolute;
   left: 0;
   width: 100%;
-  top: 0;
-  height: 100%;
+  top: 11%;
+  height: 89%;
   background-color: #111;
 }
 #ViewVid {
@@ -238,7 +240,6 @@ img.center {
   top: 0;
   height: 100%;
   background-color: #111;
-  display: none;
 }
 #VideoView {
   position: relative;
@@ -268,10 +269,16 @@ img.center {
   height: 740px;
   background-color: #111;
 }
+#slideshow {
+  z-index: 3;
+}
 #slideroom {
   display: inline-block;
   width: 640px;
   margin: auto;
+}
+.SkyVid {
+  margin-top: 200px;
 }
 .guests {
   text-align: center;

@@ -62,14 +62,6 @@ class Home
     htm += """<div id="Slides"></div>"""
     htm
 
-  ###
-      htm += """<div id="ViewVid">
-              <iframe id="VideoView" title="Skyline Cottages" class="youtube-player"
-                src="https://www.youtube.com/embed/MsUfGee7kYY"
-                frameborder="0" allowFullScreen></iframe>
-               </div>"""
-  ###
-
   roomHtml:() ->
     htm  = """<div class="RoomSee">See Our Cabins</div>"""
     htm += """<ul  class="RoomUL">"""
@@ -80,7 +72,6 @@ class Home
 
   viewBtns:() ->
     """<div class="ViewSee">
-
          <button id="Over"  class="btn btn-primary">Overview</button>
          <button id="Deck"  class="btn btn-primary">Deck</button>
          <button id="Mtn"   class="btn btn-primary">Mountains</button>

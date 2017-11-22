@@ -34,9 +34,16 @@
       $par = $('#' + parentId);
       w = Math.max($par.width(), 640);
       h = Math.max($par.height(), 640);
-      r = w > 40 && h > 40 ? w / h : 1.0;
+      r = w > 40 && h > 40 ? 0.89 * w / h : 0.89;
       id = parentId === 'RoomSlides' ? "slideroom" : "slideshow";
+      Util.log('Pict.createFoto()', {
+        w: w,
+        h: h,
+        r: r
+      });
       $par.empty();
+      $('.HomeSee').width(960);
+      $('.ViewSee').width(960);
       images = function(Img) {
         var dir, htm, pic, _i, _len, _ref;
         htm = "<div id=\"" + id + "\" class=\"fotorama\"  data-allowfullscreen=\"true\" ";
@@ -73,10 +80,21 @@
       h = Math.max($par.height(), 640);
       r = w > 40 && h > 40 ? w / h : 1.0;
       $par.empty();
+      htm = "<div id=\"ViewVid\">\n  <iframe id=\"VideoView\" title=\"Skyline Cottages\" class=\"youtube-player\"\n    src=\"https://www.youtube.com/embed/MsUfGee7kYY\" frameborder=\"0\" allowFullScreen></iframe>\n</div>";
+      return $par.append(htm);
+    };
+
+    Pict.prototype.createFotoVid = function(parentId) {
+      var $par, h, htm, r, w;
+      $par = $('#' + parentId);
+      w = Math.max($par.width(), 640);
+      h = Math.max($par.height(), 640);
+      r = w > 40 && h > 40 ? w / h : 1.0;
+      $par.empty();
       htm = "<div id=\"slideshow\" class=\"fotorama\"  data-allowfullscreen=\"true\" ";
       htm += "data-maxwidth=\"" + w + "\"   data-maxheight=\"" + h + "\"   data-ratio=\"" + r + "\" ";
       htm += "data-minwidth=\"" + 640 + "\" data-minheight=\"" + 640 + "\" >";
-      htm += "<a   src=\"https://www.youtube.com/embed/MsUfGee7kYY\">Skyline Tour</a>";
+      htm += "<a href=\"https://www.youtube.com/embed/MsUfGee7kYY\" data-video=\"true\"><img class=\"SkyVid\" src=\"img/site/youtube.png\"></a>";
       htm += "</div>";
       return $par.append(htm);
     };

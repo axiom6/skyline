@@ -76,15 +76,6 @@
       return htm;
     };
 
-    /*
-        htm += """<div id="ViewVid">
-                <iframe id="VideoView" title="Skyline Cottages" class="youtube-player"
-                  src="https://www.youtube.com/embed/MsUfGee7kYY"
-                  frameborder="0" allowFullScreen></iframe>
-                 </div>"""
-    */
-
-
     Home.prototype.roomHtml = function() {
       var htm, room, roomId, _ref;
       htm = "<div class=\"RoomSee\">See Our Cabins</div>";
@@ -100,7 +91,7 @@
     };
 
     Home.prototype.viewBtns = function() {
-      return "<div class=\"ViewSee\">\n\n  <button id=\"Over\"  class=\"btn btn-primary\">Overview</button>\n  <button id=\"Deck\"  class=\"btn btn-primary\">Deck</button>\n  <button id=\"Mtn\"   class=\"btn btn-primary\">Mountains</button>\n  <button id=\"River\" class=\"btn btn-primary\">River</button>\n  <button id=\"Walk\"  class=\"btn btn-primary\">Walk</button>\n  <button id=\"Wild\"  class=\"btn btn-primary\">Wildlife</button>\n  <button id=\"Yard\"  class=\"btn btn-primary\">Yard</button>\n  <button id=\"Vid\"  class=\"btn btn-primary\">Video</button>\n</div>";
+      return "<div class=\"ViewSee\">\n  <button id=\"Over\"  class=\"btn btn-primary\">Overview</button>\n  <button id=\"Deck\"  class=\"btn btn-primary\">Deck</button>\n  <button id=\"Mtn\"   class=\"btn btn-primary\">Mountains</button>\n  <button id=\"River\" class=\"btn btn-primary\">River</button>\n  <button id=\"Walk\"  class=\"btn btn-primary\">Walk</button>\n  <button id=\"Wild\"  class=\"btn btn-primary\">Wildlife</button>\n  <button id=\"Yard\"  class=\"btn btn-primary\">Yard</button>\n  <button id=\"Vid\"  class=\"btn btn-primary\">Video</button>\n</div>";
     };
 
     Home.prototype.hideMkt = function() {
