@@ -32,19 +32,18 @@ class Pict
 
   createFoto:( parentId, roomId ) ->
     $par  = $('#'+parentId)
-    w     = Math.max( $par.width(),  640 )
-    h     = Math.max( $par.height(), 640 )
-    r     = if w > 40 and h > 40 then 0.89*w/h else 0.89
+    w     = $par.width()
+    h     = $par.height() - 40
+    r     = if w > 40 and h > 40 then w/h
     id    = if parentId is 'RoomSlides' then "slideroom" else "slideshow"
     Util.log( 'Pict.createFoto()', { w:w, h:h, r:r } )
     $par.empty()
-    #rapw = Math.min( w, h*r )
-    $('.HomeSee').width( 960 )
-    $('.ViewSee').width( 960 )
+    $('.HomeSee').width( w )
+    $('.ViewSee').width( w )
     images = (Img) =>
       htm  = """<div id="#{id}" class="fotorama"  data-allowfullscreen="true" """ # data-nav="thumbs"
-      htm += """data-maxwidth="#{w}"   data-maxheight="#{h}"   data-ratio="#{r}" """
-      htm += """data-minwidth="#{640}" data-minheight="#{640}" >"""
+      htm += """data-maxheight="#{h}" data-ratio="#{r}" """
+      htm += """data-minheight="#{h}" >"""
       dir = Img[roomId].dir
       for pic in Img[roomId]['pics']
         htm += @fotoImg( pic, dir )

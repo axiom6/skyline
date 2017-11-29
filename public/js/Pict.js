@@ -32,9 +32,9 @@
       var $par, h, id, images, r, url, w,
         _this = this;
       $par = $('#' + parentId);
-      w = Math.max($par.width(), 640);
-      h = Math.max($par.height(), 640);
-      r = w > 40 && h > 40 ? 0.89 * w / h : 0.89;
+      w = $par.width();
+      h = $par.height() - 40;
+      r = w > 40 && h > 40 ? w / h : void 0;
       id = parentId === 'RoomSlides' ? "slideroom" : "slideshow";
       Util.log('Pict.createFoto()', {
         w: w,
@@ -42,13 +42,13 @@
         r: r
       });
       $par.empty();
-      $('.HomeSee').width(960);
-      $('.ViewSee').width(960);
+      $('.HomeSee').width(w);
+      $('.ViewSee').width(w);
       images = function(Img) {
         var dir, htm, pic, _i, _len, _ref;
         htm = "<div id=\"" + id + "\" class=\"fotorama\"  data-allowfullscreen=\"true\" ";
-        htm += "data-maxwidth=\"" + w + "\"   data-maxheight=\"" + h + "\"   data-ratio=\"" + r + "\" ";
-        htm += "data-minwidth=\"" + 640 + "\" data-minheight=\"" + 640 + "\" >";
+        htm += "data-maxheight=\"" + h + "\" data-ratio=\"" + r + "\" ";
+        htm += "data-minheight=\"" + h + "\" >";
         dir = Img[roomId].dir;
         _ref = Img[roomId]['pics'];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
