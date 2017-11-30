@@ -66,7 +66,8 @@ class Home
     htm  = """<div class="RoomSee">See Our Cabins</div>"""
     htm += """<ul  class="RoomUL">"""
     for own roomId, room of @res.rooms
-      htm += """<li class="RoomLI"><a href="rooms/#{roomId}.html">#{room.name}</a></li>"""
+      link = """location.href='rooms/#{roomId}.html' """
+      htm += """<li class="RoomLI"><button class="btn btn-primary" onclick="#{link}">#{room.name}</button></li>"""
     htm += """</ul>"""
     htm
 

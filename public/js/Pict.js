@@ -44,11 +44,15 @@
       $par.empty();
       $('.HomeSee').width(w);
       $('.ViewSee').width(w);
+      if (id === "slideroom") {
+        w *= 0.8;
+      }
       images = function(Img) {
         var dir, htm, pic, _i, _len, _ref;
         htm = "<div id=\"" + id + "\" class=\"fotorama\"  data-allowfullscreen=\"true\" ";
-        htm += "data-maxheight=\"" + h + "\" data-ratio=\"" + r + "\" ";
-        htm += "data-minheight=\"" + h + "\" >";
+        htm += "data-minheight=\"" + h + "\" data-maxheight=\"" + h + "\" data-ratio=\"" + r + "\" ";
+        htm += "data-minwidth =\"" + w + "\" data-maxwidth =\"" + w + "\" ";
+        htm += ">";
         dir = Img[roomId].dir;
         _ref = Img[roomId]['pics'];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {

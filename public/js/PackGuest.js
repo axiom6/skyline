@@ -38736,14 +38736,15 @@ webpackContext.id = 466;
     };
 
     Home.prototype.roomHtml = function() {
-      var htm, room, roomId, _ref;
+      var htm, link, room, roomId, _ref;
       htm = "<div class=\"RoomSee\">See Our Cabins</div>";
       htm += "<ul  class=\"RoomUL\">";
       _ref = this.res.rooms;
       for (roomId in _ref) {
         if (!__hasProp.call(_ref, roomId)) continue;
         room = _ref[roomId];
-        htm += "<li class=\"RoomLI\"><a href=\"rooms/" + roomId + ".html\">" + room.name + "</a></li>";
+        link = "location.href='rooms/" + roomId + ".html' ";
+        htm += "<li class=\"RoomLI\"><button class=\"btn btn-primary\" onclick=\"" + link + "\">" + room.name + "</button></li>";
       }
       htm += "</ul>";
       return htm;
@@ -39528,7 +39529,7 @@ webpackContext.id = 466;
 /* 469 */
 /***/ (function(module, exports) {
 
-module.exports = {"1":{"1":125,"2":125,"3":135,"4":145,"name":"#1 Cozy 1-Room Cabin","pet":12,"spa":"N","max":4,"booking":"145"},"2":{"1":165,"2":165,"3":175,"4":185,"name":"#2 Mountain Spa","pet":12,"spa":"O","max":4,"booking":"185"},"3":{"1":275,"2":275,"3":275,"4":275,"5":285,"6":295,"7":305,"8":315,"9":325,"name":"#3 Southwest Spa","pet":12,"spa":"Y","max":9,"booking":"315"},"4":{"1":125,"2":125,"3":135,"4":145,"name":"#4 Cozy 1-Room Cabin","pet":12,"spa":"N","max":4,"booking":"145"},"5":{"1":195,"2":195,"3":195,"4":195,"5":205,"6":215,"name":"#5 River Cabin With View","pet":12,"spa":"N","max":6,"booking":"195"},"6":{"1":235,"2":235,"3":235,"4":300,"5":310,"6":320,"7":330,"8":340,"9":350,"10":360,"11":370,"12":380,"name":"#6 Large River Cabin","pet":12,"spa":"N","max":12,"booking":"340"},"7":{"1":165,"2":165,"3":175,"4":175,"name":"#7 Western Spa","pet":12,"spa":"O","max":4,"booking":"175"},"8":{"1":98,"2":98,"3":110,"4":120,"name":"#8 Western Unit","pet":12,"spa":"N","max":4,"booking":"120"},"N":{"1":145,"2":145,"3":155,"4":165,"name":"Upper Skyline North","pet":12,"spa":"N","max":4,"booking":"165"},"S":{"1":135,"2":135,"3":145,"4":155,"name":"Upper Skyline South","pet":12,"spa":"N","max":4,"booking":"155"}}
+module.exports = {"1":{"1":125,"2":125,"3":135,"4":145,"name":"#1 Cozy 1-Room Cabin","pet":12,"spa":"N","max":4,"booking":"145"},"2":{"1":165,"2":165,"3":175,"4":185,"name":"#2 Mountain Spa","pet":12,"spa":"O","max":4,"booking":"185"},"3":{"1":275,"2":275,"3":275,"4":275,"5":285,"6":295,"7":305,"8":315,"9":325,"name":"#3 Southwest Spa","pet":12,"spa":"Y","max":9,"booking":"315"},"4":{"1":125,"2":125,"3":135,"4":145,"name":"#4 Cozy 1-Room Cabin","pet":12,"spa":"N","max":4,"booking":"145"},"5":{"1":195,"2":195,"3":195,"4":195,"5":205,"6":215,"name":"#5 River Cabin With View","pet":12,"spa":"N","max":6,"booking":"195"},"6":{"1":235,"2":235,"3":235,"4":300,"5":310,"6":320,"7":330,"8":340,"9":350,"10":360,"11":370,"12":380,"name":"#6 Large River Cabin","pet":12,"spa":"N","max":12,"booking":"340"},"7":{"1":165,"2":165,"3":175,"4":175,"name":"#7 Western Spa","pet":12,"spa":"O","max":4,"booking":"175"},"8":{"1":98,"2":98,"3":110,"4":120,"name":"#8 Cozy Unit","pet":12,"spa":"N","max":4,"booking":"120"},"N":{"1":145,"2":145,"3":155,"4":165,"name":"Upper Skyline North","pet":12,"spa":"N","max":4,"booking":"165"},"S":{"1":135,"2":135,"3":145,"4":155,"name":"Upper Skyline South","pet":12,"spa":"N","max":4,"booking":"155"}}
 
 /***/ }),
 /* 470 */

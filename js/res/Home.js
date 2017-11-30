@@ -77,14 +77,15 @@
     };
 
     Home.prototype.roomHtml = function() {
-      var htm, room, roomId, _ref;
+      var htm, link, room, roomId, _ref;
       htm = "<div class=\"RoomSee\">See Our Cabins</div>";
       htm += "<ul  class=\"RoomUL\">";
       _ref = this.res.rooms;
       for (roomId in _ref) {
         if (!__hasProp.call(_ref, roomId)) continue;
         room = _ref[roomId];
-        htm += "<li class=\"RoomLI\"><a href=\"rooms/" + roomId + ".html\">" + room.name + "</a></li>";
+        link = "location.href='rooms/" + roomId + ".html' ";
+        htm += "<li class=\"RoomLI\"><button class=\"btn btn-primary\" onclick=\"" + link + "\">" + room.name + "</button></li>";
       }
       htm += "</ul>";
       return htm;

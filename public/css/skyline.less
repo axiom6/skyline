@@ -1,23 +1,24 @@
 
-body { color:black; }  // background-color: #333;
+body { color:black;  font-family: 'Roboto', sans-serif;  }  // background-color: #333;
 
  img.center { display:block; margin-left:auto; margin-right:auto; border-radius:24px; }
 .map-center { display:block; margin-left:auto; margin-right:auto; }
 
 #MakeRes  { position:absolute; left: 4%; width:11%; top: 60px; height:50px; border-radius:12px; }
 #HomeBtn  { position:absolute; left: 4%; width:11%; top: 60px; height:50px; border-radius:12px; display:none; }
-#MapDirs  { position:absolute; left:87%; width:11%; top: 35px; height:50px; border-radius:12px; }
-#Contact  { position:absolute; left:87%; width:11%; top:105px; height:30px; border-radius:12px; }
+#MapDirs  { position:absolute; left:67%; width:11%; top: 35px; height:50px; border-radius:12px; }
+#Contact  { position:absolute; left:67%; width:11%; top:105px; height:30px; border-radius:12px; }
 
-#HeadAbs  { position:absolute; left:  0; width:100%; top:18%; height: 8%; }
+.Bann     { width:84%; }
+#HeadAbs  { position:absolute; left:  0; width:100%; top:17%; height: 9%; }
 #RoomAbs  { position:absolute; left:  0; width: 18%; top:26%; height:74%; }
 #ViewAbs  { position:absolute; left:18%; width: 82%; top:26%; height:74%; }
 
-#HeadRel  { position:relative; left:  0; width:100%; top:  0; height:100%; }
-#RoomRel  { position:relative; left:  0; width:100%; top:  0; height:100%; background-color:#555; }
-#ViewRel  { position:relative; left:  0; width:100%; top:  0; height:100%; background-color:#111; text-align:center; }
+#HeadRel  { position:relative; left:  0; width:100%;  top: 0; height:100%; font-weight:bold;}
+#RoomRel  { position:relative; left:  0; width:100%;  top: 0; height:100%; background-color:#555; }
+#ViewRel  { position:relative; left:  0; width:960px; top: 0; height:100%; background-color:#111; text-align:center; }
 
-#Caption { text-align:center; margin-top:10px; font-weight:bold; }
+#Caption { text-align:center; margin-top:4px; font-weight:bold; }
 
 .Head  { position:relative; left:0;   width:100%; top:0; height:100%; }
 .Head1 { position:absolute; left:0;   width: 30%; top:0; height:100%; }
@@ -38,12 +39,13 @@ body { color:black; }  // background-color: #333;
 
 .HomeSee  { position:absolute; left:0; top:1%; width:100%; height:4%; font-weight:bold; font-size:1.2em; text-align:center; background-color:#111; color:yellow; z-index:3; }
 .ViewSee  { position:absolute; left:0; top:5%; width:100%; height:4%; font-weight:bold; font-size:1.2em; text-align:center; background-color:#111; color:yellow; z-index:3; }
-
+.ViewSee button { border-radius:12px; }
 
 .RoomUL    { position:absolute; left:0;   width: 92%; top:   12%; height:  88%; list-style:none; padding-left:14px; }
 .RoomSee   { position:absolute; left: 4%; width: 96%; top:    5%; height:   7%; font-weight:bold; font-size:1.2em; text-align:center; color:yellow; }
 .RoomLI    { color:white; height:8%;  }
-.RoomLI a  { color:white; }
+.RoomLI button    { width:90%; border-radius:12px; }
+.RoomLI button a  { color:white; text-decoration-line:none; }
 
 #Slides    { position:absolute; left:0; width:100%; top:   11%; height: 89%; background-color:#111;  }
 #ViewVid   { position:absolute; left:0; width:100%; top:     0; height:100%; background-color:#111;  }

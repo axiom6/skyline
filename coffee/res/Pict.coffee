@@ -40,10 +40,12 @@ class Pict
     $par.empty()
     $('.HomeSee').width( w )
     $('.ViewSee').width( w )
+    w *= 0.8 if id is "slideroom"
     images = (Img) =>
       htm  = """<div id="#{id}" class="fotorama"  data-allowfullscreen="true" """ # data-nav="thumbs"
-      htm += """data-maxheight="#{h}" data-ratio="#{r}" """
-      htm += """data-minheight="#{h}" >"""
+      htm += """data-minheight="#{h}" data-maxheight="#{h}" data-ratio="#{r}" """
+      htm += """data-minwidth ="#{w}" data-maxwidth ="#{w}" """
+      htm += """>"""
       dir = Img[roomId].dir
       for pic in Img[roomId]['pics']
         htm += @fotoImg( pic, dir )
