@@ -13,6 +13,7 @@ class Util
     Util.isCommonJS = true
   else
     Util.isWebPack  = true
+
   Util.Load          = null
   Util.ModuleGlobals = []
   Util.app           = {}
@@ -723,9 +724,6 @@ class Util
     document.body.removeChild(downloadLink)
     return
 
-# Export Util as a convenience, since it is not really needed since Util is a global
-# Need to export at the end of the file.
-# module.exports = # Util.Export( Util, 'js/util/Util' )
 
 
 

@@ -1,6 +1,8 @@
 /*!
  * Fotorama 4.6.4 | http://fotorama.io/license/
  */
+window.jQuery = Util.requireModule( 'jquery', 'skyline' )
+
 fotoramaVersion = "4.6.4", function (a, b, c, d, e) {
   "use strict";
   function f(a) {

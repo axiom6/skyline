@@ -4,7 +4,6 @@ $ = Util.requireModule( 'jquery', 'skyline' )
 class Pict
 
   window.Pict = Pict
-
   #console.log( window )
 
   @page:( title, prev, curr, next ) ->
@@ -34,13 +33,13 @@ class Pict
     $par  = $('#'+parentId)
     w     = $par.width()
     h     = $par.height() - 40
-    r     = if w > 40 and h > 40 then w/h
+    r     = if w > 40 and h > 40 then w/h else 1.0
     id    = if parentId is 'RoomSlides' then "slideroom" else "slideshow"
-    Util.log( 'Pict.createFoto()', { w:w, h:h, r:r } )
+    # Util.log( 'Pict.createFoto()', { w:w, h:h, r:r } )
     $par.empty()
     $('.HomeSee').width( w )
     $('.ViewSee').width( w )
-    w *= 0.8 if id is "slideroom"
+    #w *= 0.8 if id is "slideroom"
     images = (Img) =>
       htm  = """<div id="#{id}" class="fotorama"  data-allowfullscreen="true" """ # data-nav="thumbs"
       htm += """data-minheight="#{h}" data-maxheight="#{h}" data-ratio="#{r}" """

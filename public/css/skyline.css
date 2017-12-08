@@ -276,22 +276,31 @@ img.center {
   text-align: center;
 }
 #RoomSlides {
-  display: inline-block;
-  margin-top: 24px;
-  width: 740px;
   height: 740px;
+  margin-top: 24px;
   background-color: #111;
 }
 #slideshow {
   z-index: 3;
 }
 #slideroom {
-  display: inline-block;
-  width: 640px;
-  margin: auto;
+  z-index: 3;
 }
 .SkyVid {
   margin-top: 200px;
+}
+#RoomSlides2 {
+  display: inline-block;
+  margin-top: 24px;
+  width: 740px;
+  height: 740px;
+  background-color: #111;
+}
+#slideroom2 {
+  z-index: 3;
+  display: inline-block;
+  width: 740px;
+  margin: auto;
 }
 .guests {
   text-align: center;

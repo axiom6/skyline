@@ -34,19 +34,11 @@
       $par = $('#' + parentId);
       w = $par.width();
       h = $par.height() - 40;
-      r = w > 40 && h > 40 ? w / h : void 0;
+      r = w > 40 && h > 40 ? w / h : 1.0;
       id = parentId === 'RoomSlides' ? "slideroom" : "slideshow";
-      Util.log('Pict.createFoto()', {
-        w: w,
-        h: h,
-        r: r
-      });
       $par.empty();
       $('.HomeSee').width(w);
       $('.ViewSee').width(w);
-      if (id === "slideroom") {
-        w *= 0.8;
-      }
       images = function(Img) {
         var dir, htm, pic, _i, _len, _ref;
         htm = "<div id=\"" + id + "\" class=\"fotorama\"  data-allowfullscreen=\"true\" ";
