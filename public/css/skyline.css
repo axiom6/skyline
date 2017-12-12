@@ -100,13 +100,6 @@ img.center {
   margin-top: 4px;
   font-weight: bold;
 }
-.Head {
-  position: relative;
-  left: 0;
-  width: 100%;
-  top: 0;
-  height: 100%;
-}
 .Head1 {
   position: absolute;
   left: 0;
@@ -132,13 +125,6 @@ img.center {
   position: absolute;
   left: 60%;
   width: 30%;
-  top: 0;
-  height: 100%;
-}
-.HeadA {
-  position: absolute;
-  left: 0;
-  width: 100%;
   top: 0;
   height: 100%;
 }
@@ -272,13 +258,112 @@ img.center {
   font-size: 1.2em;
   text-align: center;
 }
-#RoomView {
+.RoomHead {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: 0;
+  height: 20%;
+  background: #EEE;
+  font-weight: bold;
+}
+.RoomRel {
+  position: relative;
+  left: 0;
+  width: 100%;
+  top: 0;
+  height: 100%;
+}
+.RoomRel .top {
   text-align: center;
+  display: block;
+  margin-top: 1%;
+}
+.RoomRel .top .room {
+  vertical-align: middle;
+  text-align: center;
+  color: blue;
+  margin-left: 24px;
+  margin-right: 24px;
+  font-size: 24px;
+  font-weight: bold;
+}
+.RoomRel .top .home {
+  position: absolute;
+  left: 9%;
+  top: 1%;
+  background: blue;
+  color: white;
+  border-radius: 8px;
+}
+.RoomRel .top .prev {
+  vertical-align: middle;
+  background: blue;
+  color: white;
+  border-radius: 8px;
+}
+.RoomRel .top .next {
+  vertical-align: middle;
+  background: blue;
+  color: white;
+  border-radius: 8px;
+}
+.RoomRel .HeadA {
+  position: absolute;
+  left: 7%;
+  width: 80%;
+  top: 10%;
+  height: 80%;
+}
+.RoomRel .HeadB {
+  position: absolute;
+  left: 22%;
+  width: 25%;
+  top: 10%;
+  height: 80%;
+}
+.RoomRel .HeadC {
+  position: absolute;
+  left: 42%;
+  width: 25%;
+  top: 10%;
+  height: 80%;
+}
+.RoomRel .HeadD {
+  position: absolute;
+  left: 62%;
+  width: 25%;
+  top: 10%;
+  height: 80%;
+}
+.RoomRel .rates {
+  position: absolute;
+  left: 38%;
+  width: 70%;
+  bottom: 21%;
+  height: 8%;
+}
+.RoomRel .spa20 {
+  position: absolute;
+  left: 42%;
+  width: 50%;
+  bottom: 11%;
+  height: 8%;
+}
+.RoomView {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: 30%;
+  height: 70%;
+  background-color: #111;
 }
 #RoomSlides {
-  height: 740px;
-  margin-top: 24px;
-  background-color: #111;
+  position: relative;
+  left: 10%;
+  width: 80%;
+  top: 5%;
+  height: 90%;
 }
 #slideshow {
   z-index: 3;
@@ -932,42 +1017,6 @@ img.center {
   width: 94%;
   height: 740px;
   display: none;
-}
-.rooms {
-  background: #EEE;
-}
-.rooms .top {
-  text-align: center;
-  display: block;
-}
-.rooms .top .room {
-  vertical-align: middle;
-  text-align: center;
-  color: blue;
-  margin-left: 24px;
-  margin-right: 24px;
-  font-size: 24px;
-  font-weight: bold;
-}
-.rooms .top .home {
-  position: absolute;
-  left: 5%;
-  top: 12px;
-  background: blue;
-  color: white;
-  border-radius: 8px;
-}
-.rooms .top .prev {
-  vertical-align: middle;
-  background: blue;
-  color: white;
-  border-radius: 8px;
-}
-.rooms .top .next {
-  vertical-align: middle;
-  background: blue;
-  color: white;
-  border-radius: 8px;
 }
 #NamesX {
   width: 975px;

@@ -37,7 +37,7 @@
     { "src":"MtnL.jpg",          "name":"" },
     { "src":"MtnM.jpg",          "name":"" },
     { "src":"MtnN.jpg",          "name":"" } ] },
-  "": { "dir":"img/river/", "pics":[
+  "River": { "dir":"img/river/", "pics":[
     { "src":"MorningSun.jpg",      "name":"Morning Sun on the Big Thompson" },
     { "src":"MorningSun2.jpg",     "name":"Morning Sun" },
     { "src":"River1.jpg",          "name":"" },
@@ -115,7 +115,7 @@
     { "src":"SL-4048-300.jpg", "name":"Dining Area with Moose China" },
     { "src":"SL-4050-300.jpg", "name":"Full Electric Kitchen with Pine Cone Shelves"  } ] },
   "3": { "dir":"../img/r3/", "pics":[
-    { "src":"3.jpg",               "name":"Cabin #3" },
+    { "src":"3.jpg",               "name":"" },
     { "src":"Front3-1.jpg",        "name":"" },
     { "src":"Front3-3.jpg",        "name":"" },
     { "src":"Front3-4.jpg",        "name":"" },
@@ -139,7 +139,7 @@
     { "src":"SL-3008-300.jpg", "name":"Serta Perfect Queen Size Sleeper plus Sofabed" },
     { "src":"SL-3010-300.jpg", "name":"All Electric Kitchen" }  ] },
   "5": { "dir":"../img/r5/", "pics":[
-    { "src":"5.jpg",                     "name":"Cabin #5" },
+    { "src":"5.jpg",                     "name":"" },
     { "src":"Front5.jpg",                "name":"Bedroom and Front Doors with Wrap Around Deck" },
     { "src":"SL-Unit5LRoom001.jpg",      "name":"Unparalleled Views of River & Mountains" },
     { "src":"SL-Unit5LivingRoom003.jpg", "name":"A Warm Living Room with Spacious Windows"},
