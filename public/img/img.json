@@ -1,8 +1,8 @@
 {
   "Over": { "dir":"img/over/", "pics":[
     { "src":"MorningSun.jpg",     "name":"Morning sun on the Big Thompson River" },
-    { "src":"DownRiverFish.jpg",  "name":"Looking downstream from Skyline Cottages."  },
-    { "src":"Elk4-Office.jpg",    "name":"Elk waiting to check in office" },
+    { "src":"DownRiverFish.jpg",  "name":"Fishing downstream from Skyline Cottages"  },
+    { "src":"Elk4-Office.jpg",    "name":"Elk waiting at office to check in" },
     { "src":"Elk6-Sitting.jpg",   "name":"Elk relaxing after check in" },
     { "src":"Sign6-Office.jpg",   "name":"Sign at Front Office" },
     { "src":"Play1.jpg",          "name":"Play area" },
@@ -100,15 +100,17 @@
     { "src":"Turkeys6.jpg",    "name":"" },
     { "src":"Turkeys7.jpg",    "name":"" } ] },
   "Yard": { "dir":"img/yard/", "pics":[
-    { "src":"Play2.jpg",    "name":"" },
-    { "src":"Play3-Dogs.jpg",    "name":"" },
-    { "src":"Play4-Dogs.jpg",    "name":"" },
-    { "src":"Play5-Dogs.jpg",    "name":"" },
+    { "src":"Play2.jpg",        "name":"" },
+    { "src":"Play3-Dogs.jpg",   "name":"" },
+    { "src":"Play4-Dogs.jpg",   "name":"" },
+    { "src":"Play5-Dogs.jpg",   "name":"" },
     { "src":"RamsHead1.jpg",    "name":"" },
     { "src":"RamsHead2.jpg",    "name":"" },
-    { "src":"Sign6-Office.jpg",    "name":"" } ] },
+    { "src":"Sign6-Office.jpg", "name":"" } ] },
   "1": { "dir":"../img/r1/", "pics":[
-    { "src":"SL-Cabin001.jpg", "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed."       } ] },
+    { "src":"1.jpg",        "name":"Enjoy cozy fire in a Serta Perfect Sleeper queen bed" },
+    { "src":"Front1.jpg",   "name":"Front Porch" },
+    { "src":"Turkeys5.jpg", "name":"Wild Turkey" } ] },
   "2": { "dir":"../img/r2/", "pics":[
     { "src":"SL-4044-300.jpg", "name":"Relax in your luxurious mountain spa." },
     { "src":"SL-4046-300.jpg", "name":"Serta Perfect Sleeper Queen Bed and Trundle Sofabeds" },
@@ -133,7 +135,7 @@
     { "src":"SL-1016-300.jpg", "name":"Front Balcony"            },
     { "src":"SL-1017-300.jpg", "name":"Private, Fenced Backyard (31' x 10')"                } ] },
   "4": { "dir":"../img/r4/", "pics":[
-    { "src":"4.jpg", "name":"Cabin #4" },
+    { "src":"4.jpg", "name":"" },
     { "src":"Front4-Best.jpg", "name":"Front Door" },
     { "src":"SL-3012-400.jpg", "name":"Relax with a Wood Burning Fire" },
     { "src":"SL-3008-300.jpg", "name":"Serta Perfect Queen Size Sleeper plus Sofabed" },
@@ -146,7 +148,7 @@
     { "src":"SC-Unit5View003.jpg",       "name":"Stay Close to Nature with Long's Peak View" }  ] },
   "6": { "dir":"../img/r6/", "pics":[
     { "src":"6.jpg",           "name":"Cabin #6" },
-    { "src":"Porch3.jpg",      "name":"" },
+    { "src":"Porch3.jpg",      "name":"Full back porch about the river" },
     { "src":"Skybath346.jpg",  "name":"" },
     { "src":"Skybath350.jpg",  "name":"" },
     { "src":"Skybdrm109.jpg",  "name":"" },
@@ -168,7 +170,8 @@
     { "src":"SC-Unit7LivingRoom.jpg",      "name":"Full Electric Kitchen and Cozy Fireplace" },
     { "src":"SC-Unit7Patio.jpg",           "name":"Enjoy Private Deck with Locking Gates" } ] },
   "8": { "dir":"../img/r8/", "pics":[
-    { "src":"SC-Unit8001.jpg", "name":"Serta Queen Bed and Loveseat Sleeper" } ] },
+    { "src":"SC-Unit8001.jpg", "name":"Serta Queen Bed and Loveseat Sleeper" },
+    { "src":"Front8.jpg",      "name":"Front entrance to Cabin #8" }] },
   "N": { "dir":"../img/rn/", "pics":[
     { "src":"SL-2003-300x200.jpg", "name":"Secluded Cabin 500 sq.ft. Bordering Rocky Mountain National Park" },
     { "src":"SL-2004-300x200.jpg", "name":"Living Room with Cable TV and Queen Sofabed"},
