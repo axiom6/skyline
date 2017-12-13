@@ -170,15 +170,15 @@
     { "src":"SC-Unit7LivingRoom.jpg",      "name":"Full Electric Kitchen and Cozy Fireplace" },
     { "src":"SC-Unit7Patio.jpg",           "name":"Enjoy Private Deck with Locking Gates" } ] },
   "8": { "dir":"../img/r8/", "pics":[
-    { "src":"SC-Unit8001.jpg", "name":"Serta Queen Bed and Loveseat Sleeper" },
+    { "src":"8.jpg", "name":"Serta Queen Bed and Loveseat Sleeper" },
     { "src":"Front8.jpg",      "name":"Front entrance to Cabin #8" }] },
   "N": { "dir":"../img/rn/", "pics":[
-    { "src":"SL-2003-300x200.jpg", "name":"Secluded Cabin 500 sq.ft. Bordering Rocky Mountain National Park" },
+    { "src":"N.jpg",               "name":"Secluded Cabin 500 sq.ft. Bordering Rocky Mountain National Park" },
     { "src":"SL-2004-300x200.jpg", "name":"Living Room with Cable TV and Queen Sofabed"},
     { "src":"SL-2005-300x200.jpg", "name":"Full Electric Kitchen" },
     { "src":"SL-2006-300x200.jpg", "name":"Large Bedroom with Serta Perfect Sleeper Queen Bed" } ] },
   "S": { "dir":"../img/rs/", "pics":[
-    { "src":"SL-2001-300x200.jpg", "name":"Secluded Cabin 400 sq.ft. Bordering Rocky Mountain National Park" },
+    { "src":"S.jpg",               "name":"Secluded Cabin 400 sq.ft. Bordering Rocky Mountain National Park" },
     { "src":"SL-2013-300x200.jpg", "name":"A Living Room with All the Comforts of Home!" },
     { "src":"SL-2014-300x200.jpg", "name":"Full Electric Kitchen" },
     { "src":"SL-2008-300x200.jpg", "name":"Large Bedroom with Serta Perfect Sleeper Queen Bed" }
