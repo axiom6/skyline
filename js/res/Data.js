@@ -100,6 +100,7 @@
       apiKey: "AIzaSyBjMGVzZ6JgZBs8O7mBQfH6clHYDmjTsGU",
       authDomain: "skyline-fed2b.firebaseapp.com",
       databaseURL: "https://skyline-fed2b.firebaseio.com",
+      projectId: "skyline-fed2b",
       storageBucket: "skyline-fed2b.appspot.com/",
       messagingSenderId: "279547846849"
     };

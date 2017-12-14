@@ -112,7 +112,8 @@
     { "src":"Front1.jpg",   "name":"Front Porch" },
     { "src":"Turkeys5.jpg", "name":"Wild Turkey" } ] },
   "2": { "dir":"../img/r2/", "pics":[
-    { "src":"SL-4044-300.jpg", "name":"Relax in your luxurious mountain spa." },
+    { "src":"2.jpg",           "name":"Relax in your luxurious mountain spa" },
+    { "src":"Front2.jpg",      "name":"Front Entrance" },
     { "src":"SL-4046-300.jpg", "name":"Serta Perfect Sleeper Queen Bed and Trundle Sofabeds" },
     { "src":"SL-4048-300.jpg", "name":"Dining Area with Moose China" },
     { "src":"SL-4050-300.jpg", "name":"Full Electric Kitchen with Pine Cone Shelves"  } ] },
@@ -165,10 +166,11 @@
     { "src":"Skylvgrm341.jpg", "name":"" },
     { "src":"Skylvgrm343.jpg", "name":"" } ] },
   "7": { "dir":"../img/r7/", "pics":[
+    { "src":"7.jpg",                       "name":"Enjoy Private Deck with Locking Gates" },
     { "src":"SC-Unit7SpaAndFireplace.jpg", "name":"Relax in Luxurious Spa in Front of a Crackling Fire" },
     { "src":"SC-Unit7BedRoom001.jpg",      "name":"Serta Perfect Sleeper Queen Bed Under Chili Pepper Fan" },
     { "src":"SC-Unit7LivingRoom.jpg",      "name":"Full Electric Kitchen and Cozy Fireplace" },
-    { "src":"SC-Unit7Patio.jpg",           "name":"Enjoy Private Deck with Locking Gates" } ] },
+    { "src":"Play7.jpg",                   "name":"Treat Yourself to the Picnic and Play Area" } ] },
   "8": { "dir":"../img/r8/", "pics":[
     { "src":"8.jpg", "name":"Serta Queen Bed and Loveseat Sleeper" },
     { "src":"Front8.jpg",      "name":"Front entrance to Cabin #8" }] },

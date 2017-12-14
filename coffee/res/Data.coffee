@@ -32,8 +32,6 @@ class Data
   @beg         = '170515'  # Beg seasom on May 15, 2017
   @end         = '171009'  # Beg seasom on Oct  9, 2017
 
-  # npm -g install webpack@3.0.0 --save-dev
-
   @configSkyriver = {
     apiKey: "AIzaSyDJxypukgOw20z80EZW9w1ObgyqB20qfYI",
     authDomain: "skyriver-81c21.firebaseapp.com",
@@ -64,6 +62,7 @@ class Data
     apiKey:       "AIzaSyBjMGVzZ6JgZBs8O7mBQfH6clHYDmjTsGU",
     authDomain:   "skyline-fed2b.firebaseapp.com",
     databaseURL:  "https://skyline-fed2b.firebaseio.com",
+    projectId: "skyline-fed2b",
     storageBucket: "skyline-fed2b.appspot.com/",
     messagingSenderId: "279547846849" }
 
